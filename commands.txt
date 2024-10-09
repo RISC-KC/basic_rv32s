@@ -1,0 +1,2 @@
+iverilog -o [result file] [module file] [testbench file]
+vvp [result file]
