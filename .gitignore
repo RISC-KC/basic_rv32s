@@ -1,0 +1,1 @@
+goorm.manifest
