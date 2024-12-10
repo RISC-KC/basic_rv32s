@@ -1,14 +1,14 @@
 module ALU (
     input [31:0] srcA,           // Source operand A
     input [31:0] srcB,           // Source operand B
-    input [3:0] aluControl,      // ALU control signal (from Control Unit)
+    input [3:0] aluOp,      // ALU control signal (from Control Unit)
     input signedOperation,       // Flag to indicate whether to use signed operations or unsigned
     output reg [31:0] aluResult, // ALU result
     output reg zero              // Zero flag
 );
 
     always @(*) begin
-        case (aluControl)
+        case (aluOp)
             4'b0000: begin // ADD
                 if (signedOperation)
                     aluResult = $signed(srcA) + $signed(srcB);  // Signed ADD
