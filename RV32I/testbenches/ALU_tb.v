@@ -25,7 +25,7 @@ module ALU_tb;
         alu_control = 4'b0000; // ADD
 
         #10;
-        $display("ADD Result: %d, Zero: %b", alu_result, zero);
+        $display("%d + %d = %d, Zero: %b", src_A, src_B, alu_result, zero);
 
         // Test 2: Subtraction
         src_A = 32'd20;
@@ -33,7 +33,7 @@ module ALU_tb;
         alu_control = 4'b0001; // SUB
         
         #10;
-        $display("SUB Result: %d, Zero: %b", alu_result, zero);
+        $display("%d - %d = %d, Zero: %b", src_A, src_B, alu_result, zero);
 
         // Test 3: AND
         src_A = 32'hFFFF_0000;
@@ -41,7 +41,7 @@ module ALU_tb;
         alu_control = 4'b0010; // AND
 
         #10;
-        $display("AND Result: %h, Zero: %b", alu_result, zero);
+        $display("%h & %h = %h, Zero: %b", src_A, src_B, alu_result, zero);
 
         // Test 4: OR
         src_A = 32'h0000_FFFF;
@@ -49,7 +49,7 @@ module ALU_tb;
         alu_control = 4'b0011; // OR
 
         #10;
-        $display("OR Result: %h, Zero: %b", alu_result, zero);
+        $display("%h | %h = %h, Zero: %b", src_A, src_B, alu_result, zero);
 
         // Test 5: XOR
         src_A = 32'hFFFFFFFF;
@@ -57,23 +57,23 @@ module ALU_tb;
         alu_control = 4'b0100; // XOR
         
         #10;
-        $display("XOR Result: %h, Zero: %b", alu_result, zero);
+        $display("%h ^ %h = %h, Zero: %b", src_A, src_B, alu_result, zero);
 
         // Test 6: SLT
-        src_A = 32'd5;
-        src_B = 32'd10;
+        src_A = 32'h00000000;
+        src_B = 32'hF0000001;
         alu_control = 4'b0101; // SLT
         
         #10;
-        $display("Signed SLT Result: %d, Zero: %b", alu_result, zero);
+		$display("Is %d < %d ? : %d, Zero: %b (signed)", $signed(src_A), $signed(src_B), alu_result, zero);
 
         // Test 7: SLTU
-        src_A = 32'd5;
-        src_B = 32'd10;
+        src_A = 32'hF0000000;
+        src_B = 32'hF0000001;
         alu_control = 4'b0110; // SLTU
         
         #10;
-        $display("SLTU Result: %d, Zero: %b", alu_result, zero);
+		$display("Is %d < %d ? : %d, Zero: %b (unsigned)", src_A, src_B, alu_result, zero);
 
         $stop;
     end
