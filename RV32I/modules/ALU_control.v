@@ -1,8 +1,8 @@
 module ALUControl (
     input [6:0] opcode,        		// opcode
 	input [2:0] funct3,				// funct3
-    input [6:0] funct7,				// funct7
-    input [6:0] imm,				// imm
+    input funct7_5,					// 5th index of funct7 (starting from 0th index)
+    input imm_10,					// 10th index of imm (starting from 0th index)
 	
     output reg [3:0] alu_op		// ALU operation signal
 );
@@ -12,7 +12,7 @@ module ALUControl (
 			7'b0110011: begin // R-type
                 case (funct3)
 					3'b000: begin // add or sub
-						alu_op = {3'b000, funct7[5]};
+						alu_op = {3'b000, funct7_5};
 						// add : 000 ; 0000000 
 						// sub : 000 ; 0100000
 					end
@@ -29,7 +29,7 @@ module ALUControl (
 						alu_op = 4'b0100; // xor : 100 ; 0000000 
 					end
 					3'b101: begin // srl or sra
-						alu_op = {3'b100, funct7[5]};
+						alu_op = {3'b100, funct7_5};
 						// srl : 101 ; 0000000
 						// sra : 101 ; 0100000 
 					end
@@ -59,7 +59,7 @@ module ALUControl (
 						alu_op = 4'b0100; // xori : 100 ; - 
 					end
 					3'b101: begin
-						alu_op = {3'b100, imm[5]};
+						alu_op = {3'b100, imm_10};
 						// srli : 101 ; imm[5:11]=0000000 
 						// srai : 101 ; imm[5:11]=0100000 
 					end
