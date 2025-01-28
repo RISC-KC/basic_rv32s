@@ -1,0 +1,17 @@
+<!--This section contains commands for compiling and running the Verilog simulation-->
+
+iverilog -o [result file] [module file] [testbench file]
+vvp [result file]
+
+---
+
+<!--This section contains commands for managing the Git repository-->
+
+git pull origin main // Update the local repository with changes from the remote main branch
+
+git add . // Stage all changes for the next commit
+git commit -m "Your commit message here" // Commit the staged changes with a message
+git push origin <branch-name> // Push the changes to the specified branch on the remote repository
+
+git checkout <branch-name> // Switch to the specified branch
+git checkout -b <new-branch-name> // Create and switch to a new branch
