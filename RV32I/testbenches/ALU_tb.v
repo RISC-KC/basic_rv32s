@@ -1,5 +1,6 @@
-module ALU_tb;
+`timescale 1ns/1ps
 
+module ALU_tb;
     reg [31:0] src_A;
 	reg [31:0] src_B;
     reg [3:0] alu_op;

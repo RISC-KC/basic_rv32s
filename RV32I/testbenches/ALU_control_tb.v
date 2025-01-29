@@ -1,5 +1,6 @@
-module ALU_control_tb;
+`timescale 1ns/1ps
 
+module ALU_control_tb;
 	reg [6:0] opcode;
 	reg [2:0] funct3;
     reg [6:0] funct7;

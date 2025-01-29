@@ -1,5 +1,6 @@
-module InstructionDecoder_tb;
+`timescale 1ns/1ps
 
+module InstructionDecoder_tb;
     reg [31:0] instr;
 
     wire [6:0] opcode;
