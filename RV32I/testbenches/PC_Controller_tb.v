@@ -1,5 +1,6 @@
-module PCController_tb;
+`timescale 1ns/1ps
 
+module PCController_tb;
     reg jump;
     reg branch_taken;
     reg trapped;
