@@ -1,3 +1,5 @@
+`include "modules/headers/opcode.vh"
+
 module ALUControl (
     input [6:0] opcode,        		// opcode
 	input [2:0] funct3,				// funct3
@@ -9,7 +11,7 @@ module ALUControl (
 
     always @(*) begin
         case (opcode)
-			7'b0110011: begin // R-type
+			`OPCODE_RTYPE: begin
                 case (funct3)
 					3'b000: begin // add or sub
 						alu_op = {3'b000, funct7_5};
@@ -41,7 +43,7 @@ module ALUControl (
 					end
 				endcase
             end
-			7'b0010011: begin // I-type
+			`OPCODE_ITYPE: begin
 				case (funct3)
 					3'b000: begin
 						alu_op = 4'b0000; // addi : 000 ; - 
@@ -71,29 +73,19 @@ module ALUControl (
 					end
 				endcase
 			end
-			7'b0000011: begin // I-Type load
-				alu_op = 4'b0000;
-				// lb : 000 ; - 
-				// lh : 001 ; - 
-				// lw : 010 ; - 
-				// lbu : 100 ; - 
-				// lhu : 101 ; -
-				// Every 5 of them requires addition
+			`OPCODE_LOAD: begin
+				alu_op = 4'b0000; // Every load instruction requires addition
 			end
-			7'b1100111: begin // I-Type jump
+			`OPCODE_JALR: begin
 				alu_op = 4'b0000; // jalr : 000 ; -
 			end
-			7'b1100011: begin // B-Type
-				alu_op = 4'b0000;
-				// beq : 000 ; - 
-				// bne : 001 ; - 
-				// blt : 100 ; - 
-				// bge : 101 ; - 
-				// bltu : 110 ; - 
-				// bgeu : 111 ; -
-				// Every 6 of them requires addition
+			`OPCODE_STORE: begin
+				alu_op = 4'b0000; // Every store instruction requires addition
 			end
-			7'b1110011: begin // I-Type CSR
+			`OPCODE_BRANCH: begin
+				alu_op = 4'b0000; // Every branch instruction requires addition
+			end
+			`OPCODE_ENVIRONMENT: begin
 				case (funct3)
 					3'b001: begin // csrrw : 001 ; -
 						alu_op = 4'b1111;
