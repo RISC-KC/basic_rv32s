@@ -1,0 +1,53 @@
+#! /usr/bin/vvp
+:ivl_version "12.0 (stable)";
+:ivl_delay_selection "TYPICAL";
+:vpi_time_precision - 12;
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/system.vpi";
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/vhdl_sys.vpi";
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/vhdl_textio.vpi";
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/v2005_math.vpi";
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/va_math.vpi";
+S_0x55f5cb0cc050 .scope module, "PCPlus4_tb" "PCPlus4_tb" 2 3;
+ .timescale -9 -12;
+v0x55f5cb0f1f60_0 .var "pc", 31 0;
+v0x55f5cb0f2020_0 .net "pc_plus_4", 31 0, v0x55f5cb0f1e20_0;  1 drivers
+S_0x55f5cb0df700 .scope module, "dut" "PCPlus4" 2 7, 3 1 0, S_0x55f5cb0cc050;
+ .timescale 0 0;
+    .port_info 0 /INPUT 32 "pc";
+    .port_info 1 /OUTPUT 32 "pc_plus_4";
+v0x55f5cb0df900_0 .net "pc", 31 0, v0x55f5cb0f1f60_0;  1 drivers
+v0x55f5cb0f1e20_0 .var "pc_plus_4", 31 0;
+E_0x55f5cb0a6f00 .event anyedge, v0x55f5cb0df900_0;
+    .scope S_0x55f5cb0df700;
+T_0 ;
+    %wait E_0x55f5cb0a6f00;
+    %load/vec4 v0x55f5cb0df900_0;
+    %addi 4, 0, 32;
+    %store/vec4 v0x55f5cb0f1e20_0, 0, 32;
+    %jmp T_0;
+    .thread T_0, $push;
+    .scope S_0x55f5cb0cc050;
+T_1 ;
+    %vpi_call 2 14 "$display", "==================== PCPlus4 Test START ====================\012" {0 0 0};
+    %pushi/vec4 0, 0, 32;
+    %store/vec4 v0x55f5cb0f1f60_0, 0, 32;
+    %delay 1000, 0;
+    %vpi_call 2 17 "$display", "PC: %h, PC+4: %h", v0x55f5cb0f1f60_0, v0x55f5cb0f2020_0 {0 0 0};
+    %pushi/vec4 3735928559, 0, 32;
+    %store/vec4 v0x55f5cb0f1f60_0, 0, 32;
+    %delay 1000, 0;
+    %vpi_call 2 20 "$display", "PC: %h, PC+4: %h", v0x55f5cb0f1f60_0, v0x55f5cb0f2020_0 {0 0 0};
+    %pushi/vec4 3405692606, 0, 32;
+    %store/vec4 v0x55f5cb0f1f60_0, 0, 32;
+    %delay 1000, 0;
+    %vpi_call 2 23 "$display", "PC: %h, PC+4: %h", v0x55f5cb0f1f60_0, v0x55f5cb0f2020_0 {0 0 0};
+    %vpi_call 2 25 "$display", "\012====================  PCPlus4 Test END  ====================" {0 0 0};
+    %vpi_call 2 27 "$stop" {0 0 0};
+    %end;
+    .thread T_1;
+# The file index is used to find the file name in the following table.
+:file_names 4;
+    "N/A";
+    "<interactive>";
+    "testbenches/PC_Plus_4_tb.v";
+    "modules/PC_Plus_4.v";
