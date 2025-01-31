@@ -933,7 +933,7 @@ RV32I47F.R3로 업데이트.
 
 CC84
 [문제 제기]
-기존의 체계에서 Imm가 20비트 체계. 
+기존의 체계에서 Imm가 12비트 체계. 
 Reason : U타입 명령어에 imm길이가 20비트짜리였기 때문.
 현재의 ID에서 나오는 imm신호는 CSR, ALUcontroller(연산 종류 판단)같은 연산을 제외하고는 무조건 Sign-Extension하여 ALU로 꽂히게 되어있었다.
 여기서 문제 발생.
@@ -947,7 +947,7 @@ Reason : U타입 명령어에 imm길이가 20비트짜리였기 때문.
 무조건 12비트라 간주를 하고 쓰는데, 그렇게 되면 20비트인 U타입의 경우 20비트에다가 12비트인 줄 알고 MSB를 착각해 데이터가 망가져버릴 우려가 있다.
 때문에 Imm_gen이라는 간단한 역할을 수행하는 로직에 별도의 구분자 및 컨트롤 신호를 부여하는 것이 오히려 직관성을 떨어뜨리니, Instruction Decoder단에서 해결하기로 결정.
 
-해결 방안: ID에서 기존에 나오던 RAW Imm비트 값을 32비트 확장 (Zero-Extension.) 
+- 해결 방안: ID에서 기존에 나오던 RAW Imm비트 값을 32비트 확장 (Zero-Extension.) 
 U타입 AUIPC의 경우(20비트 imm체제) Extension을 거치지 않고 이 Zero-Extension된 imm값을 바로 이용하도록 설계. (Bypassing)
 
 나머지의 경우(12비트 imm체제) imm_gen을 거쳐 12비트 기준으로 Sign-Extension된 ex-imm값을 ALU로 넘겨 연산.
@@ -959,3 +959,188 @@ U타입 AUIPC의 경우(20비트 imm체제) Extension을 거치지 않고 이 Ze
 위의 imm문제 반영(4:1 ALUsrcB MUX)됨. 신호체계 최적화도 같이 함.
 
 이제 Docs작업한거 commit하고 푸쉬해야할 때가 됐다..
+
+19시 45분경 완료.
+이제 남은게.. Top Moduel Re-design하는거랑...
+명령어 데이터패스 검증인가..
+ChoiCube84가 구현하며 가져오는 문제점들 일부가 데이터패스의 검증 과정에서 충분히 발견될 수 있는 것들이었다.
+(물론 구현 과정에서 신호의 최적화 및 로직만을 다루는 CC84의 입장에서 더 잘보이며 그가 하고있는 작업에서만 보이는 문제점들도 있다.)
+설계도면을 코팅해서 하나하나 따라가봐야겠다. 
+MNEMONICS랑 비트 체계를 같이 통합해놓은 문서가 있으면 좋을 것 같은데, 직접 만들어야하나..
+
+아 이것도 CC84의 건의인데, 
+최신판 RISC-V 매뉴얼이랑 우리가 직접 갖고 하고 있는 컴퓨터 설계 및 구조 RISC-V Edition 및 참고 문헌에 적혀있는 ISA가 살짝 다르다.
+최신판을 기준으로 하여 매뉴얼을 기반하여야하는데, 그런 입장에서 FENCE.TSO라는 명령어가 등장하고 UJ,SB 명령어가 명시되어있지 않다.
+그냥 SB는 B타입으로 통칭되고, UJ는 J타입으로 통칭된다. 
+FENCE.TSO는 뭐지? 확실히 FENCE.i가 없고 FENCE.TSO가 있다. RV32I Instruction Listings에서.
+
+비상... FENCE.i는 Zifence.i 확장의 명령어일 뿐 RV32I의 기본 명령어가 아니다... 삽질했다...
+다행히도., 덕분에 플랫폼을 어느정도 갖춰서 괜찮긴한데.. 아,..,.,.,
+뭐 좋은 것 아니겠는가... 더 큰 무언가를 만들게 된건데..
+실질적으로 추가해야할 건, FENCE.TSO명령어와 PAUSE명령어이다..
+관련해서 어떤 역할을 하는지, 어떤 모듈에서 어떤 신호체계로 구현이 가능한지 더 연구해봐야한다..;. 일단 여기까지..
+20:27
+-------
+
+어우 몸살 목감기다... 많이 피곤하지만 일단 그래도 연등했고.. 알아낸거 정리..
+FENCE.TSO는 FENCE의 하위호환 FENCE 명령어. FENCE에서 제어하는건 I, O, R, W 이 네가지 신호인데,,
+일반 FENCE는 4가지에 대하여 혹시나 동작 충돌이 날 수 있으니 그 직전 4가지 타입중 어떠한 연산이라도 다 끝낸 다음 다음 명령어를 수행하게끔하는
+메모리 일관성에 대한 명령어이다.
+TSO는 Total Store Order의 약자로, 메모리 접근 순서에 따른 메모리 일관성 오류의 해결 정책 중 하나인데, R, W에 한정하여 이전 명령을 다 끝내고 다음 명령어를 실행하도록 한다.
+실제 명령어도 비트 체계에서 구분자만 가져다 두고 rs1값이나 다른 필드는 무시(ignore)하라고 나온다..
+
+PAUSE도 마찬가지.. 얘는 사실상 언급으로도 나오지만 NOP취급하면 되는 것 같다.. 얘는 더 알아봐야함..
+
+내일할거...
+
+2025.01.29
+아니 저장이 안되어있었네
+열 38도 죽을 것 같다.
+그럼에도 공부한 내용 정리
+FENCE명령어 및 PAUSE, HINT명령어, Hart 등등.
+FENCE명령어는 기본적으로 Memory Ordering에 해당하는 명령어.
+다중 코어나 다중 스레드 연산시 메모리 참조에서 순서 위반이 나올 수 있기 때문에 이 오류를 해결하기 위한 명령어.
+FENCE 기본 명령어를 기반으로 비트 식별자를 다르게 하여 파생되는 명령어들이 나온다. 
+FENCE.TSO, PAUSE가 그러하다. 
+
+FENCE - 메모리 및 입출력에 대한 order를 제공.
+successor가 작업을 수행하기 전에 모든 메모리 작업을 완료하는 것.
+
+FENCE.TSO - Successor가 어떤 메모리 operation이든 수행하기 전에
+predecessor가 load수행을 다 마치는 것.
+그와 동시에, Successor가 어떤 Store operation이든 수행하기 전에
+predecessor가 모든 Store 수행을 다 마치는 것.
+
+PAUSE - 이 명령어를 알기 전에, RISC-V에서 규정하는 HINT명령어가 무엇인지 알아야한다. 
+일단 여기까지.. 밥먹고 약 먹고 오자.. (17:26)
+
+I'm so back. 약 먹고 좀 많이 괜찮아졌다. 열은 있지만 몸살이 많이 나아졌다.
+HINT명령어는 RISC-V에서 아무런 영향을 끼치지 않는 명령어를 뜻한다. 실행은 되는데, 아무런 영향을 못 끼치는.
+예를 들어, ADD 명령어에 x0주소에 행하는 명령을 실행하면 이 명령어는 아무런 의미가 없다. x0 레지스터는 0값이 고정이기 때문이다. 
+이러한 개념적 행동을 하는 명령어를 HINT라고 한다. PAUSE가 그러하다. 
+PAUSE명령어는 Zihintpause 확장에 포함되는 명령어이다. 
+현재 hart의 명령어 폐기율이 일시적으로 줄이거나 일시적으로 중지해야함을 나타낼 뿐이다.
+아키텍처적으로 아무런 영향이 없다. 멀티스레드 또는 멀티 코어 환경에ㅓㅅ 메모리 참조할 때 일관성 위반으로 다른 코어/스레드에게 역할을 넘겨주거나 쉬는.
+결국 우리 구조에서는 nop로 처리하면 된다.
+hart는 RISC-V 를 사용하는 완전한 컴퓨팅 시스템 유닛을 뜻한다.
+(20:58)
+
+데이터 패스 검증의 시간
+이건 별도의 Datapath 문서에서 진행하겠다.
+
+RISC-V, The RISC-V Instruction Set Manual Volume I
+Unprivileged Architecture
+Version 20240411기준. 
+
+Chapter 34. RV32G/64G Instruction Set Listings | Page 555 참조한다.
+
+lui 명령어부터 차례대로 검증해보겠다. 명령어 타입별로 하는게 맞는 것 같긴한데.. 일단은.
+
+Register File에 Write되는 정보는 4가지 분류로 하고, 그 데이터패스는 일관되게 한다.
+Data Memory로부터 옮겨지는 LOAD 데이터들.
+rs값 혹은 imm값을 기반으로 어떠한 연산을 거친 ALU 데이터들.
+CSR File로부터 옮겨지는 CSR LOAD 데이터들.
+PC+4 값.
+
+LUI는 현재 아키텍처상 ID에서 Zero-extension이 이미 이루어진 채로 imm신호가 출력되니 그대로 Register에 저장하면 되지만,,
+ALU를 거치는 것이 데이터패스 일관성에 기여하기 때문에 RegF_WD_MUX를 거쳐 가는 것으로 한다.
+
+생각해보니 항상 Zero-Extension을 하는게 무언가 좀 찜찜하다.. 차차리 Immgen에서 명령어 타입을 받아 적절히 Sign-Extension하는 것이 맞지 않을까?
+얼핏 어디서 본 것으로 기억하자면 RISC-V는 Sign-Extension을 전제로 이루어진다고 본 것 같은데.. 항시 Extension이 비효율적으로 보이기도하고...
+
+2025.01.30
+Confliction.
+내 주장 : 모든 명령어의 imm값을 Zero-Extension하여 출력하는 것은 비효율적이다.
+imm값을 32비트로 Zero-Extension하여 쓰이는 명령어는 U, J타입에 국한될 뿐더러, 나머지 imm값을 포함하는 명령어(I, S, B)는 Sign-Extension을 무조건 거쳐서 사용하게 되어있다.
+불필요한 Extension을 하여 추가적인 산술논리 연산을 거치는 것
+데이터패스에 불필요한 만큼의 비트크기를 가지게 된다는 것.
+
+상황 : J 타입의 명령어 비트 체계를 보면, imm[20|10:1|11|19:12] | rd[11:7] | opcode[6:0].
+U타입은 [31:12]. CC84는 이 점이 캥긴다 했고, 컴퓨터 구조 및 설계 RISC-V 에디션의 4장, 그림 4.16, 4.17을 근거로 사용되는 MUX를 줄이기 위해
+U와 J타입의 상수값은 raw값을 그대로 보낼 것이 아니라, 32비트로 Zero-Extension된 값을 Instruction Decoder에서 imm값을 내보내고
+그걸 imm_gen에서 sign-extension변환을 해야한다 했다. (31:12비트라는 서술 자체가 extension된 값을 전제로 하고, 그것이 zero-extension된 값일거라 주장.)
+하지만 근거로 든 4.16과 4.17에서 시사하는 바의 타당성이 모호해지며 불확정성에 비트를 소모시키기 보단, 개선방안을 택하기로 했다.
+
+ - 개선안
+Instruction Decoder의 imm 비트폭은 20비트. 
+12비트 imm쓰는 값은 그대로 12비트를 내보낸다. 남는 8비트는 don't care. 어차피 가져다 쓰는 imm_gen에서 필요한 비트만큼 slice해서 쓰면 된다.
+20비트 imm값은 그대로 20비트를 imm_gen으로 내보낸다.
+
+imm_gen에 opcode입력을 추가하여 명령어 타입에 따라 적절한 sign-extension을 진행할 수 있도록 한다.
+
+개선된 데이터패스 적용안.
+
+U타입 : 명령어 2개
+-auipc, lui
+-lui는 {imm,12b'0}을 rd주소 Register에 저장. 즉 imm을 zero-fill한 것을 rd에 저장.
+-auipc는 PC + {imm,12b'0}을 rd 주소 Register에 저장. 즉 PC에 zero-fill된 imm값이 덧셈되어야 함.
+ALU를 덧셈으로 써야하므로 zero-fill자체를 ALU에서 처리하는 것은 적합하지 않음.
+-> imm_gen에서 처리하자.
+U타입은 imm_gen에서 zero-fill된 32비트로 나간다. 
+
+J타입 : 명령어 2개
+-jal, jalr
+-jal은 R[rd] = PC + 4; PC = PC + {imm, 1b'0}
+-jalr은 R[rd] = PC + 4; PC = R[rs1]+imm.
+
+-jalr은 별도의 R[rs1]값과 덧셈을 해야하므로 imm이 sign-extension되어야함.
+(ALU에서 처리되는 모든 데이터는 32비트이다. )
+-jal은 PC값과 {imm, 1b'0}값을 덧셈해야한다. 
+J타입 명령어의 imm필드에 대한 설명을 Unprivileged Manual에서 참조하자면, 
+"The offset is sign-extended and added to the address of the jump instruction to form the jump target address. Jumps can therefore target ±1 MiB range."
+해당 imm필드 값을 sign-extension을 수행한 뒤 1비트 쉬프팅.
+
+허허 이제 알게되는거. shamt의미는,, shift amount.. 즉 i타입 명령어에서 shift 연산 명령어는 imm값을 sign-extension하지 않는다. 
+또한 csr레지스터의 주소 필드 자체가 12비트 필드이기 때문에 별도의 확장 필요 없다.
+
+하지만 csr명령어 중 imm가 들어가는나머지 명령어들은 imm이 연산값이기에 zero-extension이 필요하다. 
+
+ALU에서 바이패스할 신호.. 어라 오류. 333번째 줄에서 언급한 CSR을 Register로 저장하는 명령어는 csrrw;CSR Read&Write이다.
+R[rd] = CSR ; CSR = R[rd]. 
+그래서 이걸 몇 번째 설계도였는지 기억나지는 않지만 RegF_WD_MUX에서 Input중에 하나로 이미 넣었었다...?
+이러면 ALU Bypass 로직이 딱히 필요가 없어지는데..?
+U-Type인 LUI 명령어도 결국 12'b0 제로필 값을 R[rd]에 저장하는 것이고, 그게 그 전부라서 딱히 ALU연산을 거치지 않는다..
+이건 Imm_gen에서 담당해줄 명령어 같은데.. ALU에서 처리를 하지 않는 이유는 같은 타입인 AUIPC에서 imm, 12b'0이 별도연산이라 가정하면 ALU는 두 사이클을 소모해야하기 때문에 모순되기 때문이다. 
+
+이 경우엔 Bypassing이 필요할지도..? 아니면.. 상수 확장 처리 후 그걸 바로 레지스터에 넣는 경우가 많은가? 많다면 imm_gen에서 Register File로 향하는 다이렉트 신호를 추가하고,
+아니면 ALU Bypass를 이용하도록 한다. 없다. Bypass하자. 그러므로서 CSR_RD 다이렉트 신호도 없앤다. 이걸 계속 이렇게 넣다보면 저 MUX가 너무 커진다.
+막 큰차이는 없는 것 같은데.. 다이렉트 신호가 성능상 더 나은가? 그렇다 .다이렉트가 더 낫다. 설계원칙인 모듈의 역할을 명확히 하는 것에도 부합하니 별도의 MUX를 두자.
+
+ID에서 나오는 값은 20비트이며, 12비트와 20비트 중 나오게 된다.
+12비트 값은 있는 그대로 보내지며, zero-extension은 명령어에 맞게 imm_gen에서 이루어진다.
+zero-fill도 동일(LUI, AUIPC). Sign-extension 이하 동문.
+
+지금하 ALU src에서 불필요한 신호 없는지 보는 중.
+Direct 신호 체계 도입했으니 저건 변화하는게 맞다. 
+
+이왕 검토하는거 모든 ALU의 소스들을 조사했다.
+그 결과, ALUsrcB는 RD2와 ex-imm만을 갖는다.
+RegF_WD_MUX에는 CSR_RD값과 ex-imm값이 추가됐다.
+
+jal 명령어에서 PC= PC+{imm, 1b'0}인데, NextPC값이 PC+{imm, 1b'0}이 되는건가? 흠.... 그런 것 같다. Jump니까.
+
+2025.01.31
+오전 일과 시간 회의 때 B-Type 명령어의 작동 구조에 대해 이야기를 나눴다.
+B타입은 조건문의 계산과, PC값의 분기 주소 계산 두가지 연산을 한번에 처리해야한다.
+비교문은 rs1 rs2 값을 각각 비교를 하니 ALU에서 두가지 src를 받아 처리하는 것이 타당해보이는 구조이다. 
+그럼 이제 분기 주소 계산을 어디서 처리할 것이냐가 문제이다. Branch Logic인가, PCC인가, 아니면 별도의 계산 모듈을 만들 것인가.
+Branch Logic에서 하기로 했다. 
+참고로 PC = PC + {imm, 1b'0}인데, 1b'0은 imm_gen에서 처리한다.
+그리고 상대주소지정 방식의 비트 정렬 알고리즘 정책에 따라
+imm을 extension을 먼저 진행한 뒤 1b'0쉬프팅을 진행한다. 1b'0이 해당 정렬을 담당하는 로직이다.
+
+따라서 Branch Logic에서는 PC+확장쉬프팅된 imm 값 연산을 진행하여 B-Target신호를 출력한다.
+B_Target신호를 Branch Logic으로 이전했다. 사실 이건 PCC에서 진행하는게 맞아보이긴 하는데..
+PC + ?? 형태의 것이면...
+
+그렇게 하기로 했다. Branch Logic은 어디까지나 분기 조건 충족 판단의 유닛이지 PC주소 계산 유닛이 아니다
+ALU에서 하기엔 리소스를 추가적으로 잡아먹으며 복잡도가 증가한다.
+PC 전용 모듈을 만들기엔 추가적인 하드웨어를 낭비시키는 느낌이다.
+NextPC신호를 계산하는 PCC에서 만드는 것이 설계 철학에도 부합하고, PC 연산을 전담하는 모듈에서 처리하면 파이프라이닝때도 수월할 것 같다. 
+이러면.. PCC에 ex-imm신호가 추가되고, B_Target신호는 없어진다. 내부에서 조건부에 따라 계산되어 NextPC로 출력되기 때문.
+그리고 ALUresult가 PCC로 출력하는 신호는 Jump시 PC 값 외엔 없는데,, 이걸 역할 통일을 하면 더 좋을까?
+
+아니다. 추후 G 확장까지 다룰 때 J타입의 명령어가 추가되며 ALU에서 처리하는 기존 데이터패스 일관 방식이 더 좋을 수도 있다. 이건 그대로 남겨둔다. 
+
+ - ! 할일 : CC84한테 PCC의 CLK신호 필요성 설명하기
+

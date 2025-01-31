@@ -1,0 +1,9 @@
+비트 체계는 J타입.
+imm[20|10:1|11|19:12] | rd[11:7] | opcode[6:0]
+
+JAL의 명령어 MNEMONICS는 R[rd] = PC + 4; PC = PC + {imm, 1b'0}. 
+
+ISA에 따라, imm은 Sign-extension(32비트)된 뒤, 1비트 쉬프팅한다.
+
+데이터패스는 다음과 같다.
+ID-imm_gen(sign-extension to 32bit)-ALU-PCC-PC
