@@ -6,7 +6,7 @@ module PCController_tb;
     reg trapped;
     reg [31:0] pc;
     reg [31:0] jump_target;
-    reg [31:0] branch_target;
+    reg [31:0] imm;
     reg [31:0] trap_target;
 	
     wire [31:0] next_pc;
@@ -17,8 +17,9 @@ module PCController_tb;
         .trapped(trapped),
         .pc(pc),
         .jump_target(jump_target),
-        .branch_target(branch_target),
+        .imm(imm),
         .trap_target(trap_target),
+		
         .next_pc(next_pc)
     );
 
@@ -26,17 +27,17 @@ module PCController_tb;
 		// Test sequence
         $display("==================== PCController Test START ====================");
 
-        pc            = 32'h00000000;
-        jump_target   = 32'h00000010;
-        branch_target = 32'h00000020;
-        trap_target   = 32'h00000030;
+        pc = 32'h00000000;
+        jump_target = 32'h00000010;
+        imm = 32'h00000020;
+        trap_target = 32'h00000030;
 
         // Test 1: No jump, no branch, no trap
         $display("\nNo jump, No branch, No trap: ");
 
-        jump          = 0;
-        branch_taken  = 0;
-        trapped       = 0;
+        jump = 0;
+        branch_taken = 0;
+        trapped = 0;
 
         #10;
         $display("pc = %h => next_pc = %h", pc, next_pc);
