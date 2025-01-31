@@ -98,4 +98,10 @@ ALU에서 branch 명령어들에 대해 담당하게 된 연산이 주소 계산
 
 ALU Control 모듈 수정을 마친 뒤, Branch Logic 모듈을 만들기 시작했다. 조금 전에 테스트벤치까지 완성했고, 테스트 결과 정상작동하는 것을 확인할 수 있었다. 이제 PC Controller 에서 PC 와 {imm, 1'b0} 값을 더하는 부분을 추가할 것이다.
 
+기존 PC Controller 에서 branch target 신호를 제거하고 imm 신호를 대신 받아와 PC 값과 직접 더해서 계산하도록 수정하였다.
+
+이 과정에서 PC Controller 모듈은 'controller' 라는 단어를 쓰는데 ALU Control 모듈은 'control' 이라고만 하길래 이 부분을 T410N 과 상의한 결과, ALU Control 모듈의 이름을 ALU Controller 로 바꾸기로 했다.
+
+이제 다음 모듈은 Byte Enable Logic 모듈인데, store 명령어들의 funct3 를 보고 변경할 사이즈를 정하는 역할을 하는 걸로 알고 있다. 아마 내일 본격적인 구현을 시작하게 될 것 같다. 오늘은 여기까지!
+
 To be continued...
