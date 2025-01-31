@@ -1,7 +1,7 @@
 `include "modules/headers/opcode.vh"
 `include "modules/headers/branch.vh"
 
-module ALUControl (
+module ALUController (
     input [6:0] opcode,        		// opcode
 	input [2:0] funct3,				// funct3
     input funct7_5,					// 5th index of funct7 (starting from 0th index)

@@ -3,7 +3,7 @@
 `include "modules/headers/opcode.vh"
 `include "modules/headers/branch.vh"
 
-module ALUControl_tb;
+module ALUController_tb;
 	reg [6:0] opcode;
 	reg [2:0] funct3;
     reg [6:0] funct7;
@@ -11,7 +11,7 @@ module ALUControl_tb;
 	
     wire [3:0] alu_op;
 
-    ALUControl alu_control (
+    ALUController alu_controller (
         .opcode(opcode),
         .funct3(funct3),
         .funct7_5(funct7[5]),
@@ -22,7 +22,7 @@ module ALUControl_tb;
 
     initial begin
         // Test sequence
-        $display("==================== ALU Control Test START ====================");
+        $display("==================== ALU Controller Test START ====================");
 
         // Test 1: R-type
 		$display("\nR-type instructions: ");
@@ -208,7 +208,7 @@ module ALUControl_tb;
         #10;
         $display("funct3: %b opcode: %b -> alu_op: %b", funct3, opcode, alu_op);
 		
-		$display("\n====================  ALU Control Test END  ====================");
+		$display("\n====================  ALU Controller Test END  ====================");
 		
 		$stop;
     end
