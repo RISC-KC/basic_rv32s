@@ -88,4 +88,20 @@ ALU Control 이슈를 해결한 뒤에는, 엄청나게 복잡하고 어렵고 �
 
 이제 연등 시간이 얼마 남지 않아 오늘은 여기까지 해야겠다. 하루 동안 정말 많은 일이 있었는데, 그래도 상당히 재밌는 시간이었다. 이제 이런 연휴가 전역때까지 아마 없을거라는 사실이 마음 아플 뿐이다...
 
+# 2025/01/31
+
+오전에 잠깐 생활관에서 대기할 때 T410N 과 Branch Logic 모듈 구현에 대해 상의하였다. Branch Logic 모듈을 구현하려고 생각해보니, branch 관련 instruction 들이 수행해야 할 연산이 2개였던 것이다!
+
+하나는 두 값을 비교하는 연산, 하나는 PC에 {imm, 1'b0} 을 더하는 연산이었다. 회의 결과, 두 값을 비교하는 연산은 ALU에서 진행하고 PC와 {imm, 1'b0} 은 PC Controller 에서 더하기로 결정했다.
+
+ALU에서 branch 명령어들에 대해 담당하게 된 연산이 주소 계산 연산이 아닌 값 비교 연산으로 변경되었기 때문에, 이에 맞추어 ALU Control 모듈을 수정했다. 이 과정에서 branch 명령어들의 funct3 값들을 헤더파일로 정리해두었다.
+
+ALU Control 모듈 수정을 마친 뒤, Branch Logic 모듈을 만들기 시작했다. 조금 전에 테스트벤치까지 완성했고, 테스트 결과 정상작동하는 것을 확인할 수 있었다. 이제 PC Controller 에서 PC 와 {imm, 1'b0} 값을 더하는 부분을 추가할 것이다.
+
+기존 PC Controller 에서 branch target 신호를 제거하고 imm 신호를 대신 받아와 PC 값과 직접 더해서 계산하도록 수정하였다.
+
+이 과정에서 PC Controller 모듈은 'controller' 라는 단어를 쓰는데 ALU Control 모듈은 'control' 이라고만 하길래 이 부분을 T410N 과 상의한 결과, ALU Control 모듈의 이름을 ALU Controller 로 바꾸기로 했다.
+
+이제 다음 모듈은 Byte Enable Logic 모듈인데, store 명령어들의 funct3 를 보고 변경할 사이즈를 정하는 역할을 하는 걸로 알고 있다. 아마 내일 본격적인 구현을 시작하게 될 것 같다. 오늘은 여기까지!
+
 To be continued...
