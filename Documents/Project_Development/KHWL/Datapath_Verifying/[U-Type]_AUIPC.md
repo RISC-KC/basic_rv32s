@@ -1,0 +1,20 @@
+비트체계는 U타입. 
+imm[31:12] | rd[11:7] | opcode[6:0]
+
+lui의 명령어 MNEMONICS는 R[rd] = PC + {imm, 12b'0}. 
+
+rd 주소에 있는 레지스터에 
+상숫값 imm을 32-bit zero-extension한 값 + 현재 PC값 을 저장한 것.
+
+~~RV32I47F 코어에서는 Instruction Decoder에서 모든 imm 상수 값을 zero-extension해서 보낸다.~~
+~~ID에서 나오는 imm값을 그대로 Register File에 저장하면 된다.~~
+
+~~그 데이터패스는 다음과 같다.
+PC - ID - ALUsrcA(B)_MUX - ALU(PC+32bit-imm) - RegF_WD_MUX - RegisterFile~~
+
+RV32I47F.R6로 오며 imm_gen에 대한 로직이 바뀜과 동시에 ID에서 더 이상 비트 확장을 자동으로 하지 않는다.
+
+수정된 데이터 패스는 이렇다.
+Imm_gen에서 20비트 imm값으로 들어온 AUIPC 명령어의 imm필드 값을 32비트로 zerofill한다. 
+Imm_gen은 opcode를 받고 확장을 수행하는데, U-Type명령어는 Zero-Fill 확장이다.
+PC - ID - Imm_gen - ALUsrcA(B).MUX - ALU(PC+32bit-imm) - ALUresult - RegF_WD_MUX - Register File.
