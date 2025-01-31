@@ -1,4 +1,5 @@
 `include "modules/headers/opcode.vh"
+`include "modules/headers/branch.vh"
 
 module ALUControl (
     input [6:0] opcode,        		// opcode
@@ -83,7 +84,26 @@ module ALUControl (
 				alu_op = 4'b0000; // Every store instruction requires addition
 			end
 			`OPCODE_BRANCH: begin
-				alu_op = 4'b0000; // Every branch instruction requires addition
+				case (funct3)
+					`BRANCH_BEQ: begin
+						alu_op = 4'b0001; // If subtraction result is zero, equal
+					end
+					`BRANCH_BNE: begin
+						alu_op = 4'b0001; // If subtraction result is not zero, not equal
+					end
+					`BRANCH_BLT: begin
+						alu_op = 4'b0101; // If SLT result is not zero, less
+					end
+					`BRANCH_BGE: begin
+						alu_op = 4'b0101; // If SLT result is zero, greater or equal
+					end
+					`BRANCH_BLTU: begin
+						alu_op = 4'b0110; // If SLTU result is not zero, less (unsigned)
+					end
+					`BRANCH_BGEU: begin
+						alu_op = 4'b0110; // If SLTU result is zero, greater or equal (unsigned)
+					end
+				endcase
 			end
 			`OPCODE_ENVIRONMENT: begin
 				case (funct3)

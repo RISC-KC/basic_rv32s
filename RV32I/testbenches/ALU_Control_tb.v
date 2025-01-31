@@ -1,7 +1,9 @@
 `timescale 1ns/1ps
-`include "modules/headers/opcode.vh"
 
-module ALU_Control_tb;
+`include "modules/headers/opcode.vh"
+`include "modules/headers/branch.vh"
+
+module ALUControl_tb;
 	reg [6:0] opcode;
 	reg [2:0] funct3;
     reg [6:0] funct7;
@@ -152,22 +154,22 @@ module ALU_Control_tb;
 		funct7 = 7'b0000000;
 		imm = 32'h00000000;
 
-        funct3 = 3'b000; #10;
+        funct3 = `BRANCH_BEQ; #10;
         $display("funct3: %b opcode: %b -> alu_op: %b", funct3, opcode, alu_op);
 		
-		funct3 = 3'b001; #10;
+		funct3 = `BRANCH_BNE; #10;
         $display("funct3: %b opcode: %b -> alu_op: %b", funct3, opcode, alu_op);
 		
-		funct3 = 3'b100; #10;
+		funct3 = `BRANCH_BLT; #10;
         $display("funct3: %b opcode: %b -> alu_op: %b", funct3, opcode, alu_op);
 		
-		funct3 = 3'b101; #10;
+		funct3 = `BRANCH_BGE; #10;
         $display("funct3: %b opcode: %b -> alu_op: %b", funct3, opcode, alu_op);
 		
-		funct3 = 3'b110; #10;
+		funct3 = `BRANCH_BLTU; #10;
         $display("funct3: %b opcode: %b -> alu_op: %b", funct3, opcode, alu_op);
 		
-		funct3 = 3'b111; #10;
+		funct3 = `BRANCH_BGEU; #10;
         $display("funct3: %b opcode: %b -> alu_op: %b", funct3, opcode, alu_op);
 		
 		// Test 7: I-type CSR

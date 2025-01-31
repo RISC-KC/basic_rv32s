@@ -4,7 +4,7 @@ module ALU (
     input [3:0] alu_op,        		// ALU operation signal (from ALU Control module)
     
     output reg [31:0] alu_result,   // ALU result
-    output reg zero                 // Zero flag
+    output reg alu_zero             // Zero flag
 );
 
     always @(*) begin
@@ -62,7 +62,7 @@ module ALU (
             end
         endcase
 
-        zero = (alu_result == 32'd0); // Zero flag: set if result is zero
+        alu_zero = (alu_result == 32'd0); // Zero flag: set if result is zero
     end
 
 endmodule
