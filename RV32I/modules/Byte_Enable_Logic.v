@@ -7,17 +7,19 @@ module ByteEnableLogic (
     input [2:0] funct3,							// funct3
 	input [31:0] register_file_read_data,		// data read from register file
 	input [31:0] data_memory_read_data,			// data read from data memory
-	input [31:0] address,						// address to load or save data
+	input [31:0] address,						// address for checking alignment
 	
-	output [31:0] reg register_file_write_data,	// data to write at register file
-	output [31:0] reg data_memory_write_data,	// data to write at data memory
-    output [31:0] reg write_mask,				// bitmask for writing data
+	output reg [31:0] register_file_write_data,	// data to write at register file
+	output reg [31:0] data_memory_write_data,	// data to write at data memory
+    output reg [3:0] write_mask,				// bitmask for writing data
+	output reg misaligned						// signal indicating if address is misaligned
 );
 
     always @(*) begin
         if (memory_read) begin
 			data_memory_write_data = 32'b0;
-			write_mask = 32'b0;
+			write_mask = 4'b0;
+			misaligned = 0;
 			
 			case (funct3)
 				`LOAD_LB: begin
@@ -42,25 +44,69 @@ module ByteEnableLogic (
 		end
 		else if (memory_write) begin
 			register_file_write_data = 32'b0;
-			
+						
 			case (funct3)
 				`STORE_SB: begin
-					write_mask = 32'h000000FF;
+					data_memory_write_data = {4{register_file_read_data[7:0]}};
+					
+					case (address[1:0])
+						2'b00: begin
+							write_mask = 4'b0001;
+						end
+						2'b01: begin
+							write_mask = 4'b0010;
+						end
+						2'b10: begin
+							write_mask = 4'b0100;
+						end
+						2'b11: begin
+							write_mask = 4'b1000;
+						end
+					endcase
+					misaligned = 0;
 				end
 				`STORE_SH: begin
-					write_mask = 32'h0000FFFF;
+					data_memory_write_data = {2{register_file_read_data[15:0]}};
+					
+					case (address[1:0])
+						2'b00: begin
+							write_mask = 4'b0011;
+							misaligned = 0;
+						end
+						2'b10: begin
+							write_mask = 4'b1100;
+							misaligned = 0;
+						end
+						default: begin
+							write_mask = 4'b0;
+							misaligned = 1;
+						end
+					endcase
 				end
 				`STORE_SW: begin
-					write_mask = 32'hFFFFFFFF;
+					data_memory_write_data = register_file_read_data;
+					
+					if (address[1:0] == 2'b00) begin
+						write_mask = 4'b1111;
+						misaligned = 0;
+					end
+					else begin
+						write_mask = 4'b0;
+						misaligned = 1;
+					end
 				end
 				default: begin
+					data_memory_write_data = 32'b0;
+					write_mask = 4'b0;
+					misaligned = 0;
 				end
 			endcase
 		end
 		else begin
 			register_file_write_data = 32'b0;
 			data_memory_write_data = 32'b0;
-			write_mask = 32'b0;
+			write_mask = 4'b0;
+			misaligned = 0;
 		end
     end
 
