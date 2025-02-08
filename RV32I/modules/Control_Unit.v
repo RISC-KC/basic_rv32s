@@ -1,4 +1,6 @@
+`include "modules/headers/alu_src_select.vh"
 `include "modules/headers/opcode.vh"
+`include "modules/headers/rf_wd_select.vh"
 
 module ControlUnit (
 	input [6:0] opcode, // opcode from Instruction Decoder
@@ -11,20 +13,236 @@ module ControlUnit (
 	output reg [2:0] csr_op,
 	output reg [1:0] csr_address_src_select,
 	output reg [1:0] csr_data_src_select,
+	output reg register_file_write,
 	output reg [2:0] register_file_write_data_select,
 	output reg memory_read,
-	output reg memory_write,
-	output reg register_file_write
+	output reg memory_write
 );
 
     always @(*) begin
         case (opcode)
-            `OPCODE_LUI: begin
-                // WIP
+            `OPCODE_LUI: begin // Load upper immediate
+                // No jump
+				jump = 0;
+				
+				// No branch
+				branch = 0;
+				
+				// No alu operation
+				alu_src_A_select = `ALU_SRC_A_NONE;
+				alu_src_B_select = `ALU_SRC_B_NONE; 
+				
+				// No CSR operation
+				csr_op =  3'b0;
+				csr_address_src_select = 2'b0;
+				csr_data_src_select = 2'b0;
+				
+				// LUI instruction
+				register_file_write = 1;
+				register_file_write_data_select = `RF_WD_LUI;
+				
+				// No memory access
+				memory_read = 0;
+				memory_write = 0;
             end
-
-            // WIP
-			
+			`OPCODE_AUIPC: begin
+				// No jump
+				jump = 0;
+				
+				// No branch
+				branch = 0;
+				
+				// PC + {imm, 12'b0}
+				alu_src_A_select = `ALU_SRC_A_PC;
+				alu_src_B_select = `ALU_SRC_B_IMM;
+				
+				// No CSR operation
+				csr_op =  3'b0;
+				csr_address_src_select = 2'b0;
+				csr_data_src_select = 2'b0;
+				
+				// Fetch added address (ALU)
+				register_file_write = 1;
+				register_file_write_data_select = `RF_WD_ALU;
+				
+				// No memory access
+				memory_read = 0;
+				memory_write = 0;
+			end
+			`OPCODE_JAL: begin
+				// Jump
+				jump = 1;
+				
+				// No branch
+				branch = 0;
+				
+				// PC + {imm, 1'b0}
+				alu_src_A_select = `ALU_SRC_A_PC;
+				alu_src_B_select = `ALU_SRC_B_IMM;
+				
+				// No CSR operation
+				csr_op =  3'b0;
+				csr_address_src_select = 2'b0;
+				csr_data_src_select = 2'b0;
+				
+				// PC+4 is saved which means jump
+				register_file_write = 1;
+				register_file_write_data_select = `RF_WD_JUMP;
+				
+				// No memory access
+				memory_read = 0;
+				memory_write = 0;
+			end
+			`OPCODE_JALR: begin
+				// Jump
+				jump = 1;
+				
+				// No branch
+				branch = 0;
+				
+				// R[rs1] + imm
+				alu_src_A_select = `ALU_SRC_A_RD1;
+				alu_src_B_select = `ALU_SRC_B_IMM;
+				
+				// No CSR operation
+				csr_op =  3'b0;
+				csr_address_src_select = 2'b0;
+				csr_data_src_select = 2'b0;
+				
+				// PC+4 is saved which means jump
+				register_file_write = 1;
+				register_file_write_data_select = `RF_WD_JUMP;
+				
+				// No memory access
+				memory_read = 0;
+				memory_write = 0;
+			end
+			`OPCODE_BRANCH: begin
+				// No jump
+				jump = 0;
+				
+				// Branch
+				branch = 1;
+				
+				// Compare R[rs1] and R[rs2]
+				alu_src_A_select = `ALU_SRC_A_RD1;
+				alu_src_B_select = `ALU_SRC_B_RD2;
+				
+				// No CSR operation
+				csr_op =  3'b0;
+				csr_address_src_select = 2'b0;
+				csr_data_src_select = 2'b0;
+				
+				// No Register File write
+				register_file_write = 0;
+				register_file_write_data_select = `RF_WD_NONE;
+				
+				// No memory access
+				memory_read = 0;
+				memory_write = 0;
+			end
+			`OPCODE_LOAD: begin
+				// No jump
+				jump = 0;
+				
+				// No branch
+				branch = 0;
+				
+				// R[rs1] + imm
+				alu_src_A_select = `ALU_SRC_A_RD1;
+				alu_src_B_select = `ALU_SRC_B_IMM;
+				
+				// No CSR operation
+				csr_op =  3'b0;
+				csr_address_src_select = 2'b0;
+				csr_data_src_select = 2'b0;
+				
+				// Load instructions
+				register_file_write = 1;
+				register_file_write_data_select = `RF_WD_LOAD;
+				
+				// Read from memory
+				memory_read = 1;
+				memory_write = 0;
+			end
+			`OPCODE_STORE: begin
+				// No jump
+				jump = 0;
+				
+				// No branch
+				branch = 0;
+				
+				// R[rs1] + imm
+				alu_src_A_select = `ALU_SRC_A_RD1;
+				alu_src_B_select = `ALU_SRC_B_IMM;
+				
+				// No CSR operation
+				csr_op =  3'b0;
+				csr_address_src_select = 2'b0;
+				csr_data_src_select = 2'b0;
+				
+				// No Register File write
+				register_file_write = 0;
+				register_file_write_data_select = `RF_WD_NONE;
+				
+				// Write to memory
+				memory_read = 0;
+				memory_write = 1;
+			end
+			`OPCODE_ITYPE: begin
+				// No jump
+				jump = 0;
+				
+				// No branch
+				branch = 0;
+				
+				// Operation on R[rs1] and imm
+				alu_src_A_select = `ALU_SRC_A_RD1;
+				alu_src_B_select = `ALU_SRC_B_IMM;
+				
+				// No CSR operation
+				csr_op =  3'b0;
+				csr_address_src_select = 2'b0;
+				csr_data_src_select = 2'b0;
+				
+				// Write alu result to Register File
+				register_file_write = 1;
+				register_file_write_data_select = `RF_WD_ALU;
+				
+				// No memory access
+				memory_read = 0;
+				memory_write = 0;
+			end
+			`OPCODE_RTYPE: begin
+				// No jump
+				jump = 0;
+				
+				// No branch
+				branch = 0;
+				
+				// Operation on R[rs1] and R[rs2]
+				alu_src_A_select = `ALU_SRC_A_RD1;
+				alu_src_B_select = `ALU_SRC_B_RD2;
+				
+				// No CSR operation
+				csr_op =  3'b0;
+				csr_address_src_select = 2'b0;
+				csr_data_src_select = 2'b0;
+				
+				// Write alu result to Register File
+				register_file_write = 1;
+				register_file_write_data_select = `RF_WD_ALU;
+				
+				// No memory access
+				memory_read = 0;
+				memory_write = 0;
+			end
+			`OPCODE_FENCE: begin
+				// WIP
+			end
+			`OPCODE_ENVIRONMENT: begin
+				// WIP
+			end
         endcase
     end
 
