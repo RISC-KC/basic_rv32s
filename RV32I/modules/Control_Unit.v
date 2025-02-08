@@ -241,7 +241,33 @@ module ControlUnit (
 				// WIP
 			end
 			`OPCODE_ENVIRONMENT: begin
-				// WIP
+				if (funct3 == 3'b0) begin
+					// WIP
+				end
+				else begin
+					// No jump
+					jump = 0;
+					
+					// No branch
+					branch = 0;
+					
+					// WIP
+					alu_src_A_select = `ALU_SRC_A_RD1; // WIP
+					alu_src_B_select = `ALU_SRC_B_RD2; // WIP
+					
+					// CSR operation
+					csr_op = funct3;
+					csr_address_src_select = 2'b0; // WIP
+					csr_data_src_select = 2'b0; // WIP
+					
+					// Write CSR value to Register File
+					register_file_write = 1;
+					register_file_write_data_select = `RF_WD_CSR;
+					
+					// No memory access
+					memory_read = 0;
+					memory_write = 0;
+				end
 			end
         endcase
     end
