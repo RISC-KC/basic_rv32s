@@ -11,8 +11,6 @@ module ControlUnit (
 	output [1:0] reg alu_src_A_select,
 	output [1:0] reg alu_src_B_select,
 	output reg [2:0] csr_op,
-	output reg [1:0] csr_address_src_select,
-	output reg [1:0] csr_data_src_select,
 	output reg register_file_write,
 	output reg [2:0] register_file_write_data_select,
 	output reg memory_read,
@@ -34,8 +32,6 @@ module ControlUnit (
 				
 				// No CSR operation
 				csr_op =  3'b0;
-				csr_address_src_select = 2'b0;
-				csr_data_src_select = 2'b0;
 				
 				// LUI instruction
 				register_file_write = 1;
@@ -58,8 +54,6 @@ module ControlUnit (
 				
 				// No CSR operation
 				csr_op =  3'b0;
-				csr_address_src_select = 2'b0;
-				csr_data_src_select = 2'b0;
 				
 				// Fetch added address (ALU)
 				register_file_write = 1;
@@ -82,8 +76,6 @@ module ControlUnit (
 				
 				// No CSR operation
 				csr_op =  3'b0;
-				csr_address_src_select = 2'b0;
-				csr_data_src_select = 2'b0;
 				
 				// PC+4 is saved which means jump
 				register_file_write = 1;
@@ -106,8 +98,6 @@ module ControlUnit (
 				
 				// No CSR operation
 				csr_op =  3'b0;
-				csr_address_src_select = 2'b0;
-				csr_data_src_select = 2'b0;
 				
 				// PC+4 is saved which means jump
 				register_file_write = 1;
@@ -130,8 +120,6 @@ module ControlUnit (
 				
 				// No CSR operation
 				csr_op =  3'b0;
-				csr_address_src_select = 2'b0;
-				csr_data_src_select = 2'b0;
 				
 				// No Register File write
 				register_file_write = 0;
@@ -154,8 +142,6 @@ module ControlUnit (
 				
 				// No CSR operation
 				csr_op =  3'b0;
-				csr_address_src_select = 2'b0;
-				csr_data_src_select = 2'b0;
 				
 				// Load instructions
 				register_file_write = 1;
@@ -178,8 +164,6 @@ module ControlUnit (
 				
 				// No CSR operation
 				csr_op =  3'b0;
-				csr_address_src_select = 2'b0;
-				csr_data_src_select = 2'b0;
 				
 				// No Register File write
 				register_file_write = 0;
@@ -202,8 +186,6 @@ module ControlUnit (
 				
 				// No CSR operation
 				csr_op =  3'b0;
-				csr_address_src_select = 2'b0;
-				csr_data_src_select = 2'b0;
 				
 				// Write alu result to Register File
 				register_file_write = 1;
@@ -226,8 +208,6 @@ module ControlUnit (
 				
 				// No CSR operation
 				csr_op =  3'b0;
-				csr_address_src_select = 2'b0;
-				csr_data_src_select = 2'b0;
 				
 				// Write alu result to Register File
 				register_file_write = 1;
@@ -241,33 +221,42 @@ module ControlUnit (
 				// WIP
 			end
 			`OPCODE_ENVIRONMENT: begin
+				// No jump
+				jump = 0;
+				
+				// No branch
+				branch = 0;
+
+				// Do CSR operation or not by funct3
+				csr_op = funct3;
+
 				if (funct3 == 3'b0) begin
-					// WIP
+					// No alu operation
+					alu_src_A_select = `ALU_SRC_A_NONE;
+					alu_src_B_select = `ALU_SRC_B_NONE; 
+
+					// No Register File write
+					register_file_write = 0;
+					register_file_write_data_select = `RF_WD_NONE;
 				end
 				else begin
-					// No jump
-					jump = 0;
-					
-					// No branch
-					branch = 0;
-					
-					// WIP
-					alu_src_A_select = `ALU_SRC_A_RD1; // WIP
-					alu_src_B_select = `ALU_SRC_B_RD2; // WIP
-					
-					// CSR operation
-					csr_op = funct3;
-					csr_address_src_select = 2'b0; // WIP
-					csr_data_src_select = 2'b0; // WIP
-					
+					alu_src_B_select = `ALU_SRC_B_CSR; // src_B is CSR value
+
+					if (funct3 == `CSR_CSRRW || funct3 == `CSR_CSRRS || funct3 == `CSR_CSRRC) begin
+						alu_src_A_select = `ALU_SRC_A_RD1; // non-immediate CSR instructions require src_A to be rd1
+					end
+					else begin
+						alu_src_A_select = `ALU_SRC_A_RS1; // immediate CSR instructions require src_A to be rs1
+					end
+
 					// Write CSR value to Register File
 					register_file_write = 1;
 					register_file_write_data_select = `RF_WD_CSR;
-					
-					// No memory access
-					memory_read = 0;
-					memory_write = 0;
 				end
+
+				// No memory access
+				memory_read = 0;
+				memory_write = 0;
 			end
         endcase
     end

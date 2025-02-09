@@ -1,7 +1,8 @@
 `timescale 1ns/1ps
 
-`include "modules/headers/opcode.vh"
 `include "modules/headers/branch.vh"
+`include "modules/headers/opcode.vh"
+`include "modules/headers/rtype.vh"
 
 module ALUController_tb;
 	reg [6:0] opcode;
@@ -30,7 +31,7 @@ module ALUController_tb;
 		opcode = `OPCODE_RTYPE;
 		imm = 32'h00000000;
 
-		funct3 = 3'b000;
+		funct3 = `RTYPE_ADDSUB;
 		funct7 = 7'b0000000; #10;
         $display("funct7: %b funct3: %b opcode: %b -> alu_op: %b", funct7, funct3, opcode, alu_op);
         

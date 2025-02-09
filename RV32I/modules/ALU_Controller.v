@@ -1,5 +1,9 @@
-`include "modules/headers/opcode.vh"
+`include "modules/headers/alu_op.vh"
 `include "modules/headers/branch.vh"
+`include "modules/headers/csr.vh"
+`include "modules/headers/itype.vh"
+`include "modules/headers/opcode.vh"
+`include "modules/headers/rtype.vh"
 
 module ALUController (
     input [6:0] opcode,        		// opcode
@@ -14,124 +18,133 @@ module ALUController (
         case (opcode)
 			`OPCODE_RTYPE: begin
                 case (funct3)
-					3'b000: begin // add or sub
-						alu_op = {3'b000, funct7_5};
-						// add : 000 ; 0000000 
-						// sub : 000 ; 0100000
+					`RTYPE_ADDSUB: begin // add or sub
+						if (funct7_5) begin
+							alu_op = `ALU_OP_SUB; // sub : funct7 = 0100000
+						end
+						else begin
+							alu_op = `ALU_OP_ADD; // add : funct7 = 0000000 
+						end
 					end
-					3'b001: begin // sll
-						alu_op = 4'b0111; // sll : 001 ; 0000000 
+					`RTYPE_SLL: begin 
+						alu_op = `ALU_OP_SLL;
 					end
-					3'b010: begin // slt
-						alu_op = 4'b0101; // slt : 010 ; 0000000
+					`RTYPE_SLT: begin 
+						alu_op = `ALU_OP_SLT;
 					end
-					3'b011: begin // sltu
-						alu_op = 4'b0110; // sltu : 011 ; 0000000
+					`RTYPE_SLTU: begin
+						alu_op = `ALU_OP_SLTU;
 					end
-					3'b100: begin // xor
-						alu_op = 4'b0100; // xor : 100 ; 0000000 
+					`RTYPE_XOR: begin
+						alu_op = `ALU_OP_XOR;
 					end
-					3'b101: begin // srl or sra
-						alu_op = {3'b100, funct7_5};
-						// srl : 101 ; 0000000
-						// sra : 101 ; 0100000 
+					`RTYPE_SR: begin // srl or sra
+						if (funct7_5) begin
+							alu_op = `ALU_OP_SRA; // sra : funct7 = 0100000
+						end
+						else begin
+							alu_op = `ALU_OP_SRL; // srl : funct7 = 0000000
+						end
 					end
-					3'b110: begin // or
-						alu_op = 4'b0011; // or : 110 ; 0000000
+					`RTYPE_OR: begin
+						alu_op = `ALU_OP_OR;
 					end
-					3'b111: begin // and
-						alu_op = 4'b0010; // and : 111 ; 0000000
+					`RTYPE_AND: begin
+						alu_op = `ALU_OP_AND;
 					end
 				endcase
             end
 			`OPCODE_ITYPE: begin
 				case (funct3)
-					3'b000: begin
-						alu_op = 4'b0000; // addi : 000 ; - 
+					`ITYPE_ADDI: begin
+						alu_op = `ALU_OP_ADD;
 					end
-					3'b001: begin
-						alu_op = 4'b0111; // slli : 001 ; imm[5:11]=0000000 
+					`ITYPE_SLLI: begin
+						alu_op = `ALU_OP_SLL;
 					end
-					3'b010: begin
-						alu_op = 4'b0101; // slti : 010 ; - 
+					`ITYPE_SLTI: begin
+						alu_op = `ALU_OP_SLT;
 					end
-					3'b011: begin
-						alu_op = 4'b0110; // sltiu : 011 ; -
+					`ITYPE_SLTIU: begin
+						alu_op = `ALU_OP_SLTU;
 					end
-					3'b100: begin
-						alu_op = 4'b0100; // xori : 100 ; - 
+					`ITYPE_XORI: begin
+						alu_op = `ALU_OP_XOR;
 					end
-					3'b101: begin
-						alu_op = {3'b100, imm_10};
-						// srli : 101 ; imm[5:11]=0000000 
-						// srai : 101 ; imm[5:11]=0100000 
+					`ITYPE_SRXI: begin // srli or srai
+						if (imm_10) begin
+							alu_op = `ALU_OP_SRA; // srai : imm[10] = 1
+						end
+						else begin
+							alu_op = `ALU_OP_SRL; // srli : imm[10] = 0
+						end
 					end
-					3'b110: begin
-						alu_op = 4'b0011; // ori : 110 ; - 
+					`ITYPE_ORI: begin
+						alu_op = `ALU_OP_OR; // ori : 110 ; - 
 					end
-					3'b111: begin
-						alu_op = 4'b0010; // andi : 111 ; -
+					`ITYPE_ANDI: begin
+						alu_op = `ALU_OP_AND; // andi : 111 ; -
 					end
 				endcase
 			end
 			`OPCODE_LOAD: begin
-				alu_op = 4'b0000; // Every load instruction requires addition
+				alu_op = `ALU_OP_ADD; // Every load instruction requires addition
 			end
 			`OPCODE_JALR: begin
-				alu_op = 4'b0000; // jalr : 000 ; -
+				alu_op = `ALU_OP_ADD; // JALR instruction requires addition
 			end
 			`OPCODE_STORE: begin
-				alu_op = 4'b0000; // Every store instruction requires addition
+				alu_op = `ALU_OP_ADD; // Every store instruction requires addition
 			end
 			`OPCODE_BRANCH: begin
 				case (funct3)
 					`BRANCH_BEQ: begin
-						alu_op = 4'b0001; // If subtraction result is zero, equal
+						alu_op = `ALU_OP_SUB; // If subtraction result is zero, equal
 					end
 					`BRANCH_BNE: begin
-						alu_op = 4'b0001; // If subtraction result is not zero, not equal
+						alu_op = `ALU_OP_SUB; // If subtraction result is not zero, not equal
 					end
 					`BRANCH_BLT: begin
-						alu_op = 4'b0101; // If SLT result is not zero, less
+						alu_op = `ALU_OP_SLT; // If SLT result is not zero, less
 					end
 					`BRANCH_BGE: begin
-						alu_op = 4'b0101; // If SLT result is zero, greater or equal
+						alu_op = `ALU_OP_SLT; // If SLT result is zero, greater or equal
 					end
 					`BRANCH_BLTU: begin
-						alu_op = 4'b0110; // If SLTU result is not zero, less (unsigned)
+						alu_op = `ALU_OP_SLTU; // If SLTU result is not zero, less (unsigned)
 					end
 					`BRANCH_BGEU: begin
-						alu_op = 4'b0110; // If SLTU result is zero, greater or equal (unsigned)
+						alu_op = `ALU_OP_SLTU; // If SLTU result is zero, greater or equal (unsigned)
 					end
 				endcase
 			end
 			`OPCODE_ENVIRONMENT: begin
 				case (funct3)
-					3'b001: begin // csrrw : 001 ; -
-						alu_op = 4'b1111;
+					`CSR_CSRRW: begin // csrrw : 001 ; -
+						alu_op = `ALU_OP_BPA;
 					end
-					3'b010: begin // csrrs : 010 ; -
-						alu_op = 4'b0011;
+					`CSR_CSRRS: begin // csrrs : 010 ; -
+						alu_op = `ALU_OP_OR;
 					end
-					3'b011: begin // csrrc : 011 ; -
-						alu_op = 4'b1010;
+					`CSR_CSRRC: begin // csrrc : 011 ; -
+						alu_op = `ALU_OP_ABJ;
 					end
-					3'b101: begin // csrrwi : 101 ; -
-						alu_op = 4'b1111;
+					`CSR_CSRRWI: begin // csrrwi : 101 ; -
+						alu_op = `ALU_OP_BPA;
 					end
-					3'b110: begin // csrrsi : 110 ; -
-						alu_op = 4'b0011;
+					`CSR_CSRRSI: begin // csrrsi : 110 ; -
+						alu_op = `ALU_OP_OR;
 					end
-					3'b111: begin // csrrci : 111 ; -
-						alu_op = 4'b1010;
+					`CSR_CSRRCI: begin // csrrci : 111 ; -
+						alu_op = `ALU_OP_ABJ;
 					end
 					default: begin
-						alu_op = 4'b1111;
+						alu_op = `ALU_OP_NOP;
 					end
 				endcase
 			end
 			default: begin
-				alu_op = 4'b1111;
+				alu_op = `ALU_OP_NOP;
 			end
         endcase
     end
