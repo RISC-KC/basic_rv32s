@@ -198,4 +198,24 @@ R타입 명령어들까지는 순조롭게 구현이 진행되었는데, FENCE �
 
 그리고 이것저것 읽다가 시간을 다 써버렸다... 솔직히 읽은 내용들이 아직 완전히 이해된 것도 아니고 정리하기도 어려운 상태인데, 딱히 내 의문점에 대한 답을 찾은 상태도 아니라 조금 심난하다... 내일 다시 이어서 읽어봐야겠다.
 
+# 2025/02/09
+
+대강 CSR 이 무슨 느낌인지는 알 것 같다. Control and Status Register 라는 이름이 주는 느낌 그대로 CPU 의 상태 등에 대한 정보들을 담는 특수 목적 레지스터였던 것이다.
+
+아직 Privileged 문서를 제대로 읽어보지 않아 정확히 어떤 레지스터들이 있는지는 모르겠지만, 일단 Control Unit 구현 자체는 가능할 것 같다. 답은 간단하다. csr_address_select 신호와 csr_data_select 신호를 Trap Controller 쪽에 넘기면 되는 것이다. 애초에 Control Unit 이 관장해야 하는 신호가 아닌 것이다.
+
+내가 이해한 것이 맞다면, CSR 에서 read/write 해야 하는 주소와 write 할 값은 평상시에는 Control Unit 에서 받아오면 되지만, Trap 이 발생했고 그 결과로 Trap Controller 에 CSR File 에 접근해야 한다면 어느쪽에서 받아와야 할지 결정하는 값은 trapped 신호라고 볼 수 있다. Trap 이 발생한 이상 Trap Controller 에서 CSR File 을 읽고쓰기를 하던 말건 Control Unit 에서 받아오는 신호, 즉 Trap 을 발생시킨 현재 명령어를 수행하려 하면 안되기 때문이다.
+
+그리고 CSR File 에 들어가는 신호 관련해서도 한 가지 눈치챈 점이 있다. CSR File 에 들어가는 신호는 3개중 하나로 들어가게 되어있는데, 각각 raw_imm, csr_trap_write_data, alu_result 중 하나이다. csr_trap_write_data 는 Trap 이 발생했을 경우이고, alu_result 는 CSR 값과 rd1/imm 값의 연산 결과를 사용해야 할 때 였다. 여기서 문제가 생겼다. raw_imm 은 사실 접근하려는 CSR 레지스터의 주소이기 때문에 관련없는 신호가 들어가고 있던 것이다. 실제로 MUX에 들어가야 하는 신호는 rd1 신호와 rs1 신호였다. 그래서 4가지 중 한 가지를 선택하도록 해야하는 것이었다. 이 때 CSR 과 imm 을 연산하는 경우에 srcB 를 위한 MUX 에서는 Immediate Generator 에서 나온 imm 값을 사용하고 있는데, 여기서는 rs1 을 사용해야 한다. srcB 를 위한 MUX에 rs1 값도 들어가야 하는 것이다! 라고 생각하니, rd1 도 들어가야 했다. CSR과 rd1 값을 연산하는 CSR 명령어들도 있기 때문이다.
+
+그리고 나서 살펴보니, csr_address_select 는 몰라도 csr_data_select 신호는 Control Unit 에 남아있어야 했다... 왜냐하면 rd1, rs1, alu_result 중 하나를 골라줘야 했기 때문이었다. 그걸 위한 3:1 MUX를 하나 만들고, 그 신호와 csr_trap_write_data 를 2:1 MUX 로 묶고 trapped 로 제어하는 방식을 사용해야 했던 것이다. 그렇게 생각하고 나니, KHWL 이 예전에 말했던 ALU 에 bypass 를 만드는 것이 매력적으로 다가왔다. 만약 srcB 의 bypass 를 허용하면, rd1, rs1, alu_result 신호중 선택하기 위한 3:1 MUX 를 따로 만들고 이를 위해 csr_data_select 신호를 남겨 놓을 것도 없이 ALU_Controller 만 조금 손보면 alu_result 로 신호를 통일할 수 있기 때문이다. 그리고 그 alu_result 와 csr_trap_write_data 를 2:1 MUX 로 묶은 뒤 trapped 신호로 제어하면 되는 것이었다...
+
+우선 여기까지 KHWL 과 상의하여 내가 내린 구현 아이디어를 정리해보았고, 해당 내용을 건의해놓은 상태이다. 우선 저녁밥을 먹고와야겠다. 배고프다...
+
+연등 시간이 시작되었다. 휴가에서 복귀한 KHWL 은 내 구현 아이디어에서 약간의 변경사항을 적용한 안에 찬성하였다. 약간의 변경사항은 rs1 신호를 src_B MUX에 추가하는 대신, src_A MUX에 추가하고 CSR 신호를 src_B MUX에 넣고, Abjunction 연산에 한해서 피연산자의 위치를 바꾸는 것이었다. 나는 이에 찬성하였고 그대로 구현하기로 하였다.
+
+그리고 한 가지 제안을 더 했는데, 그 제안은 Exception Detector 에서 jump_target, branch_target, b_taken 신호를 받는 대신 그냥 next_pc 를 받아버리게 하는 것이었다. 어짜피 최종 주소는 next_pc 로 결정되기 때문이었다. 나는 이에 찬성하였고 그대로 구현을 수정하였다.
+
+그리고 길고 긴 노가다가 이어졌다. ALU 와 ALU_Controller 모듈을 오랜만에 수정하는 과정에서 헤더파일을 새로 만들고 이를 적용하는 등 길고 긴 노가다가 이어졌다. 그리고 하루가 바뀐 시점에서, EBREAK/ECALL 과 CSR 명령어들에 대한 Control Unit 의 기능을 추가하는데 성공하였다. 내일은 FENCE 명령어들에 대한 처리를 하고 시간이 남는다면 테스트벤치를 만들 것이다. 아마 이 과정에서 Control Unit 의 write_done 신호가 부활하게 될 것 같다. 오늘은 여기까지!
+
 To be continued...
