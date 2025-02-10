@@ -1143,4 +1143,293 @@ NextPC신호를 계산하는 PCC에서 만드는 것이 설계 철학에도 부�
 아니다. 추후 G 확장까지 다룰 때 J타입의 명령어가 추가되며 ALU에서 처리하는 기존 데이터패스 일관 방식이 더 좋을 수도 있다. 이건 그대로 남겨둔다. 
 
  - ! 할일 : CC84한테 PCC의 CLK신호 필요성 설명하기
+ 			BE_Logic에 address신호가 왜 있는거지? Load할 때, 즉 DM에서 RF갈 때 RF 대상지의 주소는 이미 명령어의 rd에 담아져 있고, 소스 주소는 rs1+imm인데>? 있을 이유가 없어보인다.
+오늘은 여기까지. lb까지 데이터패스 검증을 마쳤다!!!! (23:57)
 
+2025.02.01.
+외박나와서 대부분의 시간을 밖에서 보냈다.
+설날 인사 및 차례를 간소하게 지내고, CPU설계도를 함께 기도를 올렸다. 
+꼭 해내어 보겠노라고. 우리나라의 반도체 대장이 되어보겠노라고. 지켜봐달라고.
+작업으로 한 것이라고는 늦은 밤에 되돌아와 Memory Aligner, RV32I47F.R8에 대한 구현을 한 것이다. 
+CC84의 건의로 되돌아보니, BE_Logic과 데이터메모리의 address값에는 무조건 미정렬된 주소가 들어갈 가능성을 내포하고 있다는 것을 발견. Jump의 Jalr도 마찬가지니까 이 주소 정렬 통합 로직 모듈을 설계하기로 했다.
+그리고 어느정도 초안을 마치고, RV32I47F.R8_temp파일로 업로드했다.
+
+2025.02.02.
+외박 복귀. 그리고 WriteMask와 BE_Logic에 들어가는 Address 의 효용성을 알아냈다.
+쓸 시간 없어서 압축하자면,
+메모리의 블럭 단위 액세스가 address 11:2 비트 값을 기반으로 이루어진다는 것을 알아냈고,
+정렬이 필요한게 아닌, word, halfword, byte단위로 쓰거나 읽을 일이 있기 때문에 정렬되지 않은 주소값 그대로 받되
+명령어에 부합하지 않는 기준의 주솟값이 들어오면 별도의 예외를 발생시켜야한다는 것이었다.
+그리고 WriteMask는 Bit Mask의 개념이었다. 고로, Mem_Aligner 모듈은 없어졌고, 기존의 신호체계를 그대로 사용한다.
+
+2025.02.03.
+2025.02.03.
+
+BE_Logic에 대한 최종 회의
+대부분의 시간은 Write Mask의 처리와 그에 대한 모듈-로직 이해에 시간을 할애했다.
+추구하는 철학은, 메모리에서의 연산은 최소화하는 것. 그걸 위한 BE_Logic.
+WriteMask에서 필요한 데이터는 대상데이터, 원본데이터, 마스크
+마스크를 이용해 원본 데이터에 마스킹하여 DEADBEEF가 있으면 00ADBEEF로 만든다.
+
+대상 데이터도 마스크를 이용해 CAFEBEBE가 있으면 CA000000로 만든다.
+그리고 이에 대한 마스크는 FF000000과 연산이 이뤄지는데, 이걸 BE_Logic에서 DataMemory로
+32비트 값 그대로 보내는 것은 하드웨어 설계 철학 중 하나인, 입출력 신호의 최소, 간소화에 어긋나기에 기술적 사실상 표준에 가까운 4비트로 인코딩하여 보내기로 했다.
+
+그리고, 이 때 BE_Logic에서 보내는 BEDM_WD는 CACACACA로 간다.
+사실상 WriteMask가 가기 때문에, &처리 하여 디코딩을 해야하니 그대로 CA000000값을
+DM에서 생성하여 그걸로 데이터 저장처리를 한번에 하도록 설계하기로 했다.
+CC84의 건의로 비공식 표준을 사용하지만 계산은 훨씬 줄어들었다.
+
+2025.02.04.
+당직이었는데, 일단 그래도 할 건 했다.
+RV32I Essentials Cheat Sheet를 4시간에 걸쳐 만들었다.
+명령어와 명령어의 Description, Mnemonics, 비트 체계를 한 페이지에 모두 담았다.
+하도 제대로 된 자료 없거나 유료자료들 뿐이라 직접 만들었다. 다만 국방망에서 만든거라 파일을 어떻게 반출하냐가 문제..
+
+그리고 CC84와 J_Align관련해서도 이야기를 좀 나눴다.
+CC84의 발의.
+프로그래머가 잘못 코딩하지 않는 이상 Jump시 Misalign은 일어나지 않을 것 같다.
+KHWL.
+아니다. 주소의 계산은 상수값과 참조되는 레지스터 값을 기반으로 이루어지기 때문에 가능성을 배제할 수 없다. 이는 매뉴얼에서도 언급된 내용이다.
+CC84. 
+관련된 내용을 그럼 한번 보자.
+"will generate instruction-address-misalinged exception." 
+exception이라는데, 이것을 J_Aligner에서 처리할 것이 아니라, 하드웨어 단순화를 위해 Trap_Handler에서 따로 처리하는 것이 어떠한가?
+KHWL.
+흠. 일리 있다. 하지만 성능의 차이또한 염두해두어야 한다.
+Exception 발생 없이 자동으로 단순 로직 모듈을 거쳐 실행되는 편이 나을수도 있으니까. 
+그래도 이렇게 J_Target의 ALUresult가 무조건 J_Aligner 모듈 로직 처리를 거치게 된다면, 조건 미발생에도 불필요한 연산으로 인한 딜레이가 생길 수 있으려나.
+예외처리로 하는 것이 확실히 괜찮아보이긴 한다.
+
+2025.02.05.
+사실 Misalign이 발생했는지 안했는지 알기 위한 if문은 J_Aligner가 없더라도 어딘가에선 한번 즈음은 거쳐야할 로직이고, 그리고 이게 다른 곳에서 구현된다고 한들 큰 성능적 이점을 도모하긴 힘들어보인다.
+차라리 Exception으로 별도의 처리 루틴을 불러오는 것이 추후 파이프라인 확장에도 타이밍 관련 발목을 잡을 수도 있어보이고, Misalign을 계속 모니터링 할 것이라면, 그리고 어차피 그 처리 자체는
+하위 2비트를 날리는 정렬 로직이라면, 그냥 J_Aligner가 지금도, 향후에도 더 나을 것 같다는 생각. 
+그래도 Trap Controller 및 Exception Detector같은 Exception 핸들링의 처리가 제대로 되는지 보기 위해서 지금은 Exception으로 구현을 해두자. 
+이건 추후에라도 PCC에 별도 로직으로 자리잡는 편이 나아보인다. Exception은 너무 과한 리소스를 부여한다.
+매뉴얼에서도 전문을 발췌하면, 
+"The JAL and JALR instructions will generate an instruction-address-misaligned exception if the target address is not aligned to a four byte boundary."이다.
+결국 Target address, 즉 J_Target신호가 PCC로 꽂힐 때 정렬이 되어있으면 Exception은 발생하지 않고, Exception 발생 전, 그 상황 발현시 Exception Detect이전에 정렬을 시켜버리면
+exception generate는 필수가 아니게 된다. 
+일단 지금 구현 자체는 모듈 구현으로는 없는걸로. ALUresult가 PCC의 J_Target으로 향할 때, 같이 Exception Detector로 신호를 넣어서 Misalign시 별도의 Trap_Handler를 수행하도록 한다. 
+벌써부터 그 타이밍의 꼬임이 느껴지는데, 나중에 생각할 점을 지금 미리 생각한다 보면 나쁘지 않다. 
+해당 다이어그램은 RV32I47F.R8v1으로 명명한다. 여태까지 R8로의 수정 시도가 여럿 있었지만, 논박으로 무산된 것들이 많다.
+일단 지금까지 정식으로 채택된 R8은 v1이 붙은 다이어그램이다. 
+(20:44)
+
+하긴, 00으로 강제정렬시 의도되지 않은대로 프로그램이 흘러갈 수 있다. 이건 misconception이다. 
+간단하거나 임베디드 시스템에서는 사용될 법 한 방법이지만, 범용 프로세서를 생각하는 입장에서는 타당하지 않다.
+결국 Exception 처리인데, TrapHandler를 우리가 직접 구성하여 그렇게 작동하도록 해야한다.
+어차피 범용을 목적할거, 해당 Exception시 처리는 디버그모드로 가거나 강종을 하게 하거나 어떻게든 처리하기로 했고, J_Aligner는 일단 없어졌다.
+오늘 연등시간은 해당 Misalign address의 처리 표준 및 사례들, 그리고 구현 방식 및 타당성을 탐구하는데 다 썼다. 
+
+2025.02.06. 
+당직근무. 논문의 초안을 한번 잡아보았다. RV32I; Essentials Cheat Sheet v2 제작완료.
+그리고 매뉴얼 문서를 정식작성해보았다.
+
+2025.02.07
+오늘 할 거 : Exception Detector에 B_Target(NextPC)의 주소 입력값을 추가하기. -> RV32I50F.R1 리비전하기.
+Docs push하기
+모듈 설명 Manual 마저 적기
+명령어 데이터패스 검증
+
+CC84 CSR 구현중 건의. CSRop로 그 동작이 결정될 것이라면 Read Write가 왜 신호가 각각 필요한가? 어차피 CSR 명령어는 해당 명령어 두개가 동시에 일어난다. 
+맞네. 두개 삭제하고 CSRop로 두자.
+그럼 CSRop도 사실 funct3값만 받고 수행하게 하면 되는거 아니냐?
+ㄴㄴ 아니지. 동작하지 않는 Enable로서의 목적은 필요하니까. 데이터패스의 관리를 위해서 미작동 opcode가 필요하니 CSRop로 관리하는게 좋을 것 같다.
+ㅇㅋ
+
+수정할거. Exception Detector 코드에 맞게 해당 모듈 입력신호 변경
+DC_Write 신호 메모리 컨트롤러로 옮기기.
+(캐시 미스의 경우에만 캐시에 쓰기 작업이 진행되는데, 이 경우 본래 설계대로라면 캐시 미스라는 것을 Control Unit에서는 알 수 가 없음. 그러니까 이 신호는 멤컨에 들어가야함.)
+Control Unit의 opcode 출력은 사실 의미가 없음. 그냥 Instruction Decoder에서 나오는 opcode신호 그대로 꽂으면 되는건데. 
+그래서 그렇게 ALU controller의 신호를 수정함.
+
++ mem2reg 신호 이름 변경. reg_wd-src
+
+2025.02.09.
+
+Exception Detector의 development 브랜치의 approve된 ㅁ머지 코드대로 수정해야한다.
+ECALL, EBREAK의 구분자가 imm필드(funct12)의 0번째 비트가 0이냐 1이냐에 따르는데, 그걸 구분하기 위한 것이라면
+raw_imm값이 들어가도 될 것 같아서 그렇게 했다.
+
+Branch Target값을 들어가게 해야하는데, 이는 PCC에서 계산되는 값이므로 NextPC의 값을 그대로 입력신호로 사용하기로 했다.
+완료.
+
+Misalign 예외는 Jump와 Branch때에서만 발생.
+Jump는 Jump Target 주솟값인 ALUresult를 바로 꽂아서 판단하면 된다.
+Branch는 B_Target 주소가 B_Taken시에 PCC에서 계산되어 NextPC로 출력되는데, 
+그럴거면 NextPC값만 Exception Detector에 넣고, B_Taken의 신호가 안들어가도 되는게 아닌가?
+꼭 Branch가 아니더라도, 이렇게 되면 PC에 들어가는 주소의 목적대로 4바이트 정렬이 이뤄지지 않았을 때의 Exception 발동을
+할 수 있게 된다. 이러면 사실 J_Target은 NextPC보다 이전에 받는다는 레이턴시 이득 말고는 없어지는데,,
+사실 이러면 NextPC만 받으면 될 것 같은데? CC84에게 건의해봐야겠다.
+
+예아. 사실 이 Misalignd Address exception은 NextPC에서 PC에 가르키게 되는 주솟값이
+오정렬된 값으로 되어 명령어 실행에 차질이 생기는 것을 위한 Exception이었다. 그래서 B_Taken, Jump라던가(Jump는 없긴했다 원래)
+J_Target, B_Target을 따로 특정할 이유 따위 없이 그대로 NextPC값을 Exception Detector 모듈이 모니터링하여
+상황발생시 처리할 수 있도록 하는 것이 최적이다. 이렇게 되면 그 두가지 이유가 아닌 모종의 다른 이유로 미정렬되었을 때도
+예외처리를 할 수 있게 된다. CC84도 동의하여 그렇게 수정하기로 했다. 아이고 코드 수정해야할텐데.. 화이팅..
+funct3는 그럼 뭐지 하다보니 CSR이랑 Environment 명령어들이 opcode를 공유하기에 f3가 000일 때만 environ이니 이걸 
+구분하기 위해서 같이 받는다. 그냥 CSR명령어인데 Exception나면 안되니까.
+
+오늘 할 것들.
+
+1. Exception Detector 를 Github 코드에 맞게 입력신호 개정.
+Done. (22:54)
+2. DC_Write가 CU에 가있는데, 이걸 Memory Controller에 옮기기.
+Done. (23:04)
+3. 모듈 설명 Manual 작성
+
+4. 각 명령어 데이터패스 검증
+
+5. RF2DM_RD의 신호는 R[rs2]여야하는데, 지금 rs1값임. 수정해야함.
+Done. (23:07)
+6. FENCE 데이터패스 정립. e.g.) Write_Done 신호 오기 이전에
+PC의 업데이트를 홀드해야하는데, 어떻게 구현할건지.
+
+7. RV32I; Essentials Cheat Sheet 문서화. 
+v3로 개정하며 12b'0을 12'b0으로 수정하기.
+- 서식만 만들었음.
+
+8. 논문 문서화.
+매뉴얼은 거기다가도 적고, 그걸 토대로 IDE 파일도 작성하기.
+모듈, 시그널, 모듈의의를 종합해서 하나의 엑셀파일(표)로 만들어도
+괜찮을 것 같다.
+- 서식만 만들었음.
+
+9. 관련 작업 다 끝내고 Docs push하기. 
+
+---저녁점호회의---
+Control Unit의 구현 과정 중, 문제 발견. CSR.Addr.src, CSR.Data.src가 Control Unit에 있어야 하는가에 대해 CC84가 고찰을 했던 것 같다.
+A. CSR.Addr.src의 의의는 아래와 같다.
+일반적인 상황의 경우 CSR명령어 중 csr영역의 12비트 주소값인지, TrapHandler 수행시, 즉 Exception 상황에서의 Trap Controller가 지정해주는 CSR의 주소값인지를 구분하는 것.
+때문에 이는 Control Unit에서 하는 것이 아니라, Exception Detector의 Trapped 신호를 MUX의 제어신호로 두어, Trap발생 상황으로 플래그 1이 올라가면, 그와 동시에 MUX의 값을 CSR_T.Addr로 전환하게 하면 된다.
+따라서 CSR.Addr.src_Select신호는 Control Unit(CU)에서 없어지고, 대신 Exception Detector(ED)의 Trapped 신호를 받아 쓰는 것으로 변경되었다.
+
+B. CSR.Data.src의 경우.
+
+Done. (23:48)
+
+2025.02.10.
+자. CSR의 향연이다. 
+우리의 목표는 현재 RV32I CPU를 만드는 것.
+그리고 그 과정 중, RV32I의 모든 명령어가 의미있게 하기 위해서 캐시-메모리 구조를 접목하고, csr확장을 접목했다.
+Zicsr확장은 ECALL, EBREAK와 같은 환경호출 명령어를 의미있게 하기 위한 확장이었고, 이를 통해 Debug Mode의 간이 구현을 하게 되었다.
+Zifencei확장은 구버전 RISC-V 매뉴얼을 보던 중 fence.i 명령어가 RV32I Base Instruction Set에 포함된 줄 알고 착각한데서 비롯되었다.
+그 결과, fence.i명령어를 위한 캐시 구조를 만들게 되었다.
+fence와 fence.tso, pause (fence variation)명령어가 그 덕분인지는 명확하지 않지만, 이 명령어들의 작동 유무를 볼 수 있게 되었다.
+
+다이어그램상 거의 모든 모듈들의 verilogHDL 구현이 각개 완성되어간다.
+CC84가 그 최종장으로 Control Unit을 구현하는 중이고, 남은 것은 Control Unit이후 RV32I37F의 탑모듈 DUT 테스트벤치 이후
+나머지 4가지 명령어 지원을 위한 추가 확장을 기반한 캐시 및 CSR 구현이다.
+
+CC84가 이 CSR에 대한 연구를 요청했다. CSR을 정확히 어떻게 구현해야하는지. 일반 레지스터로 취급하기엔 하드웨어가 자동으로 업데이트해야하는 영역의 머신레벨 레지스터도 있는 것 같고,
+그리고 그 CSR 레지스터들에 대한 목록과 그걸 지금 다 구현해야하는지에 대한 여부.
+
+또한 캐시 구조 접목을 앞에 두고 이에 대한 로직의 심화 연구또한 이뤄져야한다. 현재 우리의 캐시 정책은 Write-Through방식인데, 
+정확히는 Cache에 읽기 쓰기 버퍼가 있으며 FENCE 명령어일 때만 밀려있던 메모리들을 Flush하는 구조였다. 
+하지만 그로서는 쓰기작업이 밀릴 때 같은 라인을 공유하는 캐시메모리의 데이터 손실이 일어날 수 있는 문제가 있어 컴퓨터 구조론에 따라
+"*인용구*"
+쓰기 작업을 다 할 때까지 잠시 작업을 멈춰야할 필요가 있다는 것을 다시 한번 알게 되었다. 
+문제점의 결이 파이프라이닝과 비슷한데, 이에서부터 착안하여 컴퓨터 구조론을 인용해 그 해결방안으로 R-Type이나 다른 명령어들을 수행할 때.
+즉, Data Cache-Memory쪽을 사용하지 않을 때 Flush 같은 작업을 같이 병행토록 하는 방안이 모색되었다. 물론 발상은 단순하지만 그 구현은 타이밍이라는 미뤄둔 큰 파도가 곧 덮쳐올 것이기에
+개념적인 발상만 해둔 상태이다. 그리고 그에 맞는 Control 신호를 Write Done신호를 이용해 파생할 계획이다.
+이와 같은 탐색은 CC84의 Control Unit 구현 중 Write Done신호의 필요성과 이 신호가 단순 FENCE 명령어 상황 외 사용 가능성이 있을 것인가에 대한 탐구를 기점으로 이루어졌다.
+역시 개념적인 구현과 실제 구현에서 오는 괴리가 분명 존재하며 그 둘을 적절히 메꾸어가며 완성시키는 것 같다.
+
+그 5년이라는 시간 후, 쇄신의 시간들을 경험하며 얻은 통찰이 교훈으로서 완성되어가는 것 또한 함께 느낀다.
+분업이라는 것은, 그 업무의 영역이 명확할 때가 아니라, 그 서로가 맞물리는 지점이 명확했을 때 비로소 빛나는 것이다.
+두 집합의 구분점이 아니라, 교집합의 명확성에 집중할 때 비로소 자유로이 한없이 생산적으로 나아갈 수 있다. 
+
+무튼, 개인정비시간 17:30부터 밥을 먹고, 달려와서 CSR관련 연구를 진행해보았다.
+한국어로는 거의 자료가 없음에 가깝다. 티스토리 글 하나와 우리의 reference 중 하나인 "FPGA를 이용한 32-Bit RISC-V 프로세서 설계 및 평가"라는 논문 뿐.
+해당 논문에서도 csr을 이용하여 privileged isa를 부분적으로 필요에 맞춰 구현하였다.  
+'M 모드에서의 트랩 처리를 위한 특권 명령어 집합 및 CSR을 구현'한 것. 
+
+본론으로 돌아와서, CSR 자체는 하드웨어가 명령어 실행과는 무관하게 자동으로 처리를 해야하는 레지스터가 '존재'한다.
+하지만 모든 레지스터를 한번에 구현할 필요는 없다. The RISC-V Instruction Set Manual: Volume II, Privileged Architecture를 인용하여,
+Privilege Mode는 총 3가지 단계가 있다.
+1단계/ M(Machine level). Simple Embedded System용.
+2단계/ M, U(User level). Secure Embedded System용.
+3단계/ M, S(Supervisor mode), u. Systems running Unix-like operating systems용.
+
+결국, 3단계 구현을 위해서는 CSR 및 현재 프로세서의 구동 체계를 각 Privileged Hierarchy의 구조에 맞춰서 개선해야할 수 있다.
+지금은 모든 CSR 레지스터를 구현할 필요는 없으며, 현재 우리가 원하는 스펙내에서 필요한 레지스터들을 구현하되 필요한 Machine Level 로직이 있으면
+추가 구현해야하는 것이다. 
+
+22:15 연등시간.
+Privileged Architecture, ISA 매뉴얼을 읽으며 csr 이전 Introduction에서 거의 메인으로 강조되는 것이 secure.
+동작단계의 보안이다. 머신 모드만 지원하는 기초적 설계에서는 잘못되거나 악의적인 applicatoin code에 대한 보안을 갖출 수 없다는 것이
+csr에 대한 발단 중 하나인 것 같다. 
+(optional PMP facility의 lock 기능이 M-mode만 구현되었더라도 부분적인 보안을 지원할 수 있다고 하는데,,
+PMP가 뭔지 모르겠다..)
+
+어차피 G확장까지 구현하기 위해서는 Privileged Architecture에 대한 제대로된 이해가 필요하다.
+이렇게 된 거, 한국어로 RISC-V Privileged Architecture ISA Manual을 번역해보겠다. 172페이지가 뭐 대수라고.
+
+지금부터의 내용은 Privileged_ISA.Korean.md 파일에서 계속된다.
+CSR Listings에 레지스터 설명으로 낑겨 있는 설명에서 PMP에 대한 의미를 찾을 수 있었다.
+Physical Memory Protection의 약자이다.
+
+[Supervisor Trap Setup]
+별도 표기가 없으면 분류의 앞 단어에 따른 privilege level에 따르며, RW; Read/Write; 읽기쓰기 레지스터이다.
+중요한 것만 따로 Name 적는다.
+sstatus
+sie
+stvec
+scounteren
+아니 다 필요하네. 기계적 업데이트가 필요한 것들만.. 아니 조졌다 그냥 이거 다 하나하나 순서대로 구현하는게 맞다.
+
+일단 Hypervisor단계는 단순 OS만 올릴 지금 시점에서는 필요가 없으니 제외.
+총 CSR들의 갯수를 세어보고, 그 중 RV32I50F에서 구현이 필요한 명려어들만 추산해보자.
+총 CSR들의 갯수는 Manual 기준 Currently allocated RISC-V CSR addresses를 따른다.
+
+fflages, frm, fcsr, cycle, time, instret, hpmcounter3 ~ hpmcounter31(29), h명령어 cycle부터해서 32개
+총 64개 + 3(FP CSRs) = 67개의 Unprivileged CSRs.
+
+sstatus, sie, stvec, scounteren, senvcfg, scountinhibit, sscratch, sepc, scause, stval, sip, scountovf, satp
+scontext, sstateen0, sstateen1, sstateen2, sstateen3 
+18개의 Supervisor CSRs
+
+mvendorid, marchid, mimpid, mhartid, mconfigptr, mstatus, misa, medeleg, mideleg, mie, mtvec, mcounteren, 
+mstatush, medelegh, mscratch, mepc, mcause, mtval, mip, mtinst, mtval2, menvcfg, menvcfgh, mseccfg, mseccfgh,
+pmpcfg0,.. PMP?? 아!!! 복선 회수!! Physical Memory Protection이란다..
+pmpcfg는15까지.. pmpaddr이 0부터 63까지. mstateen0부터 3, h값 포함.
+그럼 총 25개 + 16개 + 64개 + 8개 = 113개
+mnscratch, mnepc, mncause, mnstatus, mcycle, minstret, mhpmcounter3~31, h포함 ×2.
+mcounthibit, phpmevent3~31, h포함. tselect, tdata1~3, mcontext, dcsr, dpc, dscratch0, 1.
+4+62+59+5+4 = 134개..
+
+하이퍼바이저..
+7+5+2+1+1+2+8+9 = 35개..
+
+총 367개의 Allocated CSRs.. 그 중 우리가 구현해야할 것들을 추산해보자..
+
+- RISC-V Unprivileged CSRs (64) [URO]
+cycle, time, instret, hpmcounter3~31, cycleh~hpmcounter31h. 총 64개
+
+- Supervisor-level CSRs (18)
+sstatus, sie, stvec, scounteren, 
+senvcfg, scountinhibit, 
+sscratch, sepc, scause, stval, sip, scountovf(SRO), 
+satp, scontext, sstateen0, sstateen1, sstateen2, sstateen3
+
+- Machine-level CSRs ( 163 out of 134)
+mvendorid, marchid, mimpid, mhartid, mconfigptr (Machine Information Registers) 5개
+mstatus, misa, medeleg, mideleg, mie, mtvec, mcounteren, mstatush, medelegh (Machine Trap Setup) 9개
+mscratch, mcpc, mcause, mtval, mip, mtinst, mtval2 (Machine Trap Handling) 7개
+menvcfg, menvcfgh, mseccfg, mseccfgh (Machine Configuration) 4개
+
+pmp는 생각해보아야함.. 80개..
+
+mstateen0~3, mstateen0h~3h (Machine State Enable Registers) 8개.
+
+NMI가 뭐지..
+
+Machine Counter/Timers (62)
+Machine Counter Setup (59)
+Debug/Trace Registers (shared with Debug Mode) (5)
+Debug Mode Registers (4)
+
+허허.. 그럼 총 245개.. 대략 400개중 245개 구현을 해야한다. 오늘은 여기까지.. 갈 길이 멀다.. 멀진 않고 높은 건가...
+화이팅하자..
