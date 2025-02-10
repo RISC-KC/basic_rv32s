@@ -11,3 +11,9 @@
 - VexRiscv - SpinalHDL RV32G Processor
 
 https://0o0deng.tistory.com/entry/%EC%BB%B4%ED%93%A8%ED%84%B0%EA%B5%AC%EC%A1%B0-CH4-RISC-V-RISC-V-Instruction-1
+
+https://core-basic.tistory.com/entry/%EC%BB%B4%ED%93%A8%ED%84%B026-%EC%82%B0%EC%88%A0%EB%85%BC%EB%A6%AC%EC%9E%A5%EC%B9%98-%EC%A0%9C%EC%96%B4%EC%9E%A5%EC%B9%98-RAM-%EC%B4%9D%EC%A0%95%EB%A6%AC-%EB%B0%8F-CPU-%EA%B5%AC%ED%98%84-ALU-Arithmetic-Logic-Unit-CU-Contol-Unit-RAM-Random-Access-Memory-Central-Processing-Unit
+
+https://eteo.tistory.com/477
+
+https://www.youtube.com/watch?v=w82mNGranjA&list=PLh8QClfSUTcbfTnKUz_uPOn-ghB4iqAhs&index=6
