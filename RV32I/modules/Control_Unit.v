@@ -262,7 +262,12 @@ module ControlUnit (
 						register_file_write_data_select = `RF_WD_NONE;
 					end
 					else begin
-						alu_src_B_select = `ALU_SRC_B_CSR; // src_B is CSR value
+						if (funct3 == `CSR_CSRRW || funct3 == `CSR_CSRRWI) begin
+							alu_src_B_select = `ALU_SRC_B_NONE;
+						end
+						else begin
+							alu_src_B_select = `ALU_SRC_B_CSR; // src_B is CSR value
+						end
 
 						if (funct3 == `CSR_CSRRW || funct3 == `CSR_CSRRS || funct3 == `CSR_CSRRC) begin
 							alu_src_A_select = `ALU_SRC_A_RD1; // non-immediate CSR instructions require src_A to be rd1
