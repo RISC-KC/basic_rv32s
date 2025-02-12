@@ -4,10 +4,8 @@
 module ExceptionDetector (
 	input [6:0] opcode,				// opcode
 	input [2:0] funct3,				// funct3
-	input imm_0,					// 0th index of imm
-	input [1:0] jump_target_lsbs,	// LSBs of target address for jump
-	input branch,					// signal indicating if branch has taken
-	input [1:0] branch_target_lsbs,	// LSBs of target address for branch
+	input imm_0,					// 0th index of imm to distinguish EBREAK or ECALL
+	input [1:0] next_pc_lsbs,		// LSBs of next pc
 	
     output reg trapped,				// signal indicating if trap has occurred
 	output reg [1:0] trap_status	// current trap status
@@ -32,17 +30,7 @@ module ExceptionDetector (
 				end
 			end
 			`OPCODE_JAL, `OPCODE_JALR, `OPCODE_BRANCH: begin // Misaligned
-				if (branch) begin
-					if (branch_target_lsbs == 2'b0) begin
-						trapped = 0;
-						trap_status = `TRAP_NONE;
-					end
-					else begin
-						trapped = 1;
-						trap_status = `TRAP_MISALIGNED;
-					end
-				end
-				else if (jump_target_lsbs == 2'b0) begin
+				if (next_pc_lsbs == 2'b0) begin
 					trapped = 0;
 					trap_status = `TRAP_NONE;
 				end
