@@ -1,13 +1,13 @@
 module PCController (
-    input jump, 				// Signal indicating if PC should jump
-	input branch_taken,			// Signal indicating if PC should take the branch
-	input trapped,				// Signal indicating if trap has occurred
-	input [31:0] pc,			// Current pc value
-	input [31:0] jump_target,	// Target address for jumping
-	input [31:0] branch_target,	// Target address for taking branch
-	input [31:0] trap_target,	// Target address for trap
+    input jump, 				// signal indicating if PC should jump
+	input branch_taken,			// signal indicating if PC should take the branch
+	input trapped,				// signal indicating if trap has occurred
+	input [31:0] pc,			// current pc value
+	input [31:0] jump_target,	// target address for jump
+	input [31:0] imm,			// immediate value from Immediate Generator
+	input [31:0] trap_target,	// target address for trap
 	
-	output reg [31:0] next_pc	// Next pc value
+	output reg [31:0] next_pc	// next pc value
 );
 
     always @(*) begin
@@ -15,7 +15,7 @@ module PCController (
 			next_pc = jump_target;
 		end
 		else if (branch_taken) begin
-			next_pc = branch_target;
+			next_pc = pc + imm;
 		end
 		else if (trapped) begin
 			next_pc = trap_target;
