@@ -8,7 +8,8 @@ module PCController_tb;
     reg [31:0] jump_target;
     reg [31:0] imm;
     reg [31:0] trap_target;
-	
+	reg write_done;
+
     wire [31:0] next_pc;
 
     PCController pcc (
@@ -19,7 +20,8 @@ module PCController_tb;
         .jump_target(jump_target),
         .imm(imm),
         .trap_target(trap_target),
-		
+		.write_done(write_done),
+
         .next_pc(next_pc)
     );
 
@@ -32,7 +34,21 @@ module PCController_tb;
         imm = 32'h00000020;
         trap_target = 32'h00000030;
 
-        // Test 1: No jump, no branch, no trap
+        // Test 1: Write not done
+        $display("\nWrite not done: ");
+
+        write_done = 0;
+
+        jump = 1;
+        branch_taken = 0;
+        trapped = 0;
+
+        #10;
+        $display("pc = %h => next_pc = %h", pc, next_pc);
+
+        write_done = 1;
+
+        // Test 2: No jump, no branch, no trap
         $display("\nNo jump, No branch, No trap: ");
 
         jump = 0;
@@ -42,7 +58,7 @@ module PCController_tb;
         #10;
         $display("pc = %h => next_pc = %h", pc, next_pc);
 
-        // Test 2: Jump
+        // Test 3: Jump
 		$display("\nJump: ");
 		
         jump = 1;
@@ -52,7 +68,7 @@ module PCController_tb;
         #10;
         $display("pc = %h => next_pc = %h", pc, next_pc);
 
-        // Test 3: Branch taken
+        // Test 4: Branch taken
         $display("\nBranch taken: ");
         
 		jump = 0;
@@ -62,7 +78,7 @@ module PCController_tb;
         #10;
         $display("pc = %h => next_pc = %h", pc, next_pc);
 
-        // Test 4: Trapped
+        // Test 5: Trapped
         $display("\nTrapped: ");
         
 		jump = 0;
@@ -72,7 +88,7 @@ module PCController_tb;
         #10;
         $display("pc = %h => next_pc = %h", pc, next_pc);
 
-        // Test 5: Normal increment
+        // Test 6: Normal increment
         $display("\nNormal increment: ");
         
 		jump = 0;
