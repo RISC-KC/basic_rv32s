@@ -270,4 +270,6 @@ Control Unit 만들기를 마무리 하고 이제 RV32I37F 탑 모듈 만들기�
 
 우선 이 부분은 KHWL 에게 연구를 맡기고 나중에 설명을 자세히 듣기로 했다. 나는 우선 PC Controller 가 write_done 신호도 받도록 구현을 수정하고 검증한 뒤, RV32I37F 탑 모듈 구현을 할 것이다.
 
+이제 연등 종료시간이다. 우선 PC Controller 의 수정과 PR 은 완료했고, 내일부터 RV32I37F 제작에 돌입해야겠다. 오늘은 여기까지!
+
 To be continued...
