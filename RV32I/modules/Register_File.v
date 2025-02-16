@@ -1,13 +1,13 @@
 module RegisterFile (
     input clk,
-    input [4:0] read_reg1,        // Take address of register 1 to read stored value
-    input [4:0] read_reg2,        // Take address of register 2 to read stored value
-    input [4:0] write_reg,        // Take address of register to write value
-    input [31:0] write_data,      // Data to write
-    input write_enable,              // Enabling signal for writing register
+    input [4:0] read_reg1,          // Take address of register 1 to read stored value
+    input [4:0] read_reg2,          // Take address of register 2 to read stored value
+    input [4:0] write_reg,          // Take address of register to write value
+    input [31:0] write_data,        // Data to write
+    input write_enable,             // Enabling signal for writing register
 	
-    output reg [31:0] read_data1, // Data from register 1
-    output reg [31:0] read_data2  // Data from register 2
+    output reg [31:0] read_data1,   // Data from register 1
+    output reg [31:0] read_data2    // Data from register 2
 );
 
     reg [31:0] registers [0:31]; // 32 registers with 32 bits each
