@@ -5,6 +5,7 @@
 `include "./Immediate_Generator.v"
 `include "./Control_Unit.v"
 `include "./Register_File.v"
+`include "./Data_Memory.v"
 `include "./ALU_Controller.v"
 `include "./ALU.v"
 `include "./Branch_Logic.v"
@@ -15,16 +16,7 @@
 
 module RV32I37F (
     input clk,
-    input reset,
-
-    input [31:0] data_memory_read_data;
-
-    output reg memory_read;
-	output reg memory_write;
-
-    output reg [31:0] data_memory_write_data;
-    output reg [3:0] write_mask;
-    output reg [31:0] data_memory_address;
+    input reset
 );
 
     wire [31:0] pc;
@@ -48,9 +40,10 @@ module RV32I37F (
 	wire branch;
 	wire [1:0] alu_src_A_select;
 	wire [1:0] alu_src_B_select;
+    wire memory_read;
+	wire memory_write;
 	wire register_file_write;
 	wire [2:0] register_file_write_data_select;
-	
     wire [31:0] register_file_write_data;
     wire [31:0] read_data1;
     wire [31:0] read_data2;
@@ -62,8 +55,12 @@ module RV32I37F (
     wire [31:0] alu_result;
     wire alu_zero;
 	
+    wire [31:0] data_memory_read_data;
+    wire [31:0] data_memory_address;
 	wire [31:0] byte_enable_logic_register_file_write_data;
-    
+    wire [31:0] data_memory_write_data;
+    wire [3:0] write_mask;
+
     ProgramCounter program_counter (
         .clk(clk),
         .reset(reset),
@@ -123,6 +120,17 @@ module RV32I37F (
 	
         .read_data1(read_data1),
         .read_data2(read_data2)
+    );
+
+    DataMemory data_memory (
+        .clk(clk),
+        .read_enable(memory_read),
+        .write_enable(memory_write),
+        .address(alu_result),
+        .write_data(data_memory_write_data),
+        .write_mask(write_mask),
+
+        .read_data(data_memory_read_data)
     );
 
     ALUController alu_controller (
