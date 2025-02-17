@@ -17,3 +17,5 @@ https://core-basic.tistory.com/entry/%EC%BB%B4%ED%93%A8%ED%84%B026-%EC%82%B0%EC%
 https://eteo.tistory.com/477
 
 https://www.youtube.com/watch?v=w82mNGranjA&list=PLh8QClfSUTcbfTnKUz_uPOn-ghB4iqAhs&index=6
+
+https://github.com/OpenXiangShan/XiangShan-doc/blob/main/publications/micro2022-xiangshan.pdf
