@@ -1,18 +1,18 @@
-`include "./Program_Counter.v"
-`include "./PC_Plus_4.v"
-`include "./Instruction_Memory.v"
-`include "./Instruction_Decoder.v"
-`include "./Immediate_Generator.v"
-`include "./Control_Unit.v"
-`include "./Register_File.v"
-`include "./Data_Memory.v"
-`include "./ALU_Controller.v"
-`include "./ALU.v"
-`include "./Branch_Logic.v"
-`include "./Byte_Enable_Logic.v"
+`include "modules/Program_Counter.v"
+`include "modules/PC_Plus_4.v"
+`include "modules/Instruction_Memory.v"
+`include "modules/Instruction_Decoder.v"
+`include "modules/Immediate_Generator.v"
+`include "modules/Control_Unit.v"
+`include "modules/Register_File.v"
+`include "modules/Data_Memory.v"
+`include "modules/ALU_Controller.v"
+`include "modules/ALU.v"
+`include "modules/Branch_Logic.v"
+`include "modules/Byte_Enable_Logic.v"
 
-`include "./headers/alu_src_select.vh"
-`include "./rf_wd_select.vh"
+`include "modules/headers/alu_src_select.vh"
+`include "modules/headers/rf_wd_select.vh"
 
 module RV32I37F (
     input clk,
@@ -24,7 +24,7 @@ module RV32I37F (
 
     wire [31:0] next_pc;
 
-    wire instruction;
+    wire [31:0] instruction;
 
     wire [6:0] opcode;
     wire [2:0] funct3;
@@ -44,14 +44,17 @@ module RV32I37F (
 	wire memory_write;
 	wire register_file_write;
 	wire [2:0] register_file_write_data_select;
-    wire [31:0] register_file_write_data;
+
+    reg [31:0] register_file_write_data;
+    
     wire [31:0] read_data1;
     wire [31:0] read_data2;
 
     wire [3:0] alu_op;
 
-    wire [31:0] src_A;
-    wire [31:0] src_B;
+    reg [31:0] src_A;
+    reg [31:0] src_B;
+
     wire [31:0] alu_result;
     wire alu_zero;
 	
@@ -96,7 +99,7 @@ module RV32I37F (
     );
 
     ControlUnit control_unit (
-        .write_done(1),
+        .write_done(1'b1),
 	    .opcode(opcode),
 	    .funct3(funct3),
 
@@ -114,7 +117,7 @@ module RV32I37F (
         .clk(clk),
         .read_reg1(rs1),
         .read_reg2(rs2),
-        .write_reg(rd1),
+        .write_reg(rd),
         .write_data(register_file_write_data),
         .write_enable(register_file_write),
 	
@@ -126,7 +129,7 @@ module RV32I37F (
         .clk(clk),
         .read_enable(memory_read),
         .write_enable(memory_write),
-        .address(alu_result),
+        .address(alu_result[11:2]),
         .write_data(data_memory_write_data),
         .write_mask(write_mask),
 
@@ -163,7 +166,7 @@ module RV32I37F (
         .memory_read(memory_read),
         .memory_write(memory_write),
         .funct3(funct3),
-	    .register_file_read_data(rd2),
+	    .register_file_read_data(read_data2),
 	    .data_memory_read_data(data_memory_read_data),
 	    .address(alu_result),
 	
@@ -174,14 +177,14 @@ module RV32I37F (
 
     always @(*) begin
         if (alu_src_A_select == `ALU_SRC_A_RD1) begin
-            src_A = rd1;
+            src_A = read_data1;
         end
         else if (alu_src_A_select == `ALU_SRC_A_PC) begin
             src_A = pc;
         end
 
         if (alu_src_B_select == `ALU_SRC_B_RD2) begin
-            src_B = rd2;
+            src_B = read_data2;
         end
         else if (alu_src_B_select == `ALU_SRC_B_IMM) begin
             src_B = imm;
