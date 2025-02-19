@@ -22,6 +22,9 @@ module ALUController_tb;
     );
 
     initial begin
+        $dumpfile("testbenches/results/waveforms/ALU_Controller_tb_result.vcd");
+        $dumpvars(0, ALUController_tb.alu_controller);
+
         // Test sequence
         $display("==================== ALU Controller Test START ====================");
 

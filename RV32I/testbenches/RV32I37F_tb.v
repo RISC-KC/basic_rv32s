@@ -13,16 +13,19 @@ module RV32I37F_tb;
     always #5 clk = ~clk;
 
     initial begin
+        $dumpfile("testbenches/results/waveforms/RV32I37F_tb_result.vcd");
+        $dumpvars(0, RV32I37F_tb.rv32i37f);
+
         $display("==================== RV32I37F Test START ====================");
 
-        // Initialize signals
-        clk     = 0;
-        reset   = 0;
+        clk = 0;
+        reset = 1;
 
-        $dumpfile("results/waveforms/RV32I37F_tb_result.vcd");
-        $dumpvars;
+        #10;
 
-        #3;
+        reset = 0;
+
+        #100;
 
         $display("\n====================  RV32I37F Test END  ====================");
         $stop;

@@ -20,6 +20,9 @@ module ALU_tb;
     );
 
     initial begin
+        $dumpfile("testbenches/results/waveforms/ALU_tb_result.vcd");
+        $dumpvars(0, ALU_tb.alu);
+
         // Test sequence
         $display("==================== ALU Test START ====================");
 

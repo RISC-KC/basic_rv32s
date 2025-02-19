@@ -1,4 +1,5 @@
 `include "modules/Program_Counter.v"
+`include "modules/PC_Controller.v"
 `include "modules/PC_Plus_4.v"
 `include "modules/Instruction_Memory.v"
 `include "modules/Instruction_Decoder.v"
@@ -45,6 +46,8 @@ module RV32I37F (
 	wire register_file_write;
 	wire [2:0] register_file_write_data_select;
 
+    wire branch_taken;
+
     reg [31:0] register_file_write_data;
     
     wire [31:0] read_data1;
@@ -69,6 +72,19 @@ module RV32I37F (
         .reset(reset),
         .next_pc(next_pc),
         .pc(pc)
+    );
+
+    PCController pc_controller (
+        .jump(jump),
+	    .branch_taken(branch_taken),
+	    .trapped(1'b0),
+	    .pc(pc),
+        .jump_target(alu_result),
+        .imm(imm),
+	    .trap_target(32'b0),
+	    .write_done(1'b1),
+	
+	    .next_pc(next_pc)
     );
 
     PCPlus4 pc_plus_4 (
