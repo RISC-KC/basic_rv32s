@@ -125,7 +125,7 @@ mtvec은 Trap 처리를 위한 주소 CSR 이다.
 [1:0]의 MODE에 따라 그 동작이 정해진다.
 MODE = 0 = Direct. All trap set pc to BASE.
 PC값이 BASE 비트 필드 [31:2]에 있는 값이 되도록 한다. 임의의 트랩 핸들러 루틴의 시작 주소로 넘기는 것이다.
-BASE 비트 필드 값은 4바이트 단위로 정렬되어 있어야 한다. 만약 미정렬된 경우, 강제로 하위 2비트를 0으로 설정하자. 
+BASE 비트 필드 값은 4바이트 단위로 정렬되어 있어야 한다. 만약 미정렬된 경우, 강제로 하위 2비트를 0으로 설정하자. <- 가 아니라, [31:2]로 30비트만 주소를 주는 이유가 곧 하위 [1:0]을 0으로 함으로서 주솟값이 정렬완성되기 때문이다. 
 MODE = 1 = Vectored. Asynchronous interrupts set pc to BASE + 4 × cause
 PC값이 BASE 비트 필드에 있는 값에 interrupt의 원인이 된 값이 있는 mcause 값을 4배 곱하여 더한다. 그리고 그 주소로 분기한다. 
 이렇게 하면 각 interrupt나 Trap에 대하여 RISC-V에서 정의한 공간 주소를 사용하여 관리할 수 있다. 
@@ -147,10 +147,12 @@ hart-local context란, 현재 M-mode에서 실행 중인 프로세서 코어(har
 mepc - WARL, MRW. MXLEN-bit
 mepc[0] = 0 ; RV32일 경우 mepc[1:0] = 0. 항상.
 
-
 mcause
+When a trap is taken to M-mode, mcause is written with a code indicating the event that caused the trap.
 
 mtval
+그 예외처리도 mtval 값을 0이 아닌 값으로 전환시키지 않는다. 이 mtval CSR을 제대로 지원하기 위해서는 가상 메모리(Virtual Memory) 구조와 가상 주소의 구현이 되어있어야 한다.
+때문에, 현재 RV32I50F 코어 구조에서는 Read Only 0이다. 
 
 mip
 위의 mie 설명과 동일하다.
