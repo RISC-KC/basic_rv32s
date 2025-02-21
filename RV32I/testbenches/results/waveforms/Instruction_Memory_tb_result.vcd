@@ -1,0 +1,34 @@
+$date
+	Fri Feb 21 14:08:07 2025
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module InstructionMemory_tb $end
+$scope module instruction_memory $end
+$var wire 32 ! pc [31:0] $end
+$var reg 32 " instruction [31:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+$end
+#0
+$dumpvars
+b100000000000010010011 "
+b0 !
+$end
+#10000
+b100000000000100010011 "
+b100 !
+#20000
+b1000001000000110110011 "
+b1000 !
+#30000
+b1100010000001000110011 "
+b1100 !
+#40000

@@ -16,6 +16,8 @@ module RV32I37F_tb;
         $dumpfile("testbenches/results/waveforms/RV32I37F_tb_result.vcd");
         $dumpvars(0, RV32I37F_tb.rv32i37f);
 
+        $readmemb("testbenches/test_code.mem", rv32i37f.instruction_memory.data);
+
         $display("==================== RV32I37F Test START ====================");
 
         clk = 0;

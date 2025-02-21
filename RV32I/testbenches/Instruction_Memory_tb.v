@@ -10,16 +10,24 @@ module InstructionMemory_tb;
     );
 
     initial begin
+        $dumpfile("testbenches/results/waveforms/Instruction_Memory_tb_result.vcd");
+        $dumpvars(0, InstructionMemory_tb.instruction_memory);
+
+        $writememb("testbenches/test_code.mem", instruction_memory.data);
+
         // Test sequence
         $display("==================== Instruction Memory Test START ====================\n");
 
-        pc = 32'd0; #10;
+        pc = 32'h00000000; #10;
         $display("Instruction: %b", instruction);
 		
-		pc = 32'd4; #10;
+		pc = 32'h00000004; #10;
         $display("Instruction: %b", instruction);
 		
-		pc = 32'd8; #10;
+		pc = 32'h00000008; #10;
+        $display("Instruction: %b", instruction);
+
+        pc = 32'h0000000C; #10;
         $display("Instruction: %b", instruction);
 
         $display("\n====================  Instruction Memory Test END  ====================");
