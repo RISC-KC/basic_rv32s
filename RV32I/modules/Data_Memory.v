@@ -12,6 +12,10 @@ module DataMemory (
     reg [31:0] memory [0:1023]; // 1024 words (4KB)
     reg [31:0] extended_mask;
 
+    initial begin
+        $readmemb("modules/initial_data.mem", memory);
+    end
+
     always @(posedge clk) begin
         extended_mask = {{8{write_mask[3]}}, {8{write_mask[2]}}, {8{write_mask[1]}}, {8{write_mask[0]}}};
 

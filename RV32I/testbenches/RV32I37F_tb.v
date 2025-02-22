@@ -27,7 +27,7 @@ module RV32I37F_tb;
 
         reset = 0;
 
-        #100;
+        #1000;
 
         $display("\n====================  RV32I37F Test END  ====================");
         $stop;

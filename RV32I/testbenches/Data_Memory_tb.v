@@ -24,6 +24,9 @@ module DataMemory_tb;
     always #5 clk = ~clk;
 
     initial begin
+        $dumpfile("testbenches/results/waveforms/Data_Memory_tb_result.vcd");
+        $dumpvars(0, DataMemory_tb.data_memory);
+
         $display("==================== Data Memory Test START ====================");
 
         // Initialize signals
@@ -34,7 +37,16 @@ module DataMemory_tb;
         write_data = 32'h00000000;
         write_mask = 4'b0000;
 
-        // Test 1: Full Write and Read
+        // Test 1: Initialization check
+        $display("\nInitialization check: ");
+
+        address = 10'd1;
+        read_enable = 1;
+        #10;
+
+        $display("address: %h, write_data: %h, mask: %b, read_data: %h", address, write_data, write_mask, read_data);
+        
+        // Test 2: Full Write and Read
         $display("\nFull Write and Read: ");
 
         address = 10'd1;
@@ -51,7 +63,7 @@ module DataMemory_tb;
         
         $display("address: %h, write_data: %h, mask: %b, read_data: %h", address, write_data, write_mask, read_data);
 
-        // Test 2: Partial Write
+        // Test 3: Partial Write
         $display("\nPartial Write: ");
 
         write_data = 32'hCAFECAFE;
@@ -126,7 +138,7 @@ module DataMemory_tb;
         
         $display("address: %h, write_data: %h, mask: %b, read_data: %h", address, write_data, write_mask, read_data);
 
-        // Test 3: Idle state
+        // Test 4: Idle state
         $display("\nIdle state: ");
 
         write_data = 32'hDEADBEEF;
