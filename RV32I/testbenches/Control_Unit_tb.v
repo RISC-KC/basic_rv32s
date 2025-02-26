@@ -16,7 +16,7 @@ module ControlUnit_tb;
 	wire jump;
 	wire branch;
 	wire [1:0] alu_src_A_select;
-	wire [1:0] alu_src_B_select;
+	wire [2:0] alu_src_B_select;
 	wire [2:0] csr_op;
 	wire register_file_write;
 	wire [2:0] register_file_write_data_select;
@@ -40,6 +40,9 @@ module ControlUnit_tb;
     );
 
     initial begin
+        $dumpfile("testbenches/results/waveforms/Control_Unit_tb_result.vcd");
+        $dumpvars(0, control_unit);
+
         // Test sequence
         $display("==================== Control Unit Test START ====================");
 

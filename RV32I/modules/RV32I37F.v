@@ -40,7 +40,7 @@ module RV32I37F (
     wire jump;
 	wire branch;
 	wire [1:0] alu_src_A_select;
-	wire [1:0] alu_src_B_select;
+	wire [2:0] alu_src_B_select;
     wire memory_read;
 	wire memory_write;
 	wire register_file_write;
@@ -198,12 +198,21 @@ module RV32I37F (
         else if (alu_src_A_select == `ALU_SRC_A_PC) begin
             src_A = pc;
         end
+        else begin
+            src_A = 32'b0;
+        end
 
         if (alu_src_B_select == `ALU_SRC_B_RD2) begin
             src_B = read_data2;
         end
         else if (alu_src_B_select == `ALU_SRC_B_IMM) begin
             src_B = imm;
+        end
+        else if (alu_src_B_select == `ALU_SRC_B_SHAMT) begin
+            src_B = {27'b0, imm[4:0]};
+        end
+        else begin
+            src_B = 32'b0;
         end
 
         case (register_file_write_data_select)

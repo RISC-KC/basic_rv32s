@@ -1,0 +1,180 @@
+$date
+	Tue Feb 25 14:42:30 2025
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module ControlUnit_tb $end
+$scope module control_unit $end
+$var wire 3 ! funct3 [2:0] $end
+$var wire 7 " opcode [6:0] $end
+$var wire 1 # write_done $end
+$var reg 2 $ alu_src_A_select [1:0] $end
+$var reg 3 % alu_src_B_select [2:0] $end
+$var reg 1 & branch $end
+$var reg 3 ' csr_op [2:0] $end
+$var reg 1 ( jump $end
+$var reg 1 ) memory_read $end
+$var reg 1 * memory_write $end
+$var reg 1 + register_file_write $end
+$var reg 3 , register_file_write_data_select [2:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+$end
+#0
+$dumpvars
+b0 ,
+0+
+0*
+0)
+0(
+b0 '
+0&
+b0 %
+b0 $
+0#
+b110011 "
+b0 !
+$end
+#1000
+b100 ,
+1+
+b110111 "
+1#
+#2000
+b10 ,
+b10 %
+b10 $
+b10111 "
+#3000
+b101 ,
+1(
+b1101111 "
+#4000
+b1 $
+b1100111 "
+#5000
+b0 ,
+0+
+b1 %
+1&
+0(
+b1100011 "
+#6000
+b1 !
+#7000
+b100 !
+#8000
+b101 !
+#9000
+b110 !
+#10000
+b111 !
+#11000
+1)
+b1 ,
+1+
+b10 %
+0&
+b0 !
+b11 "
+#12000
+b1 !
+#13000
+b10 !
+#14000
+b100 !
+#15000
+b101 !
+#16000
+1*
+0)
+b0 ,
+0+
+b0 !
+b100011 "
+#17000
+b1 !
+#18000
+b10 !
+#19000
+0*
+b10 ,
+1+
+b0 !
+b10011 "
+#20000
+b1 !
+#21000
+b10 !
+#22000
+b11 !
+#23000
+b100 !
+#24000
+b100 %
+b101 !
+#25000
+b10 %
+b110 !
+#26000
+b111 !
+#27000
+b1 %
+b0 !
+b110011 "
+#28000
+b1 !
+#29000
+b10 !
+#30000
+b11 !
+#31000
+b100 !
+#32000
+b101 !
+#33000
+b110 !
+#34000
+b111 !
+#35000
+b0 ,
+0+
+b0 %
+b0 $
+b0 !
+b1111 "
+#36000
+b1110011 "
+#37000
+b11 ,
+1+
+b1 $
+b1 '
+b1 !
+#38000
+b11 %
+b10 '
+b10 !
+#39000
+b11 '
+b11 !
+#40000
+b11 $
+b0 %
+b101 '
+b101 !
+#41000
+b11 %
+b110 '
+b110 !
+#42000
+b111 '
+b111 !
+#43000

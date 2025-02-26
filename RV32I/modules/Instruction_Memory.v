@@ -25,8 +25,8 @@ module InstructionMemory (
 		data[4] = {12'h653,  5'd1, `ITYPE_XORI, 5'd5, `OPCODE_ITYPE};				// XORI:  x5 = x1 XOR 653 = 000004EF
 		data[5] = {7'b0000000, 5'd4, 5'd2, `ITYPE_SRXI, 5'd6, `OPCODE_ITYPE};		// SRLI:  x6 = x2 >> 4 = 0BC00000
 		data[6] = {7'b0100000, 5'd4, 5'd2, `ITYPE_SRXI, 5'd7, `OPCODE_ITYPE};		// SRAI:  x7 = x2 >>> 4 = FBC00000
-		data[7] = {12'hABC, 5'd2, `ITYPE_ORI, 5'd8, `OPCODE_ITYPE};					// ORI:   x8 = x2 OR ABC = BC0000BC
-		data[8] = {12'h0EF, 5'd5, `ITYPE_ANDI, 5'd9, `OPCODE_ITYPE};				// ANDI:  x9 = x5 AND 0EC = 000000EC
+		data[7] = {12'h0BC, 5'd2, `ITYPE_ORI, 5'd8, `OPCODE_ITYPE};					// ORI:   x8 = x2 OR BC = BC0000BC
+		data[8] = {12'h0EC, 5'd5, `ITYPE_ANDI, 5'd9, `OPCODE_ITYPE};				// ANDI:  x9 = x5 AND 0EC = 000000EC
 
 		// ──────────────────────────────────────────────
 		// R‑타입 명령어 (10개)
@@ -37,7 +37,7 @@ module InstructionMemory (
 		data[12] = {7'b0000000, 5'd2, 5'd1, `RTYPE_SLT, 5'd13, `OPCODE_RTYPE};		// SLT: x13 = (x1 < x2) ? 1 : 0 = 00000000
 		data[13] = {7'b0000000, 5'd2, 5'd1, `RTYPE_SLTU, 5'd14, `OPCODE_RTYPE};		// SLTU: x14 = (x1 < x2 unsigned) ? 1 : 0 = 00000001
 		data[14] = {7'b0000000, 5'd8, 5'd12, `RTYPE_XOR, 5'd15, `OPCODE_RTYPE};		// XOR: x15 = x12 XOR x8 = 4B8000BC
-		data[15] = {7'b0000000, 5'd3, 5'd12, `RTYPE_SR, 5'd16, `OPCODE_RTYPE};		// SRL: x16 = x12 >> x3 = 8BC00000
+		data[15] = {7'b0000000, 5'd3, 5'd12, `RTYPE_SR, 5'd16, `OPCODE_RTYPE};		// SRL: x16 = x12 >> x3 = 7BC00000
 		data[16] = {7'b0100000, 5'd3, 5'd12, `RTYPE_SR, 5'd17, `OPCODE_RTYPE};		// SRA: x17 = x12 >>> x3 = FBC0000
 		data[17] = {7'b0000000, 5'd7, 5'd11, `RTYPE_OR, 5'd18, `OPCODE_RTYPE};		// OR:  x18 = x11 OR x7 = FBFFFB11
 		data[18] = {7'b0000000, 5'd11, 5'd7, `RTYPE_AND, 5'd19, `OPCODE_RTYPE};		// AND: x19 = x7 AND x11 = 0B800000
@@ -45,18 +45,18 @@ module InstructionMemory (
 		// ──────────────────────────────────────────────
 		// S‑타입 명령어 (스토어) (3개)
 		// {imm[11:5], rs2, rs1, funct3, imm[4:0], OPCODE_STORE}
-		data[19] = {7'd0, 5'd11, 5'd1, `STORE_SW, 5'd4, `OPCODE_STORE};				// SW: mem[x1+4 = AC0] = (x11 = 0BBFFB11) -> 0BBFFB11
-		data[20] = {7'd0, 5'd10, 5'd1, `STORE_SH, 5'd6, `OPCODE_STORE};				// SH: mem[x1+6 = AC2] = (x10[15:0] = 03A8) -> 03A8F211
-		data[21] = {7'd0, 5'd15, 5'd1, `STORE_SB, 5'd4, `OPCODE_STORE};				// SB: mem[x1+4 = AC0] = (x15[7:0] = BC) -> 03A8F2BC
+		data[19] = {7'd0, 5'd11, 5'd1, `STORE_SW, 5'd4, `OPCODE_STORE};				// SW: mem[x1+4 = 2C0] = (x11 = 0BBFFB11) -> 0BBFFB11
+		data[20] = {7'd0, 5'd10, 5'd1, `STORE_SH, 5'd6, `OPCODE_STORE};				// SH: mem[x1+6 = 2C2] = (x10[15:0] = 03A8) -> 03A8F211
+		data[21] = {7'd0, 5'd15, 5'd1, `STORE_SB, 5'd4, `OPCODE_STORE};				// SB: mem[x1+4 = 2C0] = (x15[7:0] = BC) -> 03A8F2BC
 
 		// ──────────────────────────────────────────────
 		// I‑타입 로드 명령어 (5개)
 		// {imm[11:0], rs1, funct3, rd, OPCODE_LOAD}
-		data[22] = {12'd4, 5'd1, `LOAD_LW, 5'd20, `OPCODE_LOAD};					// LW:  x20 = mem[x1+4 = AC0] = 03A8F2BC
-		data[23] = {12'd4, 5'd1, `LOAD_LH, 5'd21, `OPCODE_LOAD};					// LH:  x21 = (mem[x1+4 = AC0])[15:0] = F2BC (FFFFF2BC)
-		data[24] = {12'd4, 5'd1, `LOAD_LB, 5'd22, `OPCODE_LOAD};					// LB:  x22 = (mem[x1+4 = AC0])[7:0] = BC (FFFFFFBC)
-		data[25] = {12'd4, 5'd1, `LOAD_LBU, 5'd23, `OPCODE_LOAD};					// LBU: x23 = (mem[x1+4 = AC0])[15:0] = F2BC (0000F2BC)
-		data[26] = {12'd4, 5'd1, `LOAD_LHU, 5'd24, `OPCODE_LOAD};					// LHU: x24 = (mem[x1+4 = AC0])[7:0] = BC (000000BC)
+		data[22] = {12'd4, 5'd1, `LOAD_LW, 5'd20, `OPCODE_LOAD};					// LW:  x20 = mem[x1+4 = 2C0] = 03A8F2BC
+		data[23] = {12'd4, 5'd1, `LOAD_LH, 5'd21, `OPCODE_LOAD};					// LH:  x21 = (mem[x1+4 = 2C0])[15:0] = F2BC (FFFFF2BC)
+		data[24] = {12'd4, 5'd1, `LOAD_LB, 5'd22, `OPCODE_LOAD};					// LB:  x22 = (mem[x1+4 = 2C0])[7:0] = BC (FFFFFFBC)
+		data[25] = {12'd4, 5'd1, `LOAD_LBU, 5'd23, `OPCODE_LOAD};					// LBU: x23 = (mem[x1+4 = 2C0])[15:0] = F2BC (0000F2BC)
+		data[26] = {12'd4, 5'd1, `LOAD_LHU, 5'd24, `OPCODE_LOAD};					// LHU: x24 = (mem[x1+4 = 2C0])[7:0] = BC (000000BC)
 
 		// ──────────────────────────────────────────────
 		// U‑타입 명령어 (2개)

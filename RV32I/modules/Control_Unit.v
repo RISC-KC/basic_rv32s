@@ -1,5 +1,6 @@
 `include "modules/headers/alu_src_select.vh"
 `include "modules/headers/csr.vh"
+`include "modules/headers/itype.vh"
 `include "modules/headers/opcode.vh"
 `include "modules/headers/rf_wd_select.vh"
 
@@ -11,7 +12,7 @@ module ControlUnit (
 	output reg jump,
 	output reg branch,
 	output reg [1:0] alu_src_A_select,
-	output reg [1:0] alu_src_B_select,
+	output reg [2:0] alu_src_B_select,
 	output reg [2:0] csr_op,
 	output reg register_file_write,
 	output reg [2:0] register_file_write_data_select,
@@ -185,7 +186,13 @@ module ControlUnit (
 					
 					// Operation on R[rs1] and imm
 					alu_src_A_select = `ALU_SRC_A_RD1;
-					alu_src_B_select = `ALU_SRC_B_IMM;
+
+					if (funct3 == `ITYPE_SRXI) begin
+						alu_src_B_select = `ALU_SRC_B_SHAMT;
+					end
+					else begin
+						alu_src_B_select = `ALU_SRC_B_IMM;
+					end
 					
 					// No CSR operation
 					csr_op = 3'b0;
