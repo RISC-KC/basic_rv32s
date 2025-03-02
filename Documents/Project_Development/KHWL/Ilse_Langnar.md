@@ -1903,3 +1903,60 @@ Data Memory의 Read가 끝났을 때만 다음 명령어로 진행할 수 있도
 생각해보면 파이프라이닝이나 듀얼코어화를 한 이후 SDRAM, DDR4 같은 메모리 계층 구조를 접목시키기엔 수정소요가 너무 클 것 같은데.. 명확한 시기를 어떻게 잡으면 좋을까? 
 일단 RV32I37F를 R2.v2로 개정하며 Read Done신호를 Data Memory와 PC Controller에 포함했다. 
 이제 수정된 tb를 기반으로 검증하러 가봐야겠다. 
+
+raw_imm 검증 완. 검증하는데 상호 확증성으로 이용한 모듈은 아래 세가지이다. 
+Instruction Decoder
+Immediate Generator
+ALU Controller
+오늘 기준 Instruction Memory의 예상값 오탈자를 제외하면, (LHU, LBU, LUI) 모든 모듈에서 raw_imm과 imm은 잘 작동한다 .
+
+그리고 Data Memory의 Read 로직에 대해서 확정안을 내리게 되었다. 
+저녁 점호시간동안 고민한 끝에 연등시간에 내려와 CC84의 근샤 동안 만든 로직이다. 
+이에 대해 CC84와 논의를 거쳤고, 이렇게 하기로 했다. 
+
+**Data Memory의 로직은 그대로 유지하되, Read Done 신호를 출력하도록 한다.**
+목적 : 별도의 중복 명령어 없이 Read 신호를 받아 해당 값이 나오도록 하는 것. 
+
+[Load 명령어]
+Load 명령어임을 Control Unit에서 탐지한다. 
+read_done 신호 1인지 확인, 0일 경우 PCC에게 PC=PC로 업데이트를 막음.
+PC의 업데이트 신호를 막는 신호가 Control Unit에서 출력되는 PC_Stall 신호이다. 
+Stall된 뒤, 다음 사이클에 read data가 나오면서 read_done이 동시에 1이 된다.
+PC_Stall 신호가 비활성화 되고, 그대로 PC = NextPC가 된다.
+
+[다음 명령어가 같은 load 명령어일 경우.]
+memory read는 마찬가지로 1인 상황. 
+이제는 마찬가지로 read_done이 즉시 1이 되고, 다음 명령어로 넘어가게 된다.
+
+[다음 명령어가 load 명령어가 아닐 경우]
+memory read가 0으로 떨어진다.
+read_done도 0이지만, load 명령어가 아니기 때문에 이는 무시된다.
+그렇기에 PC_Stall은 활성화 되지 않고, 다음 명령어가 진행 된다. 
+
+PC Stall 신호의 데이터패스는 이러하다. 
+Read Done신호가 Data Memory에서 Control Unit에게로 전해진다. 
+Control Unit은 Read Done 신호의 조건에 맞게 PC Controller로 PC Stall 신호를 출력한다. 
+PC Stall을 받은 PC Controller는 Next PC값을 현재 PC값으로 고정하여 추가적인 명령어의 수행을 막는다. 
+Read Done이 Control Unit에게 1로 전해지면, Control Unit이 PC Stall 신호를 비활성화한다.
+그렇게 다음 명령어 수행으로 재개된다. 
+
+이제 Data Memory의 Read 수행을 위한 ReadDone, PC Stall의 신호 추가 이후,
+최종적으로 RV32I37F의 검증절차가 마무리될 것으로 보인다. 
+부디 Testbench에서 문제 없기를.
+
+이제 해당 구현들 (Data Memory Read Procedure Revision, Register File Verification)이 끝날 때 까지 해야할 것.
+5단계 파이프라이닝 구상... 
+Fetch, Decode, Execution, Memory, Writeback.
+이 각 단계 사이별 단계의 내용을 담아두기 위한 레지스터가 필요하다.
+Fetch/Decode 레지스터 (IF/ID 레지스터)
+Decode/Execution 레지스터 (ID/EX 레지스터)
+Execution/Memory 레지스터 (EX/MEM 레지스터)
+Memory/Writeback 레지스터 (MEM/WB 레지스터)
+총 4개. 
+
+각각, 어느 모듈들 사이에 넣어야할지가 문제다.
+새로 생길 모듈은 Hazard 처리 유닛. Hazard Unit으로 부르도록 하자. 
+IF/ID 레지스터는 IC와 ID사이에 두면 되겠고
+ID/EX 레지스터는 ALUcontroller와 ALU 사이..? 더 찾아보고 연구해보자.
+오늘은 여기까지. 벌써 CC84가 PC controller의 PC Stall 의 검증을 완료했다고 한다.
+하루하루 진척이 크다. 계속 나아가자.
