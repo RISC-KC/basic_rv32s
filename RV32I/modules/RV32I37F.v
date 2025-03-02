@@ -33,7 +33,7 @@ module RV32I37F (
     wire [4:0] rs1;
     wire [4:0] rs2;
 	wire [4:0] rd;
-    wire [31:0] raw_imm;
+    wire [19:0] raw_imm;
     
     wire [31:0] imm;
 
@@ -105,7 +105,7 @@ module RV32I37F (
 	    .rs1(rs1),
 	    .rs2(rs2),
 	    .rd(rd),
-	    .imm(raw_imm)
+	    .raw_imm(raw_imm)
     );
 
     ImmediateGenerator immediate_generator (

@@ -18,10 +18,10 @@ module InstructionMemory (
 		// ──────────────────────────────────────────────
 		// I‑타입 ALU 명령어 (9개)
 		// {imm[11:0], rs1, funct3, rd, OPCODE_ITYPE}
-		data[0] = {12'h2BC, 5'd0, `ITYPE_ADDI, 5'd1, `OPCODE_ITYPE};				// ADDI:  x1 = x0 + ABC = 000002BC
+		data[0] = {12'h2BC, 5'd0, `ITYPE_ADDI, 5'd1, `OPCODE_ITYPE};				// ADDI:  x1 = x0 + 2BC = 000002BC
 		data[1] = {12'd24,  5'd1, `ITYPE_SLLI, 5'd2, `OPCODE_ITYPE};				// SLLI:  x2 = x1 << 24 = BC000000
 		data[2] = {12'd0,  5'd2, `ITYPE_SLTI, 5'd3, `OPCODE_ITYPE};					// SLTI:  x3 = (x2(-1140850688d) < 0) ? 1 : 0 = 00000001
-		data[3] = {12'd0,  5'd1, `ITYPE_SLTIU, 5'd4, `OPCODE_ITYPE};				// SLTIU: x4 = (x2(3154116608d) < 0) ? 1 : 0 = 00000000
+		data[3] = {12'd0,  5'd2, `ITYPE_SLTIU, 5'd4, `OPCODE_ITYPE};				// SLTIU: x4 = (x2(3154116608d) < 0) ? 1 : 0 = 00000000
 		data[4] = {12'h653,  5'd1, `ITYPE_XORI, 5'd5, `OPCODE_ITYPE};				// XORI:  x5 = x1 XOR 653 = 000004EF
 		data[5] = {7'b0000000, 5'd4, 5'd2, `ITYPE_SRXI, 5'd6, `OPCODE_ITYPE};		// SRLI:  x6 = x2 >> 4 = 0BC00000
 		data[6] = {7'b0100000, 5'd4, 5'd2, `ITYPE_SRXI, 5'd7, `OPCODE_ITYPE};		// SRAI:  x7 = x2 >>> 4 = FBC00000
@@ -46,17 +46,17 @@ module InstructionMemory (
 		// S‑타입 명령어 (스토어) (3개)
 		// {imm[11:5], rs2, rs1, funct3, imm[4:0], OPCODE_STORE}
 		data[19] = {7'd0, 5'd11, 5'd1, `STORE_SW, 5'd4, `OPCODE_STORE};				// SW: mem[x1+4 = 2C0] = (x11 = 0BBFFB11) -> 0BBFFB11
-		data[20] = {7'd0, 5'd10, 5'd1, `STORE_SH, 5'd6, `OPCODE_STORE};				// SH: mem[x1+6 = 2C2] = (x10[15:0] = 03A8) -> 03A8F211
-		data[21] = {7'd0, 5'd15, 5'd1, `STORE_SB, 5'd4, `OPCODE_STORE};				// SB: mem[x1+4 = 2C0] = (x15[7:0] = BC) -> 03A8F2BC
+		data[20] = {7'd0, 5'd10, 5'd1, `STORE_SH, 5'd6, `OPCODE_STORE};				// SH: mem[x1+6 = 2C2] = (x10[15:0] = 03A8) -> 03A8FB11
+		data[21] = {7'd0, 5'd15, 5'd1, `STORE_SB, 5'd4, `OPCODE_STORE};				// SB: mem[x1+4 = 2C0] = (x15[7:0] = BC) -> 03A8FBBC
 
 		// ──────────────────────────────────────────────
 		// I‑타입 로드 명령어 (5개)
 		// {imm[11:0], rs1, funct3, rd, OPCODE_LOAD}
-		data[22] = {12'd4, 5'd1, `LOAD_LW, 5'd20, `OPCODE_LOAD};					// LW:  x20 = mem[x1+4 = 2C0] = 03A8F2BC
-		data[23] = {12'd4, 5'd1, `LOAD_LH, 5'd21, `OPCODE_LOAD};					// LH:  x21 = (mem[x1+4 = 2C0])[15:0] = F2BC (FFFFF2BC)
+		data[22] = {12'd4, 5'd1, `LOAD_LW, 5'd20, `OPCODE_LOAD};					// LW:  x20 = mem[x1+4 = 2C0] = 03A8FBBC
+		data[23] = {12'd4, 5'd1, `LOAD_LH, 5'd21, `OPCODE_LOAD};					// LH:  x21 = (mem[x1+4 = 2C0])[15:0] = FBBC (FFFFFBBC)
 		data[24] = {12'd4, 5'd1, `LOAD_LB, 5'd22, `OPCODE_LOAD};					// LB:  x22 = (mem[x1+4 = 2C0])[7:0] = BC (FFFFFFBC)
-		data[25] = {12'd4, 5'd1, `LOAD_LBU, 5'd23, `OPCODE_LOAD};					// LBU: x23 = (mem[x1+4 = 2C0])[15:0] = F2BC (0000F2BC)
-		data[26] = {12'd4, 5'd1, `LOAD_LHU, 5'd24, `OPCODE_LOAD};					// LHU: x24 = (mem[x1+4 = 2C0])[7:0] = BC (000000BC)
+		data[25] = {12'd4, 5'd1, `LOAD_LHU, 5'd23, `OPCODE_LOAD};					// LBU: x23 = (mem[x1+4 = 2C0])[15:0] = FBBC (0000FBBC)
+		data[26] = {12'd4, 5'd1, `LOAD_LBU, 5'd24, `OPCODE_LOAD};					// LHU: x24 = (mem[x1+4 = 2C0])[7:0] = BC (000000BC)
 
 		// ──────────────────────────────────────────────
 		// U‑타입 명령어 (2개)
@@ -77,8 +77,8 @@ module InstructionMemory (
 		// ──────────────────────────────────────────────
 		// B‑타입 명령어 (분기) (6개)
 		// {imm[12], imm[10:5], rs2, rs1, funct3, imm[4:1], imm[11], OPCODE_BRANCH}
-		data[30] = {1'b0, 6'd0, 5'd2, 5'd1, `BRANCH_BEQ, 4'b0100, 1'b0, `OPCODE_BRANCH}; // BEQ: if(x1==x2) branch offset = 8
-		data[31] = {1'b0, 6'd0, 5'd17, 5'd7, `BRANCH_BNE, 4'b0100, 1'b0, `OPCODE_BRANCH}; // BNE: if(x7!=x17) branch offset = 8
+		data[30] = {1'b0, 6'd0, 5'd2, 5'd1, `BRANCH_BEQ, 4'b0100, 1'b0, `OPCODE_BRANCH}; // BEQ: if(x1 == x2) branch offset = 8
+		data[31] = {1'b0, 6'd0, 5'd17, 5'd7, `BRANCH_BNE, 4'b0100, 1'b0, `OPCODE_BRANCH}; // BNE: if(x7 != x17) branch offset = 8
 		data[32] = {1'b0, 6'd0, 5'd2, 5'd1, `BRANCH_BLT, 4'b0100, 1'b0, `OPCODE_BRANCH}; // BLT: if(x1 < x2) branch offset = 8
 		data[33] = {1'b0, 6'd0, 5'd1, 5'd2, `BRANCH_BGE, 4'b0100, 1'b0, `OPCODE_BRANCH}; // BGE: if(x2 >= x1) branch offset = 8
 		data[34] = {1'b0, 6'd0, 5'd1, 5'd2, `BRANCH_BLTU, 4'b0100, 1'b0, `OPCODE_BRANCH}; // BLTU: if(x2 < x1 unsigned) branch offset = 8
