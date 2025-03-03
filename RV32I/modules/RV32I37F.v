@@ -1,4 +1,5 @@
 `include "modules/Program_Counter.v"
+`include "modules/PC_Aligner.v"
 `include "modules/PC_Controller.v"
 `include "modules/PC_Plus_4.v"
 `include "modules/Instruction_Memory.v"
@@ -23,6 +24,7 @@ module RV32I37F (
     wire [31:0] pc;
     wire [31:0] pc_plus_4_signal;
 
+    wire [31:0] raw_next_pc;
     wire [31:0] next_pc;
 
     wire [31:0] instruction;
@@ -76,6 +78,11 @@ module RV32I37F (
         .pc(pc)
     );
 
+    PCAligner pc_aligner (
+        .raw_next_pc(raw_next_pc),
+        .next_pc(next_pc)
+    );
+
     PCController pc_controller (
         .jump(jump),
 	    .branch_taken(branch_taken),
@@ -87,7 +94,7 @@ module RV32I37F (
 	    .write_done(1'b1),
         .pc_stall(pc_stall),
 	
-	    .next_pc(next_pc)
+	    .next_pc(raw_next_pc)
     );
 
     PCPlus4 pc_plus_4 (
