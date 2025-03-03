@@ -388,4 +388,8 @@ Control Unit 만들기를 마무리 하고 이제 RV32I37F 탑 모듈 만들기�
 
 2. 신호 검증과정에서 KHWL 으로부터 주소값이 misaligned 된 경우들도 테스트 해봐야 한다는 이야기를 들었다. 여기부터 시작하여 각 모듈 수정을 어떻게 해야하는지에 대한 열띤 토론이 오간 끝에 PC Aligner 를 PC Controller 모듈과 Program Counter 모듈 사이에 두고, Data Memory 에서 misaligned 된 명령어에 쓰기를 시도할 경우 HINT 명령어로서 처리되게 하였다.
 
-To be continued...
+**그리고 오랜 검증 끝에 RV32I37F 가 제대로 작동하는 것을 확인했다! 드디어 제대로 작동하는 첫 CPU 탑 모듈을 만들어낸 것이다!**
+
+이제 남은 일은 작업한 브랜치들을 합병하는 일이었다. 연등의 남은 시간은 그 작업을 마무리하는데 사용했다. 내일부터는 KHWL 이 만든 CSR File 모듈을 이용하여 RV32I43F 탑 모듈 구현 작업에 착수하겠다. 오늘은 여기까지!
+
+To be continued... 
