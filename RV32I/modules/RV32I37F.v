@@ -43,6 +43,7 @@ module RV32I37F (
 	wire [2:0] alu_src_B_select;
     wire memory_read;
 	wire memory_write;
+    wire pc_stall;
 	wire register_file_write;
 	wire [2:0] register_file_write_data_select;
 
@@ -66,6 +67,7 @@ module RV32I37F (
 	wire [31:0] byte_enable_logic_register_file_write_data;
     wire [31:0] data_memory_write_data;
     wire [3:0] write_mask;
+    wire read_done;
 
     ProgramCounter program_counter (
         .clk(clk),
@@ -83,6 +85,7 @@ module RV32I37F (
         .imm(imm),
 	    .trap_target(32'b0),
 	    .write_done(1'b1),
+        .pc_stall(pc_stall),
 	
 	    .next_pc(next_pc)
     );
@@ -115,6 +118,7 @@ module RV32I37F (
     );
 
     ControlUnit control_unit (
+        .read_done(read_done),
         .write_done(1'b1),
 	    .opcode(opcode),
 	    .funct3(funct3),
@@ -126,7 +130,8 @@ module RV32I37F (
 	    .register_file_write(register_file_write),
 	    .register_file_write_data_select(register_file_write_data_select),
 	    .memory_read(memory_read),
-	    .memory_write(memory_write)
+	    .memory_write(memory_write),
+        .pc_stall(pc_stall)
     );
 
     RegisterFile register_file (
@@ -149,7 +154,8 @@ module RV32I37F (
         .write_data(data_memory_write_data),
         .write_mask(write_mask),
 
-        .read_data(data_memory_read_data)
+        .read_data(data_memory_read_data),
+        .read_done(read_done)
     );
 
     ALUController alu_controller (

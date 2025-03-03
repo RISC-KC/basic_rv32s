@@ -6,11 +6,12 @@ module DataMemory (
     input [31:0] write_data,        // data to write to Data Memory
     input [3:0] write_mask,         // bitmask for writing data
 
-    output reg [31:0] read_data     // data read from Data Memory
+    output reg [31:0] read_data,    // data read from Data Memory
+    output reg read_done            // signal indicating if reading is done
 );
 
-    reg [31:0] memory [0:1023]; // 1024 words (4KB)
-    reg [31:0] extended_mask;
+    reg [31:0] memory [0:1023];     // 1024 words (4KB)
+    reg [31:0] extended_mask;       // 32 bit extended mask from 4 bit write_mask
 
     initial begin
         $readmemb("modules/initial_data.mem", memory);
@@ -21,13 +22,16 @@ module DataMemory (
 
         if (read_enable) begin
             read_data <= memory[address];
+            read_done <= 1'b1;
         end
         else if (write_enable) begin
-            read_data <= 32'b0;
             memory[address] <= ((memory[address] & ~extended_mask) | (write_data & extended_mask));
+            read_data <= 32'b0;
+            read_done <= 1'b0;
         end
         else begin
             read_data <= 32'b0;
+            read_done <= 1'b0;
         end
     end
 

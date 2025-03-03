@@ -5,6 +5,7 @@
 `include "modules/headers/rf_wd_select.vh"
 
 module ControlUnit (
+	input read_done,	// signal indicating if read is done
 	input write_done,	// signal indicating if write is done
 	input [6:0] opcode, // opcode from Instruction Decoder
 	input [2:0] funct3, // funct3 from Instruction Decoder
@@ -17,7 +18,8 @@ module ControlUnit (
 	output reg register_file_write,
 	output reg [2:0] register_file_write_data_select,
 	output reg memory_read,
-	output reg memory_write
+	output reg memory_write,
+	output reg pc_stall
 );
 
     always @(*) begin
@@ -44,6 +46,9 @@ module ControlUnit (
 					// No memory access
 					memory_read = 0;
 					memory_write = 0;
+
+					// No need to stall pc
+					pc_stall = 0;
 				end
 				`OPCODE_AUIPC: begin
 					// No jump
@@ -66,6 +71,9 @@ module ControlUnit (
 					// No memory access
 					memory_read = 0;
 					memory_write = 0;
+
+					// No need to stall pc
+					pc_stall = 0;
 				end
 				`OPCODE_JAL: begin
 					// Jump
@@ -88,6 +96,9 @@ module ControlUnit (
 					// No memory access
 					memory_read = 0;
 					memory_write = 0;
+
+					// No need to stall pc
+					pc_stall = 0;
 				end
 				`OPCODE_JALR: begin
 					// Jump
@@ -110,6 +121,9 @@ module ControlUnit (
 					// No memory access
 					memory_read = 0;
 					memory_write = 0;
+
+					// No need to stall pc
+					pc_stall = 0;
 				end
 				`OPCODE_BRANCH: begin
 					// No jump
@@ -132,6 +146,9 @@ module ControlUnit (
 					// No memory access
 					memory_read = 0;
 					memory_write = 0;
+
+					// No need to stall pc
+					pc_stall = 0;
 				end
 				`OPCODE_LOAD: begin
 					// No jump
@@ -154,6 +171,9 @@ module ControlUnit (
 					// Read from memory
 					memory_read = 1;
 					memory_write = 0;
+
+					// Stall pc if read is not done
+					pc_stall = !read_done;
 				end
 				`OPCODE_STORE: begin
 					// No jump
@@ -176,6 +196,9 @@ module ControlUnit (
 					// Write to memory
 					memory_read = 0;
 					memory_write = 1;
+
+					// No need to stall pc
+					pc_stall = 0;
 				end
 				`OPCODE_ITYPE: begin
 					// No jump
@@ -204,6 +227,9 @@ module ControlUnit (
 					// No memory access
 					memory_read = 0;
 					memory_write = 0;
+
+					// No need to stall pc
+					pc_stall = 0;
 				end
 				`OPCODE_RTYPE: begin
 					// No jump
@@ -226,6 +252,9 @@ module ControlUnit (
 					// No memory access
 					memory_read = 0;
 					memory_write = 0;
+
+					// No need to stall pc
+					pc_stall = 0;
 				end
 				`OPCODE_FENCE: begin
 					// No jump
@@ -248,6 +277,9 @@ module ControlUnit (
 					// No memory access
 					memory_read = 0;
 					memory_write = 0;
+
+					// No need to stall pc
+					pc_stall = 0;
 				end
 				`OPCODE_ENVIRONMENT: begin
 					// No jump
@@ -291,6 +323,9 @@ module ControlUnit (
 					// No memory access
 					memory_read = 0;
 					memory_write = 0;
+
+					// No need to stall pc
+					pc_stall = 0;
 				end
 			endcase
 		end
@@ -304,6 +339,7 @@ module ControlUnit (
 			register_file_write_data_select = `RF_WD_NONE;
 			memory_read = 0;
 			memory_write = 0;
+			pc_stall = 0;
 		end
     end
 

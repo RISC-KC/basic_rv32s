@@ -9,6 +9,7 @@ module DataMemory_tb;
     reg [3:0] write_mask;
 
     wire [31:0] read_data;
+    wire read_done;
 
     DataMemory data_memory (
         .clk(clk),
@@ -17,7 +18,8 @@ module DataMemory_tb;
         .address(address),
         .write_data(write_data),
         .write_mask(write_mask),
-        .read_data(read_data)
+        .read_data(read_data),
+        .read_done(read_done)
     );
 
     // Generate clock signal (period = 10ns)
@@ -25,7 +27,7 @@ module DataMemory_tb;
 
     initial begin
         $dumpfile("testbenches/results/waveforms/Data_Memory_tb_result.vcd");
-        $dumpvars(0, DataMemory_tb.data_memory);
+        $dumpvars(0, data_memory);
 
         $display("==================== Data Memory Test START ====================");
 
@@ -44,7 +46,7 @@ module DataMemory_tb;
         read_enable = 1;
         #10;
 
-        $display("address: %h, write_data: %h, mask: %b, read_data: %h", address, write_data, write_mask, read_data);
+        $display("address: %h, write_data: %h, mask: %b, read_data: %h, read_done: %b", address, write_data, write_mask, read_data, read_done);
         
         // Test 2: Full Write and Read
         $display("\nFull Write and Read: ");
@@ -61,7 +63,7 @@ module DataMemory_tb;
         write_enable = 0;
         #10;
         
-        $display("address: %h, write_data: %h, mask: %b, read_data: %h", address, write_data, write_mask, read_data);
+        $display("address: %h, write_data: %h, mask: %b, read_data: %h, read_done: %b", address, write_data, write_mask, read_data, read_done);
 
         // Test 3: Partial Write
         $display("\nPartial Write: ");
@@ -76,7 +78,7 @@ module DataMemory_tb;
         write_enable = 0;
         #10;
         
-        $display("address: %h, write_data: %h, mask: %b, read_data: %h", address, write_data, write_mask, read_data);
+        $display("address: %h, write_data: %h, mask: %b, read_data: %h, read_done: %b", address, write_data, write_mask, read_data, read_done);
 
         write_data = 32'hCAFECAFE;
         write_mask = 4'b0100;
@@ -88,7 +90,7 @@ module DataMemory_tb;
         write_enable = 0;
         #10;
         
-        $display("address: %h, write_data: %h, mask: %b, read_data: %h", address, write_data, write_mask, read_data);
+        $display("address: %h, write_data: %h, mask: %b, read_data: %h, read_done: %b", address, write_data, write_mask, read_data, read_done);
 
         write_data = 32'hCAFECAFE;
         write_mask = 4'b0010;
@@ -100,7 +102,7 @@ module DataMemory_tb;
         write_enable = 0;
         #10;
         
-        $display("address: %h, write_data: %h, mask: %b, read_data: %h", address, write_data, write_mask, read_data);
+        $display("address: %h, write_data: %h, mask: %b, read_data: %h, read_done: %b", address, write_data, write_mask, read_data, read_done);
 
         write_data = 32'hCAFECAFE;
         write_mask = 4'b0001;
@@ -112,7 +114,7 @@ module DataMemory_tb;
         write_enable = 0;
         #10;
         
-        $display("address: %h, write_data: %h, mask: %b, read_data: %h", address, write_data, write_mask, read_data);
+        $display("address: %h, write_data: %h, mask: %b, read_data: %h, read_done: %b", address, write_data, write_mask, read_data, read_done);
 
         write_data = 32'hDEADBEEF;
         write_mask = 4'b1100;
@@ -124,7 +126,7 @@ module DataMemory_tb;
         write_enable = 0;
         #10;
         
-        $display("address: %h, write_data: %h, mask: %b, read_data: %h", address, write_data, write_mask, read_data);
+        $display("address: %h, write_data: %h, mask: %b, read_data: %h, read_done: %b", address, write_data, write_mask, read_data, read_done);
 
         write_data = 32'hDEADBEEF;
         write_mask = 4'b0011;
@@ -136,7 +138,7 @@ module DataMemory_tb;
         write_enable = 0;
         #10;
         
-        $display("address: %h, write_data: %h, mask: %b, read_data: %h", address, write_data, write_mask, read_data);
+        $display("address: %h, write_data: %h, mask: %b, read_data: %h, read_done: %b", address, write_data, write_mask, read_data, read_done);
 
         // Test 4: Idle state
         $display("\nIdle state: ");
@@ -147,13 +149,13 @@ module DataMemory_tb;
         write_enable = 0;
         #10;
         
-        $display("address: %h, write_data: %h, mask: %b, read_data: %h", address, write_data, write_mask, read_data);
+        $display("address: %h, write_data: %h, mask: %b, read_data: %h, read_done: %b", address, write_data, write_mask, read_data, read_done);
 
         read_enable = 1;
         write_enable = 0;
         #10;
         
-        $display("address: %h, write_data: %h, mask: %b, read_data: %h", address, write_data, write_mask, read_data);
+        $display("address: %h, write_data: %h, mask: %b, read_data: %h, read_done: %b", address, write_data, write_mask, read_data, read_done);
 
         $display("\n====================  Data Memory Test END  ====================");
         $stop;

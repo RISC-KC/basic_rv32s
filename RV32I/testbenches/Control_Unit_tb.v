@@ -9,6 +9,7 @@
 `include "modules/headers/store.vh"
 
 module ControlUnit_tb;
+    reg read_done;
     reg write_done;
 	reg [6:0] opcode;
 	reg [2:0] funct3;
@@ -22,8 +23,10 @@ module ControlUnit_tb;
 	wire [2:0] register_file_write_data_select;
 	wire memory_read;
 	wire memory_write;
+    wire pc_stall;
 
     ControlUnit control_unit (
+        .read_done(read_done),
         .write_done(write_done),
         .opcode(opcode),
         .funct3(funct3),
@@ -36,7 +39,8 @@ module ControlUnit_tb;
         .register_file_write(register_file_write),
         .register_file_write_data_select(register_file_write_data_select),
         .memory_read(memory_read),
-        .memory_write(memory_write)
+        .memory_write(memory_write),
+        .pc_stall(pc_stall)
     );
 
     initial begin
@@ -46,18 +50,19 @@ module ControlUnit_tb;
         // Test sequence
         $display("==================== Control Unit Test START ====================");
 
+        opcode = `OPCODE_RTYPE;
+        funct3 = `RTYPE_ADDSUB;
+
         // Test 1: Writing not done
 		$display("\nWriting not done: ");
 
+        read_done = 1;
         write_done = 0;
-
-		opcode = `OPCODE_RTYPE;
-        funct3 = `RTYPE_ADDSUB;
 
         #1;
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         write_done = 1;
 
@@ -71,7 +76,7 @@ module ControlUnit_tb;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         // Test 3: AUIPC
 		$display("\nAUIPC: ");
@@ -83,7 +88,7 @@ module ControlUnit_tb;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         // Test 4: JAL
 		$display("\nJAL: ");
@@ -95,7 +100,7 @@ module ControlUnit_tb;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         // Test 5: JALR
 		$display("\nJALR: ");
@@ -107,7 +112,7 @@ module ControlUnit_tb;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         // Test 6: Branch
 		$display("\nBranch: ");
@@ -118,37 +123,37 @@ module ControlUnit_tb;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         funct3 = `BRANCH_BNE; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 		
         funct3 = `BRANCH_BLT; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         funct3 = `BRANCH_BGE; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         funct3 = `BRANCH_BLTU; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         funct3 = `BRANCH_BGEU; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         // Test 7: Load
 		$display("\nLoad: ");
@@ -159,33 +164,46 @@ module ControlUnit_tb;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         funct3 = `LOAD_LH; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 		
         funct3 = `LOAD_LW; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         funct3 = `LOAD_LBU; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         funct3 = `LOAD_LHU; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
-        // Test 8: Store
+        // Test 8: Reading not done
+        $display("\nReading not done: ");
+        
+        read_done = 0;
+
+        #1;
+        $display("funct3: %b", funct3);
+        $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
+		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
+
+        read_done = 1;
+
+        // Test 9: Store
 		$display("\nStore: ");
 		
 		opcode = `OPCODE_STORE;
@@ -194,21 +212,21 @@ module ControlUnit_tb;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         funct3 = `STORE_SH; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 		
         funct3 = `STORE_SW; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
-        // Test 9: I-type
+        // Test 10: I-type
 		$display("\nI-type: ");
 		
 		opcode = `OPCODE_ITYPE;
@@ -217,51 +235,51 @@ module ControlUnit_tb;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         funct3 = `ITYPE_SLLI; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 		
         funct3 = `ITYPE_SLTI; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         funct3 = `ITYPE_SLTIU; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         funct3 = `ITYPE_XORI; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         funct3 = `ITYPE_SRXI; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         funct3 = `ITYPE_ORI; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         funct3 = `ITYPE_ANDI; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
-        // Test 10: R-type
+        // Test 11: R-type
 		$display("\nR-type: ");
 		
 		opcode = `OPCODE_RTYPE;
@@ -270,51 +288,51 @@ module ControlUnit_tb;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         funct3 = `RTYPE_SLL; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 		
         funct3 = `RTYPE_SLT; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         funct3 = `RTYPE_SLTU; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         funct3 = `RTYPE_XOR; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         funct3 = `RTYPE_SR; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         funct3 = `RTYPE_OR; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         funct3 = `RTYPE_AND; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
-        // Test 11: Fence
+        // Test 12: Fence
 		$display("\nFence: ");
 		
 		opcode = `OPCODE_FENCE;
@@ -324,9 +342,9 @@ module ControlUnit_tb;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
-        // Test 12: Environment
+        // Test 13: Environment
 		$display("\nEnvironment: ");
 		
 		opcode = `OPCODE_ENVIRONMENT;
@@ -335,43 +353,43 @@ module ControlUnit_tb;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         funct3 = `CSR_CSRRW; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 		
         funct3 = `CSR_CSRRS; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         funct3 = `CSR_CSRRC; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         funct3 = `CSR_CSRRWI; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         funct3 = `CSR_CSRRSI; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b\n", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
         funct3 = `CSR_CSRRCI; #1;
         $display("funct3: %b", funct3);
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_op: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_op);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b", memory_read, memory_write);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b", memory_read, memory_write, pc_stall);
 
         $display("\n====================  Control Unit Test END  ====================");
 

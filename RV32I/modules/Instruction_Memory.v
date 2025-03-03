@@ -55,13 +55,13 @@ module InstructionMemory (
 		data[22] = {12'd4, 5'd1, `LOAD_LW, 5'd20, `OPCODE_LOAD};					// LW:  x20 = mem[x1+4 = 2C0] = 03A8FBBC
 		data[23] = {12'd4, 5'd1, `LOAD_LH, 5'd21, `OPCODE_LOAD};					// LH:  x21 = (mem[x1+4 = 2C0])[15:0] = FBBC (FFFFFBBC)
 		data[24] = {12'd4, 5'd1, `LOAD_LB, 5'd22, `OPCODE_LOAD};					// LB:  x22 = (mem[x1+4 = 2C0])[7:0] = BC (FFFFFFBC)
-		data[25] = {12'd4, 5'd1, `LOAD_LHU, 5'd23, `OPCODE_LOAD};					// LBU: x23 = (mem[x1+4 = 2C0])[15:0] = FBBC (0000FBBC)
-		data[26] = {12'd4, 5'd1, `LOAD_LBU, 5'd24, `OPCODE_LOAD};					// LHU: x24 = (mem[x1+4 = 2C0])[7:0] = BC (000000BC)
+		data[25] = {12'd4, 5'd1, `LOAD_LHU, 5'd23, `OPCODE_LOAD};					// LHU: x23 = (mem[x1+4 = 2C0])[15:0] = FBBC (0000FBBC)
+		data[26] = {12'd4, 5'd1, `LOAD_LBU, 5'd24, `OPCODE_LOAD};					// LBU: x24 = (mem[x1+4 = 2C0])[7:0] = BC (000000BC)
 
 		// ──────────────────────────────────────────────
 		// U‑타입 명령어 (2개)
 		// {imm[31:12], rd, OPCODE_LUI/OPCODE_AUIPC}
-		data[27] = {20'd1, 5'd25, `OPCODE_LUI};										// LUI: x25 = 00000100
+		data[27] = {20'd1, 5'd25, `OPCODE_LUI};										// LUI: x25 = 00001000
 		data[28] = {20'd1, 5'd26, `OPCODE_AUIPC};									// AUIPC: x26 = 00000070 + 00001000 = 00001070
 
 		// ──────────────────────────────────────────────

@@ -7,12 +7,16 @@ module PCController (
 	input [31:0] imm,			// immediate value from Immediate Generator
 	input [31:0] trap_target,	// target address for trap
 	input write_done,			// signal indicating if write is done
-	
+	input pc_stall,				// control signal for stalling pc value
+
 	output reg [31:0] next_pc	// next pc value
 );
 
     always @(*) begin
-		if (write_done) begin
+		if (pc_stall) begin
+			next_pc = pc;
+		end
+		else if (write_done) begin
 			if (jump) begin
 				next_pc = jump_target;
 			end
