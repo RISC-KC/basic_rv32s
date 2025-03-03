@@ -46,13 +46,13 @@ module InstructionMemory (
 		// S‑타입 명령어 (스토어) (3개)
 		// {imm[11:5], rs2, rs1, funct3, imm[4:0], OPCODE_STORE}
 		data[19] = {7'd0, 5'd11, 5'd1, `STORE_SW, 5'd4, `OPCODE_STORE};				// SW: mem[x1+4 = 2C0] = (x11 = 0BBFFB11) -> 0BBFFB11
-		data[20] = {7'd0, 5'd10, 5'd1, `STORE_SH, 5'd6, `OPCODE_STORE};				// SH: mem[x1+6 = 2C2] = (x10[15:0] = 03A8) -> 03A8FB11
-		data[21] = {7'd0, 5'd15, 5'd1, `STORE_SB, 5'd4, `OPCODE_STORE};				// SB: mem[x1+4 = 2C0] = (x15[7:0] = BC) -> 03A8FBBC
+		data[20] = {7'd0, 5'd10, 5'd1, `STORE_SH, 5'd7, `OPCODE_STORE};				// SH: mem[x1+7 = 2C3 (write nothing)] = (x10[15:0] = 03A8) -> 0BBFFB11
+		data[21] = {7'd0, 5'd15, 5'd1, `STORE_SB, 5'd4, `OPCODE_STORE};				// SB: mem[x1+4 = 2C0] = (x15[7:0] = BC) -> 0BBFFBBC
 
 		// ──────────────────────────────────────────────
 		// I‑타입 로드 명령어 (5개)
 		// {imm[11:0], rs1, funct3, rd, OPCODE_LOAD}
-		data[22] = {12'd5, 5'd1, `LOAD_LW, 5'd20, `OPCODE_LOAD};					// LW:  x20 = mem[x1+5 = 2C1 (but read from 2C0)] = 03A8FBBC
+		data[22] = {12'd5, 5'd1, `LOAD_LW, 5'd20, `OPCODE_LOAD};					// LW:  x20 = mem[x1+5 = 2C1 (but read from 2C0)] = 0BBFFBBC
 		data[23] = {12'd4, 5'd1, `LOAD_LH, 5'd21, `OPCODE_LOAD};					// LH:  x21 = (mem[x1+4 = 2C0])[15:0] = FBBC (FFFFFBBC)
 		data[24] = {12'd4, 5'd1, `LOAD_LB, 5'd22, `OPCODE_LOAD};					// LB:  x22 = (mem[x1+4 = 2C0])[7:0] = BC (FFFFFFBC)
 		data[25] = {12'd4, 5'd1, `LOAD_LHU, 5'd23, `OPCODE_LOAD};					// LHU: x23 = (mem[x1+4 = 2C0])[15:0] = FBBC (0000FBBC)
