@@ -1,0 +1,73 @@
+$date
+	Sun Mar  2 06:37:57 2025
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module InstructionDecoder_tb $end
+$scope module instruction_decoder $end
+$var wire 32 ! instr [31:0] $end
+$var reg 3 " funct3 [2:0] $end
+$var reg 7 # funct7 [6:0] $end
+$var reg 7 $ opcode [6:0] $end
+$var reg 20 % raw_imm [19:0] $end
+$var reg 5 & rd [4:0] $end
+$var reg 5 ' rs1 [4:0] $end
+$var reg 5 ( rs2 [4:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+$end
+#0
+$dumpvars
+b10101 (
+b1010 '
+b10001 &
+b0 %
+b110011 $
+b100000 #
+b0 "
+b1000001010101010000100010110011 !
+$end
+#10000
+b0 #
+b0 (
+b0 '
+b11100011111110100010 %
+b10101 &
+b10111 $
+b11100011111110100010101010010111 !
+#20000
+b0 &
+b100000101110 %
+b11111 (
+b10100 '
+b10 "
+b100011 $
+b10000011111110100010011100100011 !
+#30000
+b110010011100 %
+b1101 (
+b101 '
+b110 "
+b1100011 $
+b10010010110100101110110011100011 !
+#40000
+b0 (
+b0 '
+b0 "
+b11001110111001010 %
+b11100 &
+b10111 $
+b11001110111001010111000010111 !
+#50000
+b11100111011010001110 %
+b111 &
+b1101111 $
+b11010001110111001110001111101111 !
+#60000

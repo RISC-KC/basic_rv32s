@@ -9,7 +9,7 @@ module InstructionDecoder_tb;
 	wire [4:0] rs1;
 	wire [4:0] rs2;
 	wire [4:0] rd;
-	wire [31:0] imm;
+	wire [19:0] raw_imm;
 
     InstructionDecoder instruction_decoder (
         .instr(instr),
@@ -20,10 +20,13 @@ module InstructionDecoder_tb;
 		.rs1(rs1),
 		.rs2(rs2),
 		.rd(rd),
-		.imm(imm)
+		.raw_imm(raw_imm)
     );
 
     initial begin
+        $dumpfile("testbenches/results/waveforms/Instruction_Decoder_tb_result.vcd");
+        $dumpvars(0, instruction_decoder);
+
         // Test sequence
         $display("==================== Instruction Decoder Test START ====================");
 
@@ -34,6 +37,7 @@ module InstructionDecoder_tb;
  		#10;
         $display("Instruction: %b", instr);
 		$display("R: funct7: %b rs2: %b rs1: %b funct3: %b rd: %b opcode: %b", funct7, rs2, rs1, funct3, rd, opcode);
+        $display("Reconstruct: %b", {funct7, rs2, rs1, funct3, rd, opcode});
 
         // Test 2: U-type
 		$display("\nU-type instruction: ");
@@ -41,7 +45,8 @@ module InstructionDecoder_tb;
 
         #10;
         $display("Instruction: %b", instr);
-		$display("I: imm: %b rs1: %b funct3: %b rd: %b opcode: %b", imm, rs1, funct3, rd, opcode);
+		$display("I: raw_imm: %b rs1: %b funct3: %b rd: %b opcode: %b", raw_imm, rs1, funct3, rd, opcode);
+        $display("Reconstruct: %b", {raw_imm, rs1, funct3, rd, opcode});
 		
 		// Test 3: S-type
 		$display("\nS-type instruction: ");
@@ -49,7 +54,8 @@ module InstructionDecoder_tb;
 
         #10;
         $display("Instruction: %b", instr);
-		$display("S: imm[11:5]: %b rs2: %b rs1: %b funct3: %b imm[4:0]: %b opcode: %b", imm[11:5], rs2, rs1, funct3, imm[4:0], opcode);
+		$display("S: raw_imm[11:5]: %b rs2: %b rs1: %b funct3: %b raw_imm[4:0]: %b opcode: %b", raw_imm[11:5], rs2, rs1, funct3, raw_imm[4:0], opcode);
+        $display("Reconstruct: %b", {raw_imm[11:5], rs2, rs1, funct3, raw_imm[4:0], opcode});
 		
 		// Test 4: B-type
 		$display("\nB-type instruction: ");
@@ -57,7 +63,8 @@ module InstructionDecoder_tb;
 
         #10;
         $display("Instruction: %b", instr);
-		$display("B: imm[12|10:5]: %b rs2: %b rs1: %b funct3: %b imm[4:1|11]: %b opcode: %b", {imm[12], imm[10:5]}, rs2, rs1, funct3, {imm[4:1], imm[11]}, opcode);
+		$display("B: raw_imm[11|9:4]: %b rs2: %b rs1: %b funct3: %b raw_imm[3:0|10]: %b opcode: %b", {raw_imm[11], raw_imm[9:4]}, rs2, rs1, funct3, {raw_imm[3:0], raw_imm[10]}, opcode);
+        $display("Reconstruct: %b", {{raw_imm[11], raw_imm[9:4]}, rs2, rs1, funct3, {raw_imm[3:0], raw_imm[10]}, opcode});
 		
 		// Test 5: U-type
 		$display("\nU-type instruction: ");
@@ -65,7 +72,8 @@ module InstructionDecoder_tb;
 
         #10;
         $display("Instruction: %b", instr);
-		$display("U: imm[31:12]: %b rd: %b opcode: %b", imm[31:12], rd, opcode);
+		$display("U: raw_imm[19:0]: %b rd: %b opcode: %b", raw_imm[19:0], rd, opcode);
+        $display("Reconstruct: %b", {raw_imm[19:0], rd, opcode});
 		
 		// Test 6: J-type
 		$display("\nJ-type instruction: ");
@@ -73,7 +81,8 @@ module InstructionDecoder_tb;
 
         #10;
         $display("Instruction: %b", instr);
-		$display("J: imm[20|10:1|11|19:12]: %b rd: %b opcode: %b", {imm[20], imm[10:1], imm[11], imm[19:12]}, rd, opcode);
+		$display("J: raw_imm[19|9:0|10|18:11]: %b rd: %b opcode: %b", {raw_imm[19], raw_imm[9:0], raw_imm[10], raw_imm[18:11]}, rd, opcode);
+        $display("Reconstruct: %b", {{raw_imm[19], raw_imm[9:0], raw_imm[10], raw_imm[18:11]}, rd, opcode});
 
         $display("\n====================  Instruction Decoder Test END  ====================");
 

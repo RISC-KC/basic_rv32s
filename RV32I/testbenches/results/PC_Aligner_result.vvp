@@ -1,0 +1,54 @@
+#! /usr/bin/vvp
+:ivl_version "12.0 (stable)";
+:ivl_delay_selection "TYPICAL";
+:vpi_time_precision - 12;
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/system.vpi";
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/vhdl_sys.vpi";
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/vhdl_textio.vpi";
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/v2005_math.vpi";
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/va_math.vpi";
+S_0x55b32652f8b0 .scope module, "PCAligner_tb" "PCAligner_tb" 2 3;
+ .timescale -9 -12;
+v0x55b326543420_0 .net "next_pc", 31 0, v0x55b32652fc40_0;  1 drivers
+v0x55b3265434e0_0 .var "raw_next_pc", 31 0;
+S_0x55b32652fa40 .scope module, "pc_aligner" "PCAligner" 2 8, 3 1 0, S_0x55b32652f8b0;
+ .timescale 0 0;
+    .port_info 0 /INPUT 32 "raw_next_pc";
+    .port_info 1 /OUTPUT 32 "next_pc";
+v0x55b32652fc40_0 .var "next_pc", 31 0;
+v0x55b3265432e0_0 .net "raw_next_pc", 31 0, v0x55b3265434e0_0;  1 drivers
+E_0x55b3264f6a50 .event anyedge, v0x55b3265432e0_0;
+    .scope S_0x55b32652fa40;
+T_0 ;
+    %wait E_0x55b3264f6a50;
+    %load/vec4 v0x55b3265432e0_0;
+    %parti/s 30, 2, 3;
+    %concati/vec4 0, 0, 2;
+    %store/vec4 v0x55b32652fc40_0, 0, 32;
+    %jmp T_0;
+    .thread T_0, $push;
+    .scope S_0x55b32652f8b0;
+T_1 ;
+    %vpi_call 2 14 "$dumpfile", "testbenches/results/waveforms/PC_Aligner_tb_result.vcd" {0 0 0};
+    %vpi_call 2 15 "$dumpvars", 32'sb00000000000000000000000000000000, S_0x55b32652fa40 {0 0 0};
+    %vpi_call 2 18 "$display", "==================== PCAligner Test START ====================" {0 0 0};
+    %vpi_call 2 21 "$display", "\012Misaligned: " {0 0 0};
+    %pushi/vec4 3735928559, 0, 32;
+    %store/vec4 v0x55b3265434e0_0, 0, 32;
+    %delay 1000, 0;
+    %vpi_call 2 24 "$display", "raw_next_pc = %h => next_pc = %h", v0x55b3265434e0_0, v0x55b326543420_0 {0 0 0};
+    %vpi_call 2 27 "$display", "\012Aligned: " {0 0 0};
+    %pushi/vec4 3735928544, 0, 32;
+    %store/vec4 v0x55b3265434e0_0, 0, 32;
+    %delay 1000, 0;
+    %vpi_call 2 30 "$display", "raw_next_pc = %h => next_pc = %h", v0x55b3265434e0_0, v0x55b326543420_0 {0 0 0};
+    %vpi_call 2 32 "$display", "\012====================  PCAligner Test END  ====================" {0 0 0};
+    %vpi_call 2 33 "$stop" {0 0 0};
+    %end;
+    .thread T_1;
+# The file index is used to find the file name in the following table.
+:file_names 4;
+    "N/A";
+    "<interactive>";
+    "testbenches/PC_Aligner_tb.v";
+    "modules/PC_Aligner.v";

@@ -1,9 +1,11 @@
 `include "modules/headers/alu_src_select.vh"
 `include "modules/headers/csr.vh"
+`include "modules/headers/itype.vh"
 `include "modules/headers/opcode.vh"
 `include "modules/headers/rf_wd_select.vh"
 
 module ControlUnit (
+	input read_done,	// signal indicating if read is done
 	input write_done,	// signal indicating if write is done
 	input [6:0] opcode, // opcode from Instruction Decoder
 	input [2:0] funct3, // funct3 from Instruction Decoder
@@ -11,12 +13,13 @@ module ControlUnit (
 	output reg jump,
 	output reg branch,
 	output reg [1:0] alu_src_A_select,
-	output reg [1:0] alu_src_B_select,
+	output reg [2:0] alu_src_B_select,
 	output reg [2:0] csr_op,
 	output reg register_file_write,
 	output reg [2:0] register_file_write_data_select,
 	output reg memory_read,
-	output reg memory_write
+	output reg memory_write,
+	output reg pc_stall
 );
 
     always @(*) begin
@@ -43,6 +46,9 @@ module ControlUnit (
 					// No memory access
 					memory_read = 0;
 					memory_write = 0;
+
+					// No need to stall pc
+					pc_stall = 0;
 				end
 				`OPCODE_AUIPC: begin
 					// No jump
@@ -65,6 +71,9 @@ module ControlUnit (
 					// No memory access
 					memory_read = 0;
 					memory_write = 0;
+
+					// No need to stall pc
+					pc_stall = 0;
 				end
 				`OPCODE_JAL: begin
 					// Jump
@@ -87,6 +96,9 @@ module ControlUnit (
 					// No memory access
 					memory_read = 0;
 					memory_write = 0;
+
+					// No need to stall pc
+					pc_stall = 0;
 				end
 				`OPCODE_JALR: begin
 					// Jump
@@ -109,6 +121,9 @@ module ControlUnit (
 					// No memory access
 					memory_read = 0;
 					memory_write = 0;
+
+					// No need to stall pc
+					pc_stall = 0;
 				end
 				`OPCODE_BRANCH: begin
 					// No jump
@@ -131,6 +146,9 @@ module ControlUnit (
 					// No memory access
 					memory_read = 0;
 					memory_write = 0;
+
+					// No need to stall pc
+					pc_stall = 0;
 				end
 				`OPCODE_LOAD: begin
 					// No jump
@@ -153,6 +171,9 @@ module ControlUnit (
 					// Read from memory
 					memory_read = 1;
 					memory_write = 0;
+
+					// Stall pc if read is not done
+					pc_stall = !read_done;
 				end
 				`OPCODE_STORE: begin
 					// No jump
@@ -175,6 +196,9 @@ module ControlUnit (
 					// Write to memory
 					memory_read = 0;
 					memory_write = 1;
+
+					// No need to stall pc
+					pc_stall = 0;
 				end
 				`OPCODE_ITYPE: begin
 					// No jump
@@ -185,7 +209,13 @@ module ControlUnit (
 					
 					// Operation on R[rs1] and imm
 					alu_src_A_select = `ALU_SRC_A_RD1;
-					alu_src_B_select = `ALU_SRC_B_IMM;
+
+					if (funct3 == `ITYPE_SRXI) begin
+						alu_src_B_select = `ALU_SRC_B_SHAMT;
+					end
+					else begin
+						alu_src_B_select = `ALU_SRC_B_IMM;
+					end
 					
 					// No CSR operation
 					csr_op = 3'b0;
@@ -197,6 +227,9 @@ module ControlUnit (
 					// No memory access
 					memory_read = 0;
 					memory_write = 0;
+
+					// No need to stall pc
+					pc_stall = 0;
 				end
 				`OPCODE_RTYPE: begin
 					// No jump
@@ -219,6 +252,9 @@ module ControlUnit (
 					// No memory access
 					memory_read = 0;
 					memory_write = 0;
+
+					// No need to stall pc
+					pc_stall = 0;
 				end
 				`OPCODE_FENCE: begin
 					// No jump
@@ -241,6 +277,9 @@ module ControlUnit (
 					// No memory access
 					memory_read = 0;
 					memory_write = 0;
+
+					// No need to stall pc
+					pc_stall = 0;
 				end
 				`OPCODE_ENVIRONMENT: begin
 					// No jump
@@ -284,6 +323,9 @@ module ControlUnit (
 					// No memory access
 					memory_read = 0;
 					memory_write = 0;
+
+					// No need to stall pc
+					pc_stall = 0;
 				end
 			endcase
 		end
@@ -297,6 +339,7 @@ module ControlUnit (
 			register_file_write_data_select = `RF_WD_NONE;
 			memory_read = 0;
 			memory_write = 0;
+			pc_stall = 0;
 		end
     end
 
