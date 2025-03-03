@@ -1,0 +1,28 @@
+$date
+	Mon Mar  3 11:51:20 2025
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module PCAligner_tb $end
+$scope module pc_aligner $end
+$var wire 32 ! raw_next_pc [31:0] $end
+$var reg 32 " next_pc [31:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+$end
+#0
+$dumpvars
+b11011110101011011011111011101100 "
+b11011110101011011011111011101111 !
+$end
+#1000
+b11011110101011011011111011100000 "
+b11011110101011011011111011100000 !
+#2000
