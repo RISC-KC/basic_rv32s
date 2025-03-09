@@ -4,7 +4,6 @@
 `include "modules/headers/rtype.vh"
 `include "modules/headers/store.vh"
 `include "modules/headers/opcode.vh"
-`include "modules/headers/csr.vh"
 
 module InstructionMemory (
     input  [31:0] pc,
@@ -14,6 +13,8 @@ module InstructionMemory (
 	reg [31:0] data [0:1023];
 	
 	initial begin
+		$readmemb("modules/initial_data.mem", data);
+
 		// ──────────────────────────────────────────────
 		// I‑타입 ALU 명령어 (9개)
 		// {imm[11:0], rs1, funct3, rd, OPCODE_ITYPE}
@@ -76,31 +77,21 @@ module InstructionMemory (
 		// ──────────────────────────────────────────────
 		// B‑타입 명령어 (분기) (6개)
 		// {imm[12], imm[10:5], rs2, rs1, funct3, imm[4:1], imm[11], OPCODE_BRANCH}
-		data[30] = {1'b0, 6'd0, 5'd2, 5'd1, `BRANCH_BEQ, 4'b0100, 1'b0, `OPCODE_BRANCH}; 	// BEQ: if(x1 == x2) branch offset = 8
-		data[31] = {1'b0, 6'd0, 5'd17, 5'd7, `BRANCH_BNE, 4'b0100, 1'b0, `OPCODE_BRANCH}; 	// BNE: if(x7 != x17) branch offset = 8
-		data[32] = {1'b0, 6'd0, 5'd2, 5'd1, `BRANCH_BLT, 4'b0100, 1'b0, `OPCODE_BRANCH}; 	// BLT: if(x1 < x2) branch offset = 8
-		data[33] = {1'b0, 6'd0, 5'd1, 5'd2, `BRANCH_BGE, 4'b0100, 1'b0, `OPCODE_BRANCH}; 	// BGE: if(x2 >= x1) branch offset = 8
-		data[34] = {1'b0, 6'd0, 5'd1, 5'd2, `BRANCH_BLTU, 4'b0100, 1'b0, `OPCODE_BRANCH}; 	// BLTU: if(x2 < x1 unsigned) branch offset = 8
-		data[35] = {1'b0, 6'd0, 5'd1, 5'd2, `BRANCH_BGEU, 4'b0100, 1'b0, `OPCODE_BRANCH}; 	// BGEU: if(x2 >= x1 unsigned) branch offset = 8
-
-		// ──────────────────────────────────────────────
-		// I-타입 Zicsr 확장 명령어 (6개)
-		// {imm[11:0], rs1(uimm), funct3, rd, OPCODE_ENVIRONMENT}
-		data[37] = {12'hF11, 5'd28, `CSR_CSRRW, 5'd20, `OPCODE_ENVIRONMENT}; 		// CSRRW : x28 = 0000_0094; x20 = 5256_4B43, CSR[F11] = 5256_4B43
-		data[38] = {12'h341, 5'd1, `CSR_CSRRS, 5'd21, `OPCODE_ENVIRONMENT}; 		// CSRRS: x1 = 0000_02BC; x21 = 0000_0000, CSR[341] = 0000_00BC
-		data[39] = {12'h341, 5'd20, `CSR_CSRRC, 5'd21, `OPCODE_ENVIRONMENT}; 		// CSRRC: x21 = 0000_02BC, CSR[341] = 0000_00BC
-		data[40] = {12'h343, 5'd3, `CSR_CSRRWI, 5'd22, `OPCODE_ENVIRONMENT}; 		// CSRRWI: x22 = FFFF_FFBC, CSR[343] = 0000_0000; R[x22] = 0000_0000, CSR[343] = 0000_0003
-		data[41] = {12'h305, 5'd7, `CSR_CSRRSI, 5'd22, `OPCODE_ENVIRONMENT}; 		// CSRRSI: x22 = 0000_0000, CSR[305] = 0000_1000; R[x22] = 0000_1000, CSR[305] = 0000_1007
-		data[42] = {12'h305, 5'b11111, `CSR_CSRRCI, 5'd23, `OPCODE_ENVIRONMENT}; 	// CSRRCI: uimm = 11111, CSR[305] = 0000_1007; R[x23] = 0000_1007, CSR[305] = 0000_0000
-		// ──────────────────────────────────────────────
-		// I-타입 HINT 명령어 (CSR 동작 확인)
-		// {imm[11:0], rs1, funct3, rd, OPCODE_ITYPE}
-		data[43] = {12'h2BC, 5'd0, `ITYPE_ADDI, 5'd0, `OPCODE_ITYPE};				// ADDI:  x0 = x0 + 2BC = 0000_0000
-
+		data[30] = {1'b0, 6'd0, 5'd2, 5'd1, `BRANCH_BEQ, 4'b0100, 1'b0, `OPCODE_BRANCH}; // BEQ: if(x1 == x2) branch offset = 8
+		data[31] = {1'b0, 6'd0, 5'd17, 5'd7, `BRANCH_BNE, 4'b0100, 1'b0, `OPCODE_BRANCH}; // BNE: if(x7 != x17) branch offset = 8
+		data[32] = {1'b0, 6'd0, 5'd2, 5'd1, `BRANCH_BLT, 4'b0100, 1'b0, `OPCODE_BRANCH}; // BLT: if(x1 < x2) branch offset = 8
+		data[33] = {1'b0, 6'd0, 5'd1, 5'd2, `BRANCH_BGE, 4'b0100, 1'b0, `OPCODE_BRANCH}; // BGE: if(x2 >= x1) branch offset = 8
+		data[34] = {1'b0, 6'd0, 5'd1, 5'd2, `BRANCH_BLTU, 4'b0100, 1'b0, `OPCODE_BRANCH}; // BLTU: if(x2 < x1 unsigned) branch offset = 8
+		data[35] = {1'b0, 6'd0, 5'd1, 5'd2, `BRANCH_BGEU, 4'b0100, 1'b0, `OPCODE_BRANCH}; // BGEU: if(x2 >= x1 unsigned) branch offset = 8
 	end
 	
 	always @(*) begin
-		instruction = data[pc[31:2]];
+		if (pc[31:2] < 39) begin
+			instruction = data[pc[31:2]];
+		end
+		else begin
+			instruction = 32'b0;
+		end
 	end
 
 endmodule
