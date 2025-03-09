@@ -1,6 +1,6 @@
 module CSRFile (
     input               clk,                   // clock signal
-    input               rst,                   // reset signal
+    input               reset,                   // reset signal
     input               csr_write_enable,      // enabling signal for reading / writing
     input       [11:0]  csr_address,           // take address of CSR Unit to write value
     input       [31:0]  csr_write_data,        // data to write
@@ -40,8 +40,8 @@ module CSRFile (
     end
 
     // Reset Operation
-    always @(posedge clk or posedge rst) begin
-      if (rst) begin
+    always @(posedge clk or posedge reset) begin
+      if (reset) begin
         mtvec   <= DEFAULT_mtvec;
         mepc    <= DEFAULT_mepc;
         mcause  <= DEFAULT_mcause;
