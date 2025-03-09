@@ -1,5 +1,5 @@
 $date
-	Mon Mar  3 04:59:49 2025
+	Thu Mar  6 14:42:46 2025
 $end
 $version
 	Icarus Verilog
@@ -16,7 +16,7 @@ $var wire 1 $ write_done $end
 $var reg 2 % alu_src_A_select [1:0] $end
 $var reg 3 & alu_src_B_select [2:0] $end
 $var reg 1 ' branch $end
-$var reg 3 ( csr_op [2:0] $end
+$var reg 1 ( csr_write_enable $end
 $var reg 1 ) jump $end
 $var reg 1 * memory_read $end
 $var reg 1 + memory_write $end
@@ -37,7 +37,7 @@ b0 .
 0+
 0*
 0)
-b0 (
+0(
 0'
 b0 &
 b0 %
@@ -165,25 +165,19 @@ b1110011 "
 b11 .
 1-
 b1 %
-b1 (
+1(
 b1 !
 #39000
 b11 &
-b10 (
 b10 !
 #40000
-b11 (
 b11 !
 #41000
 b11 %
 b0 &
-b101 (
 b101 !
 #42000
 b11 &
-b110 (
 b110 !
 #43000
-b111 (
 b111 !
-#44000
