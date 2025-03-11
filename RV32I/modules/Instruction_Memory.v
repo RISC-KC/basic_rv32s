@@ -6,7 +6,7 @@
 `include "modules/headers/opcode.vh"
 
 module InstructionMemory (
-    input  [31:0] pc,
+    input [31:0] pc,
     output reg [31:0] instruction
 );
 
