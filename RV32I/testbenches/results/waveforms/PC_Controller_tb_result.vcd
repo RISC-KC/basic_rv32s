@@ -1,0 +1,65 @@
+$date
+	Sun Mar 16 14:31:03 2025
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module PCController_tb $end
+$scope module pc_controller $end
+$var wire 1 ! branch_taken $end
+$var wire 32 " imm [31:0] $end
+$var wire 1 # jump $end
+$var wire 32 $ jump_target [31:0] $end
+$var wire 32 % pc [31:0] $end
+$var wire 1 & pc_stall $end
+$var wire 32 ' trap_target [31:0] $end
+$var wire 1 ( trapped $end
+$var reg 32 ) next_pc [31:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+$end
+#0
+$dumpvars
+b0 )
+0(
+b0 '
+1&
+b0 %
+b10010001101000101011001111000 $
+1#
+b0 "
+0!
+$end
+#10000
+b100 )
+0#
+0&
+b0 $
+#20000
+b11011110101011010000000000000000 )
+b11011110101011010000000000000000 $
+1#
+b100 %
+#30000
+b11011110101011011011111011101111 )
+b1011111011101111 "
+1!
+0#
+b11011110101011010000000000000000 %
+#40000
+b11001010111111101011101010111110 )
+b11001010111111101011101010111110 '
+1(
+0!
+b11011110101011011011111011101111 %
+#50000
+b1000000000100 )
+0(
+b1000000000000 %
+#60000
