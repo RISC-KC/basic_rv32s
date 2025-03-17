@@ -70,7 +70,6 @@ module RV32I43F (
 	wire [31:0] byte_enable_logic_register_file_write_data;
     wire [31:0] data_memory_write_data;
     wire [3:0] write_mask;
-    wire read_done;
 
     wire csr_write_enable;
     wire [11:0] csr_address;
@@ -96,8 +95,7 @@ module RV32I43F (
         .jump_target(alu_result),
         .imm(imm),
 	    .trap_target(32'b0),
-	    .write_done(1'b1),
-        .pc_stall(pc_stall),
+	    .pc_stall(1'b0),
 	
 	    .next_pc(raw_next_pc)
     );
@@ -130,7 +128,6 @@ module RV32I43F (
     );
 
     ControlUnit control_unit (
-        .read_done(read_done),
         .write_done(1'b1),
 	    .opcode(opcode),
 	    .funct3(funct3),
@@ -161,14 +158,12 @@ module RV32I43F (
 
     DataMemory data_memory (
         .clk(clk),
-        .read_enable(memory_read),
         .write_enable(memory_write),
         .address(alu_result[11:2]),
         .write_data(data_memory_write_data),
         .write_mask(write_mask),
 
-        .read_data(data_memory_read_data),
-        .read_done(read_done)
+        .read_data(data_memory_read_data)
     );
 
     ALUController alu_controller (
