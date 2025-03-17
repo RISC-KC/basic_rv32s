@@ -9,7 +9,6 @@
 `include "modules/headers/store.vh"
 
 module ControlUnit_tb;
-    reg read_done;
     reg write_done;
 	reg [6:0] opcode;
 	reg [2:0] funct3;
@@ -21,12 +20,10 @@ module ControlUnit_tb;
 	wire csr_write_enable;
 	wire register_file_write;
 	wire [2:0] register_file_write_data_select;
-	wire memory_read;
 	wire memory_write;
     wire pc_stall;
 
     ControlUnit control_unit (
-        .read_done(read_done),
         .write_done(write_done),
         .opcode(opcode),
         .funct3(funct3),
@@ -56,7 +53,6 @@ module ControlUnit_tb;
         // Test 1: Writing not done
 		$display("\nWriting not done: ");
 
-        read_done = 1;
         write_done = 0;
 
         #1;
@@ -189,19 +185,6 @@ module ControlUnit_tb;
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_write_enable: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_write_enable);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
         $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
-
-        // Test 8: Reading not done
-        $display("\nReading not done: ");
-        
-        read_done = 0;
-
-        #1;
-        $display("funct3: %b", funct3);
-        $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_write_enable: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_write_enable);
-		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
-        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
-
-        read_done = 1;
 
         // Test 9: Store
 		$display("\nStore: ");

@@ -1,5 +1,5 @@
 $date
-	Thu Mar  6 14:42:46 2025
+	Sun Mar 16 14:54:47 2025
 $end
 $version
 	Icarus Verilog
@@ -11,18 +11,17 @@ $scope module ControlUnit_tb $end
 $scope module control_unit $end
 $var wire 3 ! funct3 [2:0] $end
 $var wire 7 " opcode [6:0] $end
-$var wire 1 # read_done $end
-$var wire 1 $ write_done $end
-$var reg 2 % alu_src_A_select [1:0] $end
-$var reg 3 & alu_src_B_select [2:0] $end
-$var reg 1 ' branch $end
-$var reg 1 ( csr_write_enable $end
-$var reg 1 ) jump $end
-$var reg 1 * memory_read $end
-$var reg 1 + memory_write $end
-$var reg 1 , pc_stall $end
-$var reg 1 - register_file_write $end
-$var reg 3 . register_file_write_data_select [2:0] $end
+$var wire 1 # write_done $end
+$var reg 2 $ alu_src_A_select [1:0] $end
+$var reg 3 % alu_src_B_select [2:0] $end
+$var reg 1 & branch $end
+$var reg 1 ' csr_write_enable $end
+$var reg 1 ( jump $end
+$var reg 1 ) memory_read $end
+$var reg 1 * memory_write $end
+$var reg 1 + pc_stall $end
+$var reg 1 , register_file_write $end
+$var reg 3 - register_file_write_data_select [2:0] $end
 $upscope $end
 $upscope $end
 $enddefinitions $end
@@ -31,44 +30,45 @@ $dumpall
 $end
 #0
 $dumpvars
-b0 .
-0-
-0,
-0+
+b10 -
+1,
+1+
 0*
 0)
 0(
 0'
-b0 &
-b0 %
-0$
-1#
+0&
+b1 %
+b1 $
+0#
 b110011 "
 b0 !
 $end
 #1000
-b100 .
-1-
+b100 -
+b0 %
+b0 $
+0+
 b110111 "
-1$
+1#
 #2000
-b10 .
-b10 &
+b10 -
 b10 %
+b10 $
 b10111 "
 #3000
-b101 .
-1)
+b101 -
+1(
 b1101111 "
 #4000
-b1 %
+b1 $
 b1100111 "
 #5000
-b0 .
-0-
-b1 &
-1'
-0)
+b0 -
+0,
+b1 %
+1&
+0(
 b1100011 "
 #6000
 b1 !
@@ -81,11 +81,11 @@ b110 !
 #10000
 b111 !
 #11000
-1*
-b1 .
-1-
-b10 &
-0'
+1)
+b1 -
+1,
+b10 %
+0&
 b0 !
 b11 "
 #12000
@@ -97,87 +97,83 @@ b100 !
 #15000
 b101 !
 #16000
-1,
-0#
-#17000
+1*
+0)
+b0 -
 0,
-1+
-0*
-b0 .
-0-
 b0 !
 b100011 "
-1#
-#18000
+#17000
 b1 !
-#19000
+#18000
 b10 !
-#20000
-0+
-b10 .
-1-
+#19000
+0*
+b10 -
+1,
 b0 !
 b10011 "
-#21000
+#20000
 b1 !
-#22000
+#21000
 b10 !
-#23000
+#22000
 b11 !
-#24000
+#23000
 b100 !
-#25000
-b100 &
+#24000
+b100 %
 b101 !
-#26000
-b10 &
+#25000
+b10 %
 b110 !
-#27000
+#26000
 b111 !
-#28000
-b1 &
+#27000
+b1 %
 b0 !
 b110011 "
-#29000
+#28000
 b1 !
-#30000
+#29000
 b10 !
-#31000
+#30000
 b11 !
-#32000
+#31000
 b100 !
-#33000
+#32000
 b101 !
-#34000
+#33000
 b110 !
-#35000
+#34000
 b111 !
-#36000
-b0 .
-0-
-b0 &
+#35000
+b0 -
+0,
 b0 %
+b0 $
 b0 !
 b1111 "
-#37000
+#36000
 b1110011 "
-#38000
-b11 .
-1-
-b1 %
-1(
+#37000
+b11 -
+1,
+b1 $
+1'
 b1 !
-#39000
-b11 &
+#38000
+b11 %
 b10 !
-#40000
+#39000
 b11 !
+#40000
+b11 $
+b0 %
+b101 !
 #41000
 b11 %
-b0 &
-b101 !
-#42000
-b11 &
 b110 !
-#43000
+#42000
 b111 !
+#43000
