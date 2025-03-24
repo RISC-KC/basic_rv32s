@@ -1,0 +1,180 @@
+$date
+	Mon Mar 24 14:52:14 2025
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module DataCache_tb $end
+$scope module data_cache $end
+$var wire 10 ! address [9:0] $end
+$var wire 1 " clk $end
+$var wire 32 # dm_data [31:0] $end
+$var wire 1 $ hit1 $end
+$var wire 1 % hit2 $end
+$var wire 1 & read_enable $end
+$var wire 1 ' reset $end
+$var wire 32 ( write_data [31:0] $end
+$var wire 1 ) write_enable $end
+$var wire 4 * write_mask [3:0] $end
+$var wire 5 + tag [4:0] $end
+$var wire 5 , index [4:0] $end
+$var wire 32 - extended_mask [31:0] $end
+$var reg 10 . flush_address [9:0] $end
+$var reg 32 / flush_data [31:0] $end
+$var reg 1 0 flush_done $end
+$var reg 1 1 hit $end
+$var reg 32 2 read_data [31:0] $end
+$var integer 32 3 i [31:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+$end
+#0
+$dumpvars
+b100000 3
+b0 2
+01
+10
+b0 /
+b0 .
+b0 -
+b0 ,
+b0 +
+b0 *
+0)
+b0 (
+1'
+x&
+0%
+0$
+b0 #
+0"
+b0 !
+$end
+#5000
+b100000 3
+1"
+#10000
+0"
+0'
+#15000
+1"
+#20000
+b10101 ,
+0"
+b11011110101011011011111011101111 #
+b10101 !
+1&
+#25000
+11
+1$
+1"
+#30000
+0"
+#35000
+b11011110101011011011111011101111 2
+1"
+#40000
+01
+0$
+b1 +
+0"
+b11001010111111101011101010111110 #
+b110101 !
+#45000
+11
+1%
+b0 2
+1"
+#50000
+0"
+#55000
+b11001010111111101011101010111110 2
+1"
+#60000
+1$
+0%
+b11111111000000000000000000000000 -
+b0 +
+0"
+b1000 *
+b10010001101000101011001111000 (
+b10101 !
+1)
+0&
+#65000
+b0 2
+b100 3
+1"
+#70000
+0"
+0)
+1&
+#75000
+b10010101011011011111011101111 2
+1"
+#80000
+01
+0$
+b1111111111111111 -
+b10 +
+0"
+b11 *
+b11001011100100001000100100001 (
+b1010101 !
+1)
+0&
+#85000
+00
+b10010101011011011111011101111 /
+b10101 .
+b0 2
+1"
+#90000
+0"
+#95000
+11
+1$
+10
+b0 /
+b0 .
+1"
+#100000
+0"
+0)
+1&
+#105000
+b1000100100001 2
+1"
+#110000
+01
+0$
+b0 +
+0"
+b10010101011011011111011101111 #
+b10101 !
+#115000
+11
+1%
+b0 2
+1"
+#120000
+0"
+#125000
+b10010101011011011111011101111 2
+1"
+#130000
+1$
+0%
+b10 +
+0"
+b1010101 !
+#135000
+b1000100100001 2
+1"
+#140000
