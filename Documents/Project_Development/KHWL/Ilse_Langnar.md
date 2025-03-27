@@ -877,7 +877,7 @@ RV32I47F 코어 디자인 적용도 마쳤다..
 신호들과 모듈들을 정렬했다. 16:32..
 
 이제 탑 모듈 다이어그램 수정해야한다.
-김용우 교수님께 설날 인사도 드릴 겸 혹시 산업계나 이 쪽 분야에서 사용하는 블럭 다이어그램 툴이 따로 있는지 여쭤봤다.
+교수님께 설날 인사도 드릴 겸 혹시 산업계나 이 쪽 분야에서 사용하는 블럭 다이어그램 툴이 따로 있는지 여쭤봤다.
 별도로 없다고 하셨다. 마이크로소프트 비지오나 파워포인트에서 일일히 그린다고 하신다... 그럼 뭐.. draw.io에서 설계하던게 혹시나 손해보고 있는 걸 줄 알았는데 아니니 다행이다.
 오히려 더 편한 툴이 없다는데에 절망을 해야하나...
 
@@ -1705,7 +1705,7 @@ CSR은 거대한 문이었구나.. 각 레지스터별로 Interrupt나 Trap들, 
 
 [2025.02.19.]
 23:42. CSR의 구현 방안에 대해 연구하던 중에 RV32I37F의 테스트벤치 소식이 들려와 바로 다가갔다.
-뭔가 실패한듯 보여 툴의 문제로 생각하고 웨이브폼 파일을 둘러보던 찰나. 23:42분 즈음 뭔 바람인지 그냥 지웅이한테 갔더니 뭔가 열심히 치고 있었다.
+뭔가 실패한듯 보여 툴의 문제로 생각하고 웨이브폼 파일을 둘러보던 찰나. 23:42분 즈음 뭔 바람인지 그냥 ChoiCube84한테 갔더니 뭔가 열심히 치고 있었다.
 그렇게 웨이브폼이 뜨고, 우리는 확신의 성공을 목격했다.
 RV32I37F. 완성. 
 그 시작의 명령어는 간단헀다. x0에 10 더한 값을 A로, x0에 20 더한 값을 B로. A+B를 C로. 완전한 성공. 모든게 제대로 작동했다.
@@ -2248,3 +2248,303 @@ WriteBack의 안건은 현재 수행되는 대상 주소가 아니라, Memory로
 이게 제일 큰 고찰이었는데 그에 대한 가이드라인이 이미 책에 나와있었다. 얼떨결에 문제를 풀고 답을 내버렸는데 생각지도 못하게 친절한 답지까지 확인해서 설계한게 맞다는 검증을 하게 된 셈.
 하하 다행이다. 문제가 생겼다. 파이프라이닝은 아니고, 우리가 설계하는 rv32s 가 lw 명령어의 구현을 기점으로 더 이상 싱글사이클 프로세서가 아니게 되어버렸다는 것. 그리고 캐시를 하면서 더더욱 한 사이클 이내에 모든 동작을 넣기가 힘들어졌다는 것.
 한 사이클 안에 동작을 할 수 있도록 클럭 유지 시간을 늘리는 것은 근본적인 해답이 되질 않는다. 대부분의 로직이 clk의 posedge를 기반하기 때문. 
+
+2025.03.16.
+오늘은 아침에 RV32I50F.5SP.R1 다이어그램의 신호들 배선을 최적화했다.
+어제 컴퓨터 구조 및 설계 책을 읽다보니 신호들이 지나가는 경로를 하나로 묶어 설계를 하는 경향이 보이고, 그 전부터 그렇게 하는게 깔끔할 것 같다는 생각에 이참에 그렇게 한번 최적화를 했다. 
+그리고 그 다음부턴 데이터 메모리의 한 사이클 밀린 것에 대해 연구를 계속했다. 
+어제 연등을 끝내며 화장실 회의에서 이야기가 나온, read enable 신호의 posedge화를 실험해보았고, 무참하게도 syntax error가 떴다.. 하하..,
+지금 이러한 문제가 클럭 사이클이 1로 오르는 rising edge에서 read enable이 0으로 잡히고, 
+설계특성상 그 이후에 read enable이 여러 조건문을 거쳐 1로 활성화되기 때문에 바로 read를 실행하지 못하는 것 같은데.. 
+이를 타계할 방법이 없을까? 클럭의 edge만 잡아서 하기 때문에 타이밍상 놓치는거면, posedge clk라고만 적지 않고 데이터 메모리의 read 동작 자체를 posedge clk or clk 로 해서 clk가 1일 때도 동작을 수행하게끔 하면 해결할 수 있지 않을까?
+라고 생각해보았지만, 동기식 설계 원칙을 위반하기도하고 여러 예상치못한 오류들을 불러일으킬 것 같아서 폐기했다. 
+IDEC에서 교육받은 자료를 살펴보았고, 여기서 보이는 데이터 메모리의 코드는 우리가 현재 구현하고 있는 데이터 메모리 코드와 많이 달랐다. 
+이와 관련해서 ChoiCube84에게 추가적인 연구를 요청한 상태이고, 해당 코드가 우리와 같은 테스트벤치 환경에서 문제상황을 개선하게 된다면 37F부터 작성해온 데이터메모리의 구조를 수정할 예정이다.
+만약 같은 한 사이클 밀리는 현상이 발생한다면 현재 데이터 메모리의 설계를 고수한다. 
+RV32I50F의 구현 및 검증이 완료된 이후 64비트 확장을 하여 새 레포지토리를 만들 예정인데, RV64I에서부터는 FPGA에 탑재된 DDR3 SDRAM의 사용을 같이 할 것이기에 그 때 가서 데이터메모리의 구조를 개변할 예정이다. 
+
+--
+
+47F 아키텍처를 ChoiCube84가 구현하던 중, fence.i의 구현에 대하여 issue를 제기했다. fence.i가 50F 아키텍처에서는 Exception Detector- Trap Controller에서 담당하는데, 
+47F에서는 Instruction Cache에 rst신호를 줄 모듈과 신호가 없다는 것. 본래 47F 아키텍처가 47가지 명령어를 지원하고, 43F에서 오는데 추가된 명령어가 FENCE, FENCE.tso, PAUSE, FENCE.i였다.
+허나 이 fence.i를 지금 구현하기 위해서는 Memory Controller와 Control Unit에 추가적인 신호 설계를 해야하는데 이 경우 다른 아키텍처와의 상호 호환성이 아니라 47F에만 국한되는 구조가 생기며
+이마저도 다른 아키텍처에서 재활용할 수 없게된다는 문제가 생겼다. 때문에 Zifencei확장을 50F에서 추가하기로 했고, 47F 아키텍처의 이름을 46F로 정정했다. 
+
+10+15+3+6+3+6+2+1 = 46
+47F Architecture supports Total 46 Instructions.
+
+Thus, the naming of 47F Architecture renamed to 46F Architecture. 
+(Originally 47F Architecture includes fence.i instruction with Memory Controller. 
+However considering the module's Interoperability, we decided to remove zifencei extension to 50F Architecture. )
+
+--
+
+IDEC의 레퍼런스 Data Memory의 코드를 우리의 테스트벤치로 동작시켜보니 한 사이클 내에 정상동작하는 것을 발견.
+이제 해당 코드를 참조하여 기존의 Data Memory 코드를 수정할 예정. 
+
+RV64I에서 추가되고 변경되는 명령어들을 종합하고 정리하는 중.
+
+--
+
+연등시간
+uhh., RV64I 명령어들 종합 끝냄.
+FENCE 명령어시 Writeback인 현재 캐시 정책상 밀린 쓰기를 Data Memory에 쓰도록 할 것임.
+이에 따라 Flush 작업이 다 끝났는지를 Cache가 알기 때문에 Write Done을 데이터 캐시에게 줬고, 추후 Pipeline에서도 PC_Stall 신호는 쓰일 가능성이 농후하니 그대로 뒀다.
+아직 레퍼런스 코드를 이용한 수정 후 동작 확인 안한 상태. 
+
+어 됐다.. verilog 에서 =의 문제.. 
+다행이다. 뭔가 더 큰 무언가를 놓치고 있던게 아니라, verilog를 숙달하지 못한 점에서 온 실수 였다. 
+이렇게 read done신호는 없어진다. 그리고 원래 PCC에 PC_Stall이 들어가면 Write Done신호는 PCC에 필요가 없는데, 그게 다이어그램에 남아있어 없앴다. 
+그리고 read enable도 없앴다 사실 이게 핵심인 것 같기도 하다. 이제 이 수정 소요를 각 다이어그램 파이널 버전을 리비전하여야 한다. 
+오늘은 여기까지. 내일은 1박 2일 휴가라 개발환경을 모두 압축 저장해서 업로드해야겠다. 
+
+2025.03.17.
+PR했다. 1박 2일 휴가라 그리 많은 건 하지 못했다. 
+
+2025.03.18.
+캐시 구조와 FENCE 명령어에 대한 ChoiCube84의 제언.
+캐시의 WriteBack 동작을 FENCE로 할 수 있게 하는 것은 큰 당위성을 제시하지 못한다. 
+굳이 할 이유가 없을 뿐더러, multi-hart 상황에서의 용도와 그 취지에도 어긋난다. 
+듣고보니, WriteBack을 일괄로 Flush할 이유는 single-hart에선 필요 없기도하고, 의견을 수용했다. 
+43F 아키텍처에서 46F 아키텍처로 (FENCE, FENCE.TSO, PAUSE 지원) 확장되는 것이 아니라,
+43F 아키텍처에서 44F 아키텍처로, FENCE 류 명령어들을 제외하고 Zifencei 명령어 지원만 확장된다. 
+이를 위해 Instruction Cache가 생기고, Data Cache도 일단 설계하고 구현에 착수했으니 RV32I44F부터 캐시 구조를 가지게 된다. 
+G확장 또는 추후 Linux Kernel을 올리기 위해서 Zifencei는 필요하다. 
+
+A확장와 CMO에 대해서 공부했다. 
+
+2025.03.19.
+로드라인 및 아키텍처를 기확하고 계획안을 수정하며 구체화하였다. 
+
+수정된 로드라인은 다음과 같다. 
+
+[basic_rv32s]
+-----
+RV32I37F : 	Base Architecture that supports 37 Instructions.
+			Which is an amount that excluded EBREAK, ECALL, FENCE, FENCE.TSO, PAUSE instructions.
+			└ Partial RV32I (RV32I except FENCE, FENCE.TSO, PAUSE, ECALL, EBREAK)
+RV32I43F
+└ P.RV32I + Zicsr
+
+RV32I44F_C
+├ P.RV32I + Zicsr + Zifencei
+└ + Cache Structure (Instruction Cache, Data Cache)
+
+RV32I47F : 	Supports EBREAK, ECALL, mret from RV32I & Privileged Architecture.
+			Final version of basic_rv32s repository
+			├ P.RV32I + Zicsr + Zifencei + ECALL + EBREAK + mret
+			└ + Debug Interface, Debugger
+
+[RV64s]
+-----
+RV64I59F : RV64I Extension
+└ 47F + RV64I
+
+RV64I59F_5SP
+└ 59F + 5-Stage Pipeline
+
+RV64IM72F : M extension supported. Maybe Grapchics Interface from this architecture. 
+└ 59F5SP + RV64M
+
+[Final]
+RV32IMA104_CMO_RVWMO : A extension supported.
+└ Full RV64I + RV64M + RV64A + Zicsr + Zifencei + mret + CMO + RVWMO
+
+▶ Fully supports RV32I. Including FENCE, FENCE.TSO, PAUSE after all.
+▶ Complies RVWMO memory consistancy model. 
+▶ Dual-Core (multi-hart) processing system.
+▶ Improved Cache structure
+ ├ Two separate L1 Cache 	; Instruction Cache, Data Cache respectively.
+ ├ One integrated L2 Cache 	; Integrated Cache that contains Instructions and Datas.
+ └ One shared L3 Cache		; A Cache that shared by each core(hart).
+ 
+ L1$, L2$ for each core respectively, L3$ is shared cache that all the core can access.
+▶ Supports DDR3 SDRAM integrated on FPGA board.
+
+2025.03.20.
+이제 해야할 건, 파이프라이닝 레지스터의 배치는 완료 되었으니 Hazard Unit을 구상하고 제어헤저드, 데이터헤저드, 구조적 헤저드에 대한 대응 설계를 하는 것 하나.
+그리고 그간 수정된 아키텍처를 rv32s 의 모든 Final 설계도에 revision하는 것이다. 
+
+어어... 메모리를 한 사이클 안에 가능케 한게 비동기 읽기로 구현했기 때문이라고 했다... 그리고 이게 맞는지 찾아보니
+대부분의 기초적인 컴퓨터 구조론에 입각한 싱글사이클 프로세서 예제의 데이터 메모리가 비동기 읽기, 동기 쓰기로 구현되는 것을 알아냈다. 
+그렇기에 메모리는 5단계 파이프라이닝 이전까지는 비동기식으로 하기로 했고, 37F, 43F 아키텍처 다이어그램을 Revise했다. 
+RV32I50F가 FENCE류 명령어가 제외됨으로 인하여 RV32I47F가 되게 되었는데, 기존 다이어그램 설계와 이름이 비슷하여, RV32I50F를 19일 부로 Archiving하고, RV32I47NF로 명하기로 했다.
+그리고 기존의 RV32I47F는 마찬가지로 FENCE류 명령어가 제외되므로 RV32I44F가 되었다. 이는 별도의 중복된 아키텍처 이름이 없으므로 그대로 RV32I44F로 쓴다. 
+
+RV32I47F는 R9에서 Archive. RV32I44F로 변경되어 revision되어야한다.
+RV32I50F도 마찬가지로 Archive하고 RV32I47NF로 변경되어 revision되어야 한다. 
+오늘 한 것은 여기까지. 내일은 개인정비시간까지 잘 활용해서 진도를 많이 나가야겠다.
+
+FPGA는 교수님의 추천으로 Nexys Video 제품을 구매했다. 이제 로컬 시스템을 구매하기만 하면 된다. 
+
+43F까지 리비전 완료. 
+
+2025.03.21.
+생각해보니 250316 회의 때 Zifencei확장을 Trap Controller가 구현될 때 같이 하는 것으로 했기에, 44F도 아니고 43F에 캐시 구조를 접목한 구조가 된다. 
+최종적으로 RV32I43FC (C for Cached)로 아키텍처 이름을 지었다. 
+
+이러면 이제 37F, 43F, 43FC 까지 했으니 47F 아키텍처 (구 50F 아키텍처)를 리비전 할 시간이다. 
+
+47F 아키텍처를 이전하면서 이전에 남아있던 Memory Controller를 현재 구조로 적용하며 생각이 들었다. 
+Data Cache의 DC_Write 즉 WriteEnable신호가 Memory Controller에서온다. 멤컨이 그럼 명령어를 알고 이 동작을 지정해줘야하는데, 어찌되던 멤컨한테 명령어에 대한 정보가 가는게 맞는 것 같다는 생각.
+이것마저 CU에서 해주게 되면, 메모리 컨트롤러의 의미가 단순히 STAA에서 Cache Miss시 메모리 출력 데이터로 MUX를 조정해주는 데이터패스 지정 모듈 말고는 되지 않는다. 
+
+Control Unit 에서 Data Cache 에 바로주는게 아니라 Memory Controller 를 거쳐서 주자는 거지?
+라고 ChoiCube가 답문했고, 그리 간단하게 생각할 문제가 아니라 사유가 필요한 시간이라고 생각했다. 
+우리는 추후에 FPGA보드에 탑재된 외장 DRAM, DDR3 SDRAM을 쓰게 될 것이다. 
+그럼 실질적으로 CPU 안에서 통제되는 메모리; 코어에서 통제하는 메모리는 L1, L2 처럼 각 코어별로 내장되어있는 메모리에 국한될 것이다. 
+각 Core마다 독립적으로 있는 것이 아닌, 공유되는 성질을 띄는 L3$나 RAM을 각 코어의 Control Unit에서 다룰 수는 없는 노릇이니까. 
+그 중간자로서 Memory Controller가 있고, 이 것이 L3$와 RAM을 다루면 될 것 같다.
+
+이건 현대 CPU 구조를 한번 조사해보아야할 것 같다.
+기억상, CPU에도 Memory Controller는 내장되어 있으며 
+모듈러 다이, MCM;칩렛 방식인 AMD의 ZEN 아키텍처에서도 메모리 컨트롤러가 별도의 다이로 설계되어 있는 것으로 알고 있고,
+모놀리식인 Intel의 아키텍처에서도 메모리 컨트롤러가 별도의 die는 아니지만 존재하는 것으로 알고 있기 때문이다. 
+
+https://en.wikichip.org/wiki/File:zen_block_diagram.svg
+zen 아키텍처의 블럭 다이어그램에 캐시 관련 데이터패스가 설명되어 있어 참조해볼만 한 것 같다.
+이것 + 국방창업경진대회 신청을 오늘 안에 해야한다. 
+
+밥먹고 와야지. (17:52)
+
+캐시 계층 구조와 그 컨트롤러, DRAM쪽 컨트롤러. Ryzen ZEN 아키텍처를 기반으로 분석하였다. 일단 지금 rv32s의 경우 메모리는 외장 메모리가 아니라 SoC 내장 메모리로 구현될 것이고
+FPGA는 파이프라이닝 이후에 구현할 것이기 때문에 코어 통합으로 하기로 했다. uncore 영역이라는 개념을 습득하게 되었다. 
+(근데 비동기 읽기 / 동기식 쓰기 메모리가 FPGA에서 합성이 가능한지는 미지수인데,, 웬만하면 rv32s도 FPGA에서 검증하고 싶다. )
+ --- 
+ChoiCube와 상의하여 캐시 구조를 최적화하다 보니 Memory Controller를 없애게 되었다. 
+캐시 실패와 적중에 따라 SAA에 따라 인출되는 명령어 및 데이터를 골라주는 MUX는 Cache에서 출력되는 Cache Status 신호를 통해(DC_Status, IC_Status) 선택할 수 있도록 하였고
+Memory 모듈의 쓰기는 결국 WriteBack의 경우에 한정되기 때문에 Control Unit에서 보내는 MemRead, MemWrite는 모두 Cache로 가고, Data Memory의 Write Enable신호는
+Cache의 DC_Status 신호를 NOT(반전) 한 신호로 제어하기로 했다. 현대의 컴퓨터 구조를 의식하며 Memory Controller가 있어야한다는 선입견으로 캐시 구조 설계 초창기에 Memory Controller를 포함하였는데, 
+점점 배워가고 알아가며 현재 단계에서는 사용할 필요가 없다는 결론에 도달한 것이다. 
+추후 L3$나 DDR3 SDRAM를 고려하고 설계를 하는 경우에, 코어별로 공유하는 메모리 공간임에 따라 일관성 로직의 관리를 위해서 별도의 Memory Controller가 생겨날 것이다. 
+Zen Architecture를 참조하여 화면 출력용 GUI, DDR Memory Interface, USB같은 uncore 영역에 대해 별도의 통합처리 탑 모듈을 설계할 것이다. 
+최종적인 캐시 구조가 확립되어 이제 구현하면된다. RV32I43F_C.R1과 RV32I47NF. 
+
+2025.03.22.
+확정된 캐시 구조와 수정된 로드라인에 따른 rv32s 프로젝트의 아키텍처 완성본인 RV32I43FC.R1과 RV32I47NF를 완성했다. 
+각각 14:58, 15:50에 완성했다. 자잘자잘한 신호 배치의 최적화까지 완료했고, 이제는 다음 레포지토리인 rv64s(가칭)에서 진행할 RV64I 확장을 생각하며 RV64I59의 초기 설계안을 만들어야한다.
+아마 rv32s에서 더 이상 수정이 많지는 않겠지만 없지는 않을 것이라 생각한다. 사실상 나올게 다 나온 느낌이긴해도, 구현하는 과정에서 생각보다 많은 수정소요와 배울 거리들이 발생했기 때문에, 지금부터는 ChoiCube84의 몫이다. 
+mybox에는 파일시스템 분류를 잘 했는데 이를 basic_rv32s 본 github 레포지토리에 업데이트 해야한다. 저녁식사 먹고 나서 해야겠다. 
+RV64확장의 시작인 RV64I59F에서만 각 신호의 입력단에서 비트 크기를 명시해놓을 것이다. 
+아, RV32 대비 차이를 보기 위해서 RV32I47NF에도 표기해놓는 것이 좋을 것 같다. 
+
+2025.03.23. 
+일요일 당직. 운영체제 책을 펴고 2장까지 공부했다.
+운영체제의 개발 과정 및 그 뒷받침이 되는, 배경이 되는 하드웨어들의 기본 이론들.
+CPU를 여기까지 개발하면서 알게된 것들이긴 하지만 꽤나 ㄹ현대 컴퓨터 구조에 맞게 잘 개발 해오고 있었다는 생각이 들었다. 
+그리고 그 경험을 기반으로 책을 이해하게 되니 습득하는 속도도 많이 빨랐다. 
+운여엧제의 종류들과 그 기반 기술들 발상과 그 해결점. 기초에 대해서 공부를 했다.
+시분할 운영체제, 다중 프로세스 어쩌구 저쩌구. 
+RV32I CheatSheet의 RV64버전 업데이트를 마쳐서 인쇄했다. 간부님께서 이런 파일 뺄 수 있는지
+따로 여쭤봐주신다 하셨다. 정말 감사하다. 매뉴얼을 기반으로 읽으면서 재차 확인하니
+대부분의 연산은 결과가 64비트가 되는 것이 아니라, word자체는 32비트인데 그걸 데이터구조에 맞게
+64비트로 확장하는 식이었다. ALU에 이러한 확장 로직을 더해도 되긴 하는데, 구현 방식이 두가지로 갈릴 것 같다.
+ALUop를 추가하여 해당 비트 확장을 연산에 포함하는 것과 (이 경우, ALUcontroller와 ALU의 수정소요가 발생한다. )
+64-bit extender. opcode와 funct3, 7값을 별도로 받아 명령을 상황에 맞게 처리하는 방법.
+
+2025.03.24. 
+HCWcloud에 대한 육군창업경진대회 사업계획서를 쓰는데 시간을 꽤 갈아넣었다. 
+ChoiCube84가 23시 49분경 Data Cache의 검증 완료 소식을 들려줬다. 이제 이를
+내일부터 검증을 하면 될 것 같고, RV64I 기준 작업물들 압축파일을 mybox에 정리해서 goormide에 올리면 될 것 같다. 
+파일 시스템 정리. 오늘은 여기까지. 
+
+2025.03.25. 
+어.,,..,..,., 운영체제 공부하고, 꽤나 괜찮은 논문을 찾았다. 
+싱글사이클, 5단계~7단계 파이프라이닝, 캐시구조, 멀티코어 확장구조, 그리고 이것저것 거의 플랫폼에 준하는 하드웨어 설계를 해낸 논문이다.
+스리랑카에 있는 대학에서 작성한 논문. BRISC-V: An Open-Source Architecture Design Space Exploration Toolbox. 
+현재 우리의 로드라인과 많은 부분이 맞닿아있고, 꽤나 좋은 참고자료가 될 것이라 생각한다. 한번 연구해봐야겠다. 
+그리고.,. 전역까지 5개월., 논문과 자소서 쓰는 2개월., 남은 3개월 안에 그 로드라인을 모두 끝낼 수 있을 것인가에 대해 상당히., 상당히 의심된다.
+GPT o1에게 해당 논문이 어느정도 수준의 논문인지 물어봤고, 연구실 프로젝트거나 박사학위의 논문, 즉 몇 학기 내에 끝낼 수 없는 분량이라 한다.
+여기까지 올라온게 그래도 잘 해낸거라고 봐야하나. 다시 생각해보면 아이디어 구상 및 설계 자체는 빨랐지만 그걸 가능케해준 ChoiCube84의 공이 상당히 큰 것 같다.
+아무리 기초적인 구조라고해도 이는 빠른 속도가 맞는 것 같기도 하다. (아닐 수도. 프로젝트 착수일로부터 약 4개월이 지나고 5개월이 되어가고 있다.) 하루에 해봤자 3시간 남짓인 것에 비해
+꽤나 좋은 성과물인 데는 변함이 없으려나. 이 논문으로 하여금 학계에 기여를 할 수 있는가. 내가 논문으로 보여주고 싶은 것은 무엇인가. 그리고 그 목적은 무엇인가. 
+KAIST의 특기자 전형으로 학부생 입학하기 위함. 그냥 CPU를 만드는 것이 꿈이었으니까. 그리고 그걸로 AMD, Intel같은 기업을 만들고 싶으니까.,
+솔직히 두렵기도하고, 많이 부담되고 걱정된다. 그래도 일단 이걸 하는 것 말고는 할 수 있는게 없으니까. 계속 나아가야한다. 
+
+2025.03.26. 
+BRISC-V 논문에 적힌 사이트에 들어가 플랫폼을 구경했다. 코드들에 대한 레퍼런스를 꽤 삼을 수 있을 것 같다. 
+
+2025.03.27. 
+오늘 외진 가서 예상치 못하게 파견간 ChoiCube84와 재회하여 가볍게 회의를 나눴다. 
+Data Cache의 Masking 문제. 콜드스타트 상태에서, 메모리에 쓰기를 요청하고, 캐시에 쓰여진다. 그 값을 Flush할 때 Masking을 하지 않으면 캐시의 초기값이 들어가는 문제가 발생한다.
+e.g.) Cache : 0000_0000, Mem : DEAD_BEEF. Cache : AAAA_0000, Mem : DEAD_BEEF -> Cache : 1242_AABE, Mem : AAAA_0000 (Expected AAAA_BEEF)
+어라 근데 이러면 메모리랑 캐시의 초기값 자체를 0으로 통일해두면 되는 문제 아닐까? 굳이 캐시 Flush때의 마스킹 신호가 필요할까? 
+Data Cache 쪽 라인의 무효화 경우가 있나..? 물론 있으면 좋을 것 같긴한데... 
+RV64의 구현은 ALU와 ALUController, Instruction Decoder의 modding으로 구현하기로 했다. 
+나머지 변경사항은 Data area와 Register File의 데이터 폭을 64비트로(XLEN)해야한다는 점. 
+Instruction area는 RV64로 간다고 해도 instruction의 데이터는 32비트 폭 그대로라 변경사항은 없다. 
+다만 Instruction area에서 주소로 가르킬 수 있는 범위가 64비트로 넓어졌으므로 데이터의 폭은 같되 깊이는 더 깊어진다. 
+Instruction Decoder의 변경사항은 다음과 같다. 
+"W" 접미사가 붙은 shifting 명령어들은 word, 즉 32-bit 단위 (RV64로 와도 한 명령어의 길이는 32-bit, 즉 word는 32-bit 단위이다. )를 처리한다. 
+기존 RV32I에서 포함되어있는 SLL, SRA 같은 "W"접미사가 붙지 않은 명령어는 XLEN 만큼, 즉 RV64에서는 64비트 만큼 다루기에 shamt(Shift amount)가 6비트로 확장된다. 
+하지만 기존 RV32I와 똑같이 32비트를 다루는 "W"접미사가 붙은 명령어는 RV32I 처럼 32비트를 다뤄야하기에 rs2는 기존과 같은 5비트로 제한된다. 
+RV64I로 넘어오면서 새로이 생기는 명령어이기에 64비트를 다루는 명령어로 착각할 수 있지만, (내가 그랬다) 기존 32비트 처리 명령어가 있어야 하니까 그걸 W로 두고, 나머지 XLEN기반 명령어들은 
+64-bit로 확장됨에 따라 특성이 변이하는 것이다. 
+
+RV64로 오면서 변하는 사항은 다음과 같다. 
+
+[R-Type]
+SLL, SRL, SRA : 최대 64비트 쉬프팅. rs2의 비트 영역이 6비트로 늘어나고, funct7이 대신 6비트로 줄어든다. (이름값 못하는 funct7이 된다. )
+
+[I-Type]
+SLLI, SRLI, SRAI : 최대 64비트 쉬프팅. imm값의 25:20을 shamt로 잡고, 31:26이 funct7으로 들어온다. (6비트)
+LW : Load-word. 데이터 폭이 64비트로 바뀌었으므로 32비트를 로드하는데 나머지 남은 상위 32비트를 sign-extension한다.
+
+신규 명령어.
+[R-Type]
+ADDW, SUBW, SLLW, SRLW, SRAW : 32비트 처리 명령어들. 덧셈, 뺄셈, 비트쉬프팅. 
+각각 32비트로 계산하며, 그 결과의 상위 32비트를 sign-extension하여 쓰기한다. 
+
+[I-Type]
+ADDIW, SLLIW, SRLIW, SRAIW : 32비트 처리 상수 명령어들. 덧셈, 비트쉬프팅.
+ADDIW는 마찬가지로 32비트 계산 후 sign-extension하여 쓰기한다. shifting은 위 설명대로. 
+
+LWU, LD : Load(적재) 명령어. 
+LWU - Load Word Unsigned. 32비트 데이터의 상위 32비트를 zero-extension하고 로드한다. 
+LD - Load Double word. 64비트 데이터를 로드한다. 
+
+이상이다. 
+
+하드웨어 변경사항을 정리하면 다음과 같다.
+
+1. Instruction Cache, Memory (Instruction Area)의 주소 폭 64비트. 
+
+2. Instrcution Decoder : rs2의 비트 6비트로 확장, 'w'명령어일 때는 그에 맞는 비트 영역을 슬라이싱하도록 설계.
+
+3. imm gen : 64비트 Sign-extension. (상황에 따라 zero-extension. U-Type)
+
+4. Register File : 레지스터 데이터 폭 및 RD1, RD2 출력 비트 64비트. 
+
+5. CSR File : CSR_RD 64비트. 나머지 CSR 레지스터는 그 규격에 맞게 32비트와 64비트를 병행. (설계 자체로서 데이터 폭은 64비트. 32비트 데이터 출력시 zero-extension)
+
+6. ALU Controller : W명령어 (RV64-only instructions)전용 연산 ALUop코드 추가. (32비트 계산 후 64비트 확장)
+
+7. ALU : ALUop코드에 따른 W명령어 연산 및 처리 추가
+
+8. Data Cache, Memory (Data Area)의 주소 및 데이터 폭 64비트
+
+그리고 캐시 구조를 구상하며 생각난 질문 하나. 
+메모리를 결국 외부 DRAM으로 빼뒀을 때, 
+명령어와 데이터가 같이 저장되는 통합 메모리로 생기게 된다. 이 떄 Instruction Cache쪽에 저장될 데이터인지 Data Cache 쪽에 저장될 데이터인지 어떻게 구분하고 저장하는건가? 
+그리고 이에 대한 해답으로, 메모리 자체에는 명령어와 데이터가 함께 저장되지만, 운영체제는 페이지 테이블을 통해 각 메모리 페이지에 실행 가능(Executable) 속성이나 데이터 전용 속성을 부여할 수 있다는 것을 알게되었다. 
+이 속성은 MMU에 의해 참조되며, 명령어 페치 시에는 실행 가능 페이지에서 데이터를 가져오게 되어 I‑cache에 적재되고, 데이터 접근 시에는 별도로 D‑cache로 처리된다. 
+
+구체적으로는 운영체제의 MMU가 페이지 테이블 엔트리(PTE)를 통해 각 페이지에 대해 실행 가능(executable) 속성과 읽기/쓰기 권한을 지정하는 방식, 예를 들어 NX(No-eXecute) 비트와 같은 메커니즘을 뜻한다. 
+이를 통해 소프트웨어는 특정 메모리 영역을 명령어 실행용(예: .text 섹션)으로, 나머지 영역은 데이터용으로 구분할 수 있게 된다. 
+
+“Unified Memory” 환경에서도 CPU 내부에서는 명령어 페치와 데이터 접근 요청을 구분하여 각각 I‑cache와 D‑cache로 라우팅하게 되는데, 이는 파이프라인의 접근 유형
+(명령어 페치 vs. 데이터 접근)과, MMU가 부여하는 페이지 속성(예, 실행 가능 여부)에 기반한다.
+
+“Memory Protection and Page Attributes”
+“NX bit and executable memory”
+“Unified memory with separate instruction and data cache”
+“MMU and cache management”
+“Cache partitioning based on executable attribute”
+
+RV64I59F의 윤곽은 이정도면 꽤 많이 들어낸 것 같다. 지금부터는 그 이후인 5SP, 5-Stage Pipeline을 구현하기 위해서 기존 RV32I50F 기반으로 되어있는 5SP 도안을 
+RV32I47NF 기준으로 (RV64I59F는 모듈 설계 자체는 동일하므로) 적용하고 Hazard Unit을 설계해야겠다. 
+내일 또 당직인데, 내일은 운영체제를 마저 공부하고. 
+
+RV64I59F 기준 파이프라이닝 레지스터를 다시 배치하고 있다. 기존 RV32I50F_5SPH.R1에 그냥 그대로 하려 그랬는데, 배치가 잘 안맞기도하고, 기존에 있던 신호를 검토하는 겸했다.
+그렇게 실수 하나 발견. Trap_Controller에 CSR_RD가 입력되는데, 이게 Instruction Decode단계에서 이뤄져야하는 것이 맞는가에 대해 생각해보아야한다. 
+오늘은 여기까지. 
