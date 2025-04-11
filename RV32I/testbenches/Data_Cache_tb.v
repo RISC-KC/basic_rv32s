@@ -14,6 +14,7 @@ module DataCache_tb;
     wire [31:0] read_data;
     wire [9:0] flush_address;
     wire [31:0] flush_data;
+    wire [3:0] flush_mask;
     wire flush_done;
 
     DataCache data_cache (
@@ -30,6 +31,7 @@ module DataCache_tb;
         .read_data(read_data),
         .flush_address(flush_address),
         .flush_data(flush_data),
+        .flush_mask(flush_mask),
         .flush_done(flush_done)
     );
 
