@@ -47,3 +47,17 @@ RV32I; 정수의 사칙연산과 논리연산, Branch, 저장과 불러오기, C
 ⓔ 듀얼 코어 시스템 구현
 ⓕ 듀얼 코어 RV64IMA 확장 
 ⓖ RISC-V Linux 탑재.
+
+- 2025.04.12 개발 흐름도
+
+① "A"확장
+② "M"확장
+③ 운영체제 준비
+   ├ Supervisor Privileged ISA 구현. (Supervisor mode, User Mode)
+   ├ Trap/Exception/Interrupt 처리, CSR, 타이머, 인터럽트 컨트롤러 (PLIC/CLINT) 구현
+   ├ Sv39, Sv48; 가상메모리, MMU 구현
+   ├ GPIO, MMIO, 기본 디바이스 접근
+   └ RISC-V Linux Kernel 구조 파악 및 이식 (커널 config, Device Tree, Boot loader, OpenSBI, )
+④ DDR3 SDRAM 통합 메인 메모리 구현
+⑤ FPGA 구현 및 검증 
+⑥ GUI 구현
