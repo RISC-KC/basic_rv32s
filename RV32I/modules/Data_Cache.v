@@ -15,21 +15,20 @@ module DataCache (
     output reg flush_done
 );
 
-    reg valid1 [0:31];
-    reg updated1 [0:31];
-    reg [4:0] tag1 [0:31];
-    reg [31:0] data1 [0:31];
+    reg valid1 [0:7];
+    reg updated1 [0:7];
+    reg [4:0] tag1 [0:7];
+    reg [31:0] data1 [0:7];
 
-    reg valid2 [0:31];
-    reg updated2 [0:31];
-    reg [4:0] tag2 [0:31];
-    reg [31:0] data2 [0:31];
+    reg valid2 [0:7];
+    reg updated2 [0:7];
+    reg [4:0] tag2 [0:7];
+    reg [31:0] data2 [0:7];
 
-    reg lru [0:31];
+    reg lru [0:7];
 
-    wire [31:0] extended_mask = {{8{write_mask[3]}}, {8{write_mask[2]}}, {8{write_mask[1]}}, {8{write_mask[0]}}};
-
-    wire [4:0] index = address[4:0];
+    wire [1:0] offset = address[1:0]
+    wire [2:0] index = address[4:2];
     wire [4:0] tag = address[9:5];
 
     wire hit1 = valid1[index] && (tag1[index] == tag);
@@ -104,7 +103,7 @@ module DataCache (
                 end
                 else if (lru[index] == 0) begin
                     if (updated1[index]) begin
-                        flush_address <= {tag1[index], index};
+                        flush_address <= {tag1[index], index, 2'b0};
                         flush_data <= data1[index];
                         flush_done <= 0;
 
@@ -122,7 +121,7 @@ module DataCache (
                 end
                 else begin
                     if (updated2[index]) begin
-                        flush_address <= {tag2[index], index};
+                        flush_address <= {tag2[index], index, 2'b0};
                         flush_data <= data2[index];
                         flush_done <= 0;
 
@@ -177,7 +176,6 @@ module DataCache (
                     valid1[index] <= 1;
                     tag1[index] <= tag;
                     
-                    // data1[index] <= ((write_data & extended_mask) | (dm_data & ~extended_mask));
                     for (i=0; i<4; i=i+1) begin
                         if (write_mask[i]) begin
                             data1[index][i*8 +: 8] <= write_data[i*8 +: 8];
@@ -198,7 +196,6 @@ module DataCache (
                     valid2[index] <= 1;
                     tag2[index] <= tag;
                     
-                    // data2[index] <= ((write_data & extended_mask) | (dm_data & ~extended_mask));
                     for (i=0; i<4; i=i+1) begin
                         if (write_mask[i]) begin
                             data2[index][i*8 +: 8] <= write_data[i*8 +: 8];
@@ -217,7 +214,7 @@ module DataCache (
                 end
                 else if (lru[index] == 0) begin
                     if (updated1[index]) begin
-                        flush_address <= {tag1[index], index};
+                        flush_address <= {tag1[index], index, 2'b0};
                         flush_data <= data1[index];
                         flush_done <= 0;
 
@@ -226,7 +223,6 @@ module DataCache (
                     else begin
                         tag1[index] <= tag;
                         
-                        // data1[index] <= ((write_data & extended_mask) | (dm_data & ~extended_mask));
                         for (i=0; i<4; i=i+1) begin
                             if (write_mask[i]) begin
                                 data1[index][i*8 +: 8] <= write_data[i*8 +: 8];
@@ -246,7 +242,7 @@ module DataCache (
                 end
                 else begin
                     if (updated2[index]) begin
-                        flush_address <= {tag2[index], index};
+                        flush_address <= {tag2[index], index, 2'b0};
                         flush_data <= data2[index];
                         flush_done <= 0;
 
@@ -255,7 +251,6 @@ module DataCache (
                     else begin
                         tag2[index] <= tag;
                         
-                        // data2[index] <= ((write_data & extended_mask) | (dm_data & ~extended_mask));
                         for (i=0; i<4; i=i+1) begin
                             if (write_mask[i]) begin
                                 data2[index][i*8 +: 8] <= write_data[i*8 +: 8];
