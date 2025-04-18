@@ -3294,6 +3294,33 @@ USB모뎀이 150Mbps라는데 실제로는 5MB/s 나오면 다행인 수준.. �
 [2025.04.13. ]
 "A" 확장에 대해서 살펴보았다. 
 Zaamo AMO 명령어에 대한 것들인데 우려했던 것들 보단 A확장이 꽤 수월하게 이뤄질 것 같다. 약간 SIMD와 유사한 느낌들이다. 한 명령어에 여러 수행이 담겨있다. 
+공통적으로 R[rd] <- R[rs1]  을 수행하며, 
+R[rs1] <- Binary Operated R[rs1] and R[rs2] 가 동반된다.
+여기서 Binary Operation은 Zaamo 명령어들을 살펴보면 단서를 찾을 수 있는데, 다음과 같다.
+amo'swap'.W/D
+amo'add'.W/D
+amo'and'.W/D
+amo'or'.W/D
+amo'xor'.W/D
+amo'max[u]'.W/D
+amo'min[u]'.W/D
+
+즉 swap, ADD, AND, OR, XOR, MAX, MAX_unsigned, MIN, MIN_unsigned 이 9가지의 이진 연산을 각 명령어가 쓰인 바에 따라 수행하는 것이다. 
+
+AMOADD.W 명령어를 수행했다면, AMOADD.W rd, rs2, rs1 이렇게 사용된다.
+그리고 이는 이러한 동작을 수행한다.
+R[rd] <-  M[rs1]
+M[rs1] <- M[rs1] + R[rs2]
+
+R[rd]에 M[rs1]이 먼저 쓰여지고, 쓰여진 M[rs1]에 기존의 M[rs1]값 + R[rs2]값이 쓰여지는 순서를 따른다. 
+
+RV64 기준 double word(64-bit data)가 가능하다. 
+또한 RV64에서 32-bit AMO 명령어들은(word 단위) 항상 R[rd]에 쓰여지는 값(원래 M[rs1]에 해당되는 값)을 Sign-extension하고 R[rs2] 원본 값(M[rs1]과 이진 연산을 수행하는 값)의 상위 32를 무시한다. 
+
+여전히 모르겠는 두 가지...
+1. 이 AMO 연산이 어떻게 다중 코어 구조에서 역할을 맡길 때 중요한건지.
+2. Load Reserved / Store Conditional 이 무슨 의미인지. 
+
 
 [2025.04.14. ]
 "A" 확장에 대해 추가적인 공부.
@@ -3422,3 +3449,180 @@ RV64IMA109 및 가상메모리, MMIO 구현을 마치고 바로 백엔드로 투
 
 오늘은 여기까지. 
 
+[2025.04.16. ]
+오전에는 A확장에서 추가로 파생되는 Zawrs(Z; Atomic, Wait-on-Reservation-Set instructions), Zacas(Z; Atomic, Compare And Swap) 확장을 살펴보았다.
+Zawrs는 저전력 모드에 들어가서 (대기 모드 비슷한..) 폴링 루프를 할 때 쓰이는 일종의 명령어를 위한 확장이고,
+Zacas는 Quadward(128-bit)까지 지원하는 조건 스왑 명령어를 지원하는 확장이다.
+Zawrs는 알아만 두면 될 것 같고, Zacas는 한번 매뉴얼을 정독해봐야겠다.
+
+오후, 군대에서 중대 단결활동으로 영외 헤이리 마을에 나들이를 나갔다. 
+차 안에서 읽기 위해 컴퓨터 구조 및 설계 책을 가져갔었는데, 카페에 장시간 있게 되어 정말 좋은 시간을 보낼 수 있었다. 
+일단 가상 메모리에 대해서 어느정도 감을 잡았는데, 프로그램 메모리 관리 및 접근을 위한 일종의 캐시와도 같은 느낌이다.
+차이점이라 함은 캐시는 직접적인 명령어, 데이터들의 물리적 접근 최적화 방식이라면, 가상 페이징;가상 메모리는 프로그램을 하드웨어와 운영체제에서 단순하고 원활하게 더 높은 성능으로 구동하기 위해서
+캐시와 엇비슷한 무언가를 만들어냈다는 것이다. 그리고 가상페이징 방식에서 캐시 또한 같이 쓴다. 
+
+1회독 느낌이라 정확하게 모든 내용을 이해하지는 못했지만 갈 수록 이해하게 될 것 같은 느낌이다. 
+TLB.. 등등.. 일단 이 부분은 나중에 추가적으로 공부하도록 하고, A확장 구현에 먼저 힘써보자.
+
+일단 연등시간이 시작되면 M확장이 현재 RV64I59F 설계에서 구조적 변경 없이 그대로 구현 가능한지 살펴보고 M확장을 확정 지어야한다.
+그리고 A 확장 구현의 시작!
+
+잘 해보자. 일단은 여기까지. 
+
+--연등시간--
+
+자. M 확장부터 확인해보자.
+
+M instructions..
+[R-Type]
+mul, mulh, mulhsu, mulhu, div, divu, dviuw, remw, remuw
+
+R-Type만 존재하는 것 같다. 각 instruciton 별로 MNEMONICS를 만들어보자. 
+
+XLEN-bit × XLEN-bit
+MUL : R[rd] = (R[rs1] × R[rs2]) [XLEN-1:0]
+MULH : R[rd] = (R[rs1] × R[rs2]) [2×XLEN-1:XLEN] (Signed × Signed)
+MULHU : R[rd] = (R[rs1] × R[rs2]) [2×XLEN-1:XLEN] (Unsigned × Unsigned)
+MULHSU : R[rd] = (R[rs1] × R[rs2]) [2×XLEN-1:XLEN] (Signed × Unsigned)
+MULW : R[rd] = {32'bM[](31), {R[rs1](31:0) × R[rs2](31:0)} [31:0]}
+
+DIV : R[rd] = R[rs1] ÷ R[rs2] (Signed)
+DIVU : R[rd] = R[rs1] ÷ R[rs2] (Unsigned)
+DIVW(RV64) : R[rd] = (R[rs1](31:0) ÷ R[rs2](31:0)) 
+└ 결과 32-bit 값을 64-bit 로 Sign-Extension하여 R[rd]에 쓰기.
+DIVUW(RV64) : R[rd] = {32'b0, R[rs1](31:0) ÷ R[rs2](31:0)} 
+└ 결과 32-bit 값을 64-bit로 zero-extension하여 R[rd]에 쓰기.
+
+REM 연산은 modulo 연산으로, A % B = C 연산에 해당한다. 
+A를 B로 나누어 나온 나머지 C이다.
+
+REM : R[rd] = R[rs1] % R[rs2] (Signed)
+REMU : R[rd] = R[rs1] % R[rs2] (Unsigned)
+REMW(RV64) : R[rd] = {32'bM[](31), {R[rs1](31:0) % R[rs2](31:0)} [31:0]}
+└ 결과 32-bit 값을 64-bit 로 Sign-Extension하여 R[rd]에 쓰기.
+REMUW(RV64) : R[rd] = {32'b0, {R[rs1](31:0) % R[rs2](31:0)} [31:0]}
+└ 결과 32-bit 값을 64-bit로 zero-extension하여 R[rd]에 쓰기.
+
+전체적으로 ALU자체의 코드를 변경하고, ALU Controller에 있는 ALUop들을 손보기만 하면 될 것 같다.
+M확장은 RV64I59F 설계에 구조적인 변경 없이 확장할 수 있다. 
+좋아 이제 "A"확장을 설계해보자. 
+
+------ A Extension MNEMONICS ------
+
+Zalrsc Extension : Z, Atomic; Load Reserved / Store Conditional Extension
+LR.W : R[rd] = M[R[rs1]], 
+R[rs1] 데이터 값(1에서 쓰인 메모리의 주솟값임.)에 예약(reservation) 설정.
+
+SC.W : 
+if Reservation is valid, M[R[rs1]] = R[rs2], R[rd] = 0
+if Reservation is invalid, R[rd] = 1
+
+Zaamo Extension : Z, Atomic; Atomic Memory Operation
+
+AMOSWAP.W : R[rd] = M[R[rs1]], M[R[rs1]] = R[rs2]
+(기존 값 M[R[rs1]]을 R[rd]에 넣고, rs2를 메모리에 쓴다(교환))
+
+AMOADD.W : R[rd] = M[R[rs1]], M[R[rs1]] = M[R[rs1]] + R[rs2]
+(기존 값 M[R[rs1]]을 R[rd]에 넣고, rs2를 기존 값과 더하여 쓴다. )
+
+AMOXOR.W : R[rd] = M[R[rs1]], M[R[rs1]] = M[R[rs1]] ^ R[rs2]
+AMOAND.W : R[rd] = M[R[rs1]], M[R[rs1]] = M[R[rs1]] & R[rs2]
+AMOOR.W : R[rd] = M[R[rs1]], M[R[rs1]] = M[R[rs1]] | R[rs2]
+
+┌ 비교는 Signed로 진행한다.
+AMOMIN.W : R[rd] = M[R[rs1]], 
+if (M[R[rs1]] < R[rs2]), M[R[rs1]] = M[R[rs1]].
+else M[R[rs1]] = R[rs2]
+
+┌ 비교는 Signed로 진행한다.
+AMOMAX.W : R[rd] = M[R[rs1]], 
+if (M[R[rs1]] > R[rs2]), M[R[rs1]] = M[R[rs1]].
+else M[R[rs1]] = R[rs2]
+
+AMOMINU.W : R[rd] = M[R[rs1]], 
+if ((Unsigned) M[R[rs1]] < (Unsigned)R[rs2]), M[R[rs1]] = M[R[rs1]].
+else M[R[rs1]] = R[rs2]
+
+AMOMAXU.W : R[rd] = M[R[rs1]], 
+if ((Unsigned) M[R[rs1]] > (Unsigned)R[rs2]), M[R[rs1]] = M[R[rs1]].
+else M[R[rs1]] = R[rs2]
+
+오늘은 여기까지. 좀 더 고찰해봐야겠다. 아 내일은 당직인데.,. 믕... 가상페이징 공부해야겠다. 
+
+[2025.04.17.]
+당직근무 간 공부하며 정리했던 내용을 기록하겠다. 
+
+**가상 메모리**
+
+가상메모리를 사용하는 이유 
+1. 다수의 프로그램 동시 수행 시 효과적인 메모리 공유
+-> 제한된 크기의 메인 메모리에서 프로그래밍 해야하는 제약을 제거.
+
+공유된 메모리를 사용하는 VM들이 있다고 가정 할 때.
+가상머신이 각자의 프로세스가 보호될 수 있도록 보장하여야한다.
+이 말인 즉슨 각 프로그램이 자신에게 할당된 메인 메모리의 부분에만 R/W (Read/Write ; 읽기 쓰기)가 보장되어야 한다는 것이다. 
+
+가상메모리는, 프로그램 주소공간을 실제 주소(Physical Address)로 변환시켜준다.
+
+> 메모리를 공유하는 VM은 VM들이 수행되는 동안 동적으로 변화한다.
+>> 동적 상호작용 : 각 프로그램들만의 주소공간에서 컴파일 되어야한다. 
+---> 해당 프로그램으로만 접근 가능한 분리된 메모리 영역이 있어야 한다.
+= 변환 과정이 한 프로그램의 주소 공간을 다른 가상 머신으로부터 보호할 수 있다. 
+
+2. 사용자 프로그램을 메인메모리의 크기보다 더 크게 작성할 수 있도록 해준다. 
+-> 가상 메모리는 자동으로 메인 메모리와 2차 기억 장치로 구성되는 두 단계의 메모리 계층을 관리한다. 
+
+캐시와 유사한 성질을 지니지만, 용어로서 구분 차이를 둔다.
+
+[메모리 블록] : 메모리와 통신하는 규격
+캐시		= 캐시 라인, 캐시 블록
+가상메모리   = 페이지
+
+가상메모리 실패는 페이지 부재 (Page Fault) 라고 부른다.
+
+가상 메모리를 지원하는 프로세서는, 가상 주소(Virtual Address)를 생성한다.
+그리고 이를 실제 주소(Physical Address)로 변환하는데, 이를 주소 사상(Address Mapping) 또는 주소 변환(Address Translation)이라고 부른다.
+보통 Address Translation이라고 부르는 듯 하다. (Translation Lookaside Buffer; TLB 같은거)
+
+이 "실제주소"는 HW, SW 조합에 의해서 메인 메모리 접근에 사용되는 주소이다. 
+
+----------
+
+가상메모리 - 재배치 (relocation) : 수행될 프로그램 Load를 단순화한다.
+프로그램에 의해 사용되는 가상주소를 "메모리에 접근하는데 사용되기 이전에" 다른 실제 주소로 사상시켜준다.
+-> 메인 메모리 내 어떤 위치에도 프로그램을 Load할 수 있게 해준다.
+
+현대 에서는 프로그램을 고정된 크기로 이루어진 블록(페이지)의 집합으로 재배치한다.
+= 프로그램을 할당하기 위해 메모리에서 연속적인 블록을 찾을 필요 없고, OS가 메인 메모리 내에 충분한 페이지가 있음만을 확인하면 된다. 
+
+[2025.04.18.]
+
+캐시 구조에 대한 변경.
+
+데이터 읽기, Cache Miss, Dirty Bit의 경우.
+
+요청된 데이터는 SAA에 따라 메모리에서 인출되었지만,
+캐시의 갱신을 위하여 여전히 메모리에서 데이터 출력이 이루어지고 있어야한다. 
+캐시의 갱신에 사용될 주솟값 또한 계속 이루어지고 있어야하므로 PC_Stall 상황이 요구된다.
+
+Dirty Bit를 CLK1에서 갱신하고, CLK2에서 Clean된 해당 블럭에 CLK1에서 인출된 데이터 메모리의 데이터로 갱신해야한다. 
+즉, Cache에 쓰기가 다 될 때 까지 PC_Stall 되어야하는 것.
+캐시에 쓰기 작업이 끝나는 것은 CLK2. 캐시만이 쓰기가 다 끝났다는 것을 제일 먼저 앎으로, Cache에서 Write_Done신호가 추가됐다.
+
+RV32I43FC에서 Write Buffer에 대한 내용이 다이어그램에 누락되어있어 RV32I43FC.R2로 리비전하며 Write Buffer를 추가했다. 
+동시에 위에 있던 변경사항인 DC_WriteDone신호도 Data Cache에 추가하였다. 
+
+RV64I59F_5SP에도 반영했다.
+
+A확장을 살펴보면서,, 
+
+이미 두 사이클 이상 걸리는 명령어의 경우 Control Unit과 Cache 또는 Memory의 Ready 신호를 통해서 파이프라인을 정지시키거나 하여
+현재 해당 메모리 수행이 완전히 마쳐질 때 까지 명령어 갱신을 하지 않고 기다리도록 설계했었다.
+
+AMO연산 또한 이에 초점이 맞춰져있는데, 멀티 코어 구조가 아니고서야 이보다 더 복잡하게 구현해야할 내용은 없어보인다.
+
+기존의 구조를 대부분 유지할 수 있을 것 같은데, 문제는 Zaamo가 아닌 Zalrsc.
+이 Reservation이라는 내용에 대해서 아직 온전히 이해는 못했다.
+각 명령어의 수행을 위해 aq비트, rl 비트 set시 필요한 동작들은 이해했지만 LR.w, SC.w 명령어가...
+
+내일 할 거 : Reservation에 대한 내용 공부
