@@ -3,11 +3,11 @@
 module DataMemory_tb;
     reg clk;
     reg write_enable;
-    reg [9:0] address;
+    reg [31:0] address;
     reg [31:0] write_data;
     reg [3:0] write_mask;
 
-    wire [31:0] read_data;
+    wire [255:0] read_data;
 
     DataMemory data_memory (
         .clk(clk),
@@ -30,14 +30,14 @@ module DataMemory_tb;
         // Initialize signals
         clk = 0;
         write_enable = 0;
-        address = 10'd0;
+        address = 32'd0;
         write_data = 32'h00000000;
         write_mask = 4'b0000;
 
         // Test 1: Initialization check
         $display("\nInitialization check: ");
 
-        address = 10'd1;
+        address = 32'd1;
         #10;
 
         $display("address: %h, write_data: %h, mask: %b, read_data: %h", address, write_data, write_mask, read_data);
@@ -45,7 +45,7 @@ module DataMemory_tb;
         // Test 2: Full Write and Read
         $display("\nFull Write and Read: ");
 
-        address = 10'd1;
+        address = 32'd1;
         write_data = 32'hDEADBEEF;
         write_mask = 4'b1111;  // Full word write
         write_enable = 1;
@@ -120,7 +120,22 @@ module DataMemory_tb;
         
         $display("address: %h, write_data: %h, mask: %b, read_data: %h", address, write_data, write_mask, read_data);
 
-        // Test 4: Idle state
+        // Test 4: Additional Write
+        $display("\nAdditional Write: ");
+
+        address = 32'd5;
+
+        write_data = 32'h19721121;
+        write_mask = 4'b1100;
+        write_enable = 1;
+        #10;
+        
+        write_enable = 0;
+        #10;
+        
+        $display("address: %h, write_data: %h, mask: %b, read_data: %h", address, write_data, write_mask, read_data);
+
+        // Test 5: Idle state
         $display("\nIdle state: ");
 
         write_data = 32'hDEADBEEF;
