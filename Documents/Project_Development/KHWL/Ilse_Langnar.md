@@ -3626,3 +3626,163 @@ AMO연산 또한 이에 초점이 맞춰져있는데, 멀티 코어 구조가 �
 각 명령어의 수행을 위해 aq비트, rl 비트 set시 필요한 동작들은 이해했지만 LR.w, SC.w 명령어가...
 
 내일 할 거 : Reservation에 대한 내용 공부
+
+[2024.04.21.]
+당직이었다. 19일 20일은 외박으로 절권도 세미나를 갔다 왔고, 21일은 당직이었던..
+당직동안 원래 가상 메모리에 대해서 조금 더 연구를 해보려고 했지만 무릎 골절로 인해서 체력이 많이 바닥난 상태였기에 A 확장의 설계 구현을 다뤘다. 
+
+이해하기 쉬운 Zaamo 확장의 구현부터 다뤘다. 
+
+Zaamo를 위한 추가 설계 요소
+1. ALUresult가 Memory로 출력되는 데이터  패스가 없다.
+Zaamo의 대다수 명령어 수행은 다음과 같은 형태를 따른다.
+R[rd] ← M[R[rs1]]
+M[R[rs1]] ← M[R[rs1]] bit operation with R[rs2]
+
+이 경우, bit operation은 ALU에서 진행되는데, R[rs2]값인 RD2 는 ALUsrcB에 있지만
+그와 연산을 해야하는 연산자 M[R[rs1]]은 ALUsrcA에 없다. 때문에 기존 ALUsrcA MUX를 3비트로 확장해서 
+RD1, PC, rs1, D_RD(Data area Read Data)를 처리할 수 있어야 한다. 
+
+2. ALUresult를 Data area의 Data Cache DC_WD(Data Cache Write Data) input으로 줄 수 있어야 한다.
+기존에는 ALUresult가 데이터 진영에서 주소로서만 활용되었는데, A확장에서는 쓰여질 데이터로도 ALUresult가 쓰인다.
+DC_WD의 input은 기존 Write Back을 위한 DM으로부터의 입력과 Register File로 부터의 입력 두가지 중 Cache Hit/miss에 따라 선택하는 구조였다.
+하지만 위와 같은 추가 요소에 따라, 해당 MUX를 2-bit로 확장해서 CU의 신호 통제 하 input을 정하거나 1-bit MUX 두개로 해서 기존 MUX를 그대로 활용하고 그 후에 MUX를 하나 둬 이를 CU 통제 하에
+ALUresult값으로 할건지 기존 WB/RegF 값으로 할건지를 선택할 수 있도록 해야한다. 
+
+1번 적용 완료. 2번은 2안으로 적용 완료 (1-bit MUX 2개)
+한 가지 우려스러운 점. 2안으로 하게 될 경우 WriteBack시 데이터 충돌이 생기진 않을까?
+사고 실험을 진행해보자. 
+AMOADD.W 
+R[rd] = M[R[rs1]]
+M[R[rs1]] = M[R[rs1]] + R[rs2]
+
+[제어신호]
+MemWrite = 1. 
+RegWrite = 1.
+Atomic = 1.
+
+자, M[R[rs1]] 해당 주소 Miss. Data Memory로부터 가져와야한다. 
+일단 SAA 때문에 먼저 M[R[rs1]]은 반환된다. 동시에 DM_RD가 DC_WD의 input으로 되어야 한다.
+WB/Reg MUX는 Miss로 WB이 선택. DM_RD선택된다. Atomic 연산이기에, WB/Reg / Atomic MUX는 Atomic을 선택하고 있다. 
+어라. Write Back 불가. 즉 Cache Miss의 경우엔 다음 사이클에 Cache 갱신이 이루어지니까 무조건 Atomic MUX가 WB/reg로 되어 있어야 한다...
+즉 Cache Hit/Miss를 CU에서 판단할 수 있어야 하거나, DC_Ready 신호가 Not Ready인 경우에 DC_WD는 항상 WB/Reg로 되도록 해야한다. 
+Miss = Not Ready. 캐시 M2C 갱신의 경우 Write_Done 신호를 대기해야하니까 Miss 경우 Not Ready의 의미를 내포하고 있다.
+
+이렇게 하면 자연스럽게 Cache Miss 일 때 PC_Stall 되어 캐시 갱신이 이루어지고 
+
+CLK 1. R[rd] = M[R[rs1]]
+
+Data Cache 조회, M[R[rs1]]이 없음. 
+Cache Miss. 캐시 갱신 시퀀스 시작. MemWrite 1로 활성화. 
+
+[if Clean]
+DC_Ready : not ready. 
+
+SAA, Data Memory에서 M[R[rs1]] 출력. -> R[rd]에 쓰여짐.								M[R[rs1]] = M[R[rs1]] + R[rs2] 수행
+동시에 Data Cache로도 출력됨. 해당 데이터를 현재 입력 중인 DC_Addr 즉 R[rs1]에 저장.	 
+
+----------
+
+[if Dirty]
+DC_Ready : not ready. -> PC_Stall
+
+SAA 메모리 반환 ; Data Memory에서 M[R[rs1]] 출력. -> R[rd]에 쓰여짐.				M[R[rs1]] = M[R[rs1]] + R[rs2], MemWrite = 1
+캐시의 Dirty 데이터 블럭을 해당 주솟값과 같이 Write-Buffer에 저장						동시에... M[R[rs1]] 값과 R[rs2]값이 연산됨.
+캐시 Dirty Bit 해소
+
+CLK 2. CLK1에서 PC_Stall이었으므로 동일한 주솟값 DC_Addr로 입력 중.
+Clean된 해당 캐시 블록에 메모리 블록 덮어쓰기
+Write Buffer에 저장된 주소와 데이터를 해당 메모리에 쓰기..
+
+[2025.04.23.]
+아.. A 확장 어떡하지.
+일단 일과시간 중에는 가상메모리/ 페이징에 대한 이해도를 꽤나 높였다. 아직 TLB까지 포함해서 완벽한 이해는 아니지만 그 기초 까지는 알게 된 것 같다.
+레지스터와 메모리 사이 버퍼가 캐시라면, 캐시와 메모리/2차 저장장치 사이 버퍼? 가 가상메모리; 페이지인 것 같다. 
+완전 연관 방식의 유사 캐시.. 가상 페이지 넘버가 Tag 처럼 이용되고, 물리 페이지 번호가 곧 그에 대응된 데이터이다. 그와 별개로 Page offset(페이지 변위)가 있고..
+페이지 변위가 곧 페이지의 개수, 크기를 결정한다. 페이지 번호 비트 수 × 페이지 변위 = 해당 페이징 메모리 크기 (가상 페이지 비트 수면 가상 페이징 크기, 물리 페이지 비트 수면 물리 메모리 크기이다.)
+때문에 TLB나 가상메모리를 구현하기 위해서 물리 메모리 자체를 정해둬야할 것 같다.
+
+TLB 실패 처리 중 하나는, 제어를 OS로 넘기는 것인데 가상 메모리를 지원한다는 것은 곧 메인 메모리 뿐만 아니라 2차 저장 장치까지 존재해야한다는 것을 내포한다. 
+때문에 기존에 왜인지 모르겠지만 메인 메모리 DDR3 SDRAM만 구현하면 된다고 생각했는데 그게 아니라 외장 저장소까지 생각해야한다...
+
+생각보다 할게 꽤 많다.. 파헤칠 수록 늘어나는 느낌이다..
+
+어제 고민하던 문제는 FSM을 구현하는 것으로 어느정도 해결할 수 있을 것 같다.
+다시 한번 사고 실험을 해보자. 
+
+최악의 상황 가정인 Cache miss, block dirty 상황이다. 
+명령어는 Zaamo; AMOADD.W
+
+AMOADD.W 
+R[rd] = M[R[rs1]]
+M[R[rs1]] = M[R[rs1]] + R[rs2]
+
+[제어신호]
+MemWrite = 1. 
+RegWrite = 1.
+Atomic = 1.
+
+**CLK1**
+R[rd] 에 M[R[rs1]]을 해야한다.
+SAA: Data Cache, Memory 조회, DC_Addr, DM_Addr로 주솟값이 입력된다.
+Cache 색인, miss. 
+Memory의 WB/ALUresult MUX가 Cache miss신호로 ALUresult로 전환되어 메모리에 해당 주소 읽기가 시작된다.
+
+메모리에서 해당 주소 데이터 식별. 출력(DM_RD)
+출력된 DM_RD는 레지스터의 RF_WD로 출력되고 레지스터의 RF_WA로 입력중인 R[rd]에 저장된다. 
+R[rd] = M[R[rs1]] 수행 완료.
+
+이와 동시에 DM_RD 출력된 것이 Data Cache에 갱신되어야하므로 DC_WD로 출력중이다.
+1차 MUX인 WB/Reg MUX에서 cache miss 신호를 통해 WB가 선택되어 2차 MUX로 간다.
+
+"2차 MUX에서 현재 Atomic이므로 WB가 아니라 ALUresult를 선택하게 된다."
+이게 문제다. 
+
+캐시 miss 이기에 WB되는게 Atomic 인 것보다 우선순위로 작용하여 WB이 이루어져야한다. 
+
+아.. 더 써야하는데.. 시간 out.. 연등 오늘은 여기까지. 
+
+[2025.04.24.]
+일과 시간동안 생각해봤다. 해당 문제를 해결할 방법.
+2차 MUX에서 Atomic 제어 신호가 활성화 되어있어 WB가 되지 않는 문제.
+
+Cache Miss시 DC_Ready를 not ready 상태로 전환하여 CU가 받는다.
+CU에서는 always 조건문이나 다른 걸 통해 atomic 연산자 수행을 DC ready일 때만 수행할 수 있도록 한다.
+이러면 해결.
+
+이렇게 고쳤다 보고, 마저 사고 실험을 진행하면 다음과 같이 진행된다.
+
+~~
+1차 MUX인 WB/Reg MUX에서 cache miss 신호를 통해 WB가 선택되어 2차 MUX로 간다.
+
+Cache miss, DC_not ready가 되어 Control Unit에서 PC_Stall을 보내고 다음 클럭 사이클로 간다. 
+
+Data Cache not ready 이기에 Atomic은 = 0으로 비활성화 되어있다. 때문에 2차 MUX는 ALUresult가 아닌 WB을 선택하게 되고 메모리의 DM_RD가 DC_WD로 입력되고 있다.
+
+하지만 현재 dirty 로 가정하였으므로 Cache에서는 Dirty 데이터 블록을 해당 블록의 주솟값과 같이 Write-Buffer에 저장한다.
+캐시의 Dirty Bit는 해소되지만 아직 갱신이 안되었으므로 다음 사이클로 넘어가야한다. 
+
+**CLK2**
+PC_Stall로 인하여 같은 맥락의(문맥; Context) 명령어가 수행중이다. 
+Clean된 해당 캐시 블록에 메모리의 DM_RD가 덮어씌워진다. 
+WriteBuffer에 CLK1에서 저장한 주소와 데이터가 WB_Data로 입력되고.. DM_Addr MUX가 WB을 선택해야하는데, 이 CLK2에서는 DC_Status가 여전히 Miss여야하는건가?
+이건 그럼 단순히 '현재' Hit/Miss를 다루는게 아닌 것 같은데.. 하물며 CLK2에서는 M[R[rs1]] = M[R[rs1]] + R[rs2]가 일어나야해서 Cache Hit이 되어야할 판이라...
+이건 조정이 필요할 듯. DM_Addr MUX의 선택신호는 CU에서 캐시 FSM임을 인지하는 것 처럼 다뤄야할 것 같음. 여기에 Data Memory는 WriteEnable된 상태여야하는데.
+
+무튼.
+
+캐시 갱신완료, 메모리 WriteBack 완료. 
+동시에 M[R[rs1]] = M[R[rs1]] + R[rs2]를 해야하는데,, 이건 시뮬에서 봐야할 것 같다.
+보통 쓰기를 하고 나면 그걸 명시적으로 웨이브폼에서 확인 가능한게 다음 사이클 부터인데, 만약 이게 조율이 가능한 부분이라면 CLK2에서 Atomic 연산은 끝나지만
+Cache 구조 때문에 최악의 상황에서는 CLK3 까지 넘어가야할 수도 있다.
+
+(Perhaps CLK3)
+M[R[rs1]] = M[R[rs1]] + R[rs2]. 
+CLK1~2 과정을 거쳐 Cache가 갱신되었으므로 무조건 Hit.
+DC_Addr로 ALU에서 bypass된 RD1 값이 Data Cache로 입력되어 해당 R[rs1]주솟값의 메모리 데이터가 DC_RD로 출력되어 D_RD로 ALU로 도?달?한다???
+ALU를 두번 거쳐야하네??? 
+이러면 DC_Addr에 R[rs1]이라는 주소를 주기 위해 ALU로 bypass하는게 아니라 어쩔 수 없이 ALUresult냐 RD1이냐 2 to 1; 1-bit MUX로 만들어야한다.
+이래야 한 사이클 안에 해당 연산 수행 가능... 그리고 해당 MUX 선택 신호는 마찬가지로 CU에서 담당해야겠다. 
+똑같이 Atomic 신호의 제어를 받으면 될 것 같다. 어차피 Write Back 중에는 비활성화되니까 문제 없고
+DC Ready일 때는 어떤 작업을 해도 구조상 동작에 문제는 없으니.. 
+
