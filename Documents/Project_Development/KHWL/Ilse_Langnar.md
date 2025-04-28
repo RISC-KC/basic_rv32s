@@ -3786,3 +3786,285 @@ ALU를 두번 거쳐야하네???
 똑같이 Atomic 신호의 제어를 받으면 될 것 같다. 어차피 Write Back 중에는 비활성화되니까 문제 없고
 DC Ready일 때는 어떤 작업을 해도 구조상 동작에 문제는 없으니.. 
 
+오늘은 여기까지. 정리된 로직 자료와 추가 제어 내용들을 텔레그램 채널과 디스코드 서버에 업데이트 해두었다. 
+
+
+[2025.04.25.]
+이제 남은 할 것들
+aq, rl 비트 지원
+Zalrsc 확장 지원
+
+aq, rl 비트 지원부터 설계해보자. 
+
+------
+
+~2025.04.16.~
+"A"확장의 명령어들은 26:25 각 1비트마다 각각 aq, rl 비트로서 사용된다. 
+aq(aquire), rl(release). 두 비트는 메모리 순서(Memory Ordering)를 제어하기 위해 사용된다. 
+
+aq 비트 set된 명령어는 그 명령어의 완료까지 hart가 기다리고 다음 명령어들을 수행할 수 있도록 해야한다. 
+
+rl비트 set된 명령어는 그 명령어의 수행 이전까지의 모든 메모리 접근 명령어가 완료될 때까지 hart가 기다리고, 이후에 해당 rl비트 set된 명령어를 수행할 수 있도록 해야한다. 
+
+------
+
+이건.. 별 다른 구조적 조정이 필요하진 않을 것 같다. Control Unit에서 aq, rl 비트를 보고 PC_Stall을 조건에 따라 수행할 수 있어야 하니 funct7에 해당하는 비트 범위를 입력 신호로 추가시켜야 한다.  
+완료. RV64IM90_Zaamo_aqrl
+남은 건 Zalrsc..Load Reserved, Store Conditional...
+
+Zalrsc Extension : Z, Atomic; Load Reserved / Store Conditional Extension
+LR.W : R[rd] = M[R[rs1]], 
+R[rs1] 데이터 값(1에서 쓰인 메모리의 주솟값임.)에 예약(reservation) 설정.
+
+SC.W : 
+if Reservation is valid, M[R[rs1]] = R[rs2], R[rd] = 0
+if Reservation is invalid, R[rd] = 1
+
+Zalrsc 확장을 구현하기 위해서는 우선 Reservation이라는 개념부터 이해하여야 한다. 
+자료를 많이 찾아보았지만 이에 대해 명확히 설명되어있는 자료는 없어서 매뉴얼에 전적으로 의지해서 이해해봐야겠다. 
+
+A확장의 근간은 다수의 RISC-V hart들이 같은 메모리 공간에서 작동할 때 원자적으로 메모리를 읽고-변경하고-쓰고 하는 것을 동기화하기 위함이다. 
+두 가지 형태의 atomic instruction이 있고, 하나는 'load-reserved/store-conditional instructions'. 나머지 하나는 'atomic fetch-and-op memory instructions'이다. 
+둘 다 다양한 메모리 일관성 순서를 지원하는데, unordered, acquire, release 그리고 sequentially consistent semantics를 지원한다.
+이러한 명령어들은 RISC-V가 RCsc 메모리 일관성 모델을 지원하도록 한다. 
+(RCsc : release consistency with special accesses sequentially consistent; Memory consistency and event ordering in scalable shared-memory multiprocessors, Gharachorloo et al., 1990) 
+
+숱한 토론 끝에, RISC-V에서는 rlease consistency를 표준 메모리 일관성 모델로 삼았다. 
+그래서 RISC-V의 atomic support는 해당 모델을 기반으로 한다.
+...
+
+A Extension 챕터를 통으로 한국어로 번역하려다가 영 좋지 않은 선택 (물론 의향은 너무나도 크게 있지만 시간이 한 시가 모자란 상황이라.)임을 깨닫고 (Privileged_ISA.Korean.md 문서의 선례.. ㅋㅋ)
+일단 'Reservation', 'Reservation set' 이라는 말이 포함된 문장을 해당 챕터에서 발췌해 정리했다. 이 과정을 거치며 단어 단위로 해당 챕터를 정독하게 되었는데, 얻어낸 단서는 다음과 같다.
+(A_extension_Korean.md 문서 생성.)
+
+결론적으로, Load-Reserved, Store Conditional은 하나의 쌍으로서 쓰이는 명령어이다. Load-Reserved, LR.W 명령어를 통해 reservation을 지정하게 되고 SC.W의 성공을 통해 해당 reservation이 무효화된다.
+때문에 해당 reservation을 위한 '데이터 공간'이 필요하며 그 갯수는 단일 hart 시스템에서는 하나로 족하다. 문제는 그 데이터의 크기인데, 이에 대한 지정은 A 문서 자체에서는 직접적인 규정이 없다. 
+다만 이와 같이 규정한다. 
+"__The platform should provide a means to determine the size and shape of the reservation set.__"
+"__A platform specificaiton may constrain the size and shape of the reservation set.__"
+즉 크기와 형태를 플랫폼 설계의 재량으로 남겨두었고 이와 관련된 내용을 명시하게끔 정의되어있다. 
+
+이게,, 만약 reserve된 데이터 그 자체가 표식이 필요할 경우 직설적으로 해당 데이터에 대해 reservation해야 한다는 묘사를 썼겠지만, 그게 아닌 '해당 데이터의 '바이트'가 포함되어야 한다' 라는 내용으로 봐서는 조금 유연한 구현 구조를 두고 있는 것 같다. 약간의 캐시 태그, 인덱스와 비슷한 느낌이랄까... 그렇게 구현할 수도 있을 것 같은데,,,, 어차피 해당 LR SC 내에서 쓰이는 데이터들은 지역성에 따라 어느정도 제한되는 편이기도 하고.. 하지만 이런 불확실하고 지적 한계에 따라 견문이 아예 달라질 수 있는 지점에서 실험적인 태도는 개발을 느리게 만들고 리스크를 짊어지게 한다.
+물론!!! 너무 좋긴 하지만 현재 FPGA구현 일정 1달까지 포함하여 남은 논리적 설계 구현 시간이 1달 남짓이기에 (5월 28일 마감.) 안정적인 방향으로 가야겠다. 
+메모리에서 데이터를 불러오는 것은 블록단위이고, offset을 통해서 해당 데이터를 블록 속에서 식별하여 이용하게 되는데,, 결국 reserve된 데이터의 크기만큼만 만들면 되지 않을까?
+가장 단순히 구현할 수 있도록 그렇게 해야겠다. 이로서 '논리적'으로는 해당 명세를 위반하지 않으면서 가장 단순하게 Zalrsc를 구현할 수 있다. 
+하나의 버퍼 레지스터, reservation register(RR) 추가하여 해당 레지스터에 주솟값과 데이터를 저장해둔다. 
+그리고 해당 값과 앞으로 메모리 조회될 때마다 비교문을 통해서 RR의 값과 해당 주솟값의 데이터가 같은지 다른지를 판단하게 한다. 
+
+Reservation이 깨지는 경우가 언제였더라.. 이걸 비교해서 뭘 판단해야했었지? Reservation이 유효한지?? 아 오늘은 여기까지 해야겠다. 마침 연등시간 종료.
+내일이면 Zalrsc까지 구현할 수 있을 것 같다.
+잘 하고 있다.. 잘.. 하고 있다.
+
+[2025.04.26.]
+Reservation Set에 대한 크기는 캐시의 한 라인을 기준으로 하기로 했다. 
+해당 바이트 영역이 참조될 때도 요긴하게 사용될 수 있고, 추후 I/O및 구조적 확장을 염두해두어 그만큼의 오버헤드를 둬도 나쁘지 않을 것이라는 생각.
+Reservation Set은 32Byte 크기의 레지스터로 한다. 
+SC.W의 발동은 LR.W에서 수행한 Reservation을 무효화 한다. 그리고 Reservation된 데이터는 각 hart마다 등록해두고 있으며 한 번에 하나의 Reservation Set만을 가진다.
+SC.W의 실패 조건에 따라 다음과 같은 조건에서 Reservation set을 무효화한다.
+reservation set에 대한 직접적인 연관성이 없더라도, 성공과 실패를 불문하고 SC.W 명령어의 실행은 reservation set을 invalidate 한다는 ISA의 규정을 준수하여야하기 때문에 Invalidate한다. 
+
+0. SC.W 명령어가 가르킨 주소가 reservation set에 포함되어 있지 않을 경우 invalidate한다.
+1. 다른 hart에서 reservation set에 해당하는 데이터에 쓰기를 했을 경우 reservation set을 invalidate한다. 
+2. 다른 device에서 LR이 접근한 bytes에 대해 쓰기를 했을 경우 reservation set을 invalidate한다.
+(LR이 접근한 byte 외 reservation set 내 다른 byte에 쓰기했다면 SC를 성공시킬 수도 있고 실패시킬 수도 있다. 단, 우리의 경우 단순화를 위해 라인단위 접근으로 실패 판정한다.)
+3. 프로그램 순서에 따라 LR, SC 사이에 또 다른 SC(어느 주소든)가 있을 경우 invalidate한다. 
+
+구현 방법은 다음과 같다.
+0. SC.W 명령어를 수행할 때 (CU에서 funct7 비트 값으로 확인한다.)
+실패와 성공을 판단하기 위해 Reservation Register에서 Reservation set의 유효 무효를 확인해야한다. R[rs2]데이터가 Reservation Set에 포함되어있는지를 확인해야하니
+RD2 값을 Reservation Register의 입력 신호로 넣는다.
+그리고 LR.W 명령어 수행시 Reservation 자체는 R[rs1] 데이터 값(M[R[rs1]]이므로 메모리에게는 주솟값이 됨)을 register하는 것이니 RD1 값을 Reservation Register의 입력 신호로 넣는다.
+이 때, Reservation set이어야하므로, 
+Reservation set을 invalidate 해야하는 경우 invalidate를 하는 제어 신호가 필요하므로 이를 Control Unit의 출력신호로 추가하고, Invalidate 신호를 Reservation Register의 입력 신호로 넣는다.
+레지스터로 구현되므로, 클럭에 맞게 출력하기에 클럭 신호를 입력 신호로 넣는다.
+입력된 신호 RD2가 RD1으로 register된 reservaiton set의 주소와 비교하여 Reservation이 Valid하여 성공했는지, 실패했는지를 알려주기 위한 출력신호가 필요하다.
+Rsv_YN (Reservation_Yes_or_No)신호를 출력신호로 둔다. Rsv_YN을 Control Unit에 입력신호로 넣는다.
+
+1. 예약된 메모리의 주소(R[rs1])에 쓰기가 있을 경우를 탐지해야하는데,, 이 쯤이면 Atomic Control 모듈을 따로 만드는게 좋을 것 같다. 
+Atomic Control Unit
+메모리 쓰기 시 해당 쓰기 될 주소가 Reservation Set의 주소인지 확인하여야 한다.
+[입력 신호]
+CLK, 
+MemWrite, 
+Rsv_Invalid, 
+RD1, 
+RD2, 
+Data_Addr(ALUresult)
+
+[출력 신호]
+Rsv_YN
+
+로직 : 
+LR.W 명령어 실행 시, Data_Addr로 들어오는 입력받는다.
+해당 입력 주솟값을 정렬하여 32B 블록 사이즈의 Reservation set을 만들고 Valid 처리 해둔다.
+
+SC.W 명령어 실행 시, 입력되는 RD2값이 Reservation Set에 속하는지 비교한다.
+Valid이고, Reservation set에 속한다면 Rsv_YN을 Yes(1)로 출력한다.
+동시에 Reservation set을 invalidate한다.
+CU에서는 SC의 success를 받아(Rsv_YN is Yes) DC_Atomic_MUX를 선택해 ALUresult로 하여 ALU에서 bypass된 RD2 값을 메모리 M[R[rs1]]에 저장한다.
+동시에 RegWDsrc_MUX를 110로 선택하여 R[rd]에 0을 쓴다.
+
+Valid인데, Reservation set에 속하지 않는다면, Rsv_YN을 No(0) 으로 출력한다.
+이후 Reservation set을 invalidate한다. 동시에 RegWDsrc_MUX를 111로 선택하여 R[rd]에 1을 쓴다.
+
+Invalid인 경우 어떤 상황이든 Rsv_YN이 No되고, RegWDsrc_MUX를 111로 선택하여 R[rd]에 1을 쓴다.
+
+기타 명령어 실행시,
+Memwrite신호가 활성화 되고 Data_Addr(ALUresult)가 현재 Reservation set에 포함되는 데이터면 
+Reservation set을 invalidate 한다. 
+
+---------- Zalrsc 총 정리 ----------
+
+전제, Complex atomic memory operations ~~ are performed with the load-reserved(LR) and store-conditional (SC) instructions.
+즉 Zalrsc에서 다루는 동작들은 memory operation들임을 가정하고 접근하여야 한다.
+
+LR.W loads a word from the address in rs1, places the sign-extended value in rd, and registers a **reservation set** 
+- a set of bytes that subsumes the bytes in the addressed word.
+= LR.W는 rs1의 주소에서 word를 적재하고, 그의 sign-extended 값을 rd 주소에 둔 뒤, reservation set에 등록한다. 
+__reservation set은 rs1의 주소에서 적재한 word의 byte를 포함하고 있는 byte의 집합이다.__
+
+Load의 동작은, Memory의 값을 Register에 적재하는 것을 의미한다.
+즉 word from the address in rs1은, M[R[rs1]]로 해석할 수 있다. 
+M[R[rs1]] 값을 sign-extension하여 R[rd]에 적재한다. 그리고 reservation set에 등록한다. 
+reservation set은 rs1의 주소에서 적재한 word의 byte를 포함하고 있는 byte의 집합이다.
+즉 M[R[rs1]]값을 캐시 라인 단위로 Reservation set에 쓴다. (우리의 경우 32B)
+0x8000_1234가 M[R[rs1]]이었다면 0x8000_1200~0x8000_123F까지를 reservation set으로 지정하는 것이다. 
+
+따라서 해당 reservation set을 hold하고 있을 장소가 필요하고, 이걸 Reservation register라고 하며 
+해당 reservation register를 제어를 통해 invalidate하고 갱신하고 해야하기 때문에 Atomic Unit 안에 Reservation register를 둔다.
+다이어그램상 Atomic Unit = Reservation register라고 봐도 무방하다. 
+
+----------
+
+SC.W conditionally write a word in rs2 to the address in rs1: 
+the SC.W succeeds only if the **reservation** is still valid and the **reservation set** contains the bytes being written.
+= SC.W는 rs2의 word를 조건적으로 rs1에 쓴다. SC.W는 reservation이 여전히 유효하고, reservation set이 rs1에 쓰여질 바이트를 포함하고 있으면 성공한다.
+
+SC.W가 rs2의 word를 조건적으로 rs1에 쓴다..
+Store의 동작은 Register의 값을 Memory에 저장하는 것을 의미한다.
+즉 rs2의 word는 R[rs2]로 해석할 수 있고, rs1에 쓴다는 것은 M[R[rs1]]에 데이터를 저장한다는 것이다.
+즉, M[R[rs1]] = R[rs2]
+그리고 rs1에 쓰여질 바이트 즉 M[R[rs1]]에 쓰여질 바이트는 R[rs2]이니까, 
+SC.W는 LR.W와 하나의 쌍으로 작동하는데, 
+앞서 LR.W에서 register한 Reserved Set의 bytes에 SC.W에서 rs1에 쓰여질 바이트를 포함하고 있어야 위와 같은 SC.W의 동작이 성공한다.
+
+아., 오늘은 여기까지
+
+[2025.04.28.]
+20:18 오늘 드디어. 우여곡절 끝에 어떻게 할지 정했다. 
+
+LR.W 명령어 수행 시, rd에 sign-extension한 M[R[rs1]] 값을 place한다.
+즉, R[rd]에 M[R[rs1]] 데이터가 쓰여지는 것이다. 
+M[R[rs1]]의 주솟값, R[rs1]. 
+
+_reservation set_ : a set of bytes that subsumes the bytes in the addressed word.
+"_addressed word_"의 바이트들을 포함하는 바이트들 집합.
+
+여기서 문제가 발생한다.
+**addressed word**가 M[R[rs1]]의 주솟값, 즉 R[rs1]일까?
+			아니면 	  M[R[rs1]]의 데이터 값, 즉 M[R[rs1]]자체일까?
+
+경우의 수로 나눠서 한번 파악해보자.
+What if addressed word meant Data itself?
+-> SC.W에서 Reservation 검사를 위해 데이터 출력값 (D_RD)를 Reservation Set과 비교해야한다.
+	모순 발생. 이 경우 데이터가 출력되며 Reservation Set과 비교되는데, D_RD의 출력은 곧장 BE_Logic과 RegWDmux를 통해 바로 Register File로 넘어간다. 
+	이 때, Register Write Enable이 활성화 되어있었다면, 바로 Register에 입력되는데, 이걸 막고자 추가 로직을 구현하며 제어들을 두는 것은 극심한 구조적 비효율을 야기시킨다. 
+
+What if address word meant Address?
+-> SC.W에서 Reservation 검사를 위해 메모리 주솟값 (ALUresult)를 Reservation Set과 비교해야한다. 
+위에서 발생한 모순점과 더불어, Store Conditional. 즉, 저장을 위해 데이터가 입력되기 전, reservation의 판단이 이루어져야한다. 
+Store을 위한 주소 즉, RD1 값이 (Register File에 5비트 rs1이 입력되는 순간 그 비트를 주솟값으로 하는 레지스터에 쓰여져있는 데이터 출력) 인출되는 순간,
+reservation set과 비교되며 조건문을 거쳐 동작의 수행이 이뤄지도록 하는 것이 자연스러우며 구조적으로 기능을 구현하기에 이상적이라 할 수 있다. 
+
+기존의 로직을 그대로 따르긴 하지만, 조금더 명확한 스스로 납득할 만한 이유로 그렇게 하기로 했다. 
+
+이렇게 될 때, 이제 단순히 쓸 수 있다. ㅎㅎ..
+
+LR.W : R[rd] <- M[R[rs1]]
+Reservation Set <- ( R[rs1]이 포함된 32B 블럭 주소 집합 )
+
+SC.W : 조건 확인. 
+if { ( R[rs2] ∈ Reservation set && Reservation set == valid )
+	M[R[rs1]] = R[rs2],
+	R[rd] = 0
+}
+
+else R[rd] = 1
+
+끝!!! 핳하
+
+Atomic Unit에서는 Reservation Set을 갖고 있으며, Zalrsc 명령어 실행 시 
+SC.W가 success 해야하는지 fail 해야하는지를 Control Unit에게 알려줘서 
+MemWrite 신호를 Enable하거나 Disable해야한다. 
+이 경우 Register File R[rd]에 0, 1인지를 저장해야하니 CU에서는 RegWrite를 Enable한다. 
+
+그리고 Reservation Set의 Valid 유무를 위에서 기술한 Fail 조건에 따라 Memory에 쓰여지는 작업을 할 때 해당 메모리의 주소값이 Reservaiton Set에 포함되는지를 확인하여야 한다.
+즉, 데이터 메모리 주솟값 ALUresult값을 입력신호로 가져야한다.
+
+동시에 메모리 읽기 때 해당 ALUresult값이 메모리에서 조회되었다고 Invalidate 하면 안되니까 MemWrite 즉 쓰기 작업일 때만 비교를 수행하도록
+MemWrite 신호를 입력신호로 가져야 한다. 
+그리고 SC.W 명령어를 수행하게 되면, 자동으로 Reservation Set을 Success, Fail 유무와 상관 없이 Invalidate해야한다.
+해당 명령어의 정확한 수행 정보는 Control Unit에서 제일 먼저 알게 되고 제어문을 관리하는 모듈이니 Control Unit에서 SC.W 명령어 실행 시 Reservaiton Set을 Invalidate할 수 있도록
+Rsv_Invalid 신호를 CU에서 Atomic Unit으로 보내야한다. 즉, Rsv_Invalid 신호를 입력신호로 가져야한다. 
+
+그럼 Atomic Unit의 디자인을 이제 확정지을 수 있다. 
+
+[입력신호]
+Reservation Set을 등록하기 위한 R[rs1], 즉 Register File 로부터의 RD1 신호.
+Reservation Set과 R[rs2], 즉 Register File 로부터의 RD2 신호.
+ALUresult, SC외 Reservation set에 해당하는 주소 쓰기 접근이 발생했는지를 알기 위한 메모리의 주소 신호.
+
+받아야하는 데이터 신호는 위 세 가지이다. 
+나머지는 제어 신호.
+
+MemWrite, SC외 Reservation set에 해당하는 주소 쓰기 접근이 발생했는지를 알기 위한 메모리의 쓰기 활성화 신호
+Rsv_Invalid.
+
+The theory only takes you so far.
+나중에 검증 절차 및 Testbench에서 내 이해가 맞았는지 알아볼 수 있을 것이다. 
+
+쨔스.
+
+---연등시간---
+
+아, Reservation set은 Register로 구현되어야 하니까 CLK 신호를 포함하여야 한다. 
+
+출력신호로는 위에서 언급한 Atomic Unit에서 
+Control Unit으로 가는 success, fail 유무를 위한 신호 Rsv_YN (Reservation Yes/No)신호를 갖는다. 
+
+[출력신호]
+Rsv_YN, Reservation Set에 대한 접근이 성공했는지, 실패했는지에 대한 내용.
+
+-----
+
+LR.W의 데이터패스 검증 중. 
+Atomic Unit의 Reservation Set이 Register File과 비슷하게 Register로 구현되는 이상, 쓰기 활성화 신호는 필요할 것이다. 
+입력신호에 Rsv_Write 신호 추가. 단, 이 신호는 DC_Atomic_MUX의 제어 신호를 파생하여 사용한다. 
+DC_Atomic_MUX에서 Atomic 명령어일 때, Memory의 주소로 Atomic 연산에서만 RD1 값만을 쓰는데 이걸 위해 1로 MUX를 활성화 할 때, 마찬가지로 
+해당 Atomic 연산에서 Reservation Set Register의 쓰기가 활성화 되면 될 것 같다.
+라고,, 생각했는데 이러면 SC.W에서도 쓰기가 되겠구나. 어쩔 수 없이 별도의 신호를 CU에 추가해야한다.
+Rsv_Write신호를 Control Unit과 Atomic Unit 둘 다에 각각 출력과 입력으로 추가한다. 
+
+LR.W에서는,, Rsv_YN을 출력할 이유가 굳이 없다. 무슨 값을 출력해도 어차피 해당 명령어를 수행하는 동안 쓸 일이 없기 때문.
+
+SC.W의 데이터패스 검증으로 넘어가자.
+어. RD1은 별도로 MUX 신호로 넣었는데 RD2는 ALU bypass 해야하네? 하긴 bypass 해도 되긴 하는데,, 어차피 RD2를 메모리 주소로 사용하면서 연산을 수행하는 경우는 없으니까. Bypass로 하자. 
+
+어.. 문제 발생. SC.W 즉 메모리에서 쓰기가 발생 할 때에만 비교를 하는데, SC는 store 명령어이므로 기본적으로 MemWrite를 이미 활성화 시켜버려서 조건에 따른 활성화를 할 수가 없는데..
+Control Unit에서 opcode가 Zalrsc 확장에 해당하는 경우 MemWrite신호를 조건문으로 Rsv_YN의 값에 따라 내놓게 끔 해두면 해결. 
+만약 이 방법이 안될 경우, 별도의 Control Unit의 .. 아니다. 이 방법 밖엔 없다. 
+
+아니. Atomic Unit은 Atomic 연산임을 알아야한다.
+기본적으로 reservation set에 해당하는 주소에 메모리 쓰기가 이뤄지는지를 보기 위해 MemWrite와 ALUresult값을 받는다.
+MemWrite가 있을 때 ALUresult와 Reservation set을 비교하는 것이다. 
+
+하지만 SC.W가 나올 때는
+MemWrite가 기본적으로 비활성화 되어있다는 전제로, 이 경우 비교를 해야함을 알려주는 식별자가 없다. 
+때문에, 이 경우 Atomic임을 알리는 신호를 통해 필연적으로 Reservation Set과 RD2가 비교되게 해야한다. 
+이걸 위해, DC_Atomic_MUX를 Atomic이라는 신호로 Atomic Unit에 입력신호로 추가한다. 
+
+완성.. A확장 구현 성공이다...
+RV64IMA94F... 이제 이걸 5단계 파이프라이닝에 추가하면 된다... 하하하...
+오늘은 여기까지!!!
+
+수고했다 내 자신.
