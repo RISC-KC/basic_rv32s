@@ -14,6 +14,20 @@ ALUsrcA와 ALUsrcB로 입력된 데이터 신호들을 ALUcontroller로부터 �
 처리된 연산값은 ALUresult 데이터 신호로 출력된다. 
 Branch Logic의 판단을 위한 비교 연산이 본 ALU에서 진행되므로 RISC-V의 조건 분기가 비교구문이 0인지 아닌지를 통해 판단하므로
 처리된 연산값이 0인지 아닌지를 ALUzero값 데이터 신호로 Branch Logic에 출력한다. 
+설계는 단순화된 코드를 통해 VerilogHDL 의 기본 라이브러리 셀을 사용하여 합성한다. 
+
+처리하는 연산은 다음과 같다.
+
+덧셈 (+)
+뺼셈 (-)
+AND (&)
+OR  (|)
+XOR (^)
+Shift Left Logical (<<)
+Shift Right Logical (>>)
+Shift Right Arithmetic (>>)
+...
+*추가예정*
 
 [Note]
 ALUresult는 37F에서 

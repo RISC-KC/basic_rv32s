@@ -12,9 +12,10 @@ ALUop       (to ALU)
 [Logics]
 opcode와 funct3, funct7, raw_imm값을 기반으로 ALU에서 처리해야할 산술 논리 연산의 종류를 ALUop라는 별도의 코드로 인코딩한다. 
 이를 ALU로 출력하여 ALUop코드를 기반으로 연산 종류를 선택해 처리할 수 있도록 한다.
+ALUop의 종류는 다음과 같다
+*추가 예정*
 
 [Note]
-
 ALU controller에서 처리하는 이 모든 작업을 CU에서 물론 처리할 수 있다.
 또한 ALUopcode라는 별도의 인코딩 없이 설계할 수도 있기도 하다.
 
