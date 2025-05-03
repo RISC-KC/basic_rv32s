@@ -1,9 +1,9 @@
 # Program Counter (PC)
 
 [입력신호]
-NextPC              (from PCC)
 CLK; Clock signal   (클럭 신호)
 rst; Reset          (초기화 신호)
+NextPC              (from PCC)
 
 [출력신호]
 PC (to Instruction Memory)

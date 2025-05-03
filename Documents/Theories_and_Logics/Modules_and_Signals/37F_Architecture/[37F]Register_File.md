@@ -6,7 +6,7 @@ RegWrite    (from Control Unit)
 RA1         (from Instruction Decoder; rs1)
 RA2         (from Instruction Decoder; rs2)
 RF_WA       (from Instruction Decoder; rd )
-RF_WD       (from RegWDsrc_MUX. Data Memory; D_RD, ALU; ALUresult, imm_gen, PC+4)
+RF_WD       (from RegWDsrc_MUX. Data Memory - D_RD, ALU - ALUresult, imm_gen, PC+4)
 
 [출력신호]
 RD1         (to ALUsrcA_MUX)

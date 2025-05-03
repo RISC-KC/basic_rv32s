@@ -5,7 +5,7 @@ Jump        (from Control Unit)
 B_Taken     (from Branch Logic)
 PC          (from Program Counter)
 imm         (from imm_gen)
-J_Target    (from ALU; ALUresult)
+J_Target    (from ALU - ALUresult)
 
 [출력신호]
 U_NextPC    (to PC_Aligner)
@@ -19,4 +19,4 @@ Jump시 J_Target의 주솟값을 U_NextPC로 출력한다.
 분기하지 않을 경우 PC에서 +4 한 값을 U_NextPC로 출력한다.
 
 [Note]
-U_NextPC :  Unaligned Next Program Counter value
+U_NextPC = Unaligned Next Program Counter value

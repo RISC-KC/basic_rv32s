@@ -7,9 +7,9 @@ I_RD    (IM_RD; from Instruction Memory)
 opcode  (to imm_gen, ALUcontroller, Control Unit)
 funct3  (to Control Unit, ALUcontroller, Branch Logic, BE_Logic)
 funct7  (to ALUcontroller)
-rs1     (to Register File; RA1)
-rs2     (to Register File; RA2)
-rd      (to Register File; RF_WA)
+rs1     (to Register File - RA1)
+rs2     (to Register File - RA2)
+rd      (to Register File - RF_WA)
 raw_imm (to imm_gen, ALUcontroller)
 
 [Logics]

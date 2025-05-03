@@ -5,10 +5,10 @@ CLK
 MemWrite    (from Control Unit)
 DM_WD       (from BE_Logic)
 ByteMask    (from BE_Logic)
-DM_Addr     (from ALU; ALUresult)
+DM_Addr     (from ALU - ALUresult)
 
 [출력신호]
-DM_RD       (to BE_Logic; DM2RF_RD)
+DM_RD       (to BE_Logic - DM2RF_RD)
 
 [Logics]
 CLK rising edge에서 작동한다. 
