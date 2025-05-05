@@ -4177,3 +4177,104 @@ RV32I37F부터 시작해서 추가할 예정이다.
 
 43F까지 어느정도 다 마쳤다. 아마 진짜로 내일 안에 끝낼 수... 있겠지.?
 하하. 오늘은 여기까지. 23:59.
+
+[2025.05.04.]
+43FC의 문서화까지 다 마쳤다. 하지만 문제를 발견하여 20시 경부터 회의에 들어갔다. 
+Data Cache - Memory 구조에서 Data Cache Miss 신호를 DM_Addr_MUX의 제어신호로 설계한게 화근이었다. 
+발생하는 문제는 다음과 같다. 
+
+1. 읽기 시도 (0x1111_1111 주소)
+데이터 캐시: 찾아보자
+데이터 메모리 : 찾아보자
+
+2. 캐시: 어라 캐시 미스임 
+-> 자동으로 여태 메모리로 입력되던 주소가 WB_Addr로 바뀜. SAA 중도 차단됨
+
+메모리 : 어?? 뭐야 뭐 어떡하라고 WB_Addr 인출하라고?
+-> 그대로 WB_Addr에 해당되는 값 인출 됨
+
+즉, SAA 이기에 발생하는 문제.
+DM_Addr_MUX를 단순히 DC_Status의 Miss시 WB_Addr로 설정하게 되면
+ALUresult를 주솟값으로 하는 데이터의 인출이 이뤄져야하는데 WB_Addr를 주솟값으로 하는 데이터의 인출이 생긴다. 
+
+이에 대한 내 해결안 : 1비트 FSM을 데이터 메모리에 만드는 것.
+Read.
+Cache, Memory SAA로 주소 접근
+
+Cache Miss!
+->캐시 미스 신호를 D_RD_MUX랑 Data Memory에 보냄
+
+D_RD 선택 MUX의 선택, DM_RD을 인출.
+
+Data Memory access...주소접근중... complete! 
+DM_RD fetched and Cache Miss detected! 
+-> DM_RD를 인출했고, 캐시 미스가 탐지됨.
+flag rise, Write back mode.
+두 조건을 만족했으므로 Write Back 모드로 변경 (FSM 비트 1로 set.)
+
+WB_Addr input, WB_Data wrote.
+Data Memory의 Address MUX를 WB_Addr input으로 선택.
+Data Memory의 Write Back 완료. (C2M)
+
+Back to normal mode (FSM 비트 0으로 Set. DM_Addr_MUX는 다시 ALUresult 선택으로 바뀜.)
+
+위 로직은 검토중이고, CC84가 방안을 생각해봤다.
+
+CC84:
+flush_address 에 해당되는 값이 인출된다고 해도
+어짜피 control unit 은 pc 갱신을 멈춘 상태라 문제 없을 것이다.
+
+KHWL:
+LW 명령어. R[rd] = M[R[rs1]]
+
+CLK1.
+
+SAA. 캐시/메모리 동시 주소 접근
+Cache miss, Not Ready, PC_Stall. 
+D_RD는 DM_RD로 선택
+
+Data Memory에서 정상 데이터가 나와야함
+근데 DM_Addr이 Cache miss이기에 WB_Addr 기준으로 데이터가 출력됨
+-> R[rd] = 잘못된 M[R[rs1]]
+동시에 Cache로도 WB_Addr 주소를 기반한 잘못된 데이터 나감
+
+데이터 캐시에서 WriteBack으로 DM으로 flush해야하는 데이터와 해당 주솟값을 Write Buffer로 출력
+
+CLK2.
+여전히 DC Status는 Miss.
+Not Ready, PC_Stall 중.
+DM_Addr은 여전히 WB_Addr을 받고 있음.
+MemWrite가 되고, Data Cache에 잘못된 M[R[rs1]]의 갱신이 일어남. 
+D_RD는 여전히 DM_RD고, WB_Addr기반 잘못된 주소의 데이터가 출력되고 있음.
+
+DM_Not ready
+Write Buffer에서 Data Memory로 WB_Addr과 WB_Data 출력. DM에서 WriteBack 일어남. 메모리로 Flush 끝.
+
+CLK3.
+DC_Ready, DM_Ready. PC_Stall 풀림. 명령어 갱신 재개.
+
+이 논리 전개에 문제가 없다면, 문제가 발생하는 것이 맞다. 
+
+CC84 방안 1 :
+dm_address 신호 MUX를 제어할 때
+hit/miss 신호만으로 제어하는 대신
+cache_ready 랑 섞어서 MUX 제어.
+
+hit | cache_ready | select
+0 | 0 | flush_address
+0 | 1 | alu_result
+1 | 0 | x
+1 | 1 | x
+
+
+KHWL : Miss고 Not Ready가 초기 상황인데 그걸 flush_address로 갖고가면 일단 잘못된 메모리 데이터가 인출됨
+
+두번째 사이클에서 그럼 캐시가 ready되는 경우가 있어야 함.  캐시의 갱신이 두번째 사이클에서 이뤄지니까 이 때 ALUresult값을 주소로 한 제대로된 메모리 데이터가 인출되어서 데이터 캐시에게 줘야하고 동시에 그게 레지스터에 쓰일 값으로 나가야 함. 
+
+근데? 두번째 사이클에서 캐시가 ready되는 경우가 없음. 
+갱신 이후 ready인데, 그럼 ready가 '실효성'을 가지는건 CLK3 부터임.
+
+CLK3? DC,DM Ready임. 이 때 ALUresult로 풀린다고 한들, 해당 데이터가 데이터 메모리에서 안나감. 왜? PC_Stall 풀려서 명령어 갱신 재개됐거든
+
+SAA를 살리기 위한 추가 로직의 도입으로 인한 시간 소요를 생각하여, SAA 기능의 드랍을 검토중이다. 위 내용은 1시간 10분에 걸친 회의록을 정리한 것이다.
+

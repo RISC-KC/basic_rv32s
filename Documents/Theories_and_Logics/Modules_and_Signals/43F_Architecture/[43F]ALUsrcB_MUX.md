@@ -1,4 +1,5 @@
 # ALUsrcB_MUX
+Basically same as 37F Architecture
 
 [입력신호]
 ALUsrcB (from Control Unit)

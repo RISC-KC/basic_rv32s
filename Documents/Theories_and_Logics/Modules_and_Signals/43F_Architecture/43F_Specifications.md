@@ -1,5 +1,8 @@
 # 43F Architecture
-ISA : RISC-V RV32I (except fence, environment instructions)
+Basically same as 37F Architecture but CSR File designed. 
+Now supports Zicsr extension
+
+ISA : RISC-V RV32I, Zicsr
 (RV32I except FENCE, FENCE.TSO, PAUSE, EBREAK, ECALL)
 
 - [Modules]
@@ -19,7 +22,7 @@ Data Memory				(DM)		[MemWrite, DM_WD(BEDM_WD), ByteMask, DM_Addr, CLK / DM_RD];
 									/ CSR_RD];															5 + 1 = 6 Signals
 
 - Controls
-Control Unit			(CU)		[opcode, funct3 / Jump, Branch, ALUsrcA, ALUsrcB,
++ Control Unit			(CU)		[opcode, funct3 / Jump, Branch, ALUsrcA, ALUsrcB,
 									RegWDsrc, MemRead, MemWrite, RegWrite, CSRwrite];					2 + 8 = 10 Signals
 ALU Controller			(ALUcon)	[opcode, funct3, funct7, raw_imm / ALUop];							4 + 1 = 5 Signals
 
@@ -32,6 +35,6 @@ Immediate Generator		(imm_get)	[opcode, raw_imm / imm];											2 + 1 = 3 Sign
 PCplus4					(PC+4)		[PC, 4 / PC+4];														2 + 1 = 3 Signals
 
 - MUXs
-+ ALUsrcMUX_A					[ALUsrcA, RD1, PC, rs1 / srcA];												4 + 1 = 5 Signals
-+ ALUsrcMUX_B					[ALUsrcB, RD2, imm, shamt(imm[4:0]), CSR(CSR_RD) / srcB];					5 + 1 = 6 Signals
-+ RegF_WD_MUX					[RegWDsrc, D_RD(DM_RD), ALUresult, CSR_RD, imm, PC+4 / RF_WD];				6 + 1 = 7 Signals
++ ALUsrcMUX_A					[ALUsrcA, RD1, PC, rs1 / srcA];											4 + 1 = 5 Signals
++ ALUsrcMUX_B					[ALUsrcB, RD2, imm, shamt(imm[4:0]), CSR(CSR_RD) / srcB];				5 + 1 = 6 Signals
++ RegF_WD_MUX					[RegWDsrc, D_RD(DM_RD), ALUresult, CSR_RD, imm, PC+4 / RF_WD];			6 + 1 = 7 Signals
