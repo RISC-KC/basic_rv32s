@@ -8,7 +8,8 @@ CLK
 
 [출력신호]
 DM_RD           (to BE_Logic - DM2RF_RD)
-+ DM_WriteDone  (to DataReady_OR)
++ M2C_data      (to DC_WD_MUX)
++ DM_Ready      (to DataReady_OR)
 
 [Logics]
 CLK rising edge에서 작동한다. 

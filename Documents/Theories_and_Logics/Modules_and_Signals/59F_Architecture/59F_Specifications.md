@@ -2,7 +2,7 @@
 Basically same as 47NF
 Now supports RV64I. Bit system change logs are in 64I_Extension_Changes.md 
 
-ISA : RISC-V RV64I, Zicsr, Zifencei
+ISA : RISC-V RV64I, Zicsr, Zifencei, mret
 (RV32I except FENCE, FENCE.TSO, PAUSE)
 
 - [Modules]
