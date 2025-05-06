@@ -56,10 +56,12 @@ module DataCache_tb;
         // 1. (Read) First line of 101010101 index is updated with DEADBEEF. (tag: 000000000000000000) [Update -> Read]
         // 2. (Read) Second line of 101010101 index is updated with CAFEBABE. (tag: 000000000000000001) [Update -> Read]
         // 3. (Write) 0x12 is written in most significant byte of First line of 101010101 index. [Write]
-        // 4. (Read) First line of 101010101 index is updated with 19721121 (tag: 000000000000000010) so tag 000000000000000000 should be flushed
-        //           because we updated from DEADBEEF to 12ADBEEF. [Flush -> Update -> Read]
-        // 5. (Read) Second line of 10101 index is updated with 12ADBEEF (tag: 00000) and flush is not required. [Update -> Read]
-        // 6. (Read) Read from first line. (tag: 00010) [Read]
+        // 4. (Write) Read from second line so lru is set by 0. 
+        //            First line of 101010101 index is updated with AAAAAAAA (tag: 000000000000000010),
+        //            so tag 000000000000000000 should be flushed because we updated from DEADBEEF to 12ADBEEF.
+        //            After that, first line of 101010101 index is updated with AAAA1121 [Read -> Flush -> Update -> Write]
+        // 5. (Read) Second line of 101010101 index is updated with 12ADBEEF (tag: 000000000000000000) and flush is not required. [Update -> Read]
+        // 6. (Read) Read from first line. (tag: 000000000000000010) [Read]
 
         // Test 1: Cache update
         $display("Cache update: ");
@@ -100,21 +102,22 @@ module DataCache_tb;
         // Test 4: LRU and flush
         $display("\nLRU and flush: ");
 
-        // read_enable = 1;
-        // write_enable = 0;
-        // address = 32'b000000000000000001_101010101_00000;
-        // #10;
+        read_enable = 1;
+        write_enable = 0;
+        address = 32'b000000000000000001_101010101_00000;
+        #10;
 
-        // $display("address: %b, hit: %b, read_data: %h", address, hit, read_data);
+        $display("address: %b, hit: %b, read_data: %h", address, hit, read_data);
 
         read_enable = 0;
         write_enable = 1;
         address = 32'b000000000000000010_101010101_00000;
+        dm_data = 256'h00000000_00000000_00000000_00000000_00000000_00000000_00000000_AAAAAAAA;
         write_data = 32'h19721121; 
         write_mask = 4'b0011;
         #10;
 
-        $display("- Flush start: ");
+        $display("\n- Flush start: ");
         $display("  - address: %b, hit: %b, read_data: %h", address, hit, read_data);
         $display("  - flush_address: %b, flush_data: %h, flush_done: %b", flush_address, flush_data, flush_done);
 
@@ -135,7 +138,7 @@ module DataCache_tb;
         read_enable = 1;
         write_enable = 0;
         address = 32'b000000000000000000_101010101_00000;
-        dm_data = 32'h12adbeef;
+        dm_data = 32'h12ADBEEF;
         #10;
 
         $display("\nBefore: address: %b, hit: %b, read_data: %h, flush_address: %b, flush_data: %h, flush_done: %b", address, hit, read_data, flush_address, flush_data, flush_done);
