@@ -2063,7 +2063,7 @@ Store시 misalign 발생이라 BE_Logic의 misaligned 플래그가 활성화 되
 남은 연등시간 9분.. 파이프라이닝 구상이나 하다가 끝내야겠다.
 계속., 나아가자. 
 
-[2025.03.04. ]
+2025.03.04
 
 오늘은 2단계 파이프라인 설계에 더불어 EX/MEM 레지스터의 배치를 하려고 했다.
 일과시간에 컴퓨터 구조 및 설계 개정 5판의 파이프라이닝 부분을 다시 정독했는데, 역시 교과서라 그런지 참조할 내용이 굉장히 많았다. 
@@ -2081,13 +2081,13 @@ Insturction Memory 내 CSR 관련 명령어 추가 및 RV32I43F DUT 수행.
 
 오늘은 여기까지. 
 
-[2025.03.05. ]
+2025.03.05. 
 당직. RISC-KC Processor Design Manual I 의 작성만 했다. 30분 졸았던 시간과 업무를 처리하는 시간 외에는 진짜 거의 수 시간을 이 문서작업에만 갈아넣은 듯 하다. 
 3.2장 Main Modules의 내용들의 초안을 모두 만들었고, Extension Modules도 Memory Controller, Exception Detector, Trap Controller 이 세 가지만 더 적으면 된다.
 앞으로 당직 2~3번이면 모두 다 작성하지 않을까 싶다. 어찌저찌 보니 벌써 매뉴얼의 페이지가 18페이지 분량이 되었다. 아직 초안이기도 하고 담지 못한 내용이 많다보니 더 분량이 많아지겠지..
 크하하하. 화이팅!!!
 
-[2025.03.06.]
+2025.03.06.
 근무자 취침을 하고, 16시 정도에 일어났다. 이발을 하려고 했지만 사람이 너무 많은 관계로 하지 못했고, 저녁식사를 한 뒤 바로 개발에 임했다. 
 해야할 일은 다음과 같다. 
 1. 37F 아키텍처 기반 상위 아키텍처 변경사항 적용.
@@ -2103,7 +2103,7 @@ RV32I43F의 top module에서도 구현을 착수하여 모듈과 신호를 파�
 사실 아키텍처상 CSR File에 들어가는 쓰기 데이터(Write Data)는 ALU의 연산 결과인 ALUresult신호 그대로가 들어가는거라 csr_write_data 신호를 없애고, csr_write_data(ALUresult)로 신호 파생을 해두었다. 
 오늘은 여기까지. 가자가자!!
 
-[2025.03.07. ]
+2025.03.07. 
 오늘은 전투휴무를 썼던 날이었지만 전혀 개발을 하지 못했다.
 오전에는 당직사령의 통제로... 갑자기 사지방의 제한이 일어났고, 그렇게 오후에 개발하려고 했더니 동원훈련 조교였던 내가 인수인계를 받아야한다고 전투휴무임에도 불구하고
 동원훈련장으로 끌려가서 인수인계를 받고 왔다. 차라리 어떻게 해야하고 그 지형 파악하고 그런 '인수인계'였으면 차라리 나았겠지만 그런건 간부님들이나하고 역시나 그냥 단순 노동만했다. 
@@ -2118,11 +2118,11 @@ A4 용지 한 장의 분량에 이 모듈들을 다 담으려고 하니까 쉽�
 학습적인 목적을 띄는 본 프로젝트의 특성상 그렇게 하기는 많이 아쉬워질 것 같다. 최대한 신호들을 압축시키고, 최대한 모듈들을 붙여둬야한다. 우리 프로세서의 집적도(?)가 올라간다 ㅋㅋㅋㅋ 
 슬슬 시간이다. 오늘은 여기까지! 내일은 5단계 파이프라인의 초안 완성을 목표로 해야겠다. 
 
-[2025.03.08.]
+2025.03.08.
 RV32I43F의 탑모듈 설계를 하고, Instruction Memory에 Zicsr 확장 명령어를 입력했다
 어랍쇼 문제. 왜 Write가 한 사이클 뒤로갔지. 큰일났다. 
 
-[2025.03.09.]
+2025.03.09.
 사실, 웨이브폼의 처리 문제일 수도 있다고 생각하고 그 예상값이 정확하게 나왔는지를 검증했더니 연속된 쓰기나 읽기, 참조에서 
 웨이브폼에서 보이는 것 처럼 다음 사이클에 적혔다는 표기와는 다르게 원활하게 해당 값이 잘 읽혀서 예상값이 잘 나오는 것을 보고 검증완료했다. 
 사실 여기까지 검증과정에서 헤쳐오는데 적지 않은 문제들이 있었다. CSR의 write enable신호가 활성화가 안된다던지, csr명령어가 제대로 웨이브폼에 표기되지 않는다던지, 
@@ -2134,13 +2134,13 @@ FPGA보드가 슬슬 구현 검증을 위해 필요해지고 있다. 그래서 �
 원래 DE0-115나 Z7 20 같은 메이저한 FPGA 보드가 처음부터 고려 제품군이었지만, 시대가 많이 지났으니 더 괜찮은 보드들이 비슷한 가격에 꽤 나왔을 줄 알고 삽질을 많이 했다. 하지만 없었다..
 가장 적합한게 Z7 20같다. 그래픽 출력 단자 인터페이스도 있고, Xillinx 계열이라 AMD의 관련 FPGA 강의들 및 사후지원을 볼 수 있다. 또한, 프로그램 라이센스가... 많이 자유롭다.!
 
-[2025.03.10. ]
+2025.03.10. 
 군 입대 1주년. 동원 예비군 조교로 아침부터 끌려가 딱히 이렇다 할 성과도 못내고, 돌아와서 쉬다가 20시 30분에 개인정비 시간이 끝난다는걸 보고 부랴부랴 밀린 Devlog 쓰려고 왔다. 
 8일 9일의 Devlog는 방금 다 쓴 것이다.. 하물며 지금 시간은 20:26. 슬슬 가야한다... Z7 20을 사려했는데 개인 구매일 경우 6~70만원에 육박하는 돈이 필요하다... 또한 그걸 군대에서 굴리려면 로컬 시스템은 필수고,,
 X300 Deskmini를 반입한다고 한들 그에 필요한 추가비용도 만만치 않다.... 내일은 컴퓨터구조및 설계 교재와 현재 아키텍처 구조가 담긴 사진을 갖고가서 남는 시간마다 파이프라인을 마저 설계하고 듀얼코어 구조에 대해서 연구해보아야겠다. 
 It is what it is. 잘 헤쳐나가보자. (ChoiCube84는 오늘부로 휴가다... 하 오늘 훈련 전날이라 연등도 없는데...)
 
-[2025.03.13. ]
+2025.03.13. 
 2박 3일간의 동원훈련이 끝이 났다. 내일은 정리하러 가고, 오늘은 개인정비시간을 보장받았다. 많이 피곤했던 건지, 개발을 못해서 답답했던건지 정서적 고갈이 꽤 심해서 초췌했다. 
 그간 3단계까지 (EX/MEM) 파이프라이닝을 해둔 다이어그램을 보며 어떻게 듀얼코어 및 멀티쓰레드 상황에서의 구현을 어떻게 해야할지 생각을 이어갔다. 
 결국 멀티hart, 멀티스레딩, 다중 코어 환경에서는 각 코어의 구조적 차이보단 같은 메모리 공간을 공유해서 쓸 때 어떻게 리소스를 분배할 것이며, 스케줄링을 어떻게 분산구현을 할 것인가.
@@ -2159,7 +2159,7 @@ Program Counter 레지스터 모듈에서 나오는 PC 신호를 그대로 가�
 와 근데 여전히 Read Done신호는 어떻게 해야할지 모르겠네. 이건 그냥 직접 해보면서 추후에 검증해야할 것 같다. 여기서 이론적 배경과 근거를 찾고 처음부터 완벽한 아키텍처를 구상하기에는 시간 소요가 너무 커진다. 
 진행중. 아 삽질해버림. MEM/WB 레지스터 거의 다 만들었는데 공간 한계로 옆으로 옮겨야함. ㅁㄴㅇㄹ
 
-[2025.03.14.]
+2025.03.14.
 ChoiCube84의 Instruction Cache 구현. 로직에 대한 검증을 했다. 
 ChoiCube84의 모듈 설계가 다이어그램상 설계와 상이하다는 것을 발견, 관련하여 의논하기 시작했다. 
 FENCE.i 명령어를 위해 IC_Clean 신호를 다이어그램 설계에 넣었는데 코드에는 없었다. 이에 대해 reset 먹이면 될 것 같다는 말에 수긍했다. 
@@ -2197,7 +2197,7 @@ Write Back의 수행 이후 데이터 메모리에 다 썼으므로 다음 데�
 그리고 43F 아키텍처를 설계하고 검증하며 추가된 로직이었던 PC_Stall 신호를 47F 기반 아키텍처에도 적용하는데, 이에 따라 PC Controller로 향하는 Write Done 신호를 없애도 되게 되었다.
 Write Done신호는 Control Unit에게만 입력되고, CU에서는 이를 기반으로 PC_Stall 신호를 조정하면 되는 것이다. 
 
-[2025.03.15. ]
+2025.03.15. 
 생각해보니 FENCE.i를 Instruction Cache로 알리고 invalidate하기 위해선 그 식별 신호가 당연히 필요하다. IC_Clean 신호는 있어야하는 것이 맞다. 
 Trap Controller에서 FENCE.i에 대한 명령어 식별 신호를 받아서 Instruction Cache가 Invalidate를 수행해야한다. 다만, Trap Controller에서 보내는 신호를 Instruction Cache에서 
 별도의 IC_Clean 신호로 받아 처리하는 것이 아니라, 이를 RST(reset)신호로 처리하는 것으로 구현하면 된다. 
@@ -2249,7 +2249,7 @@ WriteBack의 안건은 현재 수행되는 대상 주소가 아니라, Memory로
 하하 다행이다. 문제가 생겼다. 파이프라이닝은 아니고, 우리가 설계하는 rv32s 가 lw 명령어의 구현을 기점으로 더 이상 싱글사이클 프로세서가 아니게 되어버렸다는 것. 그리고 캐시를 하면서 더더욱 한 사이클 이내에 모든 동작을 넣기가 힘들어졌다는 것.
 한 사이클 안에 동작을 할 수 있도록 클럭 유지 시간을 늘리는 것은 근본적인 해답이 되질 않는다. 대부분의 로직이 clk의 posedge를 기반하기 때문. 
 
-[2025.03.16.]
+2025.03.16.
 오늘은 아침에 RV32I50F.5SP.R1 다이어그램의 신호들 배선을 최적화했다.
 어제 컴퓨터 구조 및 설계 책을 읽다보니 신호들이 지나가는 경로를 하나로 묶어 설계를 하는 경향이 보이고, 그 전부터 그렇게 하는게 깔끔할 것 같다는 생각에 이참에 그렇게 한번 최적화를 했다. 
 그리고 그 다음부턴 데이터 메모리의 한 사이클 밀린 것에 대해 연구를 계속했다. 
@@ -2298,10 +2298,10 @@ FENCE 명령어시 Writeback인 현재 캐시 정책상 밀린 쓰기를 Data Me
 그리고 read enable도 없앴다 사실 이게 핵심인 것 같기도 하다. 이제 이 수정 소요를 각 다이어그램 파이널 버전을 리비전하여야 한다. 
 오늘은 여기까지. 내일은 1박 2일 휴가라 개발환경을 모두 압축 저장해서 업로드해야겠다. 
 
-[2025.03.17.]
+2025.03.17.
 PR했다. 1박 2일 휴가라 그리 많은 건 하지 못했다. 
 
-[2025.03.18.]
+2025.03.18.
 캐시 구조와 FENCE 명령어에 대한 ChoiCube84의 제언.
 캐시의 WriteBack 동작을 FENCE로 할 수 있게 하는 것은 큰 당위성을 제시하지 못한다. 
 굳이 할 이유가 없을 뿐더러, multi-hart 상황에서의 용도와 그 취지에도 어긋난다. 
@@ -2313,7 +2313,7 @@ G확장 또는 추후 Linux Kernel을 올리기 위해서 Zifencei는 필요하�
 
 A확장와 CMO에 대해서 공부했다. 
 
-[2025.03.19.]
+2025.03.19.
 로드라인 및 아키텍처를 기확하고 계획안을 수정하며 구체화하였다. 
 
 수정된 로드라인은 다음과 같다. 
@@ -2361,7 +2361,7 @@ RV32IMA104_CMO_RVWMO : A extension supported.
  L1$, L2$ for each core respectively, L3$ is shared cache that all the core can access.
 ▶ Supports DDR3 SDRAM integrated on FPGA board.
 
-[2025.03.20.]
+2025.03.20.
 이제 해야할 건, 파이프라이닝 레지스터의 배치는 완료 되었으니 Hazard Unit을 구상하고 제어헤저드, 데이터헤저드, 구조적 헤저드에 대한 대응 설계를 하는 것 하나.
 그리고 그간 수정된 아키텍처를 rv32s 의 모든 Final 설계도에 revision하는 것이다. 
 
@@ -2379,7 +2379,7 @@ FPGA는 교수님의 추천으로 Nexys Video 제품을 구매했다. 이제 로
 
 43F까지 리비전 완료. 
 
-[2025.03.21.]
+2025.03.21.
 생각해보니 250316 회의 때 Zifencei확장을 Trap Controller가 구현될 때 같이 하는 것으로 했기에, 44F도 아니고 43F에 캐시 구조를 접목한 구조가 된다. 
 최종적으로 RV32I43FC (C for Cached)로 아키텍처 이름을 지었다. 
 
@@ -2420,7 +2420,7 @@ Cache의 DC_Status 신호를 NOT(반전) 한 신호로 제어하기로 했다. �
 Zen Architecture를 참조하여 화면 출력용 GUI, DDR Memory Interface, USB같은 uncore 영역에 대해 별도의 통합처리 탑 모듈을 설계할 것이다. 
 최종적인 캐시 구조가 확립되어 이제 구현하면된다. RV32I43F_C.R1과 RV32I47NF. 
 
-[2025.03.22.]
+2025.03.22.
 확정된 캐시 구조와 수정된 로드라인에 따른 rv32s 프로젝트의 아키텍처 완성본인 RV32I43FC.R1과 RV32I47NF를 완성했다. 
 각각 14:58, 15:50에 완성했다. 자잘자잘한 신호 배치의 최적화까지 완료했고, 이제는 다음 레포지토리인 rv64s(가칭)에서 진행할 RV64I 확장을 생각하며 RV64I59의 초기 설계안을 만들어야한다.
 아마 rv32s에서 더 이상 수정이 많지는 않겠지만 없지는 않을 것이라 생각한다. 사실상 나올게 다 나온 느낌이긴해도, 구현하는 과정에서 생각보다 많은 수정소요와 배울 거리들이 발생했기 때문에, 지금부터는 ChoiCube84의 몫이다. 
@@ -2428,7 +2428,7 @@ mybox에는 파일시스템 분류를 잘 했는데 이를 basic_rv32s 본 githu
 RV64확장의 시작인 RV64I59F에서만 각 신호의 입력단에서 비트 크기를 명시해놓을 것이다. 
 아, RV32 대비 차이를 보기 위해서 RV32I47NF에도 표기해놓는 것이 좋을 것 같다. 
 
-[2025.03.23. ]
+2025.03.23. 
 일요일 당직. 운영체제 책을 펴고 2장까지 공부했다.
 운영체제의 개발 과정 및 그 뒷받침이 되는, 배경이 되는 하드웨어들의 기본 이론들.
 CPU를 여기까지 개발하면서 알게된 것들이긴 하지만 꽤나 ㄹ현대 컴퓨터 구조에 맞게 잘 개발 해오고 있었다는 생각이 들었다. 
@@ -2442,13 +2442,13 @@ RV32I CheatSheet의 RV64버전 업데이트를 마쳐서 인쇄했다. 간부님
 ALUop를 추가하여 해당 비트 확장을 연산에 포함하는 것과 (이 경우, ALUcontroller와 ALU의 수정소요가 발생한다. )
 64-bit extender. opcode와 funct3, 7값을 별도로 받아 명령을 상황에 맞게 처리하는 방법.
 
-[2025.03.24. ]
+2025.03.24. 
 HCWcloud에 대한 육군창업경진대회 사업계획서를 쓰는데 시간을 꽤 갈아넣었다. 
 ChoiCube84가 23시 49분경 Data Cache의 검증 완료 소식을 들려줬다. 이제 이를
 내일부터 검증을 하면 될 것 같고, RV64I 기준 작업물들 압축파일을 mybox에 정리해서 goormide에 올리면 될 것 같다. 
 파일 시스템 정리. 오늘은 여기까지. 
 
-[2025.03.25. ]
+2025.03.25. 
 어.,,..,..,., 운영체제 공부하고, 꽤나 괜찮은 논문을 찾았다. 
 싱글사이클, 5단계~7단계 파이프라이닝, 캐시구조, 멀티코어 확장구조, 그리고 이것저것 거의 플랫폼에 준하는 하드웨어 설계를 해낸 논문이다.
 스리랑카에 있는 대학에서 작성한 논문. BRISC-V: An Open-Source Architecture Design Space Exploration Toolbox. 
@@ -2461,10 +2461,10 @@ GPT o1에게 해당 논문이 어느정도 수준의 논문인지 물어봤고, 
 KAIST의 특기자 전형으로 학부생 입학하기 위함. 그냥 CPU를 만드는 것이 꿈이었으니까. 그리고 그걸로 AMD, Intel같은 기업을 만들고 싶으니까.,
 솔직히 두렵기도하고, 많이 부담되고 걱정된다. 그래도 일단 이걸 하는 것 말고는 할 수 있는게 없으니까. 계속 나아가야한다. 
 
-[2025.03.26. ]
+2025.03.26. 
 BRISC-V 논문에 적힌 사이트에 들어가 플랫폼을 구경했다. 코드들에 대한 레퍼런스를 꽤 삼을 수 있을 것 같다. 
 
-[2025.03.27. ]
+2025.03.27. 
 오늘 외진 가서 예상치 못하게 파견간 ChoiCube84와 재회하여 가볍게 회의를 나눴다. 
 Data Cache의 Masking 문제. 콜드스타트 상태에서, 메모리에 쓰기를 요청하고, 캐시에 쓰여진다. 그 값을 Flush할 때 Masking을 하지 않으면 캐시의 초기값이 들어가는 문제가 발생한다.
 e.g.) Cache : 0000_0000, Mem : DEAD_BEEF. Cache : AAAA_0000, Mem : DEAD_BEEF -> Cache : 1242_AABE, Mem : AAAA_0000 (Expected AAAA_BEEF)
@@ -2541,7 +2541,7 @@ LD - Load Double word. 64비트 데이터를 로드한다.
 “MMU and cache management”
 “Cache partitioning based on executable attribute”
 
-RV64I59F의 윤곽은 이정도면 꽤 많이 드러낸 것 같다. 지금부터는 그 이후인 5SP, 5-Stage Pipeline을 구현하기 위해서 기존 RV32I50F 기반으로 되어있는 5SP 도안을 
+RV64I59F의 윤곽은 이정도면 꽤 많이 들어낸 것 같다. 지금부터는 그 이후인 5SP, 5-Stage Pipeline을 구현하기 위해서 기존 RV32I50F 기반으로 되어있는 5SP 도안을 
 RV32I47NF 기준으로 (RV64I59F는 모듈 설계 자체는 동일하므로) 적용하고 Hazard Unit을 설계해야겠다. 
 내일 또 당직인데, 내일은 운영체제를 마저 공부하고. 
 
@@ -3292,6 +3292,1005 @@ USB모뎀이 150Mbps라는데 실제로는 5MB/s 나오면 다행인 수준.. �
 오늘은 여기까지.
 
 [2025.04.13. ]
-Local-System setup guide
-[[Fedora]]
-iverilog, gtkwave, 
+"A" 확장에 대해서 살펴보았다. 
+Zaamo AMO 명령어에 대한 것들인데 우려했던 것들 보단 A확장이 꽤 수월하게 이뤄질 것 같다. 약간 SIMD와 유사한 느낌들이다. 한 명령어에 여러 수행이 담겨있다. 
+공통적으로 R[rd] <- R[rs1]  을 수행하며, 
+R[rs1] <- Binary Operated R[rs1] and R[rs2] 가 동반된다.
+여기서 Binary Operation은 Zaamo 명령어들을 살펴보면 단서를 찾을 수 있는데, 다음과 같다.
+amo'swap'.W/D
+amo'add'.W/D
+amo'and'.W/D
+amo'or'.W/D
+amo'xor'.W/D
+amo'max[u]'.W/D
+amo'min[u]'.W/D
+
+즉 swap, ADD, AND, OR, XOR, MAX, MAX_unsigned, MIN, MIN_unsigned 이 9가지의 이진 연산을 각 명령어가 쓰인 바에 따라 수행하는 것이다. 
+
+AMOADD.W 명령어를 수행했다면, AMOADD.W rd, rs2, rs1 이렇게 사용된다.
+그리고 이는 이러한 동작을 수행한다.
+R[rd] <-  M[rs1]
+M[rs1] <- M[rs1] + R[rs2]
+
+R[rd]에 M[rs1]이 먼저 쓰여지고, 쓰여진 M[rs1]에 기존의 M[rs1]값 + R[rs2]값이 쓰여지는 순서를 따른다. 
+
+RV64 기준 double word(64-bit data)가 가능하다. 
+또한 RV64에서 32-bit AMO 명령어들은(word 단위) 항상 R[rd]에 쓰여지는 값(원래 M[rs1]에 해당되는 값)을 Sign-extension하고 R[rs2] 원본 값(M[rs1]과 이진 연산을 수행하는 값)의 상위 32를 무시한다. 
+
+여전히 모르겠는 두 가지...
+1. 이 AMO 연산이 어떻게 다중 코어 구조에서 역할을 맡길 때 중요한건지.
+2. Load Reserved / Store Conditional 이 무슨 의미인지. 
+
+
+[2025.04.14. ]
+"A" 확장에 대해 추가적인 공부.
+A 확장의 명령어는 두가지 종류로 구분된다. Zalrsc, Zaamo.
+Zalrs는 Z, Atomic; Load Reserved, Store Conditional.
+Zaamo는 Z, Atomic; Atomic Memory Operation.
+
+Zalrsc확장에서 A 확장의 근간인 reservation에 대한 내용이 나온다. 
+LR.W명령어와 SC.W 명령어 (RV64시 Double word 가능. LR.D, SC.D)로 나뉘는데,
+Load Reserved의 수행은 다음과 같다.
+
+1.지정된 메모리 주소에서 워드를 읽어오면서, 해당 주소를 "예약(Reservation)" 상태로 표시해둔다.
+
+2.R[rd] <- M[rs1]
+
+3.동시에 앞서 1번에서 예약상태로 표시해둔 그 주소의 정보를 기록해둬 이후 SC.W 명령어가 나올 때 까지 해당 주소가 다른 hart에 의해 변경되지 않았는지 추적.
+
+결론 : R[rd] = MEM[rs1], rs1 주소에 대해 "예약"표시
+
+------
+
+Store Conditional의 수행은 다음과 같다.
+앞서 LR.W로 예약한 주소에 새 값을 쓴다.
+
+1.R[rs1] <- R[rs2] 이걸 수행하는데,
+만약, LR.W이후 예약이 깨지지 않았다면 (해당 주소의 데이터가 다른 hart에 의해 변경되지 않았다면) 저장이 성공한다. 
+만약, LR.W이후 예약이 깨졌다면 (해당 주소의 데이터가 다른 hart에 의해 변경, 갱신되었다면) 저장이 실패한다.
+1.1 저장성공시 R[rd] <- 0
+1.2 저장실패시 R[rd] <- 1 (이 경우 실제 메모리에 쓰기는 일어나지 않는다.)
+
+그리고 이러한 예약을 위해서 보통 예약 주소에 대한 내용을 담는 레지스터를 구현해둔다. 또는 캐시에 연동해서 캐시 라인 단위로 추적할 수 있다. 
+
+결론 : 
+1. 예약 유효 검사
+1.1. 유효시 : M[rs1] = R[rs2], R[rd] = 0
+1.2. 무효시 : R[rd] = 1
+
+-----
+
+"A"확장의 명령어들은 26:25 각 1비트마다 각각 aq, rl 비트로서 사용된다. 
+aq(aquire), rl(release). 두 비트는 메모리 순서(Memory Ordering)를 제어하기 위해 사용된다. 
+
+aq 비트 set된 명령어는 그 명령어의 완료까지 hart가 기다리고 다음 명령어들을 수행할 수 있도록 해야한다. 
+
+rl비트 set된 명령어는 그 명령어의 수행 이전까지 모든 메모리 접근 명령어가 완료될 때까지 hart가 기다리고, 이후에 해당 rl비트 set된 명령어를 수행할 수 있도록 해야한다. 
+
+기존에 메모리에서 데이터를 읽어오기 위해 2사이클을 기다리며 읽기 완료 신호 전 까지 해당 명령어를 유지하도록 한 이 기능적인 구현이 어느정도 aq비트가 set됐을 때 해당 aq비트를 set한 명령어가 수행 완료되기 전까지 계속 수행해야한다는 점과 비슷하다. 이에 착안해서 비슷하게 구현하면 될 것 같다. 
+
+-----
+
+ChoiCube84 와 데이터 캐시-메모리 구조에 대한 회의
+1. 캐시보다 메모리 커야하지 않아요? 
+ 네 맞음. 
+
+저희 FPGA 보드에서는 512MB DDR3 SDRAM 쓸거긴 한데, 1MB로 지금 당장 구현해도 상관 없음.
+용량 상관 없이 일단 캐시보다 크게 구현해봅시다.
+
+2. 주소 체계는 어떡하죠?
+ 지금은 메모리 용량만큼만합시다.
+
+이 내용을 해당 아키텍처 specification에 명시 하고 추후 Excpetion Detector 만들어지면 별도의 Exception을 발생시켜야할 것 같아요.
+그 안에 AMD K6-III나 비슷한 CPU들 메커니즘 레퍼런스잡아서 연구해볼게요. 걔네들도 이걸 고민했을거임.
+결론적으로 현재 쓸 메모리 용량만큼만 주소 비트를 쓰면 됩니다. (지금만)
+
+3. 캐시-메모리 블럭단위 통신?
+해야함.
+
+메모리→캐시 : 블럭단위
+캐시→WriteBuffer→메모리 : 워드 단위
+일단 캐시-메모리의 통신은 블럭단위로 되어야합니다. 
+
+[2025.04.15. ]
+ChoiChube84 Issue
+01. Data Memory testbench에서 vvp 명령어하는데 프리징 걸리고 dead.
+KHWL : 메모리 512MB로 한게 원인같다. 1MB로 줄여서 다시 해봐라.
+CC84 : 그것보단 아마 출력 폭을 31:0에서 255:0으로 늘려서 그런 것 같다.
+----일단 1MB로 줄여서 하라고 함----
+CC84 : 1MB 줄이니까 됨!
+KHWL : Nice.
+
+02. 우리의 메모리가 SDR에서 32B 데이터를 갖고 오기 위해서 어떤 과정을 거쳐야하는가?
+KHWL : 워드 데이터만큼 SDRAM에서 출력할 수 있다. 현재 32-bit word고, 32B를 위해서는 8번의 출력이 필요한 셈.
+CC84 : 그럴거면 그냥 한 블록을 32-bit로 하면 안되나? 너무 비효율적인 것 같다. 
+KHWL : 32비트 (4바이트) -> 32바이트 -> 8사이클 맞는데, 이렇게 사용될 수 있는 데이터들을 지역성의 원리에 따라 인접한 데이터들을 로드해두는거라 의미는 당연히 있다.
+전체 수행시간은 우리가 정해진 프로그램이라면 (임베디드, ASIC) 동일하니 이런 구조를 하면 안되겠지만 여러 다른 프로그램들을 돌리는 범용 입장에서는 적어도 그 컴플레인에 의미가 크게 없다.
+전체 수행시간이 프로그램별로 다르고 해당 프로그램이 지역성을 얼마나 쓰느냐도 다르기 때문. 
+막말로 한 뱅크에 8개 담을 수 있는거랑 1개만 담을 수 있다고 하면 후자는 매번 갱신해야하는 반면 전자는 한번 로드 이후 계속 그 안에서 Cache hit이다. 
+
+03. 그럼 Way 늘리는게 좋지 않을까?
+KHWL : ㅎㅎ.. 맞긴 한데 우리는 일단 레퍼런스 삼은 AMD K6-III CPU를 벤치마킹해서 L1$를 2-way로 했다. L2로 가서 통합 캐시에서 더 늘리자.
+당연히 way랑 용량 늘릴 수록 좋은데 그렇게 안하는 이유는 비용이랑 면적문제도 있겠지만 우리는 지금 학술 목적이기도 하고 그에 준하는 레퍼런스만 따라도 충분해서 그렇다. 
+
+오늘은 일과가 19:30 언저리에 끝나서 별 다른 공부를 많이 하지 못했다.
+하지만 그래도 유의미한 회의를 거치기도 헀고 A확장에 대해 쓰지 못한 로그들을 쓰면서 다시 한번 복습할 수 있었다. 
+
+내일 할 거 : A확장 Zaamo 확장 정리 및 A 추가 명령어 확장들 살펴보기
+컴퓨터 구조론 가상 메모리/ 페이징 공부하기.
+Sv48 가상 메모리 관련 알아보기.
+
+현재 로드라인 : 6월까지 최대한 로드라인 수행. 
+5월 말 FPGA 이식 교육 후 6월 초 해당 시점 까지 개발된 것을 끝으로 해당 시점 설계를 기반하여 FPGA 이식을 시작.
+
+사실, 운영체제 굴리는게 더 중요하지 않나? 맞긴 한데
+논리 단계가 아니라 '실제로' 구현 가능한 구조인지가 더 큰 필수 과제여서 이렇게 잡았다. 뭐가 어찌되었던 프로젝트를 '완수'하는 것이 중요하기 때문이다. 그걸로 결과를 내어 목적을 이루는 것. 
+
+남은 로드라인: 
+
+~ RV32I43FC 구현 진행 중 (캐시 및 메모리 구조 구현 중)
+~ RV32I47NF 구현 진행 중 (Exception Detector, Trap Controller, Debug Interface 설계 완료, 구현 대기 중)
+~ RV64 확장 (설계 완료, 구현 대기 중)
+~ 5 단계 파이프라인 확장 (설계 완료, 구현 대기 중)
+① "A"확장 (설계 진행 중)
+② "M"확장 (설계 완료(변경사항 없음) 구현 사실상 큰 시간 대기 없을 예정.)
+
+③ 운영체제 준비
+   ├ Supervisor Privileged ISA 구현. (Supervisor mode, User Mode)
+   ├ Trap/Exception/Interrupt 처리, CSR, 타이머, 인터럽트 컨트롤러 (PLIC/CLINT) 구현
+   ├ Sv39, Sv48; 가상메모리, MMU 구현 (공부중)
+   ├ GPIO, MMIO, 기본 디바이스 접근
+   └ RISC-V Linux Kernel 구조 파악 및 이식 (커널 config, Device Tree, Boot loader, OpenSBI, )
+④ DDR3 SDRAM 통합 메인 메모리 구현
+⑤ FPGA 구현 및 검증 
+⑥ GUI 구현
+
+RV64IMA109 및 가상메모리, MMIO 구현을 마치고 바로 백엔드로 투입 예정이다. 이 이상부터는 구현과 시간 거리가 너무 커지기도 하고 그 다음단계들을 위해 다른 계열의 공부를 여럿 해야하기 때문이다. 
+
+오늘은 여기까지. 
+
+[2025.04.16. ]
+오전에는 A확장에서 추가로 파생되는 Zawrs(Z; Atomic, Wait-on-Reservation-Set instructions), Zacas(Z; Atomic, Compare And Swap) 확장을 살펴보았다.
+Zawrs는 저전력 모드에 들어가서 (대기 모드 비슷한..) 폴링 루프를 할 때 쓰이는 일종의 명령어를 위한 확장이고,
+Zacas는 Quadward(128-bit)까지 지원하는 조건 스왑 명령어를 지원하는 확장이다.
+Zawrs는 알아만 두면 될 것 같고, Zacas는 한번 매뉴얼을 정독해봐야겠다.
+
+오후, 군대에서 중대 단결활동으로 영외 헤이리 마을에 나들이를 나갔다. 
+차 안에서 읽기 위해 컴퓨터 구조 및 설계 책을 가져갔었는데, 카페에 장시간 있게 되어 정말 좋은 시간을 보낼 수 있었다. 
+일단 가상 메모리에 대해서 어느정도 감을 잡았는데, 프로그램 메모리 관리 및 접근을 위한 일종의 캐시와도 같은 느낌이다.
+차이점이라 함은 캐시는 직접적인 명령어, 데이터들의 물리적 접근 최적화 방식이라면, 가상 페이징;가상 메모리는 프로그램을 하드웨어와 운영체제에서 단순하고 원활하게 더 높은 성능으로 구동하기 위해서
+캐시와 엇비슷한 무언가를 만들어냈다는 것이다. 그리고 가상페이징 방식에서 캐시 또한 같이 쓴다. 
+
+1회독 느낌이라 정확하게 모든 내용을 이해하지는 못했지만 갈 수록 이해하게 될 것 같은 느낌이다. 
+TLB.. 등등.. 일단 이 부분은 나중에 추가적으로 공부하도록 하고, A확장 구현에 먼저 힘써보자.
+
+일단 연등시간이 시작되면 M확장이 현재 RV64I59F 설계에서 구조적 변경 없이 그대로 구현 가능한지 살펴보고 M확장을 확정 지어야한다.
+그리고 A 확장 구현의 시작!
+
+잘 해보자. 일단은 여기까지. 
+
+--연등시간--
+
+자. M 확장부터 확인해보자.
+
+M instructions..
+[R-Type]
+mul, mulh, mulhsu, mulhu, div, divu, dviuw, remw, remuw
+
+R-Type만 존재하는 것 같다. 각 instruciton 별로 MNEMONICS를 만들어보자. 
+
+XLEN-bit × XLEN-bit
+MUL : R[rd] = (R[rs1] × R[rs2]) [XLEN-1:0]
+MULH : R[rd] = (R[rs1] × R[rs2]) [2×XLEN-1:XLEN] (Signed × Signed)
+MULHU : R[rd] = (R[rs1] × R[rs2]) [2×XLEN-1:XLEN] (Unsigned × Unsigned)
+MULHSU : R[rd] = (R[rs1] × R[rs2]) [2×XLEN-1:XLEN] (Signed × Unsigned)
+MULW : R[rd] = {32'bM[](31), {R[rs1](31:0) × R[rs2](31:0)} [31:0]}
+
+DIV : R[rd] = R[rs1] ÷ R[rs2] (Signed)
+DIVU : R[rd] = R[rs1] ÷ R[rs2] (Unsigned)
+DIVW(RV64) : R[rd] = (R[rs1](31:0) ÷ R[rs2](31:0)) 
+└ 결과 32-bit 값을 64-bit 로 Sign-Extension하여 R[rd]에 쓰기.
+DIVUW(RV64) : R[rd] = {32'b0, R[rs1](31:0) ÷ R[rs2](31:0)} 
+└ 결과 32-bit 값을 64-bit로 zero-extension하여 R[rd]에 쓰기.
+
+REM 연산은 modulo 연산으로, A % B = C 연산에 해당한다. 
+A를 B로 나누어 나온 나머지 C이다.
+
+REM : R[rd] = R[rs1] % R[rs2] (Signed)
+REMU : R[rd] = R[rs1] % R[rs2] (Unsigned)
+REMW(RV64) : R[rd] = {32'bM[](31), {R[rs1](31:0) % R[rs2](31:0)} [31:0]}
+└ 결과 32-bit 값을 64-bit 로 Sign-Extension하여 R[rd]에 쓰기.
+REMUW(RV64) : R[rd] = {32'b0, {R[rs1](31:0) % R[rs2](31:0)} [31:0]}
+└ 결과 32-bit 값을 64-bit로 zero-extension하여 R[rd]에 쓰기.
+
+전체적으로 ALU자체의 코드를 변경하고, ALU Controller에 있는 ALUop들을 손보기만 하면 될 것 같다.
+M확장은 RV64I59F 설계에 구조적인 변경 없이 확장할 수 있다. 
+좋아 이제 "A"확장을 설계해보자. 
+
+------ A Extension MNEMONICS ------
+
+Zalrsc Extension : Z, Atomic; Load Reserved / Store Conditional Extension
+LR.W : R[rd] = M[R[rs1]], 
+R[rs1] 데이터 값(1에서 쓰인 메모리의 주솟값임.)에 예약(reservation) 설정.
+
+SC.W : 
+if Reservation is valid, M[R[rs1]] = R[rs2], R[rd] = 0
+if Reservation is invalid, R[rd] = 1
+
+Zaamo Extension : Z, Atomic; Atomic Memory Operation
+
+AMOSWAP.W : R[rd] = M[R[rs1]], M[R[rs1]] = R[rs2]
+(기존 값 M[R[rs1]]을 R[rd]에 넣고, rs2를 메모리에 쓴다(교환))
+
+AMOADD.W : R[rd] = M[R[rs1]], M[R[rs1]] = M[R[rs1]] + R[rs2]
+(기존 값 M[R[rs1]]을 R[rd]에 넣고, rs2를 기존 값과 더하여 쓴다. )
+
+AMOXOR.W : R[rd] = M[R[rs1]], M[R[rs1]] = M[R[rs1]] ^ R[rs2]
+AMOAND.W : R[rd] = M[R[rs1]], M[R[rs1]] = M[R[rs1]] & R[rs2]
+AMOOR.W : R[rd] = M[R[rs1]], M[R[rs1]] = M[R[rs1]] | R[rs2]
+
+┌ 비교는 Signed로 진행한다.
+AMOMIN.W : R[rd] = M[R[rs1]], 
+if (M[R[rs1]] < R[rs2]), M[R[rs1]] = M[R[rs1]].
+else M[R[rs1]] = R[rs2]
+
+┌ 비교는 Signed로 진행한다.
+AMOMAX.W : R[rd] = M[R[rs1]], 
+if (M[R[rs1]] > R[rs2]), M[R[rs1]] = M[R[rs1]].
+else M[R[rs1]] = R[rs2]
+
+AMOMINU.W : R[rd] = M[R[rs1]], 
+if ((Unsigned) M[R[rs1]] < (Unsigned)R[rs2]), M[R[rs1]] = M[R[rs1]].
+else M[R[rs1]] = R[rs2]
+
+AMOMAXU.W : R[rd] = M[R[rs1]], 
+if ((Unsigned) M[R[rs1]] > (Unsigned)R[rs2]), M[R[rs1]] = M[R[rs1]].
+else M[R[rs1]] = R[rs2]
+
+오늘은 여기까지. 좀 더 고찰해봐야겠다. 아 내일은 당직인데.,. 믕... 가상페이징 공부해야겠다. 
+
+[2025.04.17.]
+당직근무 간 공부하며 정리했던 내용을 기록하겠다. 
+
+**가상 메모리**
+
+가상메모리를 사용하는 이유 
+1. 다수의 프로그램 동시 수행 시 효과적인 메모리 공유
+-> 제한된 크기의 메인 메모리에서 프로그래밍 해야하는 제약을 제거.
+
+공유된 메모리를 사용하는 VM들이 있다고 가정 할 때.
+가상머신이 각자의 프로세스가 보호될 수 있도록 보장하여야한다.
+이 말인 즉슨 각 프로그램이 자신에게 할당된 메인 메모리의 부분에만 R/W (Read/Write ; 읽기 쓰기)가 보장되어야 한다는 것이다. 
+
+가상메모리는, 프로그램 주소공간을 실제 주소(Physical Address)로 변환시켜준다.
+
+> 메모리를 공유하는 VM은 VM들이 수행되는 동안 동적으로 변화한다.
+>> 동적 상호작용 : 각 프로그램들만의 주소공간에서 컴파일 되어야한다. 
+---> 해당 프로그램으로만 접근 가능한 분리된 메모리 영역이 있어야 한다.
+= 변환 과정이 한 프로그램의 주소 공간을 다른 가상 머신으로부터 보호할 수 있다. 
+
+2. 사용자 프로그램을 메인메모리의 크기보다 더 크게 작성할 수 있도록 해준다. 
+-> 가상 메모리는 자동으로 메인 메모리와 2차 기억 장치로 구성되는 두 단계의 메모리 계층을 관리한다. 
+
+캐시와 유사한 성질을 지니지만, 용어로서 구분 차이를 둔다.
+
+[메모리 블록] : 메모리와 통신하는 규격
+캐시		= 캐시 라인, 캐시 블록
+가상메모리   = 페이지
+
+가상메모리 실패는 페이지 부재 (Page Fault) 라고 부른다.
+
+가상 메모리를 지원하는 프로세서는, 가상 주소(Virtual Address)를 생성한다.
+그리고 이를 실제 주소(Physical Address)로 변환하는데, 이를 주소 사상(Address Mapping) 또는 주소 변환(Address Translation)이라고 부른다.
+보통 Address Translation이라고 부르는 듯 하다. (Translation Lookaside Buffer; TLB 같은거)
+
+이 "실제주소"는 HW, SW 조합에 의해서 메인 메모리 접근에 사용되는 주소이다. 
+
+----------
+
+가상메모리 - 재배치 (relocation) : 수행될 프로그램 Load를 단순화한다.
+프로그램에 의해 사용되는 가상주소를 "메모리에 접근하는데 사용되기 이전에" 다른 실제 주소로 사상시켜준다.
+-> 메인 메모리 내 어떤 위치에도 프로그램을 Load할 수 있게 해준다.
+
+현대 에서는 프로그램을 고정된 크기로 이루어진 블록(페이지)의 집합으로 재배치한다.
+= 프로그램을 할당하기 위해 메모리에서 연속적인 블록을 찾을 필요 없고, OS가 메인 메모리 내에 충분한 페이지가 있음만을 확인하면 된다. 
+
+[2025.04.18.]
+
+캐시 구조에 대한 변경.
+
+데이터 읽기, Cache Miss, Dirty Bit의 경우.
+
+요청된 데이터는 SAA에 따라 메모리에서 인출되었지만,
+캐시의 갱신을 위하여 여전히 메모리에서 데이터 출력이 이루어지고 있어야한다. 
+캐시의 갱신에 사용될 주솟값 또한 계속 이루어지고 있어야하므로 PC_Stall 상황이 요구된다.
+
+Dirty Bit를 CLK1에서 갱신하고, CLK2에서 Clean된 해당 블럭에 CLK1에서 인출된 데이터 메모리의 데이터로 갱신해야한다. 
+즉, Cache에 쓰기가 다 될 때 까지 PC_Stall 되어야하는 것.
+캐시에 쓰기 작업이 끝나는 것은 CLK2. 캐시만이 쓰기가 다 끝났다는 것을 제일 먼저 앎으로, Cache에서 Write_Done신호가 추가됐다.
+
+RV32I43FC에서 Write Buffer에 대한 내용이 다이어그램에 누락되어있어 RV32I43FC.R2로 리비전하며 Write Buffer를 추가했다. 
+동시에 위에 있던 변경사항인 DC_WriteDone신호도 Data Cache에 추가하였다. 
+
+RV64I59F_5SP에도 반영했다.
+
+A확장을 살펴보면서,, 
+
+이미 두 사이클 이상 걸리는 명령어의 경우 Control Unit과 Cache 또는 Memory의 Ready 신호를 통해서 파이프라인을 정지시키거나 하여
+현재 해당 메모리 수행이 완전히 마쳐질 때 까지 명령어 갱신을 하지 않고 기다리도록 설계했었다.
+
+AMO연산 또한 이에 초점이 맞춰져있는데, 멀티 코어 구조가 아니고서야 이보다 더 복잡하게 구현해야할 내용은 없어보인다.
+
+기존의 구조를 대부분 유지할 수 있을 것 같은데, 문제는 Zaamo가 아닌 Zalrsc.
+이 Reservation이라는 내용에 대해서 아직 온전히 이해는 못했다.
+각 명령어의 수행을 위해 aq비트, rl 비트 set시 필요한 동작들은 이해했지만 LR.w, SC.w 명령어가...
+
+내일 할 거 : Reservation에 대한 내용 공부
+
+[2025.04.21.]
+당직이었다. 19일 20일은 외박으로 절권도 세미나를 갔다 왔고, 21일은 당직이었던..
+당직동안 원래 가상 메모리에 대해서 조금 더 연구를 해보려고 했지만 무릎 골절로 인해서 체력이 많이 바닥난 상태였기에 A 확장의 설계 구현을 다뤘다. 
+
+이해하기 쉬운 Zaamo 확장의 구현부터 다뤘다. 
+
+Zaamo를 위한 추가 설계 요소
+1. ALUresult가 Memory로 출력되는 데이터  패스가 없다.
+Zaamo의 대다수 명령어 수행은 다음과 같은 형태를 따른다.
+R[rd] ← M[R[rs1]]
+M[R[rs1]] ← M[R[rs1]] bit operation with R[rs2]
+
+이 경우, bit operation은 ALU에서 진행되는데, R[rs2]값인 RD2 는 ALUsrcB에 있지만
+그와 연산을 해야하는 연산자 M[R[rs1]]은 ALUsrcA에 없다. 때문에 기존 ALUsrcA MUX를 3비트로 확장해서 
+RD1, PC, rs1, D_RD(Data area Read Data)를 처리할 수 있어야 한다. 
+
+2. ALUresult를 Data area의 Data Cache DC_WD(Data Cache Write Data) input으로 줄 수 있어야 한다.
+기존에는 ALUresult가 데이터 진영에서 주소로서만 활용되었는데, A확장에서는 쓰여질 데이터로도 ALUresult가 쓰인다.
+DC_WD의 input은 기존 Write Back을 위한 DM으로부터의 입력과 Register File로 부터의 입력 두가지 중 Cache Hit/miss에 따라 선택하는 구조였다.
+하지만 위와 같은 추가 요소에 따라, 해당 MUX를 2-bit로 확장해서 CU의 신호 통제 하 input을 정하거나 1-bit MUX 두개로 해서 기존 MUX를 그대로 활용하고 그 후에 MUX를 하나 둬 이를 CU 통제 하에
+ALUresult값으로 할건지 기존 WB/RegF 값으로 할건지를 선택할 수 있도록 해야한다. 
+
+1번 적용 완료. 2번은 2안으로 적용 완료 (1-bit MUX 2개)
+한 가지 우려스러운 점. 2안으로 하게 될 경우 WriteBack시 데이터 충돌이 생기진 않을까?
+사고 실험을 진행해보자. 
+AMOADD.W 
+R[rd] = M[R[rs1]]
+M[R[rs1]] = M[R[rs1]] + R[rs2]
+
+[제어신호]
+MemWrite = 1. 
+RegWrite = 1.
+Atomic = 1.
+
+자, M[R[rs1]] 해당 주소 Miss. Data Memory로부터 가져와야한다. 
+일단 SAA 때문에 먼저 M[R[rs1]]은 반환된다. 동시에 DM_RD가 DC_WD의 input으로 되어야 한다.
+WB/Reg MUX는 Miss로 WB이 선택. DM_RD선택된다. Atomic 연산이기에, WB/Reg / Atomic MUX는 Atomic을 선택하고 있다. 
+어라. Write Back 불가. 즉 Cache Miss의 경우엔 다음 사이클에 Cache 갱신이 이루어지니까 무조건 Atomic MUX가 WB/reg로 되어 있어야 한다...
+즉 Cache Hit/Miss를 CU에서 판단할 수 있어야 하거나, DC_Ready 신호가 Not Ready인 경우에 DC_WD는 항상 WB/Reg로 되도록 해야한다. 
+Miss = Not Ready. 캐시 M2C 갱신의 경우 Write_Done 신호를 대기해야하니까 Miss 경우 Not Ready의 의미를 내포하고 있다.
+
+이렇게 하면 자연스럽게 Cache Miss 일 때 PC_Stall 되어 캐시 갱신이 이루어지고 
+
+CLK 1. R[rd] = M[R[rs1]]
+
+Data Cache 조회, M[R[rs1]]이 없음. 
+Cache Miss. 캐시 갱신 시퀀스 시작. MemWrite 1로 활성화. 
+
+[if Clean]
+DC_Ready : not ready. 
+
+SAA, Data Memory에서 M[R[rs1]] 출력. -> R[rd]에 쓰여짐.								M[R[rs1]] = M[R[rs1]] + R[rs2] 수행
+동시에 Data Cache로도 출력됨. 해당 데이터를 현재 입력 중인 DC_Addr 즉 R[rs1]에 저장.	 
+
+----------
+
+[if Dirty]
+DC_Ready : not ready. -> PC_Stall
+
+SAA 메모리 반환 ; Data Memory에서 M[R[rs1]] 출력. -> R[rd]에 쓰여짐.				M[R[rs1]] = M[R[rs1]] + R[rs2], MemWrite = 1
+캐시의 Dirty 데이터 블럭을 해당 주솟값과 같이 Write-Buffer에 저장						동시에... M[R[rs1]] 값과 R[rs2]값이 연산됨.
+캐시 Dirty Bit 해소
+
+CLK 2. CLK1에서 PC_Stall이었으므로 동일한 주솟값 DC_Addr로 입력 중.
+Clean된 해당 캐시 블록에 메모리 블록 덮어쓰기
+Write Buffer에 저장된 주소와 데이터를 해당 메모리에 쓰기..
+
+[2025.04.23.]
+아.. A 확장 어떡하지.
+일단 일과시간 중에는 가상메모리/ 페이징에 대한 이해도를 꽤나 높였다. 아직 TLB까지 포함해서 완벽한 이해는 아니지만 그 기초 까지는 알게 된 것 같다.
+레지스터와 메모리 사이 버퍼가 캐시라면, 캐시와 메모리/2차 저장장치 사이 버퍼? 가 가상메모리; 페이지인 것 같다. 
+완전 연관 방식의 유사 캐시.. 가상 페이지 넘버가 Tag 처럼 이용되고, 물리 페이지 번호가 곧 그에 대응된 데이터이다. 그와 별개로 Page offset(페이지 변위)가 있고..
+페이지 변위가 곧 페이지의 개수, 크기를 결정한다. 페이지 번호 비트 수 × 페이지 변위 = 해당 페이징 메모리 크기 (가상 페이지 비트 수면 가상 페이징 크기, 물리 페이지 비트 수면 물리 메모리 크기이다.)
+때문에 TLB나 가상메모리를 구현하기 위해서 물리 메모리 자체를 정해둬야할 것 같다.
+
+TLB 실패 처리 중 하나는, 제어를 OS로 넘기는 것인데 가상 메모리를 지원한다는 것은 곧 메인 메모리 뿐만 아니라 2차 저장 장치까지 존재해야한다는 것을 내포한다. 
+때문에 기존에 왜인지 모르겠지만 메인 메모리 DDR3 SDRAM만 구현하면 된다고 생각했는데 그게 아니라 외장 저장소까지 생각해야한다...
+
+생각보다 할게 꽤 많다.. 파헤칠 수록 늘어나는 느낌이다..
+
+어제 고민하던 문제는 FSM을 구현하는 것으로 어느정도 해결할 수 있을 것 같다.
+다시 한번 사고 실험을 해보자. 
+
+최악의 상황 가정인 Cache miss, block dirty 상황이다. 
+명령어는 Zaamo; AMOADD.W
+
+AMOADD.W 
+R[rd] = M[R[rs1]]
+M[R[rs1]] = M[R[rs1]] + R[rs2]
+
+[제어신호]
+MemWrite = 1. 
+RegWrite = 1.
+Atomic = 1.
+
+**CLK1**
+R[rd] 에 M[R[rs1]]을 해야한다.
+SAA: Data Cache, Memory 조회, DC_Addr, DM_Addr로 주솟값이 입력된다.
+Cache 색인, miss. 
+Memory의 WB/ALUresult MUX가 Cache miss신호로 ALUresult로 전환되어 메모리에 해당 주소 읽기가 시작된다.
+
+메모리에서 해당 주소 데이터 식별. 출력(DM_RD)
+출력된 DM_RD는 레지스터의 RF_WD로 출력되고 레지스터의 RF_WA로 입력중인 R[rd]에 저장된다. 
+R[rd] = M[R[rs1]] 수행 완료.
+
+이와 동시에 DM_RD 출력된 것이 Data Cache에 갱신되어야하므로 DC_WD로 출력중이다.
+1차 MUX인 WB/Reg MUX에서 cache miss 신호를 통해 WB가 선택되어 2차 MUX로 간다.
+
+"2차 MUX에서 현재 Atomic이므로 WB가 아니라 ALUresult를 선택하게 된다."
+이게 문제다. 
+
+캐시 miss 이기에 WB되는게 Atomic 인 것보다 우선순위로 작용하여 WB이 이루어져야한다. 
+
+아.. 더 써야하는데.. 시간 out.. 연등 오늘은 여기까지. 
+
+[2025.04.24.]
+일과 시간동안 생각해봤다. 해당 문제를 해결할 방법.
+2차 MUX에서 Atomic 제어 신호가 활성화 되어있어 WB가 되지 않는 문제.
+
+Cache Miss시 DC_Ready를 not ready 상태로 전환하여 CU가 받는다.
+CU에서는 always 조건문이나 다른 걸 통해 atomic 연산자 수행을 DC ready일 때만 수행할 수 있도록 한다.
+이러면 해결.
+
+이렇게 고쳤다 보고, 마저 사고 실험을 진행하면 다음과 같이 진행된다.
+
+~~
+1차 MUX인 WB/Reg MUX에서 cache miss 신호를 통해 WB가 선택되어 2차 MUX로 간다.
+
+Cache miss, DC_not ready가 되어 Control Unit에서 PC_Stall을 보내고 다음 클럭 사이클로 간다. 
+
+Data Cache not ready 이기에 Atomic은 = 0으로 비활성화 되어있다. 때문에 2차 MUX는 ALUresult가 아닌 WB을 선택하게 되고 메모리의 DM_RD가 DC_WD로 입력되고 있다.
+
+하지만 현재 dirty 로 가정하였으므로 Cache에서는 Dirty 데이터 블록을 해당 블록의 주솟값과 같이 Write-Buffer에 저장한다.
+캐시의 Dirty Bit는 해소되지만 아직 갱신이 안되었으므로 다음 사이클로 넘어가야한다. 
+
+**CLK2**
+PC_Stall로 인하여 같은 맥락의(문맥; Context) 명령어가 수행중이다. 
+Clean된 해당 캐시 블록에 메모리의 DM_RD가 덮어씌워진다. 
+WriteBuffer에 CLK1에서 저장한 주소와 데이터가 WB_Data로 입력되고.. DM_Addr MUX가 WB을 선택해야하는데, 이 CLK2에서는 DC_Status가 여전히 Miss여야하는건가?
+이건 그럼 단순히 '현재' Hit/Miss를 다루는게 아닌 것 같은데.. 하물며 CLK2에서는 M[R[rs1]] = M[R[rs1]] + R[rs2]가 일어나야해서 Cache Hit이 되어야할 판이라...
+이건 조정이 필요할 듯. DM_Addr MUX의 선택신호는 CU에서 캐시 FSM임을 인지하는 것 처럼 다뤄야할 것 같음. 여기에 Data Memory는 WriteEnable된 상태여야하는데.
+
+무튼.
+
+캐시 갱신완료, 메모리 WriteBack 완료. 
+동시에 M[R[rs1]] = M[R[rs1]] + R[rs2]를 해야하는데,, 이건 시뮬에서 봐야할 것 같다.
+보통 쓰기를 하고 나면 그걸 명시적으로 웨이브폼에서 확인 가능한게 다음 사이클 부터인데, 만약 이게 조율이 가능한 부분이라면 CLK2에서 Atomic 연산은 끝나지만
+Cache 구조 때문에 최악의 상황에서는 CLK3 까지 넘어가야할 수도 있다.
+
+(Perhaps CLK3)
+M[R[rs1]] = M[R[rs1]] + R[rs2]. 
+CLK1~2 과정을 거쳐 Cache가 갱신되었으므로 무조건 Hit.
+DC_Addr로 ALU에서 bypass된 RD1 값이 Data Cache로 입력되어 해당 R[rs1]주솟값의 메모리 데이터가 DC_RD로 출력되어 D_RD로 ALU로 도?달?한다???
+ALU를 두번 거쳐야하네??? 
+이러면 DC_Addr에 R[rs1]이라는 주소를 주기 위해 ALU로 bypass하는게 아니라 어쩔 수 없이 ALUresult냐 RD1이냐 2 to 1; 1-bit MUX로 만들어야한다.
+이래야 한 사이클 안에 해당 연산 수행 가능... 그리고 해당 MUX 선택 신호는 마찬가지로 CU에서 담당해야겠다. 
+똑같이 Atomic 신호의 제어를 받으면 될 것 같다. 어차피 Write Back 중에는 비활성화되니까 문제 없고
+DC Ready일 때는 어떤 작업을 해도 구조상 동작에 문제는 없으니.. 
+
+오늘은 여기까지. 정리된 로직 자료와 추가 제어 내용들을 텔레그램 채널과 디스코드 서버에 업데이트 해두었다. 
+
+
+[2025.04.25.]
+이제 남은 할 것들
+aq, rl 비트 지원
+Zalrsc 확장 지원
+
+aq, rl 비트 지원부터 설계해보자. 
+
+------
+
+~2025.04.16.~
+"A"확장의 명령어들은 26:25 각 1비트마다 각각 aq, rl 비트로서 사용된다. 
+aq(aquire), rl(release). 두 비트는 메모리 순서(Memory Ordering)를 제어하기 위해 사용된다. 
+
+aq 비트 set된 명령어는 그 명령어의 완료까지 hart가 기다리고 다음 명령어들을 수행할 수 있도록 해야한다. 
+
+rl비트 set된 명령어는 그 명령어의 수행 이전까지의 모든 메모리 접근 명령어가 완료될 때까지 hart가 기다리고, 이후에 해당 rl비트 set된 명령어를 수행할 수 있도록 해야한다. 
+
+------
+
+이건.. 별 다른 구조적 조정이 필요하진 않을 것 같다. Control Unit에서 aq, rl 비트를 보고 PC_Stall을 조건에 따라 수행할 수 있어야 하니 funct7에 해당하는 비트 범위를 입력 신호로 추가시켜야 한다.  
+완료. RV64IM90_Zaamo_aqrl
+남은 건 Zalrsc..Load Reserved, Store Conditional...
+
+Zalrsc Extension : Z, Atomic; Load Reserved / Store Conditional Extension
+LR.W : R[rd] = M[R[rs1]], 
+R[rs1] 데이터 값(1에서 쓰인 메모리의 주솟값임.)에 예약(reservation) 설정.
+
+SC.W : 
+if Reservation is valid, M[R[rs1]] = R[rs2], R[rd] = 0
+if Reservation is invalid, R[rd] = 1
+
+Zalrsc 확장을 구현하기 위해서는 우선 Reservation이라는 개념부터 이해하여야 한다. 
+자료를 많이 찾아보았지만 이에 대해 명확히 설명되어있는 자료는 없어서 매뉴얼에 전적으로 의지해서 이해해봐야겠다. 
+
+A확장의 근간은 다수의 RISC-V hart들이 같은 메모리 공간에서 작동할 때 원자적으로 메모리를 읽고-변경하고-쓰고 하는 것을 동기화하기 위함이다. 
+두 가지 형태의 atomic instruction이 있고, 하나는 'load-reserved/store-conditional instructions'. 나머지 하나는 'atomic fetch-and-op memory instructions'이다. 
+둘 다 다양한 메모리 일관성 순서를 지원하는데, unordered, acquire, release 그리고 sequentially consistent semantics를 지원한다.
+이러한 명령어들은 RISC-V가 RCsc 메모리 일관성 모델을 지원하도록 한다. 
+(RCsc : release consistency with special accesses sequentially consistent; Memory consistency and event ordering in scalable shared-memory multiprocessors, Gharachorloo et al., 1990) 
+
+숱한 토론 끝에, RISC-V에서는 rlease consistency를 표준 메모리 일관성 모델로 삼았다. 
+그래서 RISC-V의 atomic support는 해당 모델을 기반으로 한다.
+...
+
+A Extension 챕터를 통으로 한국어로 번역하려다가 영 좋지 않은 선택 (물론 의향은 너무나도 크게 있지만 시간이 한 시가 모자란 상황이라.)임을 깨닫고 (Privileged_ISA.Korean.md 문서의 선례.. ㅋㅋ)
+일단 'Reservation', 'Reservation set' 이라는 말이 포함된 문장을 해당 챕터에서 발췌해 정리했다. 이 과정을 거치며 단어 단위로 해당 챕터를 정독하게 되었는데, 얻어낸 단서는 다음과 같다.
+(A_extension_Korean.md 문서 생성.)
+
+결론적으로, Load-Reserved, Store Conditional은 하나의 쌍으로서 쓰이는 명령어이다. Load-Reserved, LR.W 명령어를 통해 reservation을 지정하게 되고 SC.W의 성공을 통해 해당 reservation이 무효화된다.
+때문에 해당 reservation을 위한 '데이터 공간'이 필요하며 그 갯수는 단일 hart 시스템에서는 하나로 족하다. 문제는 그 데이터의 크기인데, 이에 대한 지정은 A 문서 자체에서는 직접적인 규정이 없다. 
+다만 이와 같이 규정한다. 
+"__The platform should provide a means to determine the size and shape of the reservation set.__"
+"__A platform specificaiton may constrain the size and shape of the reservation set.__"
+즉 크기와 형태를 플랫폼 설계의 재량으로 남겨두었고 이와 관련된 내용을 명시하게끔 정의되어있다. 
+
+이게,, 만약 reserve된 데이터 그 자체가 표식이 필요할 경우 직설적으로 해당 데이터에 대해 reservation해야 한다는 묘사를 썼겠지만, 그게 아닌 '해당 데이터의 '바이트'가 포함되어야 한다' 라는 내용으로 봐서는 조금 유연한 구현 구조를 두고 있는 것 같다. 약간의 캐시 태그, 인덱스와 비슷한 느낌이랄까... 그렇게 구현할 수도 있을 것 같은데,,,, 어차피 해당 LR SC 내에서 쓰이는 데이터들은 지역성에 따라 어느정도 제한되는 편이기도 하고.. 하지만 이런 불확실하고 지적 한계에 따라 견문이 아예 달라질 수 있는 지점에서 실험적인 태도는 개발을 느리게 만들고 리스크를 짊어지게 한다.
+물론!!! 너무 좋긴 하지만 현재 FPGA구현 일정 1달까지 포함하여 남은 논리적 설계 구현 시간이 1달 남짓이기에 (5월 28일 마감.) 안정적인 방향으로 가야겠다. 
+메모리에서 데이터를 불러오는 것은 블록단위이고, offset을 통해서 해당 데이터를 블록 속에서 식별하여 이용하게 되는데,, 결국 reserve된 데이터의 크기만큼만 만들면 되지 않을까?
+가장 단순히 구현할 수 있도록 그렇게 해야겠다. 이로서 '논리적'으로는 해당 명세를 위반하지 않으면서 가장 단순하게 Zalrsc를 구현할 수 있다. 
+하나의 버퍼 레지스터, reservation register(RR) 추가하여 해당 레지스터에 주솟값과 데이터를 저장해둔다. 
+그리고 해당 값과 앞으로 메모리 조회될 때마다 비교문을 통해서 RR의 값과 해당 주솟값의 데이터가 같은지 다른지를 판단하게 한다. 
+
+Reservation이 깨지는 경우가 언제였더라.. 이걸 비교해서 뭘 판단해야했었지? Reservation이 유효한지?? 아 오늘은 여기까지 해야겠다. 마침 연등시간 종료.
+내일이면 Zalrsc까지 구현할 수 있을 것 같다.
+잘 하고 있다.. 잘.. 하고 있다.
+
+[2025.04.26.]
+Reservation Set에 대한 크기는 캐시의 한 라인을 기준으로 하기로 했다. 
+해당 바이트 영역이 참조될 때도 요긴하게 사용될 수 있고, 추후 I/O및 구조적 확장을 염두해두어 그만큼의 오버헤드를 둬도 나쁘지 않을 것이라는 생각.
+Reservation Set은 32Byte 크기의 레지스터로 한다. 
+SC.W의 발동은 LR.W에서 수행한 Reservation을 무효화 한다. 그리고 Reservation된 데이터는 각 hart마다 등록해두고 있으며 한 번에 하나의 Reservation Set만을 가진다.
+SC.W의 실패 조건에 따라 다음과 같은 조건에서 Reservation set을 무효화한다.
+reservation set에 대한 직접적인 연관성이 없더라도, 성공과 실패를 불문하고 SC.W 명령어의 실행은 reservation set을 invalidate 한다는 ISA의 규정을 준수하여야하기 때문에 Invalidate한다. 
+
+0. SC.W 명령어가 가르킨 주소가 reservation set에 포함되어 있지 않을 경우 invalidate한다.
+1. 다른 hart에서 reservation set에 해당하는 데이터에 쓰기를 했을 경우 reservation set을 invalidate한다. 
+2. 다른 device에서 LR이 접근한 bytes에 대해 쓰기를 했을 경우 reservation set을 invalidate한다.
+(LR이 접근한 byte 외 reservation set 내 다른 byte에 쓰기했다면 SC를 성공시킬 수도 있고 실패시킬 수도 있다. 단, 우리의 경우 단순화를 위해 라인단위 접근으로 실패 판정한다.)
+3. 프로그램 순서에 따라 LR, SC 사이에 또 다른 SC(어느 주소든)가 있을 경우 invalidate한다. 
+
+구현 방법은 다음과 같다.
+0. SC.W 명령어를 수행할 때 (CU에서 funct7 비트 값으로 확인한다.)
+실패와 성공을 판단하기 위해 Reservation Register에서 Reservation set의 유효 무효를 확인해야한다. R[rs2]데이터가 Reservation Set에 포함되어있는지를 확인해야하니
+RD2 값을 Reservation Register의 입력 신호로 넣는다.
+그리고 LR.W 명령어 수행시 Reservation 자체는 R[rs1] 데이터 값(M[R[rs1]]이므로 메모리에게는 주솟값이 됨)을 register하는 것이니 RD1 값을 Reservation Register의 입력 신호로 넣는다.
+이 때, Reservation set이어야하므로, 
+Reservation set을 invalidate 해야하는 경우 invalidate를 하는 제어 신호가 필요하므로 이를 Control Unit의 출력신호로 추가하고, Invalidate 신호를 Reservation Register의 입력 신호로 넣는다.
+레지스터로 구현되므로, 클럭에 맞게 출력하기에 클럭 신호를 입력 신호로 넣는다.
+입력된 신호 RD2가 RD1으로 register된 reservaiton set의 주소와 비교하여 Reservation이 Valid하여 성공했는지, 실패했는지를 알려주기 위한 출력신호가 필요하다.
+Rsv_YN (Reservation_Yes_or_No)신호를 출력신호로 둔다. Rsv_YN을 Control Unit에 입력신호로 넣는다.
+
+1. 예약된 메모리의 주소(R[rs1])에 쓰기가 있을 경우를 탐지해야하는데,, 이 쯤이면 Atomic Control 모듈을 따로 만드는게 좋을 것 같다. 
+Atomic Control Unit
+메모리 쓰기 시 해당 쓰기 될 주소가 Reservation Set의 주소인지 확인하여야 한다.
+[입력 신호]
+CLK, 
+MemWrite, 
+Rsv_Invalid, 
+RD1, 
+RD2, 
+Data_Addr(ALUresult)
+
+[출력 신호]
+Rsv_YN
+
+로직 : 
+LR.W 명령어 실행 시, Data_Addr로 들어오는 입력받는다.
+해당 입력 주솟값을 정렬하여 32B 블록 사이즈의 Reservation set을 만들고 Valid 처리 해둔다.
+
+SC.W 명령어 실행 시, 입력되는 RD2값이 Reservation Set에 속하는지 비교한다.
+Valid이고, Reservation set에 속한다면 Rsv_YN을 Yes(1)로 출력한다.
+동시에 Reservation set을 invalidate한다.
+CU에서는 SC의 success를 받아(Rsv_YN is Yes) DC_Atomic_MUX를 선택해 ALUresult로 하여 ALU에서 bypass된 RD2 값을 메모리 M[R[rs1]]에 저장한다.
+동시에 RegWDsrc_MUX를 110로 선택하여 R[rd]에 0을 쓴다.
+
+Valid인데, Reservation set에 속하지 않는다면, Rsv_YN을 No(0) 으로 출력한다.
+이후 Reservation set을 invalidate한다. 동시에 RegWDsrc_MUX를 111로 선택하여 R[rd]에 1을 쓴다.
+
+Invalid인 경우 어떤 상황이든 Rsv_YN이 No되고, RegWDsrc_MUX를 111로 선택하여 R[rd]에 1을 쓴다.
+
+기타 명령어 실행시,
+Memwrite신호가 활성화 되고 Data_Addr(ALUresult)가 현재 Reservation set에 포함되는 데이터면 
+Reservation set을 invalidate 한다. 
+
+---------- Zalrsc 총 정리 ----------
+
+전제, Complex atomic memory operations ~~ are performed with the load-reserved(LR) and store-conditional (SC) instructions.
+즉 Zalrsc에서 다루는 동작들은 memory operation들임을 가정하고 접근하여야 한다.
+
+LR.W loads a word from the address in rs1, places the sign-extended value in rd, and registers a **reservation set** 
+- a set of bytes that subsumes the bytes in the addressed word.
+= LR.W는 rs1의 주소에서 word를 적재하고, 그의 sign-extended 값을 rd 주소에 둔 뒤, reservation set에 등록한다. 
+__reservation set은 rs1의 주소에서 적재한 word의 byte를 포함하고 있는 byte의 집합이다.__
+
+Load의 동작은, Memory의 값을 Register에 적재하는 것을 의미한다.
+즉 word from the address in rs1은, M[R[rs1]]로 해석할 수 있다. 
+M[R[rs1]] 값을 sign-extension하여 R[rd]에 적재한다. 그리고 reservation set에 등록한다. 
+reservation set은 rs1의 주소에서 적재한 word의 byte를 포함하고 있는 byte의 집합이다.
+즉 M[R[rs1]]값을 캐시 라인 단위로 Reservation set에 쓴다. (우리의 경우 32B)
+0x8000_1234가 M[R[rs1]]이었다면 0x8000_1200~0x8000_123F까지를 reservation set으로 지정하는 것이다. 
+
+따라서 해당 reservation set을 hold하고 있을 장소가 필요하고, 이걸 Reservation register라고 하며 
+해당 reservation register를 제어를 통해 invalidate하고 갱신하고 해야하기 때문에 Atomic Unit 안에 Reservation register를 둔다.
+다이어그램상 Atomic Unit = Reservation register라고 봐도 무방하다. 
+
+----------
+
+SC.W conditionally write a word in rs2 to the address in rs1: 
+the SC.W succeeds only if the **reservation** is still valid and the **reservation set** contains the bytes being written.
+= SC.W는 rs2의 word를 조건적으로 rs1에 쓴다. SC.W는 reservation이 여전히 유효하고, reservation set이 rs1에 쓰여질 바이트를 포함하고 있으면 성공한다.
+
+SC.W가 rs2의 word를 조건적으로 rs1에 쓴다..
+Store의 동작은 Register의 값을 Memory에 저장하는 것을 의미한다.
+즉 rs2의 word는 R[rs2]로 해석할 수 있고, rs1에 쓴다는 것은 M[R[rs1]]에 데이터를 저장한다는 것이다.
+즉, M[R[rs1]] = R[rs2]
+그리고 rs1에 쓰여질 바이트 즉 M[R[rs1]]에 쓰여질 바이트는 R[rs2]이니까, 
+SC.W는 LR.W와 하나의 쌍으로 작동하는데, 
+앞서 LR.W에서 register한 Reserved Set의 bytes에 SC.W에서 rs1에 쓰여질 바이트를 포함하고 있어야 위와 같은 SC.W의 동작이 성공한다.
+
+아., 오늘은 여기까지
+
+[2025.04.28.]
+20:18 오늘 드디어. 우여곡절 끝에 어떻게 할지 정했다. 
+
+LR.W 명령어 수행 시, rd에 sign-extension한 M[R[rs1]] 값을 place한다.
+즉, R[rd]에 M[R[rs1]] 데이터가 쓰여지는 것이다. 
+M[R[rs1]]의 주솟값, R[rs1]. 
+
+_reservation set_ : a set of bytes that subsumes the bytes in the addressed word.
+"_addressed word_"의 바이트들을 포함하는 바이트들 집합.
+
+여기서 문제가 발생한다.
+**addressed word**가 M[R[rs1]]의 주솟값, 즉 R[rs1]일까?
+			아니면 	  M[R[rs1]]의 데이터 값, 즉 M[R[rs1]]자체일까?
+
+경우의 수로 나눠서 한번 파악해보자.
+What if addressed word meant Data itself?
+-> SC.W에서 Reservation 검사를 위해 데이터 출력값 (D_RD)를 Reservation Set과 비교해야한다.
+	모순 발생. 이 경우 데이터가 출력되며 Reservation Set과 비교되는데, D_RD의 출력은 곧장 BE_Logic과 RegWDmux를 통해 바로 Register File로 넘어간다. 
+	이 때, Register Write Enable이 활성화 되어있었다면, 바로 Register에 입력되는데, 이걸 막고자 추가 로직을 구현하며 제어들을 두는 것은 극심한 구조적 비효율을 야기시킨다. 
+
+What if address word meant Address?
+-> SC.W에서 Reservation 검사를 위해 메모리 주솟값 (ALUresult)를 Reservation Set과 비교해야한다. 
+위에서 발생한 모순점과 더불어, Store Conditional. 즉, 저장을 위해 데이터가 입력되기 전, reservation의 판단이 이루어져야한다. 
+Store을 위한 주소 즉, RD1 값이 (Register File에 5비트 rs1이 입력되는 순간 그 비트를 주솟값으로 하는 레지스터에 쓰여져있는 데이터 출력) 인출되는 순간,
+reservation set과 비교되며 조건문을 거쳐 동작의 수행이 이뤄지도록 하는 것이 자연스러우며 구조적으로 기능을 구현하기에 이상적이라 할 수 있다. 
+
+기존의 로직을 그대로 따르긴 하지만, 조금더 명확한 스스로 납득할 만한 이유로 그렇게 하기로 했다. 
+
+이렇게 될 때, 이제 단순히 쓸 수 있다. ㅎㅎ..
+
+LR.W : R[rd] <- M[R[rs1]]
+Reservation Set <- ( R[rs1]이 포함된 32B 블럭 주소 집합 )
+
+SC.W : 조건 확인. 
+if { ( R[rs2] ∈ Reservation set && Reservation set == valid )
+	M[R[rs1]] = R[rs2],
+	R[rd] = 0
+}
+
+else R[rd] = 1
+
+끝!!! 핳하
+
+Atomic Unit에서는 Reservation Set을 갖고 있으며, Zalrsc 명령어 실행 시 
+SC.W가 success 해야하는지 fail 해야하는지를 Control Unit에게 알려줘서 
+MemWrite 신호를 Enable하거나 Disable해야한다. 
+이 경우 Register File R[rd]에 0, 1인지를 저장해야하니 CU에서는 RegWrite를 Enable한다. 
+
+그리고 Reservation Set의 Valid 유무를 위에서 기술한 Fail 조건에 따라 Memory에 쓰여지는 작업을 할 때 해당 메모리의 주소값이 Reservaiton Set에 포함되는지를 확인하여야 한다.
+즉, 데이터 메모리 주솟값 ALUresult값을 입력신호로 가져야한다.
+
+동시에 메모리 읽기 때 해당 ALUresult값이 메모리에서 조회되었다고 Invalidate 하면 안되니까 MemWrite 즉 쓰기 작업일 때만 비교를 수행하도록
+MemWrite 신호를 입력신호로 가져야 한다. 
+그리고 SC.W 명령어를 수행하게 되면, 자동으로 Reservation Set을 Success, Fail 유무와 상관 없이 Invalidate해야한다.
+해당 명령어의 정확한 수행 정보는 Control Unit에서 제일 먼저 알게 되고 제어문을 관리하는 모듈이니 Control Unit에서 SC.W 명령어 실행 시 Reservaiton Set을 Invalidate할 수 있도록
+Rsv_Invalid 신호를 CU에서 Atomic Unit으로 보내야한다. 즉, Rsv_Invalid 신호를 입력신호로 가져야한다. 
+
+그럼 Atomic Unit의 디자인을 이제 확정지을 수 있다. 
+
+[입력신호]
+Reservation Set을 등록하기 위한 R[rs1], 즉 Register File 로부터의 RD1 신호.
+Reservation Set과 R[rs2], 즉 Register File 로부터의 RD2 신호.
+ALUresult, SC외 Reservation set에 해당하는 주소 쓰기 접근이 발생했는지를 알기 위한 메모리의 주소 신호.
+
+받아야하는 데이터 신호는 위 세 가지이다. 
+나머지는 제어 신호.
+
+MemWrite, SC외 Reservation set에 해당하는 주소 쓰기 접근이 발생했는지를 알기 위한 메모리의 쓰기 활성화 신호
+Rsv_Invalid.
+
+The theory only takes you so far.
+나중에 검증 절차 및 Testbench에서 내 이해가 맞았는지 알아볼 수 있을 것이다. 
+
+쨔스.
+
+---연등시간---
+
+아, Reservation set은 Register로 구현되어야 하니까 CLK 신호를 포함하여야 한다. 
+
+출력신호로는 위에서 언급한 Atomic Unit에서 
+Control Unit으로 가는 success, fail 유무를 위한 신호 Rsv_YN (Reservation Yes/No)신호를 갖는다. 
+
+[출력신호]
+Rsv_YN, Reservation Set에 대한 접근이 성공했는지, 실패했는지에 대한 내용.
+
+-----
+
+LR.W의 데이터패스 검증 중. 
+Atomic Unit의 Reservation Set이 Register File과 비슷하게 Register로 구현되는 이상, 쓰기 활성화 신호는 필요할 것이다. 
+입력신호에 Rsv_Write 신호 추가. 단, 이 신호는 DC_Atomic_MUX의 제어 신호를 파생하여 사용한다. 
+DC_Atomic_MUX에서 Atomic 명령어일 때, Memory의 주소로 Atomic 연산에서만 RD1 값만을 쓰는데 이걸 위해 1로 MUX를 활성화 할 때, 마찬가지로 
+해당 Atomic 연산에서 Reservation Set Register의 쓰기가 활성화 되면 될 것 같다.
+라고,, 생각했는데 이러면 SC.W에서도 쓰기가 되겠구나. 어쩔 수 없이 별도의 신호를 CU에 추가해야한다.
+Rsv_Write신호를 Control Unit과 Atomic Unit 둘 다에 각각 출력과 입력으로 추가한다. 
+
+LR.W에서는,, Rsv_YN을 출력할 이유가 굳이 없다. 무슨 값을 출력해도 어차피 해당 명령어를 수행하는 동안 쓸 일이 없기 때문.
+
+SC.W의 데이터패스 검증으로 넘어가자.
+어. RD1은 별도로 MUX 신호로 넣었는데 RD2는 ALU bypass 해야하네? 하긴 bypass 해도 되긴 하는데,, 어차피 RD2를 메모리 주소로 사용하면서 연산을 수행하는 경우는 없으니까. Bypass로 하자. 
+
+어.. 문제 발생. SC.W 즉 메모리에서 쓰기가 발생 할 때에만 비교를 하는데, SC는 store 명령어이므로 기본적으로 MemWrite를 이미 활성화 시켜버려서 조건에 따른 활성화를 할 수가 없는데..
+Control Unit에서 opcode가 Zalrsc 확장에 해당하는 경우 MemWrite신호를 조건문으로 Rsv_YN의 값에 따라 내놓게 끔 해두면 해결. 
+만약 이 방법이 안될 경우, 별도의 Control Unit의 .. 아니다. 이 방법 밖엔 없다. 
+
+아니. Atomic Unit은 Atomic 연산임을 알아야한다.
+기본적으로 reservation set에 해당하는 주소에 메모리 쓰기가 이뤄지는지를 보기 위해 MemWrite와 ALUresult값을 받는다.
+MemWrite가 있을 때 ALUresult와 Reservation set을 비교하는 것이다. 
+
+하지만 SC.W가 나올 때는
+MemWrite가 기본적으로 비활성화 되어있다는 전제로, 이 경우 비교를 해야함을 알려주는 식별자가 없다. 
+때문에, 이 경우 Atomic임을 알리는 신호를 통해 필연적으로 Reservation Set과 RD2가 비교되게 해야한다. 
+이걸 위해, DC_Atomic_MUX를 Atomic이라는 신호로 Atomic Unit에 입력신호로 추가한다. 
+
+완성.. A확장 구현 성공이다...
+RV64IMA94F... 이제 이걸 5단계 파이프라이닝에 추가하면 된다... 하하하...
+오늘은 여기까지!!!
+
+수고했다 내 자신.
+
+[2025.04.29.]
+5단계 파이프라이닝을 하면서 대부분의 Reservation set 등록과 SC.W 실행 시 Invalidation, RD2값과 Reservation set과의 비교 와 같은 동작들은
+Instruction Decoding 단계에서 수행 가능했다. 인출 즉시 확인해서 SC.W시 MemWrite를 활성화할건지 말건지를 Control Unit에서 Atomic Unit의 Rsv_YN을 통해 제어해야하기 때문이다.
+그리고 그 제어 신호가 파이프라이닝 되어서 MEM 단계에서 정상적으로 이뤄져야하기 때문이다. 
+현재는 Zalrsc 의 동작을 파이프라이닝 하고 있는데, 문제점이 벌써 하나 생겼다.
+이거 한 가지만 해결하면 될 것 같은데, Reservation Set에 등록된 주솟값들 범위 내에 별도의 Store 작업이 이뤄지면 해당 reservation set을 invalidate 해야한다.
+즉 ALUresult(Data_Address값)을 Reservation Set과 비교해야하는데, Reservation 이후 부터 비교를 해야하는게 문제다.
+MEM 단계에서 인출되는 ALUresult 값을 ...MemWrite 신호가 활성화 되어있을 때 비교한다면 Instruction Decoding 단계에서 이미 진행된 MEM 단계,
+문맥상 LR, SC 내에 없지만 LR에 해당되는 주솟값 내에서 쓰기가 이뤄진다면 그 즉시 invalidation이 되게 된다. 이러면 안되는데. 
+
+즉, Reservation Set에 대한 비교 유닛을 MEM 단계에서 별도로 둬야할 것 같다.
+그리고,, 해당 비교 유닛은 Atomic Unit과 Reservation Set이 공유되어야 한다.
+아. 그래. LR과 SC 즉 시작되었으니 비교하라는 플래그를 두면 되겠다. 시작과 끝을 알 수 있게 해주는 플래그 신호.
+이러면 굳이 비교 유닛을 별도로 두는게 아니라, MEM 단계에서 출력되는 ALUresult를
+싱글사이클 구현했듯이 그대로 Atomic Unit에 두고, Atomic 연산 중 LR, SC가 시작되고 끝이 되었다는 식별자를 주면 된다.
+Atomic_MUX 신호를 사용하면 Zaamo에서도 쓰이게 되니 오인하게 되므로 쓰면 안되고, 별도의 플래그 신호를 CU에서 줘야할 것 같다.
+아니면, opcode와 funct7을 줘도 되긴 하는데, 이러면 너무 난잡해지니까. Control Unit에서 별도의 신호를 추가하자. 
+아.. 오늘은 여기까지.
+
+[2025.04.30.]
+
+어제 말한 CU에 쓰일 LR.W, SC.W를 위한 플래그 신호는 LRSC_Flag라는 신호로 Control Unit과 Atomic Unit에 각각 추가했다. 
+
+파이프라인에서는 aq, rl 비트에 대한 동작이 조금 달리 작동해야한다. 
+aq 비트가 set 되었을 때는, 해당 aq비트가 set된 A확장 명령어가 끝날 때 까지 차기 명령어의 수행을 stall하고, 완료 이후 재개해야 한다.
+rl 비트가 set 되었을 때는, 해당 rl비트 이전에 수행되고 있던 명령어들이 모두 끝내진 뒤, 마저 해당 rl비트가 set된 명령어가 수행 재개되어야 한다. 
+
+Control Unit에서 aq 비트가 set 되었다는 것을 인식했을 때엔, WB단계에 가서 해당 aq_set 명령어가 수행 완료 되었다는 식별 신호를 Control Unit이 기다리며 PC_Stall을 출력하고 있어야 한다. 
+마찬가지로, Control Unit에서 rl 비트가 set 되었다는 것을 인식했을 때엔, WB단계까지 그 이전에 수행중이었던 모든 명령어들이 수행되었는지, 
+즉 rl_set 명령어 직전 명령어가 WB단계까지 수행 완료되었다는 식별 신호를 Control Unit이 기다리며 PC_Stall을 출력하고 있어야 한다. 버블을 삽입해야하는 셈. 
+
+이 것을 어떻게 구현할 것이냐...
+Atomic 신호를 파이프라이닝해서, WB단계까지 갖고 간다.
+WB단계에 비교 모듈을 둬서, Atomic이 1이고, 해당 명령어가 도달하였을 경우 Control Unit에 aq_done 신호를 반환하여 PC_Stall을 멈추는 것.
+아니지.? 이럴 거면 그냥 Atomic 신호를 WB까지 갖고 갔다가 그대로 Control Unit에 꽂으면 되는 일 아닌가?
+그렇게 해야겠다. 
+
+그럼 rl은 어떻게 할까?
+버블을 어떻게 삽입하지.. Hazard Unit에서 어차피 각 파이프라인 레지스터별로 flush 기능을 갖고 있으니
+Atomic 식별 비트, ID단계 rl 비트, WB단계 rl 비트를 입력받아 상황에 맞게 rl비트가 set되면 flush 기능을 통해 NOP를 하도록 구현하기로 했다.
+WB단계 rl비트 배선 중.
+오늘은 여기까지. 
+2026 KAIST 입시전형 모집요강 나와서 읽느라 시간이 좀 걸렸다.
+
+5월, 얼마 안남았다. 6월 부턴 FPGA. 
+잘 마무리 지어보자.
+화이팅!
+
+[2025.05.01.]
+당직이었다. Zalrsc 파이프라이닝은 했고, aq, rl 비트 동작 수행을 위해 어제 만든 로직 배선도 진행 중이고.
+이제 남은건 Zaamo 가 제대로 작동하는지에 대한 데이터패스 확인이다. 
+이러면 A확장까지 끝나고, OS 탑재를 위한 준비작업에 나선다. 
+적어도.. OS를 위해서는 가상 메모리랑 I/O 구현(GUI 포함.) 그리고 이 두 가지를 구현하다보면 자연스럽게 특권 계층도 구현될 거라고 생각하는데..
+믕..
+
+[2025.05.02.]
+현재 백엔드 개발 단에서 아직 RV32I47NF도 완성하지 못했기 때문에 이번 Zaamo 파이프라인 확인만 마치고 나서 백엔드로 다시 한번 뛰어들어 빠르게 진행할 계획이다. 
+5월 이번 연휴 즉 5월 6일까지 basic_rv32s의 구현을 끝내는 것이 목표이다. 
+
+자 시작!
+
+아, 이런. 생각해보니까 Zaamo를 위해서 ALUsrcA에 D_RD 신호를 포함했었는데....
+싱글사이클에서는 모든 유닛이 한 사이클에 동시 사용이 가능하니 문제가 없었지만
+파이프라이닝에서는 MEM단계 이전 EX단계에서 메모리 인출 데이터를 연산 소스로 사용할 수 없다. EX단계에서 메모리 인출이 일어나야하는데.. 이러면 월권인데..
+
+~2025.04.13
+AMOADD.W 명령어를 수행했다면, AMOADD.W rd, rs2, rs1 이렇게 사용된다.
+그리고 이는 이러한 동작을 수행한다.
+R[rd] <-  M[rs1]
+M[rs1] <- M[rs1] + R[rs2]
+
+R[rd]에 M[rs1]이 먼저 쓰여지고, 쓰여진 M[rs1]에 기존의 M[rs1]값 + R[rs2]값이 쓰여지는 순서를 따른다. 
+
+별도의 MEM단계에 Atomic 연산; Zaamo 전용의 ALU를 배치할까도 생각해봤지만 한 클럭 사이클의 손해는 메꿀 수 없다는 결론을 내렸다. 
+MEM단계에 ALU를 넣는건 사실 표면상 Zaamo 한정으로 EX단계를 MEM 이후로 배치하는 것이라 볼 수 있다 (혹은 두 단계의 병합). 즉 동적인 파이프라인 배치가 되는 것.
+원래는 IF/ID/EX/MEM/WB인데, Zaamo에서는 그럼 중간의 EX단계에서 하는 일이 없으니 EX에서 그냥 넘어가는데 IF/ID/MEM/EX/WB가 된다.
+하지만, 문제는 그렇게 파이프라인 '스킵'을 우리가 구현하지 않았다는 것. 
+그럼 IF/ID/MEM/EX/WB와 같은 파이프라인의 동적 재배치가 아니라 IF/ID/버블/MEM/EX/WB 즉 한 사이클의 손해를 가져오게 된다.
+파이프라인의 동적 재배치를 구현한다면 물론 이를 해결하고 성능적으로 기존 데이터패스보다 한 사이클을 단축 시킬 수 있으니 성능적인 이점을 취할 수 있겠지만, 
+지금 그러한 새로운 타입의 비-정석적 구현을 시도하기엔 기간이 부족하다. 때문에, 다른 방안을 모색해본다.
+
+PC_Stall을 활용하는 방안. 
+Zaamo 명령어를 인식하면, EX단계에서 신호를 CU로 줘 PC_Stall한다. 
+EX단계에 Zaamo가 그대로 멈춘 채 다음 클럭에서 MEM단계 속행. 
+MEM에서 해당 메모리 source가 나오면 그걸 EX로 넣어주고 동시에 PC_Stall을 푼다. 
+이러면 원래대로의 순서로 돌아와 EX단계 ALU에서 계산한 결과를 MEM단계로 넘겨주고 WB단계에서 커밋할 수 있다. 
+
+즉, 파이프라인의 기본 원리에 입각하여 한 사이클 손해를 보지만 추가적인 하드웨어 리소스의 추가 없이 진행하는 것이다. 
+
+이렇게 하기로 했다. 어차피 각 Register별 파이프라인 Stall 및 flush 로직은 구현해뒀으니까.
+
+완성! RV64IMA94F_5SP.R1, 23:56; KHWL2025!!
+
+[2025.05.03.]
+오늘은 RV32I47NF Verilog 개발 이전, 여태까지 만든 프로세서 디자인의 각 모듈별 로직과 설명을 정리할 것이다. 
+끝나는 대로 백엔드 투입할 예정. 이걸 지금 구태여 해두는 이유는 명확하다.
+나중에 가서 하면 '어라 이 신호가 왜 있더라'가 프로젝트를 진행하면서도 빈번하게 있었기 때문이다. 
+RV32I37F부터 시작해서 추가할 예정이다.
+각 아키텍처별로 모듈의 역할 추가 및 변경이 있었으니 이 부분을 주의해서 만들어야겠다.
+시작! (10:23)
+
+20:48 끝.. 10시간에 걸친 작업..
+
+이제 이를 기반으로 43FC로 오면서 기존으로부터 변경된 모듈들에 관련 사항과 추가 모듈에 대한 문서를 만들면 된다.
+아마.. 내일 오전에 문서화가 끝나고, 오후에 백엔드갈 것 같다. 
+
+43F까지 어느정도 다 마쳤다. 아마 진짜로 내일 안에 끝낼 수... 있겠지.?
+하하. 오늘은 여기까지. 23:59.
+
+[2025.05.04.]
+43FC의 문서화까지 다 마쳤다. 하지만 문제를 발견하여 20시 경부터 회의에 들어갔다. 
+Data Cache - Memory 구조에서 Data Cache Miss 신호를 DM_Addr_MUX의 제어신호로 설계한게 화근이었다. 
+발생하는 문제는 다음과 같다. 
+
+1. 읽기 시도 (0x1111_1111 주소)
+데이터 캐시: 찾아보자
+데이터 메모리 : 찾아보자
+
+2. 캐시: 어라 캐시 미스임 
+-> 자동으로 여태 메모리로 입력되던 주소가 WB_Addr로 바뀜. SAA 중도 차단됨
+
+메모리 : 어?? 뭐야 뭐 어떡하라고 WB_Addr 인출하라고?
+-> 그대로 WB_Addr에 해당되는 값 인출 됨
+
+즉, SAA 이기에 발생하는 문제.
+DM_Addr_MUX를 단순히 DC_Status의 Miss시 WB_Addr로 설정하게 되면
+ALUresult를 주솟값으로 하는 데이터의 인출이 이뤄져야하는데 WB_Addr를 주솟값으로 하는 데이터의 인출이 생긴다. 
+
+이에 대한 내 해결안 : 1비트 FSM을 데이터 메모리에 만드는 것.
+Read.
+Cache, Memory SAA로 주소 접근
+
+Cache Miss!
+->캐시 미스 신호를 D_RD_MUX랑 Data Memory에 보냄
+
+D_RD 선택 MUX의 선택, DM_RD을 인출.
+
+Data Memory access...주소접근중... complete! 
+DM_RD fetched and Cache Miss detected! 
+-> DM_RD를 인출했고, 캐시 미스가 탐지됨.
+flag rise, Write back mode.
+두 조건을 만족했으므로 Write Back 모드로 변경 (FSM 비트 1로 set.)
+
+WB_Addr input, WB_Data wrote.
+Data Memory의 Address MUX를 WB_Addr input으로 선택.
+Data Memory의 Write Back 완료. (C2M)
+
+Back to normal mode (FSM 비트 0으로 Set. DM_Addr_MUX는 다시 ALUresult 선택으로 바뀜.)
+
+위 로직은 검토중이고, CC84가 방안을 생각해봤다.
+
+CC84:
+flush_address 에 해당되는 값이 인출된다고 해도
+어짜피 control unit 은 pc 갱신을 멈춘 상태라 문제 없을 것이다.
+
+KHWL:
+LW 명령어. R[rd] = M[R[rs1]]
+
+CLK1.
+
+SAA. 캐시/메모리 동시 주소 접근
+Cache miss, Not Ready, PC_Stall. 
+D_RD는 DM_RD로 선택
+
+Data Memory에서 정상 데이터가 나와야함
+근데 DM_Addr이 Cache miss이기에 WB_Addr 기준으로 데이터가 출력됨
+-> R[rd] = 잘못된 M[R[rs1]]
+동시에 Cache로도 WB_Addr 주소를 기반한 잘못된 데이터 나감
+
+데이터 캐시에서 WriteBack으로 DM으로 flush해야하는 데이터와 해당 주솟값을 Write Buffer로 출력
+
+CLK2.
+여전히 DC Status는 Miss.
+Not Ready, PC_Stall 중.
+DM_Addr은 여전히 WB_Addr을 받고 있음.
+MemWrite가 되고, Data Cache에 잘못된 M[R[rs1]]의 갱신이 일어남. 
+D_RD는 여전히 DM_RD고, WB_Addr기반 잘못된 주소의 데이터가 출력되고 있음.
+
+DM_Not ready
+Write Buffer에서 Data Memory로 WB_Addr과 WB_Data 출력. DM에서 WriteBack 일어남. 메모리로 Flush 끝.
+
+CLK3.
+DC_Ready, DM_Ready. PC_Stall 풀림. 명령어 갱신 재개.
+
+이 논리 전개에 문제가 없다면, 문제가 발생하는 것이 맞다. 
+
+CC84 방안 1 :
+dm_address 신호 MUX를 제어할 때
+hit/miss 신호만으로 제어하는 대신
+cache_ready 랑 섞어서 MUX 제어.
+
+hit | cache_ready | select
+0 | 0 | flush_address
+0 | 1 | alu_result
+1 | 0 | x
+1 | 1 | x
+
+
+KHWL : Miss고 Not Ready가 초기 상황인데 그걸 flush_address로 갖고가면 일단 잘못된 메모리 데이터가 인출됨
+
+두번째 사이클에서 그럼 캐시가 ready되는 경우가 있어야 함.  캐시의 갱신이 두번째 사이클에서 이뤄지니까 이 때 ALUresult값을 주소로 한 제대로된 메모리 데이터가 인출되어서 데이터 캐시에게 줘야하고 동시에 그게 레지스터에 쓰일 값으로 나가야 함. 
+
+근데? 두번째 사이클에서 캐시가 ready되는 경우가 없음. 
+갱신 이후 ready인데, 그럼 ready가 '실효성'을 가지는건 CLK3 부터임.
+
+CLK3? DC,DM Ready임. 이 때 ALUresult로 풀린다고 한들, 해당 데이터가 데이터 메모리에서 안나감. 왜? PC_Stall 풀려서 명령어 갱신 재개됐거든
+
+SAA를 살리기 위한 추가 로직의 도입으로 인한 시간 소요를 생각하여, SAA 기능의 드랍을 검토중이다. 위 내용은 1시간 10분에 걸친 회의록을 정리한 것이다.
+
+일단 내일까지 하는 걸 보고, 어떻게 할지 정하기로 했다.
+우선 로직과 같은 부분은 대부분 구현이 된 상태고, 기존에 캐시 구조를 10-bit 주소 구조로 했었는데 이를 제시한 specification대로 32-bit 체제로 바꾸기만 하면 얼추 되는 상태라고 한다.
+
+[2025.05.05.]
+
+
+위 캐시 구조에 대한 문제를 제외하고 ([43FC]!!DM_Addr_MUX 로 수정해야할 문서 표기를 해두었다. )
+RV32I47NF 까지의 구조 문서화를 모두 마쳤다. (17:27)
+
+오늘 안에 RV64IMA94F까지 끝나지 않을까 싶다. 
+연등시간에는 백엔드로 넘어가서 Exception Detector와 Trap Controller를 설계하는 것을 목표로 한다.
+
+밥먹고 와야지.  
+
+RV64I59F 까지 끝냈고..
+RV64IM72F는 RV64I59F와 구조적 차이가 없다. 
