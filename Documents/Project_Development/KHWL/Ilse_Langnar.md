@@ -4294,3 +4294,86 @@ RV32I47NF 까지의 구조 문서화를 모두 마쳤다. (17:27)
 
 RV64I59F 까지 끝냈고..
 RV64IM72F는 RV64I59F와 구조적 차이가 없다. 
+
+[2025.05.06.]
+Trap Controller를 설계하자..
+ECALL, EBREAK이 각각 어떤 동작을 수행해야했었는지 기억이 안난다... 기록을 뒤져보자.
+
+- [EBREAK의 처리 과정]
+
+1. [EBREAK 감지.]
+I_RD 신호 Instruction Decoder 및 Exception Detector 입력.
+Exception Detector가 EBREAK 감지. Trap_Status를 10으로 출력. 
+Trap Control가 Trap_Status를 통해 EBREAK 감지. 디버그 모드 활성화 준비.
+
+2. [디버그 모드 활성화 준비.]
+Trap_Control모듈, CSR_Addr, CSR_Data 신호를 통해 mepc와 mcause를 CSR에 기록. (mcause; EBREAK code = 3)
+
+3. [Trap Handler 수행]
+Trap_Control 모듈이 PC를 CSR의 mtvec 값으로 설정. 
+CPU, Trap Handler 루틴으로 점프하여 디버그 모드 준비.
+Trap Handler 루틴은 CSR에서 mcause와 mepc를 읽어 디버거와 상호작용 준비.
+
+4. [PC 갱신 정지 시퀀스]
+Trap Control이 디버그 모드 활성화. PCC의 NextPC 출력 중지. 
+
+5. [디버깅]
+외부 디버거가 add x7, x5, x6 명령어를 디버거 인터페이스로 전달.
+디버거 인터페이스에서 Instruction Decoder로 해당 명령어 출력.
+CPU가 해당 명령어 실행. 레지스터 및 메모리 값들이 디버깅에 따라 변화.
+
+6. [디버그 탈출]
+디버거가 작업을 완료하고 mret 명령어를 실행.
+Trap_Control 모듈에서 mepc값을 불러와 해당 값을 PCC로 출력해 NextPC값을 mepc의 값으로 PCC가 출력할 수 있게 한다.
+
+7. 종료.
+
+단순화 하면, ECALL = PC stall 상태로 mret 수행 이전까지 대기
+EBREAK = 디버그 인터페이스 명령어 수행인 것 같다.
+
+---
+
+아.. mret 구현..
+mret시.. mepc를 가져와서 PCC에 보내 NextPC로 할 수 있어야 한다.. 
+마찬가지로 T_Target 신호로 보내고 PC_Stall과 Trapped 를 끊으면 되지 않을까?
+
+아 이런. 
+mret을 위해서는 mepc에서 값을 읽어와 이를 PCC로 넘겨야하는데 SYSTEM 명령어와 CSR을 로직에 따라 제어한다는 특성상 Trap Controller가 담당하는게 타당해보인다. 
+하지만 현재 Exception Detector에는 funct7 식별 신호를 input 받지 않고 있다. 
+opcode와 funct3, raw_imm으로만 받는데, 이래서는 같은 opcode와 funct3를 갖고 있는 ECALL, EBREAK 명령어들과 mret을 구별할 수 없다. 
+ECALL, EBREAK은 각자 I-Type으로, raw_imm값의 0번째 비트로 구분할 수 있지만 mret은 funct7의 29, 28번째 비트를 식별해야하기에 funct7 입력을 받아야 한다.
+
+구현은 funct7을 포함시켰는데, 다이어그램 수정을 또 해야한다.
+
+!할일 
+다이어그램 Exception Detector에 funct7 추가하기
+
+---
+
+trap controller에서 misalign exception시 내부적으로 정렬해서 T_Target주는게 아니라.. 
+Trap Handler에 align하는 로직의 주소로 분기시켜서 처리하고 오도록 하는게 좋을 것 같은데..
+이러면.. mtvec이 어떻게 작동하더라? direct랑 vectored...
+아니다 하나로 해도 되겠다.
+일단 하나의 Trap Handler 로 진입하도록 하고
+해당 프로그램 구문에서 zicsr 명령어를 통해 현재 mcause 값을 보고 어떤 exception 상황인지를 확인하고 그에 따른 처리를 할 수 있도록 코드를 짜면 되잖아?
+
+Trap Controller Testbench Scenario
+
+- Instruction Memory 10000번지부터 Trap Handling 명령어들이 있어야 한다.
+
+- CSR mtvec이랑 현재 pc값을 입력해주고 있어야한다. (가정)
+
+- $display에서 trap_handle_state 레지스터의 상태변화를 볼 수 있도록 선언해둘 것.
+
+내일은 trap controller의 testbench를 구현해봐야겠다. 
+코드를 꽤 정리되게 잘 짰고 의도한 로직들을 모두 구현한 것 같아 아마 내일 테스트를 한다고 해도 큰 문제는 없을 것만 같다.
+오랜만에 verilog를 하니까 문법도 문법이고 여러모로 감회가 새롭다. 
+
+캐시쪽은 testbench하며 검증하고 있는 것 같은데 일단 32-bit 확장 과정 자체는 잘 되고 있는 것 같다.
+오늘을 기점으로, 캐시 구조는 잠시 미뤄두고 내일부터는 64-bit, M, A 확장의 구현으로 넘어간다.
+다들 수정소요가 좀 있을 뿐이지 크게 어려운 내용들은 아니기도 하고,
+로직 자체는 정립이 되어있으니 그대로 이해하고 따라 만든다는 가정 하에 64IMA 확장의 마감은 12일 까지로 잡았다.
+그 이후로는 다시 캐시구조로 넘어와서 마저 구현하고, 나는 투 트랙으로 외부장치 interrupt나 파이프라이닝을 맡을 예정이다.
+그리고 5월 말 27일부터 31일까지 IDEC에서 FPGA 구현 강의가 예정되어있다. 이를 듣고 기반하여 6월은 FPGA 구현에 힘쓸 예정.
+
+오늘은 여기까지! 
