@@ -4402,3 +4402,22 @@ B: CCCC_CCCC	LRU : recently used
 일단 docs 작성은 여기까지하고 연등 종료시 까지 개발을 한 뒤에 다시 와서 push해야겠다.
 
 Trap Controller 테스트벤치 구현 시작!!
+
+Trap_controller에서 봐야하는거: 
+trap_handle_state의 변화 과정
+csr_trap_address의 주소 변화
+csr_trap_write_data의 값 변화
+
+trap_target 주소의 변화
+
+FENCE.I시 ic_clean 활성화 여부
+
+MRET시 debug mode 0으로 돌아오는지
+mepc값 t_target으로 정상 출력되는지
+
+NONE시 ic_clean, debug_mode 0, trap handle state IDLE로 되는지
+
+일단 얼추 tb자체는 동작한다. 시간이 없어서 waveform은 확인 못했지만
+$display 명령어로 출력되는 결과는 의도된 값들이 나온 것 같다.
+내일은 심층 검증을 할 예정.
+가자!
