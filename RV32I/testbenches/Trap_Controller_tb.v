@@ -1,128 +1,114 @@
 `timescale 1ns/1ps
+`include "modules/headers/trap.vh"
 
-module TrapController_tb;
-    reg clk;
-    reg rst;
-    reg [31:0] pc;
-    reg [2:0] trap_status;
-    reg [31:0] csr_read_data;
+module tb;
+  // 1) 신호 선언
+  reg         clk;
+  reg         rst;
+  reg  [31:0] pc;
+  reg  [2:0]  trap_status;
+  reg  [31:0] csr_read_data;
 
-    wire [31:0] trap_target;
-    wire IC_Clean;
-    wire debug_mode;
-    wire [11:0] csr_trap_address;
-    wire [11:0] csr_trap_write_data;
+  wire [31:0] trap_target;
+  wire        ic_clean;
+  wire        debug_mode;
+  wire [11:0] csr_trap_address;
+  wire [31:0] csr_trap_write_data;
 
-    TrapController trap_controller (
-        .clk(clk),
-        .rst(rst),
-        .pc(pc),
-        .trap_status(trap_status),
-        .csr_rd(csr_read_data),
+  // 2) DUT 인스턴스
+  TrapController dut (
+    .clk               (clk),
+    .rst               (rst),
+    .pc                (pc),
+    .trap_status       (trap_status),
+    .csr_read_data     (csr_read_data),
+    .trap_target       (trap_target),
+    .ic_clean          (ic_clean),
+    .debug_mode        (debug_mode),
+    .csr_trap_address  (csr_trap_address),
+    .csr_trap_write_data(csr_trap_write_data)
+  );
 
-        .t_target(trap_target),
-		.ic_clean(ic_clean),
-        .debug_mode(debug_mode),
-        .csr_trap_address(csr_trap_address),
-        .csr_trap_write_data(csr_trap_write_data)
-    );
+  // 3) 클록 생성
+  initial clk = 0;
+  always #5 clk = ~clk;
 
-    initial begin
-        $dumpfile("testbenches/results/waveforms/PC_Controller_tb_result.vcd");
-        $dumpvars(0, pc_controller);
+  // 4) VCD 덤프 (파형 확인용)
+  initial begin
+    $dumpfile("tb.vcd");
+    $dumpvars(0, tb);
+  end
 
-		// Test sequence
-        $display("==================== PCController Test START ====================");
+  // 5) 모니터 설정: 내부 state, CSR 쓰기/읽기, 출력 신호 변화
+  initial begin
+    $display("time | state | csr_addr | csr_wdata | trap_tgt  | ic_clean | debug");
+    $monitor("%4t |  %b   |   %h   |    %h    |   %h   |     %b    |   %b",
+             $time,
+             dut.trap_handle_state,
+             csr_trap_address,
+             csr_trap_write_data,
+             trap_target,
+             ic_clean,
+             debug_mode);
+  end
 
-        pc = 32'b0;
-        jump_target = 32'b0;
-        imm = 32'b0;
-        trap_target = 32'b0;
+  // 6) 자극(stimulus) 흐름
+  initial begin
+    // 초기화
+    rst          = 1;
+    trap_status  = `TRAP_NONE;
+    pc           = 32'h0000_0000;
+    csr_read_data= 32'h0000_0000;
+    #20 rst = 0;
 
-        // Test 1: Pause PC update
-        $display("\nPause PC update: ");
+    // ── ECALL 테스트 ──
+    pc           = 32'h0000_1000;
+    trap_status  = `TRAP_ECALL;
+    // mtvec 읽기 시뮬레이션: next state에서 csr_read_data를 mtvec 값으로 설정
+    #10 csr_read_data = 32'h0000_2000;
+    #10 trap_status = `TRAP_NONE;
+    #20;
 
-        pc_stall = 1;
+    // ── MRET 테스트 ──
+    // 먼저 mepc에 리턴할 주소를 써 두었다 가정하고...
+    trap_status   = `TRAP_MRET;
+    csr_read_data = 32'h0000_3000;  // mepc에서 읽혀야 할 값
+    #10 trap_status = `TRAP_NONE;
+    #20;
 
-        jump = 1;
-        branch_taken = 0;
-        trapped = 0;
+    // ── EBREAK 테스트 ──
+    pc           = 32'h0000_6000;
+    trap_status  = `TRAP_EBREAK;
+    // mtvec 읽기 시뮬레이션: next state에서 csr_read_data를 mtvec 값으로 설정
+    #10 csr_read_data = 32'h0000_2000;
+    #10 trap_status = `TRAP_NONE;
+    #20;
 
-        jump_target = 32'h12345678;
+    // ── FENCE.I 테스트 ──
+    trap_status = `TRAP_FENCEI;
+    #10 trap_status = `TRAP_NONE;
+    #20;
 
-        #10;
-        $display("pc = %h => next_pc = %h", pc, next_pc);
+    // ── MRET 테스트 ──
+    // 먼저 mepc에 리턴할 주소를 써 두었다 가정하고...
+    trap_status   = `TRAP_MRET;
+    csr_read_data = 32'h0000_3000;  // mepc에서 읽혀야 할 값
+    #10 trap_status = `TRAP_NONE;
+    #20;
 
-        jump_target = 32'b0;
+    // ── MISALIGNED 테스트 ──
+    // 먼저 mepc에 리턴할 주소를 써 두었다 가정하고...
+    trap_status   = `TRAP_MISALIGNED;
+    csr_read_data = 32'h0000_3000;  // mepc에서 읽혀야 할 값
+    // mtvec 읽기 시뮬레이션: next state에서 csr_read_data를 mtvec 값으로 설정
+    #10 csr_read_data = 32'h0000_2000;
+    #10 trap_status = `TRAP_NONE;
+    #20;
 
-        // Test 2: No jump, no branch, no trap
-        $display("\nNo jump, No branch, No trap: ");
+    // ── NONE 상태 확인 ──
+    trap_status = `TRAP_NONE;
+    #10;
 
-        pc_stall = 0;
-
-        jump = 0;
-        branch_taken = 0;
-        trapped = 0;
-
-        #10;
-        $display("pc = %h => next_pc = %h", pc, next_pc);
-
-        // Test 3: Jump
-		$display("\nJump: ");
-		
-        pc = next_pc;
-
-        jump = 1;
-		branch_taken = 0;
-		trapped = 0;
-
-        jump_target = 32'hDEAD0000;
-		
-        #10;
-        $display("pc = %h => next_pc = %h", pc, next_pc);
-
-        // Test 4: Branch taken
-        $display("\nBranch taken: ");
-        
-        pc = next_pc;
-
-		jump = 0;
-		branch_taken = 1;
-		trapped = 0;
-
-        imm = 32'h0000BEEF;
-		
-        #10;
-        $display("pc = %h => next_pc = %h", pc, next_pc);
-
-        // Test 5: Trapped
-        $display("\nTrapped: ");
-        
-        pc = next_pc;
-
-		jump = 0;
-		branch_taken = 0;
-		trapped = 1;
-		
-        trap_target = 32'hCAFEBABE;
-
-        #10;
-        $display("pc = %h => next_pc = %h", pc, next_pc);
-
-        // Test 6: Normal increment
-        $display("\nNormal increment: ");
-        
-        pc = 32'h00001000;
-
-		jump = 0;
-		branch_taken = 0;
-		trapped = 0;
-		
-        #10;
-        $display("pc = %h => next_pc = %h", pc, next_pc);
-
-        $display("\n====================  PCController Test END  ====================");
-        $stop;
-    end
-
+    $finish;
+  end
 endmodule

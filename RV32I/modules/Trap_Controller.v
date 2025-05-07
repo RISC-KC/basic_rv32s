@@ -14,8 +14,8 @@ module TrapController (
     output reg [31:0] csr_trap_write_data
 );
 
-localparam  IDLE          = 2'b00;
-            WRITE_MEPC    = 2'b01;
+localparam  IDLE          = 2'b00,
+            WRITE_MEPC    = 2'b01,
             WRITE_MCAUSE  = 2'b10;
             
 reg [1:0] trap_handle_state;
@@ -53,7 +53,6 @@ always @(posedge clk or posedge rst) begin
                     csr_trap_write_data <= 32'd3; //mcause value 3 = Breakpoint exception code
                     trap_handle_state   <= IDLE;
             end
-                default: 
             endcase
         end
         
@@ -77,7 +76,6 @@ always @(posedge clk or posedge rst) begin
                     trap_target       <= csr_read_data;
                     trap_handle_state <= IDLE;
                 end
-                default: 
             endcase
         end
 
@@ -101,7 +99,6 @@ always @(posedge clk or posedge rst) begin
                     trap_target       <= csr_read_data;
                     trap_handle_state <= IDLE;
                 end
-                default: 
             endcase
         end
 
@@ -121,8 +118,6 @@ always @(posedge clk or posedge rst) begin
             debug_mode        <= 1'b0;
             trap_handle_state <= IDLE;
         end
-
-        default: 
     endcase
 end
 end
