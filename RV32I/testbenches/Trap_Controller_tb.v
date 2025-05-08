@@ -1,8 +1,8 @@
 `timescale 1ns/1ps
 `include "modules/headers/trap.vh"
 
-module tb;
-  // 1) 신호 선언
+module TrapController_tb;
+  // Signal Declaration
   reg         clk;
   reg         rst;
   reg  [31:0] pc;
@@ -15,13 +15,14 @@ module tb;
   wire [11:0] csr_trap_address;
   wire [31:0] csr_trap_write_data;
 
-  // 2) DUT 인스턴스
-  TrapController dut (
+  // DUT instance
+  TrapController trap_controller (
     .clk               (clk),
     .rst               (rst),
     .pc                (pc),
     .trap_status       (trap_status),
     .csr_read_data     (csr_read_data),
+
     .trap_target       (trap_target),
     .ic_clean          (ic_clean),
     .debug_mode        (debug_mode),
@@ -29,22 +30,22 @@ module tb;
     .csr_trap_write_data(csr_trap_write_data)
   );
 
-  // 3) 클록 생성
+  // Generate clock signal (period = 10ns)
   initial clk = 0;
   always #5 clk = ~clk;
 
-  // 4) VCD 덤프 (파형 확인용)
+  // VCD dump
   initial begin
-    $dumpfile("tb.vcd");
-    $dumpvars(0, tb);
+    $dumpfile("Trap_Controller_tb_result.vcd");
+    $dumpvars(0, TrapController_tb);
   end
 
-  // 5) 모니터 설정: 내부 state, CSR 쓰기/읽기, 출력 신호 변화
+  // Monitor setup :  internal state, CSR Read/Write, output changes
   initial begin
     $display("time | state | csr_addr | csr_wdata | trap_tgt  | ic_clean | debug");
     $monitor("%4t |  %b   |   %h   |    %h    |   %h   |     %b    |   %b",
              $time,
-             dut.trap_handle_state,
+             trap_controller.trap_handle_state,
              csr_trap_address,
              csr_trap_write_data,
              trap_target,
@@ -52,63 +53,98 @@ module tb;
              debug_mode);
   end
 
-  // 6) 자극(stimulus) 흐름
+  // Testbench
   initial begin
-    // 초기화
+    $display("==================== Register File Test START ====================");
+    // Initialize signals
     rst          = 1;
     trap_status  = `TRAP_NONE;
     pc           = 32'h0000_0000;
     csr_read_data= 32'h0000_0000;
     #20 rst = 0;
 
-    // ── ECALL 테스트 ──
-    pc           = 32'h0000_1000;
+    // ── ECALL Test ──
+    pc           = 32'h0000_1100;
     trap_status  = `TRAP_ECALL;
-    // mtvec 읽기 시뮬레이션: next state에서 csr_read_data를 mtvec 값으로 설정
-    #10 csr_read_data = 32'h0000_2000;
-    #10 trap_status = `TRAP_NONE;
-    #20;
+    // mtvec base address = 1000_AA00
+    #25; csr_read_data = 32'h1000_AA00;
+    #30;
 
-    // ── MRET 테스트 ──
-    // 먼저 mepc에 리턴할 주소를 써 두었다 가정하고...
+    /* expected values
+    CSR_T.Addr = 12'h341
+    CSR_T.WD = 0000_1100
+    trap_handle_state = IDLE -> WRITE_MEPC
+
+    CSR_T.Addr = 12'h342
+    CSR_T.WD = 32'd11
+    trap_handle_state = WRITE_MEPC -> WRITE_MCAUSE
+
+    trap_target = 1000_AA00
+    */
+
+    // ── MRET Test ──
+    // Assumes that mepc already has the value
     trap_status   = `TRAP_MRET;
-    csr_read_data = 32'h0000_3000;  // mepc에서 읽혀야 할 값
-    #10 trap_status = `TRAP_NONE;
-    #20;
+    csr_read_data = 32'h0000_1100;  // mepc
+    #10;
+    /* expected values
+    CSR_T.Addr = 12'h341
+    trap_target = 32'h0000_1104
+    debug_mode = 0
+    trap_handle_state = IDLE
+    */
 
-    // ── EBREAK 테스트 ──
-    pc           = 32'h0000_6000;
-    trap_status  = `TRAP_EBREAK;
-    // mtvec 읽기 시뮬레이션: next state에서 csr_read_data를 mtvec 값으로 설정
-    #10 csr_read_data = 32'h0000_2000;
-    #10 trap_status = `TRAP_NONE;
-    #20;
-
-    // ── FENCE.I 테스트 ──
-    trap_status = `TRAP_FENCEI;
-    #10 trap_status = `TRAP_NONE;
-    #20;
-
-    // ── MRET 테스트 ──
-    // 먼저 mepc에 리턴할 주소를 써 두었다 가정하고...
-    trap_status   = `TRAP_MRET;
-    csr_read_data = 32'h0000_3000;  // mepc에서 읽혀야 할 값
-    #10 trap_status = `TRAP_NONE;
-    #20;
-
-    // ── MISALIGNED 테스트 ──
-    // 먼저 mepc에 리턴할 주소를 써 두었다 가정하고...
+    // ── MISALIGNED Test ──
+    pc           = 32'h0000_1111;
     trap_status   = `TRAP_MISALIGNED;
-    csr_read_data = 32'h0000_3000;  // mepc에서 읽혀야 할 값
-    // mtvec 읽기 시뮬레이션: next state에서 csr_read_data를 mtvec 값으로 설정
-    #10 csr_read_data = 32'h0000_2000;
-    #10 trap_status = `TRAP_NONE;
-    #20;
+    // mtvec, go to trap_handler address
+    csr_read_data = 32'h1000_AA00; 
+    #30;
+    // expected trap_target = 1000_AA00
+    // mepc = 0000_1111
+    // mcause = 32'd0
 
-    // ── NONE 상태 확인 ──
+    // ── MRET Test ──
+    // Assumes that mepc already has the value
+    trap_status   = `TRAP_MRET;
+    csr_read_data = 32'h0000_1110;  // mepc
+    #10;
+    /* expected values
+    CSR_T.Addr = 12'h341
+    trap_target = 32'h0000_1114
+    debug_mode = 0
+    trap_handle_state = IDLE
+    */
+
+    // ── EBREAK Test ──
+    pc           = 32'h0000_BBB0;
+    trap_status  = `TRAP_EBREAK;
+    #30;
+    // expected debug_mode = 1
+    // mepc = 0000_BBB0
+    // mcause = 32'd3
+
+    // ── MRET Test ──
+    // Assumes that mepc already has the value
+    trap_status   = `TRAP_MRET;
+    csr_read_data = 32'h0000_BBB0;  // mepc
+    #10;
+    /* expected values
+    CSR_T.Addr = 12'h341
+    trap_target = 32'h0000_BBB4
+    debug_mode = 0
+    trap_handle_state = IDLE
+    */
+
+    // ── FENCE.I Test ──
+    trap_status = `TRAP_FENCEI;
+    #10;
+    // expected ic_clean <= 1'b1
+
+    // ── NONE Test ──
     trap_status = `TRAP_NONE;
     #10;
-
+    $display("\n====================  Register File Test END  ====================");
     $finish;
   end
 endmodule

@@ -16,7 +16,8 @@ module TrapController (
 
 localparam  IDLE          = 2'b00,
             WRITE_MEPC    = 2'b01,
-            WRITE_MCAUSE  = 2'b10;
+            WRITE_MCAUSE  = 2'b10,
+            READ_MTVEC    = 2'b11;
             
 reg [1:0] trap_handle_state;
 
@@ -51,7 +52,7 @@ always @(posedge clk or posedge rst) begin
                 WRITE_MEPC: begin
                     csr_trap_address    <= 12'h342; //mcause
                     csr_trap_write_data <= 32'd3; //mcause value 3 = Breakpoint exception code
-                    trap_handle_state   <= IDLE;
+                    trap_handle_state   <= WRITE_MCAUSE;
             end
             endcase
         end
@@ -74,7 +75,7 @@ always @(posedge clk or posedge rst) begin
                 WRITE_MCAUSE: begin
                     csr_trap_address  <= 12'h305; //mtvec
                     trap_target       <= csr_read_data;
-                    trap_handle_state <= IDLE;
+                    trap_handle_state <= READ_MTVEC;
                 end
             endcase
         end
@@ -97,7 +98,7 @@ always @(posedge clk or posedge rst) begin
                 WRITE_MCAUSE: begin
                     csr_trap_address  <= 12'h305; //mtvec
                     trap_target       <= csr_read_data;
-                    trap_handle_state <= IDLE;
+                    trap_handle_state <= READ_MTVEC;
                 end
             endcase
         end
@@ -108,7 +109,7 @@ always @(posedge clk or posedge rst) begin
 
         `TRAP_MRET: begin
             csr_trap_address   <= 12'h341; //mepc
-            trap_target        <= csr_read_data;
+            trap_target        <= csr_read_data + 4;
             debug_mode         <= 1'b0;
             trap_handle_state  <= IDLE;
         end
