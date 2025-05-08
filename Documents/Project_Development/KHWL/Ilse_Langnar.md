@@ -4421,3 +4421,51 @@ NONE시 ic_clean, debug_mode 0, trap handle state IDLE로 되는지
 $display 명령어로 출력되는 결과는 의도된 값들이 나온 것 같다.
 내일은 심층 검증을 할 예정.
 가자!
+
+[2025.05.08.]
+Trap Controller의 testbench 시나리오를 일과시간 중에 구성했다.
+
+Trap Handler 주소로 분기 하기 이전 전초작업을 하는 과정을 Pre-Trap Handling으로 칭한다.
+이 Pre-Trap Handling에는 CSR mepc write와 CSR mcause write 작업을 포함한다.
+이후 CSR mtvec read로 NextPC를 Trap Handler 주소로 하여 Trap Handler 주소로 분기하거나
+Trap Controller 내부의 로직을 통해 처리한다.
+
+보통 ECALL, EBREAK, MISALIGNED 같은 exception이나 trap은 TH(Trap Handler) 같은 곳에서 
+mret을 마지막 구문으로 쓰기에 사실 MRET 명령어까지 쓰는 것이 하나의 묶음이라 생각할 수 있다. 
+
+시나리오 구성은 아래와 같다.
+
+ECALL - mret
+MISALIGNED - mret
+EBREAK - mret
+zifencei
+none
+
+자세한 입력 주솟값과 예상 출력값에 대한 것은 Trap_Controller_tb.v 파일을 확인하라.
+주석처리로 하나하나 모두 적어두었다.
+
+Trap_Controller 직접 테스트벤치 재작성 해서 시나리오를 만들어 검증 중. 
+기존에 FSM을 IDLE-WriteMEPC-WriteMCAUSE 이렇게 3개로만 뒀었다. 
+어차피 IDLE에서 실행하고, 다음 게 mepc쓰기이고 이 때 wirte mepc로 하면 다음 if write mepc면 mcause의 쓰기를 진행하고, idle로 되돌아 간다 하면 됐었기 때문. 
+하지만 연속된 Trap Controller 개입 상황시 이러면 FSM이 꼬인다.
+그리고 계속 신호가 입력되고 있을 경우 현재 상황이 새롭게 인식되어 다시 FSM 사이클을 돌리는 현상을 vcd 검증 중 확인하였다.
+때문에 끝난 상태인 READ_MTVEC 상태를 또 만들어서 다음 명령어 갱신 때 IDLE로 되돌아와 다시 처음부터 수행할 수 있도록 바꿨다.
+
+그리고 이게 트랩 발생시 제어까지 총 3사이클이 발생하는데, 
+이 동안 PC가 멈춰야할 것이며 CSR File의 쓰기 제어 또한 추가적으로 필요하다. 
+하지만 언제 CSR File로의 쓰기가 벌어지는지는 Trap Controller만 알고 있으므로 TC에서 CSRF로 write enable신호를 하나 보내고, 
+CU와 TC 의 쓰기 제어 신호를 OR처리해서 CSRF의 Write가 enable되도록 수정해야할 것 같다.
+
+마찬가지로 Trap Controller가 Pre-Trap handling 진행 중에는 PC를 갱신할 수 없도록 CU에 Trap_Done 신호를 추가해야할 것 같다. 
+아고. 파이프라이닝할 때 골치 꽤나 아프겠네.
+
+23:43. 시나리오 테스트 케이스대로 전부 올바른 값으로 잘 작동한다.
+위의 수정 요소를... 반영해야겠다.
+!할일
+Control Unit에 Trap_Done 로직 추가
+Trap Controller에 CSR_WD (CSR Write Enable)신호 추가
+곧 구현할 RV32I47NF의 탑 모듈에서 TC와 CU의 CSRF 쓰기 활성화 신호를 OR처리하여 CSR_Write 신호로 넣어주는 것 구현하기.
+
+오늘은 여기까지! 이햐. 그래도 오랜만에 코딩한게 잘 작동하니 뿌듯하다.
+내일 안에 RV32I47NF 만드는 것을 목표로 해야겠다. 
+해보자. 화이팅!
