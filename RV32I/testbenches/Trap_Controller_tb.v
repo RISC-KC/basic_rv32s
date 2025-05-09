@@ -12,22 +12,24 @@ module TrapController_tb;
   wire [31:0] trap_target;
   wire        ic_clean;
   wire        debug_mode;
+  wire        trap_done;
   wire [11:0] csr_trap_address;
   wire [31:0] csr_trap_write_data;
 
   // DUT instance
   TrapController trap_controller (
-    .clk               (clk),
-    .rst               (rst),
-    .pc                (pc),
-    .trap_status       (trap_status),
-    .csr_read_data     (csr_read_data),
+    .clk                (clk),
+    .rst                (rst),
+    .pc                 (pc),
+    .trap_status        (trap_status),
+    .csr_read_data      (csr_read_data),
 
-    .trap_target       (trap_target),
-    .ic_clean          (ic_clean),
-    .debug_mode        (debug_mode),
-    .csr_trap_address  (csr_trap_address),
-    .csr_trap_write_data(csr_trap_write_data)
+    .trap_target        (trap_target),
+    .ic_clean           (ic_clean),
+    .debug_mode         (debug_mode),
+    .csr_trap_address   (csr_trap_address),
+    .csr_trap_write_data(csr_trap_write_data),
+    .trap_done          (trap_done)
   );
 
   // Generate clock signal (period = 10ns)
@@ -36,21 +38,22 @@ module TrapController_tb;
 
   // VCD dump
   initial begin
-    $dumpfile("Trap_Controller_tb_result.vcd");
+    $dumpfile("testbenches/results/waveforms/Trap_Controller_tb_result2.vcd");
     $dumpvars(0, TrapController_tb);
   end
 
   // Monitor setup :  internal state, CSR Read/Write, output changes
   initial begin
-    $display("time | state | csr_addr | csr_wdata | trap_tgt  | ic_clean | debug");
-    $monitor("%4t |  %b   |   %h   |    %h    |   %h   |     %b    |   %b",
+    $display("time | th_state | csr_addr | csr_wd | trap_tgt  | ic_clean | debug | trap_done");
+    $monitor("%4t |  %b   |   %h   |    %h    |   %h   |     %b    |   %b   |  %b  |",
              $time,
              trap_controller.trap_handle_state,
              csr_trap_address,
              csr_trap_write_data,
              trap_target,
              ic_clean,
-             debug_mode);
+             debug_mode,
+             trap_done);
   end
 
   // Testbench
@@ -119,7 +122,7 @@ module TrapController_tb;
     // ── EBREAK Test ──
     pc           = 32'h0000_BBB0;
     trap_status  = `TRAP_EBREAK;
-    #30;
+    #20;
     // expected debug_mode = 1
     // mepc = 0000_BBB0
     // mcause = 32'd3
