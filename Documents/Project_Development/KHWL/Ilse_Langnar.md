@@ -4469,3 +4469,43 @@ Trap Controller에 CSR_WD (CSR Write Enable)신호 추가
 오늘은 여기까지! 이햐. 그래도 오랜만에 코딩한게 잘 작동하니 뿌듯하다.
 내일 안에 RV32I47NF 만드는 것을 목표로 해야겠다. 
 해보자. 화이팅!
+
+[2025.05.09.]
+Pre-Trap Handling을 위한 Trap_Done신호를 언제 0으로 넣어야 할까... 
+Trap status가 확인되었을 때?  
+trap_Handle_state가 IDLE일 때? 
+어차피 한번 PTH하고 나면 다시 MRET이나 NONE이 아니고서야 IDLE로 돌아가지 않는데.. 
+마지막 mtvec read나 internal logic 처리 완료하면 다시 1로 하는거야. 
+아니지. IDLE시에 Trap_Done 신호를 하게 되면 TRAP 상황이 아닐 때에도.. 
+아 애초에 TRAP 확인 이후 case문이니까 TRAP 확인 이전에 IDLE이라 해도 문제는 없겠구나. 
+IDLE: begin 문에 trap_done <= 1'b0; 하고 
+WRITE_MCAUSE: begin 문에 trap_done <= 1'b1;로 먼저 구현해보고 tb를 돌려야겠다. 
+만약 의도한 동작이 발생하지 않으면 trap_done <= 1'b1을 READ_MTVEC: begin 문을 새로 쓰고 거기에 포함시켜봐야겠다.
+
+IDLE상황에서만 0되고, WRITE_MEPC, WRITE_MCAUSE, READ_MTVEC에서 모두 1이 되는 상황 발생..
+
+trap_done <= 1'b1을 READ_MTVEC(또는 WRITE_MCAUSE (EBREAK의 경우)) 문에 새로 쓰고, 
+trap_done <= 1'b0을 trap_status에 바로 썼다. trap handle state에 적는게 아니라. 
+이렇게 했더니 해당 Pre-Trap Handling 상황에서 trap_done이 0으로, 그리고 다음 TRAP_NONE일 때 다시 1로 올라오는 것을 보아 의도한대로 작동하는 것을 확인했다. 
+
+근데.. 이러면 사실상 PTH의 마지막 state에서는 다시 1로 올라와야 PC의 갱신이 이루어지지 않나? 
+마지막까지 0이면 다음 명령어가 없기 때문에 진행이 안될 것 같은데.. 
+지금이야 tb에서 다음 시나리오를 정해주고 있기 때문에 흘러가는 것 처럼 보이지 이러면 안될 것 같다. 역시 고쳐야겠다.
+
+아니다. 
+혹시 몰라 첫 ECALL 시나리오에서 ECALL에게 필요한 클럭 3CLK 보다 더 많은 5CLK를 부여했었는데, 
+해결 이후 Trap_handle_state가 11로 유지되면서 그대로 Trap_Done도 1로 상승한다. 
+문제는 EBREAK인데.. 파형에서는 THS가 10 즉 WRITE_MCAUSE에서 1이 되었다가 다시 0이된다. 왜일까.. 다시한번 돌려보고 판단해야겠다.
+
+trap_done을 WRITE_MCAUSE에서 별도로 1'b1으로 넣으니까 된다. 
+여유 클럭 한 사이클을 넣어도 정상적으로 1로 되고, 3사이클 딱 맞게 두어도 다음에서 trap_done이 1로 돌아온다.
+
+어라 파형에서 MRET시 csr_write_enable이 1로 나온다.. 왜지?
+-파형 파일이 옛날거였다...
+
+TC의 Trap_Done, CSR_WE 출력 신호 추가 및 tb 완료
+CU의 Trap_Done 입력 신호 추가(for PC_Stall) 및 tb 완료
+
+내일은 당직이니.. 운영체제랑 가상페이징 구현 방안을 강구해봐야겠다.
+일요일에는 RV32I47NF 탑 모듈 설계로 진입한다.
+화이팅!!!
