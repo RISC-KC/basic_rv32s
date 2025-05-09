@@ -13,6 +13,7 @@ module TrapController_tb;
   wire        ic_clean;
   wire        debug_mode;
   wire        trap_done;
+  wire        csr_write_enable;
   wire [11:0] csr_trap_address;
   wire [31:0] csr_trap_write_data;
 
@@ -27,6 +28,7 @@ module TrapController_tb;
     .trap_target        (trap_target),
     .ic_clean           (ic_clean),
     .debug_mode         (debug_mode),
+    .csr_write_enable   (csr_write_enable),
     .csr_trap_address   (csr_trap_address),
     .csr_trap_write_data(csr_trap_write_data),
     .trap_done          (trap_done)
@@ -44,12 +46,13 @@ module TrapController_tb;
 
   // Monitor setup :  internal state, CSR Read/Write, output changes
   initial begin
-    $display("time | th_state | csr_addr | csr_wd | trap_tgt  | ic_clean | debug | trap_done");
-    $monitor("%4t |  %b   |   %h   |    %h    |   %h   |     %b    |   %b   |  %b  |",
+    $display("time | th_state | csr_addr | csr_wd | csr_we |  trap_tgt  | ic_clean | debug | trap_done");
+    $monitor("%4t |  %b   |   %h   |    %h    |   %b   |     %h     |     %b    |   %b   |  %b  |",
              $time,
              trap_controller.trap_handle_state,
              csr_trap_address,
              csr_trap_write_data,
+             csr_write_enable,
              trap_target,
              ic_clean,
              debug_mode,
