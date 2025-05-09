@@ -6,6 +6,7 @@
 
 module ControlUnit (
 	input write_done,	// signal indicating if write is done
+	input trap_done,	// signal indicating if Pre-Trap Handling is done
 	input [6:0] opcode, // opcode from Instruction Decoder
 	input [2:0] funct3, // funct3 from Instruction Decoder
     
@@ -22,7 +23,7 @@ module ControlUnit (
 );
 
     always @(*) begin
-		pc_stall = !write_done;
+		pc_stall = !write_done || !trap_done;
 
 		case (opcode)
 			`OPCODE_LUI: begin // Load upper immediate
