@@ -4638,3 +4638,11 @@ WLRL, WARL 규약에 맞게 각 CSR들 로직 설정해두고... Privileged Arch
 이렇게 변경사항이 있었다. 모두 반영했다. 
 
 이제 RV32I46F 탑모듈 설계하러 branch를 바꿔보겠다. 
+어... Trap Controller를 구현한 branch인 feat/exception_detector의 이름을 Trap Controller로 바꾸고 push, PR올렸다. develop branch에 merge.
+RV32I46F를 새 브랜치에서 하기 위해서는 해당 변경사항이 반영된 develop branch에서 해야하는데,.. 일단 별도로 파일 파서 개발하고 있다. 
+내일 아마 PR 해줄테니까 괜찮을 듯.
+다이어그램 수정이랑 github 브랜치 수정, arxiv 가입 말곤 한게 없네...
+아 어제 연구 기록 남긴거..? 믕..
+내일 더 하고 싶은데 내일은 취사지원까지 있어서.,. 되는데 까지 해보는거지 뭐
+최선을 다해보자.
+오늘은 여기까지. 
