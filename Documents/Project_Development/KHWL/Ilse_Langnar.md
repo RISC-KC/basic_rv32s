@@ -4626,3 +4626,15 @@ WLRL, WARL 규약에 맞게 각 CSR들 로직 설정해두고... Privileged Arch
 
 오늘은 RV32I47NF 탑 모듈 설계 합성
 설계 합성하고 다시 docs로 오겠다.
+
+가 아니라, Trap Controller와 Exception Detector를 구현하면서 생긴 다이어그램상 변경사항을 먼저 반영해야한다. 
+그리고 Cache 구조의 일시적 중단으로 현재 합성할 RV32I47NF.R1의 메모리 구조 변경 또한 반영해야한다.
+어차피 Cache가 없어지면서 Zifencei도 지원 못하게 되니까, RV32I47NF_noCache 이렇게 보다 그냥 RV32I46F로 해두면 될 것 같다. 
+1. funct7 ED에 추가 완료
+2. Trap_Done CU에 추가 완료
+3. CSR_WE TC에 추가 완료
+4. TC, CU의 CSR_WE 신호 OR처리 완료
+
+이렇게 변경사항이 있었다. 모두 반영했다. 
+
+이제 RV32I46F 탑모듈 설계하러 branch를 바꿔보겠다. 
