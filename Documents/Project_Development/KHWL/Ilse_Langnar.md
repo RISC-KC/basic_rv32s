@@ -4620,6 +4620,9 @@ Privileged Architecture ISA라는게 CSR을 읽고 그에 따른 행동이나 �
 이해한게 올바르다면, 개념학적으로 어려운 건 아니지만 작업량 자체만 보면 마냥 쉽지만은 않은 것 같다.
 각 확장들의 Exception 조건들을 확장들에 맞게 모두 해둬야 하고
 CSR 레지스터들의 각 값들을 우리 specification에 맞게 셋팅해두고
-WLRL, WARL 규약에 맞게 각 CSR들 로직 설정해두고...
+WLRL, WARL 규약에 맞게 각 CSR들 로직 설정해두고... Privileged Architecture를 점검해봐야한다.
 
 [2025.05.11.]
+
+오늘은 RV32I47NF 탑 모듈 설계 합성
+설계 합성하고 다시 docs로 오겠다.
