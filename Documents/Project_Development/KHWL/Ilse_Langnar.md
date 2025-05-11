@@ -4509,3 +4509,117 @@ CU의 Trap_Done 입력 신호 추가(for PC_Stall) 및 tb 완료
 내일은 당직이니.. 운영체제랑 가상페이징 구현 방안을 강구해봐야겠다.
 일요일에는 RV32I47NF 탑 모듈 설계로 진입한다.
 화이팅!!!
+
+[2025.05.10.]
+이 날은 당직이었는데, 가상 페이징에 대한 하드웨어적 지원을 위한 가이드라인 실마리를 찾기 위해 컴퓨터 구조 및 설계 책을 들여다보며 연구가 시작되었다. 
+아래는 노트에 적은 내용들을 옮겨 적은 것이다.
+
+-아키텍처 수정사항-
+"M" Extension 확장 시 ALUresult의 대역폭이 128-bit[127:0]이어야 한다.
+컴퓨터의 곱셈 알고리즘에서, '피승수(multiplicand)와 승수(multiplier)을 곱한 결과는 n-bit 피승수와 m-bit 승수에 대해 최대 n+m-bit를 가진다.
+즉, RISC-V에서 묘사된 것 처럼, 그 결과가 2 × XLEN-bit 크기를 가진다는 것이다. 
+-> 컴퓨터 구조 및 설계 5판에서는 부호비트가 무시된다면 n+m 비트의 크기를 가진다고 했지만, RISC-V Unprivileged Architecture Manual I 에서는 2 × XLEN-bit 길이를 가진다고만 명시되어있다.
+"MUL performs an XLEN-bit × XLEN-bit multiplications of rs1 by rs2 and places the lower XLEN bits in the destination regitser. MULH, MULHU, MULHSU perform the same multiplication
+but return the upper XLEN bits of the full 2 × XLEN-bit product.
+그렇다면 부호비트에 대한 것은 설계의 재량인가?
+ISA에서 이를 규정하고 있어야 마땅한데...
+하긴, 컴퓨터 구조 및 설계 5판에서 참조하고 있는 MIPS ISA와 RISC-V ISA는 플래그 사용 유무부터 근원적으로 다른 ISA라고 보아도 무방하다.
+
+그렇다면, 일단 ChoiCube84에게 두 가지 선택지로 물어보아야겠다. 
+1. Multiplication (곱셈) 연산용 128-bit result 별도 신호 출력
+2. 기존 ALUresult 신호를 128-bit로 확장. XLEN-bit 결과들을 쓰는 기존 명령들은 zero-extension하여 출력.
+
+128-bit 데이터가 필요한 모듈들을 따로 보아야하고 각 용도에 맞는 명령어별로 별도의 식별자와 로직을 둬야하는 1번은 아무리 생각해도 맞지 않는다. 
+2번으로 해야...
+
+아 애초에 RISC-V ISA에서는 "M"확장에서 명령어를 쪼개서 XLEN 크기로 lower XLEN-bit, upper XLEN-bit을 필요에 따라 명령어를 통해 인출 할 수 있도록 설계되어있다...
+이러면 처음에 생각했던 대로 별도의 구조적 변경 없이 그대로 ALUresult 신호는 64-bit(XLEN)로 유지하면 된다..
+
+-아키텍처 수정사항 2-
+# Privileged Architecture Research.
+특권 구조 연구 중...
+정리 노트.
+
+3개의 특권 단계 (level)
+Machine level, Supervisor level, User level
+
+4개의 특권 모드 (mode)
+Debug mode > Machine mode > Supervisor mode > Hypervisor mode
+
+level과 mode는 서로 통칭하기도 한다. 
+
+---
+Privileged Architecture의 확장(Extensions) 접두사 정리.
+- Machine level : Sm
+- Supervisor level : 
+  - Supervisor level Virtual memory architecture : Sv
+  - Supervisor level architecture : Ss
+- Hypervisor level : Sh
+---
+
+Machine level Privileged Extensions
+- Sm state en	(Smstateen)	: State Enable extension
+- Sm csr ind 	(Smcsrind) 	: Indirect CSR access
+- Sm e pmp	 	(Smepmp)	: Enhance PMP(Physical Memory Protection)
+- Sm cntr pmf 	(Smcntrpmf)	: Counter Privilege Mode Filtering
+- Sm r n m i  	(Smrnmi)	: Resumable Non-Maskable Interrupts **Frozen Specifications**
+- Sm c deleg  	(Smcdeleg)  : Counter Delegation
+
+Supervisor level Privileged Extensions
+- Sv32, Sv39, Sv48, Sv57	: Page-Based 32, 39, 48, 57-bit Virtual Memory System
+- Sv n a p o t	(Svnapot)	: Naturally Aligned Power Of Two translation Contiguity
+- Sv p b m t	(Svpbmt)	: Page-Based Memory Types
+- Sv inval		(Svinval)	: Fine-Grained Address-Translation Cache Invalidation
+- Sv ad u		(Svadu)		: A/D Bits hardware Updating
+- Sv v ptc		(Svvptc)	: Eliding Memory-Management Fences on making PTEs Valid
+
+- Ss state en	(Ssstateen)	: State Enable
+- Ss csr ind	(Sscsrind)	: Indirect CSR access
+- Ss t c		(Sstc)		: Supervisor-mode Timer Interrupts
+- Ss c of pmf	(Sscofpmf)	: Count OverFlow and Privilege Mode Filtering
+
+---
+
+RISC-V Privileged Instruction Set Listings
+- Trap-Return Instructions
+  - SRET	: Supervisor - level trap-RETurn
+  - MRET	: Machine - level trap-RETurn
+  - MNRET	: Smrnmi's return instruction **Frozen Specifications**
+- Interrupt-Management Instrucitons
+  - WFI		: Wait For Interrupt
+- Supervisor Memory Management Instructions
+  - SFENCE.VMA
+
+---
+
+RISC-V CSR Address Mapping Conventions
+
+CSR = 12-bit [11:0]
+
+[11:8]  : Read and Write accessibility according to privilege level
+[11:10] : Whether register is read/write or read-only
+[9:8]	: Lowest Privilege level that can access CSR.
+
+---
+
+확장에서 추가적인 명령어들을 요하는 Unprivilege Architecture와는 달리,
+CSR 레지스터 각각의 데이터들을 규약하고, 지원해야하는 확장들을 Privileged Architecture에서 다루고 있다. 
+Privileged Architecture의 명령어들은 SYSTEM opcode로 모두 인코딩되어있고, 이는 두 가지 계열의 명령어들로 나뉜다.
+1. CSR을 "원자적으로 읽고-변경하고 쓰는(Atomically Read-Modify-Write) 명령어 계열. Zicsr
+
+2. 나머지 Privileged Instrucitons
+- Supervisor level 및 debugger단에서는 SRET, MRET, WFI, SFENCE.VMA 이렇게 총 4가지 명령어들이 있다. 
+
+Privileged Architecture ISA라는게 CSR을 읽고 그에 따른 행동이나 동작을 수행하는건 OS나 Kernel이기에
+그것들이 쓸 수 있도록 필요한 정보들을 확장이라는 규격으로 다루어 매핑해두는 것에 가깝다는 느낌을 받았다. 
+
+만약 CSR 0FF 주소의 11번 비트가 set 되어있는데 A라는 명령어를 수행하려고 한다? 
+비트 set이면 hypervisor 인데, 이 명령어는 machine 단계에서 수행되는 명령어. Access denied, excpetion 올리기
+이런 느낌이랄까.
+
+이해한게 올바르다면, 개념학적으로 어려운 건 아니지만 작업량 자체만 보면 마냥 쉽지만은 않은 것 같다.
+각 확장들의 Exception 조건들을 확장들에 맞게 모두 해둬야 하고
+CSR 레지스터들의 각 값들을 우리 specification에 맞게 셋팅해두고
+WLRL, WARL 규약에 맞게 각 CSR들 로직 설정해두고...
+
+[2025.05.11.]
