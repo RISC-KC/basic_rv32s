@@ -2,7 +2,7 @@
 
 module TrapController (
     input wire        clk,
-    input wire        rst,
+    input wire        reset,
     input wire [31:0] pc,
     input wire [2:0]  trap_status,
     input wire [31:0] csr_read_data,
@@ -23,9 +23,9 @@ localparam  IDLE          = 2'b00,
             
 reg [1:0] trap_handle_state;
 
-always @(posedge clk or posedge rst) begin
+always @(posedge clk or posedge reset) begin
     //reset
-    if (rst) begin
+    if (reset) begin
         trap_handle_state    <= IDLE;
         debug_mode           <= 1'b0;
         ic_clean             <= 1'b0;
