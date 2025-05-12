@@ -10,6 +10,7 @@
 
 module ControlUnit_tb;
     reg write_done;
+    reg trap_done;
 	reg [6:0] opcode;
 	reg [2:0] funct3;
     
@@ -25,6 +26,7 @@ module ControlUnit_tb;
 
     ControlUnit control_unit (
         .write_done(write_done),
+        .trap_done(trap_done),
         .opcode(opcode),
         .funct3(funct3),
 
@@ -54,13 +56,27 @@ module ControlUnit_tb;
 		$display("\nWriting not done: ");
 
         write_done = 0;
+        trap_done = 1;
 
         #1;
         $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_write_enable: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_write_enable);
 		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
         $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
 
+
         write_done = 1;
+
+        // Test 1-2: Pre-Trap Handling not done
+        $display("\nPTH not done: ");
+
+        trap_done = 0;
+
+        #1;
+        $display("jump: %b, branch: %b, alu_src_A_select: %b, alu_src_B_select: %b, csr_write_enable: %b", jump, branch, alu_src_A_select, alu_src_B_select, csr_write_enable);
+		$display("RF_write: %b, RF_WD_select: %b", register_file_write, register_file_write_data_select);
+        $display("memory_read: %b, memory_write: %b, pc_stall: %b\n", memory_read, memory_write, pc_stall);
+
+        trap_done = 1;
 
         // Test 2: LUI
 		$display("\nLUI: ");
