@@ -51,6 +51,7 @@ module RV32I46F (
     wire pc_stall;
 	wire register_file_write;
 	wire [2:0] register_file_write_data_select;
+    wire cu_csr_write_enable;
 
     wire branch_taken;
 
@@ -82,10 +83,12 @@ module RV32I46F (
 
     wire trap_done;
     wire debug_mode;
+    wire tc_csr_write_enable;
     wire [31:0] trap_target;
     wire [11:0] csr_trap_address;
     wire [31:0] csr_trap_write_data;
 
+    assign csr_write_enable = cu_csr_write_enable | tc_csr_write_enable;
 
     ProgramCounter program_counter (
         .clk(clk),
@@ -154,7 +157,7 @@ module RV32I46F (
 	    .memory_read(memory_read),
 	    .memory_write(memory_write),
         .pc_stall(pc_stall),
-        .csr_write_enable(csr_write_enable)
+        .csr_write_enable(cu_csr_write_enable)
     );
 
     RegisterFile register_file (
@@ -222,8 +225,8 @@ module RV32I46F (
         .clk(clk),
         .reset(reset),
         .csr_write_enable(csr_write_enable),
-        .csr_address(raw_imm[11:0]),
-        .csr_write_data(alu_result),
+        .csr_address(csr_address),
+        .csr_write_data(csr_write_data),
 
         .csr_read_data(csr_read_data)
     );
@@ -249,7 +252,7 @@ module RV32I46F (
         .debug_mode(debug_mode),
         .trap_target(trap_target),
         .trap_done(trap_done),
-        .csr_write_data(csr_write_data),
+        .csr_write_enable(tc_csr_write_enable),
         .csr_trap_address(csr_trap_address),
         .csr_trap_write_data(csr_trap_write_data)
     );
@@ -282,6 +285,19 @@ module RV32I46F (
         end
         else begin
             src_B = 32'b0;
+        end
+
+        if (trapped) begin
+            csr_write_data  = csr_trap_write_data;
+            csr_address     = csr_trap_address;
+        end
+        else begin
+            csr_write_data  = alu_result;
+            csr_address     = raw_imm[11:0];
+        end
+
+        if (debug_mode) begin
+            I
         end
 
         case (register_file_write_data_select)
