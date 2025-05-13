@@ -52,6 +52,7 @@ always @(posedge clk or posedge reset) begin
             case (trap_handle_state)
             //Write mepc mode
                 IDLE: begin
+                    trap_done           <= 1'b0;
                     csr_write_enable    <= 1'b1;
                     csr_trap_address    <= 12'h341;     //mepc
                     csr_trap_write_data <= pc;
@@ -59,6 +60,7 @@ always @(posedge clk or posedge reset) begin
             end
             //Write mcause mode
                 WRITE_MEPC: begin
+                    trap_done           <= 1'b0;
                     csr_write_enable    <= 1'b1;
                     csr_trap_address    <= 12'h342; //mcause
                     csr_trap_write_data <= 32'd3; //mcause value 3 = Breakpoint exception code
@@ -73,11 +75,11 @@ always @(posedge clk or posedge reset) begin
         end
         
         `TRAP_ECALL: begin
-            trap_done           <= 1'b0;
             csr_write_enable    <= 1'b0;
             case (trap_handle_state)
             //Write mepc mode
                 IDLE: begin
+                    trap_done           <= 1'b0;
                     csr_write_enable    <= 1'b1;
                     csr_trap_address    <= 12'h341;     //mepc
                     csr_trap_write_data <= pc;
@@ -85,6 +87,7 @@ always @(posedge clk or posedge reset) begin
             end
             //Write mcause mode
                 WRITE_MEPC: begin
+                    trap_done           <= 1'b0;
                     csr_write_enable    <= 1'b1;
                     csr_trap_address    <= 12'h342; //mcause
                     csr_trap_write_data <= 32'd11; //mcause value 11 = Environment call from M-mode exception code
@@ -92,6 +95,7 @@ always @(posedge clk or posedge reset) begin
             end
             //Read mtvec mode
                 WRITE_MCAUSE: begin
+                    trap_done         <= 1'b0;
                     csr_write_enable  <= 1'b0;
                     csr_trap_address  <= 12'h305; //mtvec
                     trap_target       <= csr_read_data;
@@ -105,11 +109,11 @@ always @(posedge clk or posedge reset) begin
         end
 
         `TRAP_MISALIGNED: begin
-            trap_done           <= 1'b0;
             csr_write_enable    <= 1'b0;
             case (trap_handle_state)
             //Write mepc mode
                 IDLE: begin
+                    trap_done           <= 1'b0;
                     csr_write_enable    <= 1'b1;
                     trap_done           <= 1'b0;
                     csr_trap_address    <= 12'h341;     //mepc
@@ -118,6 +122,7 @@ always @(posedge clk or posedge reset) begin
             end
             //Write mcause mode
                 WRITE_MEPC: begin
+                    trap_done           <= 1'b0;
                     csr_write_enable    <= 1'b1;
                     csr_trap_address    <= 12'h342; //mcause
                     csr_trap_write_data <= 32'd0; //mcause value 0 = Instruction address misaligned exception code
@@ -125,6 +130,7 @@ always @(posedge clk or posedge reset) begin
             end
             //Read mtvec mode
                 WRITE_MCAUSE: begin
+                    trap_done         <= 1'b0;
                     csr_write_enable  <= 1'b0;
                     csr_trap_address  <= 12'h305; //mtvec
                     trap_target       <= csr_read_data;
