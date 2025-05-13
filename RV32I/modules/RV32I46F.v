@@ -30,6 +30,8 @@ module RV32I46F (
     wire [31:0] raw_next_pc;
     wire [31:0] next_pc;
 
+    wire [31:0] im_instruction;
+    wire [31:0] dbg_instruction = 0000000_10111_10110_000_11000_0110011; //add x24 = x22 + x23 = FFFF_FFBC + ABAD_BB02 = ABADBABE
     wire [31:0] instruction;
 
     wire [6:0] opcode;
@@ -105,12 +107,12 @@ module RV32I46F (
     PCController pc_controller (
         .jump(jump),
 	    .branch_taken(branch_taken),
-	    .trapped(1'b0),
+	    .trapped(trapped),
 	    .pc(pc),
         .jump_target(alu_result),
         .imm(imm),
-	    .trap_target(32'b0),
-	    .pc_stall(1'b0),
+	    .trap_target(trap_target),
+	    .pc_stall(pc_stall),
 	
 	    .next_pc(raw_next_pc)
     );
@@ -122,7 +124,7 @@ module RV32I46F (
 
     InstructionMemory instruction_memory (
         .pc(pc),
-        .instruction(instruction)
+        .im_instruction(instruction)
     );
 
     InstructionDecoder instruction_decoder (
@@ -297,7 +299,10 @@ module RV32I46F (
         end
 
         if (debug_mode) begin
-            I
+            instr = dbg_instruction;
+        else begin
+            instr = im_instruction;
+        end
         end
 
         case (register_file_write_data_select)
