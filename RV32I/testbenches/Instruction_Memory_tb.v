@@ -30,6 +30,16 @@ module InstructionMemory_tb;
         pc = 32'h0000000C; #10;
         $display("Instruction: %b", instruction);
 
+        pc = 32'h00001000; #10;
+        $display("Instruction: %b", instruction);
+
+        pc = 32'h00001004; #10;
+        $display("Instruction: %b", instruction);
+
+        pc = 32'h0000100C; #10;
+        $display("Instruction: %b", instruction);
+
+
         $display("\n====================  Instruction Memory Test END  ====================");
 
         $stop;
