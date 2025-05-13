@@ -4,7 +4,7 @@
 module TrapController_tb;
   // Signal Declaration
   reg         clk;
-  reg         rst;
+  reg         reset;
   reg  [31:0] pc;
   reg  [2:0]  trap_status;
   reg  [31:0] csr_read_data;
@@ -20,7 +20,7 @@ module TrapController_tb;
   // DUT instance
   TrapController trap_controller (
     .clk                (clk),
-    .rst                (rst),
+    .reset                (reset),
     .pc                 (pc),
     .trap_status        (trap_status),
     .csr_read_data      (csr_read_data),
@@ -40,7 +40,7 @@ module TrapController_tb;
 
   // VCD dump
   initial begin
-    $dumpfile("testbenches/results/waveforms/Trap_Controller_tb_result2.vcd");
+    $dumpfile("testbenches/results/waveforms/Trap_Controller_tb_result.vcd");
     $dumpvars(0, TrapController_tb);
   end
 
@@ -63,11 +63,11 @@ module TrapController_tb;
   initial begin
     $display("==================== Register File Test START ====================");
     // Initialize signals
-    rst          = 1;
+    reset          = 1;
     trap_status  = `TRAP_NONE;
     pc           = 32'h0000_0000;
     csr_read_data= 32'h0000_0000;
-    #20 rst = 0;
+    #20 reset = 0;
 
     // ── ECALL Test ──
     pc           = 32'h0000_1100;
