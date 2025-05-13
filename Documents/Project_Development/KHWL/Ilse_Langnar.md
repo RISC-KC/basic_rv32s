@@ -4716,3 +4716,56 @@ end
 develop branch에 굳이 merge 할 필요는 없는 것 같은데 이런 경우는 어떻게 해야할지 모르겠다. 어차피 형태가 많이 달라질거라 그냥 폐기하는게 맞을 것 같다.
 혹시 모르니 일단 남겨두는 걸로. 
 
+Trap Controller의 testbench에서 수행했던 테스트 시나리오 그대로 Instruction Memory에 작성을 완료했다.
+
+## Trap_Handler
+// Trap Handler 시작 주소. mtvec = 0000_1000 = 4096 ÷ 4 Byte = 1024
+// Trap Handler 진입 시 기존 GPR의 레지스터 내용들을 별도의 메모리 Heap 구역에 store하고 수행해야하지만, 현재 단계에서는 생략한다. 
+// CSR mcause 확인해서 ecall이면 x1 = 0000_0000으로 만들기, misaligned면 x2에 FF더하기
+// mret하기
+
+### 이걸 RISC-V 어셈블러로 코드를 짜고,..
+
+// 조건 분기; 비교문 작성을 위한 적재 작업
+csrrs x6, mcause, x0	// 레지스터 x6에 mcause값 적재
+addi x7, x0, 11 		// 레지스터 x7에 ECALL 코드 값 11 적재 (mcause가 11인지 비교하기 위해서는 해당 11이라는 값을 레지스터 넣고 레지스터끼리 비교해야하므로)	
+
+// mcause 분석해서 해당하는 Trap Handler 주소로 분기
+beq x6, x7, +12			// ECALL; x6과 x7이 같다면 12바이트 이후 주솟값으로 분기 = data[1029]
+beq x6, x0, +16			// MISALIGNED; x6값이 0과 같다면 16바이트 이후 주솟값으로 분기 = data[1032]
+jal x0, +16 			// TH 끝내기 (mret 명령어 주소로 가기)
+
+//ECALL Trap Handler @ data[1029]
+addi x1, x0, 0 			// 레지스터 x1 값 0으로 비우기
+jal x0, +8				// TH 끝내기 (mret 명령어 주소로 가기)
+
+//MISALIGNED Trap Handler @ data[1031]
+addi x2, x2, 255 		// x2 레지스터(BC00_0000)에 FF 값 더하기. x2 = BC00_00FF
+
+//ESCAPE Trap Handler @ data[1032]
+MRET					// PC = CSR[mepc]
+
+### 해당 어셈블러 코드를 이진법으로 만들어서 Instruction Memory에 코드했다.
+// 조건 분기; 비교문 작성을 위한 적재 작업
+	data[1024] = {12'h343, 5'd0, 3'b010, 5'd6, `OPCODE_ENVIRONMENT};
+	data[1025] = {12'd11, 5'd0, `ITYPE_ADDI, 5'd7, `OPCODE_ITYPE};					
+
+// mcause 분석해서 해당하는 Trap Handler 주소로 분기	
+	data[1026] = {1'b0, 6'd0, 5'd7, 5'd6, `BRANCH_BEQ, 4'b0110, 1'b0, `OPCODE_BRANCH};
+	data[1027] = {1'b0, 6'd0, 5'd0, 5'd6, `BRANCH_BEQ, 4'b1000, 1'b0, `OPCODE_BRANCH};
+	data[1028] = {1'b0, 10'b000_0001_000, 1'b0, 8'b0, 5'd0, `OPCODE_JAL};
+
+//ECALL Trap Handler @ data[1029]
+	data[1029] = {12'd0, 5'd0, `ITYPE_ADDI, 5'd1, `OPCODE_ITYPE};
+	data[1030] = {1'b0, 10'b000_0000_100, 1'b0, 8'b0, 5'd0, `OPCODE_JAL};
+
+//MISALIGNED Trap Handler @ data[1031]
+	data[1031] = {12'hFF, 5'd2, `ITYPE_ADDI, 5'd2, `OPCODE_ITYPE};
+
+//ESCAPE Trap Handler @ data[1032]
+	data[1032] = {7'b0011000, 5'b0, 5'b0, 3'b0, 5'b0, `OPCODE_ENVIRONMENT};	
+
+CSR 주소의 데이터를 읽기만 할 땐 CSRRS+rs1=x0 패턴을 쓰는 것이 관례라고 한다... 
+csrr x5, mcause 라는 어셈블러가 자동으로 csrrs x5, mcause, x0 으로 인코딩 되기도 하고, csrrw 같은 명령어는 해당 rd의 값을 바꾸기도 하니까.
+
+무튼 이렇게 구현했다. 생각해보니 명령어가 제대로 나오는지를 tb 안돌려봤네 한번 돌려보고, feat/rv32i46f branch를 새로 파서 tb 진행해봐야겠다.
