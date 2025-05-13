@@ -11,7 +11,7 @@ module InstructionMemory (
     output reg [31:0] instruction
 );
 
-	reg [31:0] data [0:1023];
+	reg [31:0] data [0:2047];
 	
 	initial begin
 		// ──────────────────────────────────────────────
@@ -96,7 +96,39 @@ module InstructionMemory (
 		// I-타입 HINT 명령어 (CSR 동작 확인)
 		// {imm[11:0], rs1, funct3, rd, OPCODE_ITYPE}
 		data[43] = {12'h2BC, 5'd0, `ITYPE_ADDI, 5'd0, `OPCODE_ITYPE};				// ADDI:  x0 = x0 + 2BC = 0000_0000
+		// ──────────────────────────────────────────────
+		// ECALL 명령어, Misaligned exception 발생 JALR 명령어
+		data[44] = {12'd0, 5'd0, 3'd0, 5'd0, `OPCODE_ENVIRONMENT}; 					// ECALL: PC = CSR[mtvec] = 0000_1000 = data[1024]
+		data[45] = {12'd1, 5'd27, 3'b000, 5'd28, `OPCODE_JALR}; 					// JALR: x28 = PC + 4 = 000000B8; PC = x27 + 00000001 = 00000079 -> misaligned
+		// ──────────────────────────────────────────────
+		// Debug Interface 명령어 수행을 위한 전초 작업. 기존 x22 값 FFFF_FFBC 값을 더하는 ADD 명령어를 DI에서 수행할 예정.
+		data[46] = {20'hABADC, 5'd23, `OPCODE_LUI};									// LUI: x23 = ABAD_C000
+		data[47] = {12'hB02, 5'd23, `ITYPE_ADDI, 5'd23, `OPCODE_ITYPE};				// ADDI:  x23 = x23 + -4FE = ABAD_BB02
+		data[48] = {12'd1, 5'd0, 3'd0, 5'd0, `OPCODE_ENVIRONMENT};					// EBREAK: 
+																					// └ADD: x22 = x22 + x23. FFFF_FFBC(x22) + ABAD_BB02(x23) = ABAD_BABE(x22)
+		// ──────────────────────────────────────────────
+		// Trap Handler 시작 주소. mtvec = 0000_1000 = 4096 ÷ 4 Byte = 1024
+		// Trap Handler 진입 시 기존 GPR의 레지스터 내용들을 별도의 메모리 Heap 구역에 store하고 수행해야하지만, 현재 단계에서는 생략함.
+		// CSR mcause 확인해서 ecall이면 x1 = 0000_0000으로 만들기, misaligned면 x2에 FF더하기
+		// 조건 분기; 비교문 작성을 위한 적재 작업
+		data[1024] = {12'h343, 5'd0, 3'b010, 5'd6, `OPCODE_ENVIRONMENT}; 					// csrrs x6, mcause, x0:	레지스터 x6에 mcause값 적재
+		data[1025] = {12'd11, 5'd0, `ITYPE_ADDI, 5'd7, `OPCODE_ITYPE};						// addi x7, x0, 11: 		레지스터 x7에 ECALL 코드 값 11 적재 (mcause가 11인지 비교하기 위해서는 해당 11이라는 값을 레지스터 넣고 레지스터끼리 비교해야하므로)	
 
+		// mcause 분석해서 해당하는 Trap Handler 주소로 분기
+		data[1026] = {1'b0, 6'd0, 5'd7, 5'd6, `BRANCH_BEQ, 4'b0110, 1'b0, `OPCODE_BRANCH};	// beq x6, x7, +12: 		ECALL; x6과 x7이 같다면 12바이트 이후 주솟값으로 분기 = data[1029]
+		data[1027] = {1'b0, 6'd0, 5'd0, 5'd6, `BRANCH_BEQ, 4'b1000, 1'b0, `OPCODE_BRANCH};	// beq x6, x0, +16: 		MISALIGNED; x6값이 0과 같다면 16바이트 이후 주솟값으로 분기 = data[1032]
+		data[1028] = {1'b0, 10'b000_0001_000, 1'b0, 8'b0, 5'd0, `OPCODE_JAL};				// jal x0, +16: 			TH 끝내기 (mret 명령어 주소로 가기)
+		
+		//ECALL Trap Handler @ data[1029]
+		data[1029] = {12'd0, 5'd0, `ITYPE_ADDI, 5'd1, `OPCODE_ITYPE};						//addi x1, x0, 0: 			레지스터 x1 값 0으로 비우기
+		data[1030] = {1'b0, 10'b000_0000_100, 1'b0, 8'b0, 5'd0, `OPCODE_JAL};				//jal x0, +8:				TH 끝내기 (mret 명령어 주소로 가기)
+
+		//MISALIGNED Trap Handler @ data[1031]
+		data[1031] = {12'hFF, 5'd2, `ITYPE_ADDI, 5'd2, `OPCODE_ITYPE};						//addi x2, x2, 255: 		x2 레지스터(BC00_0000)에 FF 값 더하기. x2 = BC00_00FF
+
+		//ESCAPE Trap Handler @ data[1032]
+		data[1032] = {7'b0011000, 5'b0, 5'b0, 3'b0, 5'b0, `OPCODE_ENVIRONMENT};				//MRET:						PC = CSR[mepc]
+		
 	end
 	
 	always @(*) begin
