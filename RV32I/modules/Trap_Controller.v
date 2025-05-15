@@ -42,7 +42,6 @@ always @(posedge clk or posedge reset) begin
         csr_trap_address     <= 12'b0;
         csr_trap_write_data  <= 32'b0;
         trap_target          <= 32'b0;
-        trap_done            <= 1'b1;
 
     case (trap_status)
         `TRAP_EBREAK: begin
