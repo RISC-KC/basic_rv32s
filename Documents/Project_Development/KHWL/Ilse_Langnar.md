@@ -4857,7 +4857,27 @@ next_pc값이 trap_target으로 선택되지 않았음을 확인했다. 하지�
 - 혹시나 PC_Aligner가 남아서 생기는 문제인가 해서 없애봤다.
 
 ### 상황 4. 
-RV32I46F의 탑모듈 testbench가 stop하지 않음을 확인했다. 27500ms에서 멈췄고, 강제로 중단시킨 뒤 생성된 파형을 확인하였다.
+RV32I46F의 탑모듈 testbench가 stop하지 않음을 확인했다. 29500ms에서 멈췄고, 강제로 중단시킨 뒤 생성된 파형을 확인하였다.
 AUIPC 다음 명령어가 misaligned된 JAL 주소로 점프하는 명령어이다. 이 때 freeze가 발생한다. 
 즉, next_pc는 현재 pc가 수행중일 때 이미 나와있어야 하는데, 그러지 않았기에 ED에서 이를 탐지하지 못하고 미정렬된 PC로 가버렸다. 
 차라리 next_pc의 misalign탐지를 PCC에서 해야하나? 이건 고찰이 필요하다. 
+
+[2025.05.15.]
+
+왜일까...
+미정렬된 PC로 가버린게 애초에 맞나?
+PCC자체가 조합논리라 클럭 관련된 문제는 없을거고
+ED 자체도 애초에 next_pc 받아오고 이것도 조합논리라 바로 탐지되어서 수행되어야하는게 맞을텐데..
+바로 탐지되어서 수행된다...?
+
+JAL 명령어 자체는 사실 문제가 없다. 그 이후 next_pc가 미정렬된 값인 것이 문제.
+JAL로 인해서 next_pc가 jump_target으로 바뀌는데 성공했고 해당 next_pc를 ED가 파악하는데 성공했다면
+PCC내부에서 Trapped 신호를 입력받아 next_pc가 trap_target으로 바뀌어야한다.
+아 이런. JAL 명령어를 수행하기 때문에 next_pc = jump_target으로 jump 신호를 계속 입력받고 있는데 그와 동시에
+trapped 신호를 입력받고 있어서 next_pc = trap_target으로 race condition이 발생한 것 같다.
+하물며 trap_target 즉 Trap Handler의 시작 주솟값은 PTH 의 마지막 FSM에서 인출되는데 그동안 Trap Controller에서는 trap_done이 0이므로
+pc_stall신호를 Control Unit이 보내고 있을 터이다. 이러면 위의 두 신호에 대한 race condition에 덧붙여
+pc_stall 신호 때문에 next_pc = pc 라는 것 또한 충돌하게 된다. 
+이걸 어떻게 해결한담... 이게 문제 같은데..
+
+일단 PCC를 수정해야할 것 같으니 branch를 파고 하나하나 고쳐가보자. 
