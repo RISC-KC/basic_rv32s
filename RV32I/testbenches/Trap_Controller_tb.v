@@ -20,7 +20,7 @@ module TrapController_tb;
   // DUT instance
   TrapController trap_controller (
     .clk                (clk),
-    .reset                (reset),
+    .reset              (reset),
     .pc                 (pc),
     .trap_status        (trap_status),
     .csr_read_data      (csr_read_data),
