@@ -238,7 +238,7 @@ module RV32I46F (
         .opcode(opcode),
         .funct3(funct3),
         .funct7(funct7),
-        .imm_0(raw_imm),
+        .imm_0(raw_imm[0]),
         .next_pc_lsbs(next_pc[1:0]),
 
         .trapped(trapped),
