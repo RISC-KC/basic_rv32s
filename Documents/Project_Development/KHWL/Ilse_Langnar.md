@@ -4799,3 +4799,65 @@ pc_stall이.. 0000_00BC 즉 ECALL에서 생기지 않고 다음 사이클에 생
 이전 vcd와 비교를 하며 어떤 차이가 있는지를 확인해야하는데..
 
 두 파형이 차이가 없다.. 실제 탑 모듈에서 잘 작동하는지를 봐야겠다. 
+
+역시 차이는 없다. 
+Trap Controller에서 Latch 합성 가능성을 없애기 위해서 case(trap_status) 문 전에 trap_done을 1로 해두었는데, 
+어차피 초기에 reset 신호 들어올거기도 하고.. 
+모든 case 문의 조건에 따른 수행에서 trap_done 신호에 대한 내용을 모두 다루고 있으니 괜찮지 않을까? 
+한번 이렇게 해서 TC 에 대한 테스트벤치를 해봐야겠다.
+
+여전히 똑같지만 문제를 조금 다르게 보는 시각을 발견했다.
+
+애초에 PTH의 발동 자체가 한 사이클 느리다.. 왜지? 
+이걸 어떻게 한 사이클 땡겨서 trap_status가 들어오자마자 해당 status 값 대로 수행하도록 할 수 있을까?
+
+값의 변화를 모니터링하여 PTH를 수행하는 것을 조합논리회로로 always(*)로 하고, 
+FSM의 진행을 위한 내용은 always(posedge clk or posedge reset)로 해서 인식 즉시 PTH를 수행하도록 하긴 했는데.. 
+이러면 라이징 엣지에 맞게 작동하도록 된 로직들이 작동 안할 수도 있지 않나..? 
+어차피 PC_Stall이 되기만 하면 되니까.. 괜찮으려나.. RV32I46F 탑 모듈 돌려봐야겠다.
+
+어우 잘 된다!!!! 근데 mtvec 주소로 분기를 해야하는데 안된 것 같다. 
+Trapped도 됐고, trap_target도 잘 출력됐고, pc_stall도 잘 풀렸는데... PC_Controller의 신호를 봐야겠다. 이 쪽 문제일 수도.
+
+이런. next_pc값이 trap_target으로 선택되지 않았다. 이 것도 디버깅 해야할 듯.
+
+PCC의 로직을 봤으나 역시 문제는 없고.. 
+혹시나 PC_Aligner가 남아서 생기는 문제인가 해서 없애봤다.
+
+다시 시뮬을 돌려 파형을 잘 들여다보니 AUIPC 다음 명령어가 misaligned된 JAL 주소로 점프하는 명령어임을 확인했고, 이 때 freeze가 발생하는 것을 확인했다.  
+즉, next_pc는 현재 pc가 수행중일 때 이미 나와있어야 한다... 이래야 ED에서 확인을 하는데. 
+차라리 next_pc의 misalign탐지를 PCC에서 해야하나? 이건 고찰이 필요하다. 아마 이것만 고치면 되지 않을까? 오늘은 여기까지.
+
+# [2025.05.14.]
+당직이었다. 
+
+Verilog 디지털 설계의 길잡이, Palnitkar의 책을 읽으며 전반적인 문법 공부를 좀 하였다.
+그리고 현재 RV32I46F의 디버깅 로그의 진행 현황을 정리해보았다.
+
+## RV32I46F Debug Log
+### 상황 1.
+Trap Controller 발동 정상. 하지만 PTH가 첫 FSM 단계까지만 진행되고 mtvec 주소로 분기하지 않았다. 
+PC값 0부터 다시 실행되는 파형을 확인하였다. 
+- SYSTEM 명령어 인식 시, PTH(Pre-Trap Handling)이 다음 사이클부터 진행됨을 확인하였다. 
+이 때문에 `trap_done`이 0으로 되어 `pc_stall`이 되고, PTH가 수행되며 진행되어야 하는데 그 것이 안된다. 
+
+즉, SYSTEM 명령어 식별과 동시에 PTH 수행이 해당 식별 사이클과 동시에 이루어져야한다. 
+
+### 상황 2.
+Trap Controller의 `trap_status` 신호 조건문을 조합논리회로로 합성하여 (always (*) begin) PTH가 `trap_status` 입력 시 즉시 수행하도록 변경했다.
+기존에는 (always(posedge clk or posedge reset) begin)으로 모든 동작이 posedge clk에서 동작하였었다. 
+내부 FSM 갱신 로직은 여전히 순차논리회로로 하였다. 
+- Trap Controller의 testbench에서 trap_status의 인식과 PTH 시작이 해당 신호 식별 즉시 같은 타이밍에서 수행되도록 변경사항이 의도대로 반영된 것을 확인했다.
+
+### 상황 3.
+RV32I46F 탑 모듈 테스트벤치에서 PTH가 마지막 단계 즉 mtvec을 읽어오는 동작까지 정상적으로 수행했음을 파형으로 확인했다.
+하지만 여전히 PC의 주소가 Trap Handler의 주소인 0x0000_1000으로 분기하지 않는다. 
+Trapped도 됐고, trap_target도 잘 출력됐고, pc_stall도 0으로 잘 풀렸는데 안됐다. PCC의 문제로 추측했다.
+next_pc값이 trap_target으로 선택되지 않았음을 확인했다. 하지만 PCC의 로직 자체는 문제가 없음을 확인했다. 
+- 혹시나 PC_Aligner가 남아서 생기는 문제인가 해서 없애봤다.
+
+### 상황 4. 
+RV32I46F의 탑모듈 testbench가 stop하지 않음을 확인했다. 27500ms에서 멈췄고, 강제로 중단시킨 뒤 생성된 파형을 확인하였다.
+AUIPC 다음 명령어가 misaligned된 JAL 주소로 점프하는 명령어이다. 이 때 freeze가 발생한다. 
+즉, next_pc는 현재 pc가 수행중일 때 이미 나와있어야 하는데, 그러지 않았기에 ED에서 이를 탐지하지 못하고 미정렬된 PC로 가버렸다. 
+차라리 next_pc의 misalign탐지를 PCC에서 해야하나? 이건 고찰이 필요하다. 
