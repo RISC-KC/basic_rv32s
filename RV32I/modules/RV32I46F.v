@@ -31,8 +31,8 @@ module RV32I46F (
     wire [31:0] next_pc;
 
     wire [31:0] im_instruction;
-    wire [31:0] dbg_instruction = 0000000_10111_10110_000_11000_0110011; //add x24 = x22 + x23 = FFFF_FFBC + ABAD_BB02 = ABADBABE
-    wire [31:0] instruction;
+    wire [31:0] dbg_instruction = 32'b00000001011110110000110000110011; //add x24 = x22 + x23 = FFFF_FFBC + ABAD_BB02 = ABADBABE
+    reg [31:0] instruction;
 
     wire [6:0] opcode;
     wire [2:0] funct3;
@@ -77,7 +77,8 @@ module RV32I46F (
     wire [3:0] write_mask;
 
     wire csr_write_enable;
-    wire [11:0] csr_address;
+    reg [11:0] csr_address;
+    reg [31:0] csr_write_data;
     wire [31:0] csr_read_data;
 
     wire trapped;
@@ -124,7 +125,7 @@ module RV32I46F (
 
     InstructionMemory instruction_memory (
         .pc(pc),
-        .im_instruction(instruction)
+        .instruction(im_instruction)
     );
 
     InstructionDecoder instruction_decoder (
@@ -237,7 +238,7 @@ module RV32I46F (
         .opcode(opcode),
         .funct3(funct3),
         .funct7(funct7),
-        .raw_imm(raw_imm),
+        .imm_0(raw_imm[0]),
         .next_pc_lsbs(next_pc[1:0]),
 
         .trapped(trapped),
@@ -245,11 +246,11 @@ module RV32I46F (
     );
 
     TrapController trap_controller (
-        .clk(clk)
+        .clk(clk),
         .reset(reset),
         .trap_status(trap_status),
         .pc(pc),
-        .csr_read_data(csr_read_data)
+        .csr_read_data(csr_read_data),
 
         .debug_mode(debug_mode),
         .trap_target(trap_target),
@@ -299,10 +300,10 @@ module RV32I46F (
         end
 
         if (debug_mode) begin
-            instr = dbg_instruction;
-        else begin
-            instr = im_instruction;
+            instruction = dbg_instruction;
         end
+        else begin
+            instruction = im_instruction;
         end
 
         case (register_file_write_data_select)
