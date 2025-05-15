@@ -119,6 +119,29 @@ module PCController_tb;
         #10;
         $display("pc = %h => next_pc = %h", pc, next_pc);
 
+        // Test 7: Race condition
+        $display("\nRace condition: ");
+        
+        pc = 32'h00001000;
+
+		jump = 1;
+        #1;
+        $display("pc = %h => next_pc = %h", pc, next_pc);
+        pc_stall = 1;
+        #1;
+        $display("pc = %h => next_pc = %h", pc, next_pc);
+		branch_taken = 0;
+		trapped = 1;
+        #1;
+        $display("pc = %h => next_pc = %h", pc, next_pc);
+
+        pc_stall = 0;
+        #1;
+        $display("pc = %h => next_pc = %h", pc, next_pc);
+
+        #10;
+        $display("pc = %h => next_pc = %h", pc, next_pc);
+
         $display("\n====================  PCController Test END  ====================");
         $stop;
     end

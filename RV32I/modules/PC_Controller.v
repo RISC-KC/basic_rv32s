@@ -12,23 +12,21 @@ module PCController (
 );
 
     always @(*) begin
-		if (!pc_stall) begin
-			if (jump) begin
-				next_pc = jump_target;
-			end
-			else if (branch_taken) begin
-				next_pc = pc + imm;
-			end
-			else if (trapped) begin
-				next_pc = trap_target;
-			end
-			else begin
-				next_pc = pc + 4;
-			end
-		end
-		else begin
+		if (pc_stall) begin
 			next_pc = pc;
 		end
-    end
+		else if (jump && pc_stall == 0 && trapped == 0 && branch_taken == 0) begin
+			next_pc = jump_target;
+		end
+		else if (branch_taken && jump == 0 && pc_stall == 0 && trapped == 0) begin
+			next_pc = pc + imm;
+		end
+		else if (trapped && jump == 0 && pc_stall == 0 && branch_taken == 0) begin
+			next_pc = trap_target;
+		end
+		else begin
+			next_pc = pc + 4;
+		end
+	end
 
 endmodule
