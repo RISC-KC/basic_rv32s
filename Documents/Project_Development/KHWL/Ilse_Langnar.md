@@ -4972,9 +4972,16 @@ PC Controller에서 jump_target을 감지해서 next_pc = pc로 misalign시 pc_s
 30번째 명령어가 제대로 파형에 찍혔다...
 이제 PTH 수행하도록 Exception Detector의 신호를 조정해보자.
 
+jump_target 뿐만 아니라 분기를 위한 주소들의 misalign을 모두 탐지해야한다. 
+하지만 Branch의 경우 기존 43F 아키텍처 기반에서는 PCC에서 현재 pc값과 imm 값을 덧셈하여 계산한 값을 바로 next_pc로 출력하는 구조를 취하고 있다. 
+jump_target은 alu_result 신호이기에 이를 Exception Detector에 입력신호로 같이 주면 됐지만, 이래서는 branch_target의 misalignment를 확인할 수 없다.
+이를 해결하기 위해서, Branch Adder, Calculator를 두기도 조금 조잡해지니, Branch Logic에 Branch Target 즉 분기 주소를 계산하는 로직을 내장하기로 결정했다. 
+일단, Branch Logic 모듈을 수정했다 가정하고 Exception Detector를 수정해보자.
+
 PTH로 잘 넘어간다!!! 
 trap_handle_status FSM도 잘 굴러가고 Trap Handler 주솟값으로 잘 분기했다!!!! (20:47)
 근데 내가 Trap Handler 루틴에서 CSR의 주소를 잘못 명령어에 인코딩한건지 동작이 의도한대로 되지 않았다.
 그래도 뭐가 잘못된건지 파형에 찍힐 정도로 명확한 사소한 트러블이라 큰 문제는 되지 않는다. 그냥 바로 수정하면 되니까.
 아.,.,., 이 문제였구나. 해결했다!!!
-마저 고쳐보자.
+
+Branch Logic에 변경사항을 반영시켜야겠다. 새 branch!
