@@ -4862,8 +4862,7 @@ AUIPC 다음 명령어가 misaligned된 JAL 주소로 점프하는 명령어이�
 즉, next_pc는 현재 pc가 수행중일 때 이미 나와있어야 하는데, 그러지 않았기에 ED에서 이를 탐지하지 못하고 미정렬된 PC로 가버렸다. 
 차라리 next_pc의 misalign탐지를 PCC에서 해야하나? 이건 고찰이 필요하다. 
 
-[2025.05.15.]
-
+# [2025.05.15.]
 왜일까...
 미정렬된 PC로 가버린게 애초에 맞나?
 PCC자체가 조합논리라 클럭 관련된 문제는 없을거고
@@ -4873,11 +4872,109 @@ ED 자체도 애초에 next_pc 받아오고 이것도 조합논리라 바로 탐
 JAL 명령어 자체는 사실 문제가 없다. 그 이후 next_pc가 미정렬된 값인 것이 문제.
 JAL로 인해서 next_pc가 jump_target으로 바뀌는데 성공했고 해당 next_pc를 ED가 파악하는데 성공했다면
 PCC내부에서 Trapped 신호를 입력받아 next_pc가 trap_target으로 바뀌어야한다.
-아 이런. JAL 명령어를 수행하기 때문에 next_pc = jump_target으로 jump 신호를 계속 입력받고 있는데 그와 동시에
+아 이런. 
+JAL 명령어를 수행하기 때문에 next_pc = jump_target으로 jump 신호를 계속 입력받고 있는데 그와 동시에
 trapped 신호를 입력받고 있어서 next_pc = trap_target으로 race condition이 발생한 것 같다.
 하물며 trap_target 즉 Trap Handler의 시작 주솟값은 PTH 의 마지막 FSM에서 인출되는데 그동안 Trap Controller에서는 trap_done이 0이므로
 pc_stall신호를 Control Unit이 보내고 있을 터이다. 이러면 위의 두 신호에 대한 race condition에 덧붙여
 pc_stall 신호 때문에 next_pc = pc 라는 것 또한 충돌하게 된다. 
 이걸 어떻게 해결한담... 이게 문제 같은데..
 
-일단 PCC를 수정해야할 것 같으니 branch를 파고 하나하나 고쳐가보자. 
+정리하자면, 
+
+## RV32I46F의 29500ms 문제 원인 접근 A
+PCC의 next_pc 선택을 위한 제어 신호들의 race condition이 발생하는 것이라면?
+1. JAL 명령어, Control Unit에서 Jump 신호 출력
+   ▶ next_pc = jump_target
+2. Exception Detector에서 next_pc가 misaligned인 것을 확인. Trapped 신호 출력
+   ▶ next_pc = trap_target
+3. Trap Controller에서 trapped 신호를 받아 PTH(Pre-Trap Handling) 수행을 위해 trap_done = 0.
+   Control Unit에서 PC_Stall 신호 출력.
+   ▶ next_pc = pc
+
+즉, next_pc를 설정하기 위한 신호 3개가 race condition을 일으켜 시뮬레이션이 freeze되는 것이다.
+
+어떻게 해결할 수 있을까?
+야간에 생활관에서 불 켜두고 Verilog 문법에서 답을 찾기 위해 Palnitkar의 Verilog HDL : 디지털 설계와 합성의 길잡이 책을 갖고 찾아보았다.
+내일 알아볼 것 :
+1. tri, trireg의 신호 강도 조절을 통한 race condition 제어로 해결할 수 있는가?
+2. 블록킹 / 논블록킹 할당 구문 및 타이밍 제어문(사건 기반, 준위 구동)을 통한 race condition 해결이 가능한가?
+3. 제로 지연을 통한 race condition의 해결이 가능한가?
+
+생각해보니 Trap Controller에서 MRET할 때 trap_target 즉 복귀 주소를 미정렬된 값까지 허용할 수 있게 코드를 짰었다. 이번 문제와는 별개의 내용이지만, 
+```
+`TRAP_MRET: begin
+    csr_write_enable   <= 1'b0;
+    csr_trap_address   <= 12'h341; //mepc
+    trap_target        <= ({csr_read_data[31:2], 2'b0} + 4);
+    debug_mode         <= 1'b0;
+    trap_done          <= 1'b1;
+end
+```
+이렇게 수정해서 mepc로 귀환할 때 미정렬된 주솟값으로 돌아갈 수 없게끔했다. 
+
+탑 모듈에서 잠깐 가봤는데.. misaligned를 PC_Aligner를 다시 넣어서 넘겨봐도 이후 Trap Controller / Exception Detector 검증을 위한 trap 시나리오에서 next_pc값이 trap_target으로 정상적으로 선택 출력되지 않는다. 어디서부터 뭐가 잘못된걸까...
+
+# [2025.05.16.]
+당직이었다. 
+그리고 언제나 그랬듯이 답을 향한 실마리를 찾아냈다.
+당직 중에 문제에 대해 고찰을 하다가, 머리를 비우고 처음부터 검토해볼 겸 RV32I46F의 다이어그램을 왼쪽에서부터 (PC부터) 다시 하나씩 손수 그려보다가 불현듯 떠올랐다.
+
+## RV32I46F의 29500ms 문제의 해결에 대한 접근 A.
+PCC의 로직은 단순하며, 이미 충실하다. 문제 해결의 열쇠는 PCC 제어 신호의 근원지인 Control Unit에서 찾을 수 있지 않을까?
+이 말인 즉슨, 신호 중첩 시, 그 모든 신호를 PCC에게 다 출력하지 않게끔 하면 이 race condition자체를 해결 할 수 있을 것이라는 생각이다. 
+PCC 제어 신호들에 조건문을 사용해 그들 중 오로지 하나의 신호만 출력하도록 하거나, 또는
+하나의 통합된 PCC 제어 신호를 PCC에게 출력하도록 하는 것.
+
+## RV32I46F의 next_pc race condition 해결 방안 A-1
+Control Unit에서 명령어를 식별한 뒤, jump, trapped, pc_stall 이렇게 각 신호별로 PC Controller에 주지 않는다. 
+PC Controller Opcode, pcc_op 신호. 즉 PC Controller의 operation code를 주어,
+PCC 내부에서 next_pc에 대한 조건 인식을 하나의 신호로부터만 수행되게 한다. 
+// 왜 현대 시스템에서 μ-opcode; micro-opcode가 상용되는지 이해되는 순간이다. 물론, CISC 구조의 한계를 극복하기 위해 RISC 특성을 접목시키기 위한 특이성 개선이 주된 이유겠지만.
+
+문제 파악에만 3일이 걸렸고, 이 답안에 오는 데에만 2일이 걸렸다. 
+이제 이걸 내일 그대로 접목해보자. 잘 되겠지.
+
+# [2025.05.17.]
+아니, 안된다. 
+문제가 그대로다. 뭐라도 하나 변하는게 있었다면 좋겠는데 절망스럽게도 결과값 하나 변하지 않았다.
+pcc_op를 접목한 Control Unit과 PC Controller의 각개 testbench에서도 문제는 없었다. race condition까지 모두 테스트했었다.
+뭐가 문젤까... 뭐가 문젤까..
+
+처음으로 돌아가보자.
+만약 race condition 문제가 아니라면?
+기존 PC_Aligner가 있었을 때, next_pc가 자동정렬되면서 제대로 진행은 됐었다.
+문제는 next_pc가 향하는 Program Counter 레지스터에 있나?
+Program Counter 자체에 next_pc가 입력되고 나서, 해당 값이 변경되지 않는 것인가?
+하지만 너무나도 단순한 모듈인데 문제가 있을리가..
+아. 
+
+## RV32I46F의 29500ms 문제의 해결에 대한 접근 B.
+program counter의 값은 posedge clk에서만 인식된다.
+"Exception Detector에서 next_pc를 기준으로 하는 것이 아니라, PCC에서 선택될 주소 소스값을 기준으로 misaligned 계산을 한다면 어떨까?"
+
+이런 구조적으로 근원적인 부분을 간과해버리다니. 
+대기업 설계라고 한 모듈에 한 사람씩 붙는 그런 수준은 아니겠지만 확실히 혼자서 수 십개의 모듈들과 수 백개의 신호들을 꽤차고 있어야하는 현 상황에서 이러한 실수는 피하기 쉽지 않은 것 같다. 
+기존 설계는 next_pc값을 기준으로 misaligned를 판단하는 구조이다. 
+next_pc값을 보고, 해당 클럭 신호 안에 misaligned 되어있다면 trapped를 하든 pc_stall을 하든 pc값을 '변화' 시키는 것이 전제되는 것이다.
+하지만, program counter는 오로지 posedge clk에서 확인된 값만 갖고 있다. 
+이 말인 즉슨 미정렬된 값이 들어가고, 그걸 trapping 하고나서 뭐 어떻게 저쩧게 하려고 한들 일단 PC에 misalign이 들어간 이후라 현재 들고 있는 PC값의 변경이 불가능해지는 것이다. 
+그리고 이러한 클럭 기반 값 갱신 구조는 변경하는 것 자체가 안정성의 리스크를 지닌다.
+program counter는 그대로 둬야한다. 다만, exception 처리를 다른 방식으로 구상할 필요가 있다. 
+이러면.,., PC_Aligner가 아니라 checker를 둬야하나.. 그 위치에 misalign인 걸 확인할 모듈을.. 아니다. 이건 뭔가 설계가 너무 조잡해진다.
+Exception Detector에서 next_pc를 기준으로 하는 것이 아니라, PCC에서 선택될 주소 소스값을 기준으로 misaligned 계산을 한다면 어떨까?
+
+PC Controller에서 jump_target을 감지해서 next_pc = pc로 misalign시 pc_stall을 자체적으로 한다.
+이러면 Exception Detector가 동시에 jump_target이 misaligned 인지를 탐지하고 정상적으로 PTH를 수행할 수 있다. (20:32)
+바로 실행에 옮겨보자.
+
+된다... (20:35) PCC에서 자체적으로 pc_stall을 하게끔 했는데, 시뮬레이션이 이제 멈추지는 않는다.
+30번째 명령어가 제대로 파형에 찍혔다...
+이제 PTH 수행하도록 Exception Detector의 신호를 조정해보자.
+
+PTH로 잘 넘어간다!!! 
+trap_handle_status FSM도 잘 굴러가고 Trap Handler 주솟값으로 잘 분기했다!!!! (20:47)
+근데 내가 Trap Handler 루틴에서 CSR의 주소를 잘못 명령어에 인코딩한건지 동작이 의도한대로 되지 않았다.
+그래도 뭐가 잘못된건지 파형에 찍힐 정도로 명확한 사소한 트러블이라 큰 문제는 되지 않는다. 그냥 바로 수정하면 되니까.
+아.,.,., 이 문제였구나. 해결했다!!!
+마저 고쳐보자.
