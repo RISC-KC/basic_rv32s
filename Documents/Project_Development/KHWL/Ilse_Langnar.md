@@ -4985,3 +4985,8 @@ trap_handle_status FSM도 잘 굴러가고 Trap Handler 주솟값으로 잘 분�
 아.,.,., 이 문제였구나. 해결했다!!!
 
 Branch Logic에 변경사항을 반영시켜야겠다. 새 branch!
+완료. Branch Logic에 branch taken일 때만 주소를 계산하도록 기능을 추가하였다.
+이제 Branch Logic 모듈에 PC값과 imm 값이 들어가서 branch_target 주소를 덧셈 계산해 출력한다. 
+테스트벤치까지 마쳤다.
+
+Trap Handler에 어떤 문제가 있는지 살펴보고 수정해야겠다. instruction memory branch..
