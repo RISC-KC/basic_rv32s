@@ -1,5 +1,5 @@
 $date
-	Sun Mar  2 06:37:57 2025
+	Sun May 18 20:43:43 2025
 $end
 $version
 	Icarus Verilog
@@ -9,7 +9,7 @@ $timescale
 $end
 $scope module InstructionDecoder_tb $end
 $scope module instruction_decoder $end
-$var wire 32 ! instr [31:0] $end
+$var wire 32 ! instruction [31:0] $end
 $var reg 3 " funct3 [2:0] $end
 $var reg 7 # funct7 [6:0] $end
 $var reg 7 $ opcode [6:0] $end
