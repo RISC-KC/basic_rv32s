@@ -4981,6 +4981,7 @@ jump_target은 alu_result 신호이기에 이를 Exception Detector에 입력신
 PTH로 잘 넘어간다!!! 
 trap_handle_status FSM도 잘 굴러가고 Trap Handler 주솟값으로 잘 분기했다!!!! (20:47)
 근데 내가 Trap Handler 루틴에서 CSR의 주소를 잘못 명령어에 인코딩한건지 동작이 의도한대로 되지 않았다.
+mret 명령어로 기존 mepc 값 데이터로 분기가 안된다.
 그래도 뭐가 잘못된건지 파형에 찍힐 정도로 명확한 사소한 트러블이라 큰 문제는 되지 않는다. 그냥 바로 수정하면 되니까.
 아.,.,., 이 문제였구나. 해결했다!!!
 
@@ -4990,3 +4991,11 @@ Branch Logic에 변경사항을 반영시켜야겠다. 새 branch!
 테스트벤치까지 마쳤다.
 
 Trap Handler에 어떤 문제가 있는지 살펴보고 수정해야겠다. instruction memory branch..
+Instruction Memory data[1024]부터 시작하는 Trap Handler 에서
+csrrs x6, mcause, x0 을 하는게 목적이었는데, 명령어 인코딩을 12'h343으로 기존에 하여 프로그램이 틀어져 수행된 것을 확인하였다.
+12'h342로 mcause에 해당하는 CSR주소로 고쳤다. 그랬더니 PTH가 제대로 동작한다. 다 잘된다.
+
+아 EBREAK에서 뭔가 문제가 있다 사실 위에서도 pcc_op가 제대로 적용이 안되어 trap_target으로 분기가 안되는 문제도 있었지만 일단 해결했었는데..
+EBREAK 이후 EBREAK 내의 명령어가 실행되어야 하는데.. 디버그 명령어가 나오질 않는다... 왜지???
+
+오늘은 여기까지.. 시간이 다 됐다...
