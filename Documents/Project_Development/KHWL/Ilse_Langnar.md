@@ -4983,7 +4983,6 @@ trap_handle_status FSM도 잘 굴러가고 Trap Handler 주솟값으로 잘 분�
 근데 내가 Trap Handler 루틴에서 CSR의 주소를 잘못 명령어에 인코딩한건지 동작이 의도한대로 되지 않았다.
 mret 명령어로 기존 mepc 값 데이터로 분기가 안된다.
 그래도 뭐가 잘못된건지 파형에 찍힐 정도로 명확한 사소한 트러블이라 큰 문제는 되지 않는다. 그냥 바로 수정하면 되니까.
-아.,.,., 이 문제였구나. 해결했다!!!
 
 Branch Logic에 변경사항을 반영시켜야겠다. 새 branch!
 완료. Branch Logic에 branch taken일 때만 주소를 계산하도록 기능을 추가하였다.
@@ -4999,3 +4998,44 @@ csrrs x6, mcause, x0 을 하는게 목적이었는데, 명령어 인코딩을 12
 EBREAK 이후 EBREAK 내의 명령어가 실행되어야 하는데.. 디버그 명령어가 나오질 않는다... 왜지???
 
 오늘은 여기까지.. 시간이 다 됐다...
+
+# [2025.05.18.]
+Debug Instruction으로 왜 안넘어갈까.. 왜 파형이 debug_mode가 나올 PTH FSM단계에서 끊겼을까..
+debug 신호 자체가 애초에 올라가질 않는다.. 왜지?
+코드를 뜯어보며 조금씩 수정해보고 확인해보는데... 
+탑모듈에서 이러쿵저러쿵 하다가 안되어서 Instruction Decoder에 MUX를 넣어보았다. 
+instruction decoder에서 이제 instruction memory instruction과 debug instruction을 모두 받는다. debug mode도 식별한다.
+instruction decoder에서 debug_mode 코드를 debug모드일 때 아무것도 안하도록 헀더니 debug_mode 자체는 잘 올라가는데 instruction decoding은 안된다.
+뭐 당연하다. 근데 문제가, 이제 그걸 조건문 안에 넣어서 debug 모드 일 때도 디코딩을 수행하게끔 하면
+그냥 안에 preset으로 opcode = 7'b0001100이런거 그냥 넣어도 바로 해당 타이밍에서 freeze가 걸린다. 뭔가 문제가 있다.
+
+제어 신호를 그대로 받아서 그런가? 별도의 토글 플래그 레지스터를 만들어서 신호가 오면 1로 set되게 한번 해볼까?
+
+어라 이상하다. 탑모듈에서 이게... debug_mode 신호가 탑모듈과 trap_controller에서 파형이 안잡히는데, flag는 해당 타이밍에서 올라간다.
+뭔가가 신호가 다시 0이 되도록 하고 있다는 것 같다.
+Trap Controller에서 기존에 debug_mode의 기본값을 0으로 항상 잡아놓는 코드로 구성되어있는 것을 확인했다.
+어차피 debug_mode가 활성화 된 후 debugger에서 복귀하는데 MRET을 실행하고 MRET에는 debug mode를 0으로 되돌리도록 설계해두었기에 필요없는 내용일 것이라고 생각하여 없앴다.
+근데 아직도 안된다... 왜지...
+
+..
+설마설마 혹시나 싶어서 문법을 바꿔보았다.
+된다...
+
+기존에 if (debug_mode) begin
+	instruction = dbg_instruction
+end else begin
+	instruction = im_instruction
+end
+이걸
+
+if (debug mode) instruction = dbg_instruction
+else instruction = im_instruction으로 바꾸니까 된다...
+
+저기서 debug mode로만 하면 또 freeze가 걸린다. 저걸 flag로 치환하니 잘 된다.
+이제 여기에 ECALL로 debug 명령어로 정상 decoding되어 명령어가 수행된다..
+
+탑 모듈을 하나 따로 파서 종합적으로 디버깅을 하던 참이라 기록을 그때 그때 남기지 못해서 장장 5시간 연속에 걸친 디버깅 사고의 흐름을 모두 담아내지 못했지만,
+이렇게 RV32I46F의 완성이 되었다.
+
+탑 모듈로 Instruction Decoder의 MUX를 빼서 구현해보았는데 잘 된다. 
+완성... 2025.05.18. 12:01.
