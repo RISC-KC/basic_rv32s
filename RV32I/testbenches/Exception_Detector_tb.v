@@ -15,8 +15,8 @@ module ExceptionDetector_tb;
         .opcode(opcode),
 		.funct3(funct3),
 		.funct12(funct12),
-        .b_target_lsbs(branch_target[1:0]),
-		.j_target_lsbs(alu_result[1:0]),
+        .branch_target_lsbs(branch_target[1:0]),
+		.jump_target_lsbs(alu_result[1:0]),
 		
     	.trapped(trapped),
 		.trap_status(trap_status)
