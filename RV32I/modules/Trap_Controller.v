@@ -36,12 +36,12 @@ end
 
 always @(*) begin
     // default outputs
-    ic_clean             <= 1'b0;
-    csr_write_enable     <= 1'b0;
-    csr_trap_address     <= 12'b0;
-    csr_trap_write_data  <= 32'b0;
-    trap_target          <= 32'b0;
-    trap_done            <= 1'b1;
+    ic_clean             = 1'b0;
+    csr_write_enable     = 1'b0;
+    csr_trap_address     = 12'b0;
+    csr_trap_write_data  = 32'b0;
+    trap_target          = 32'b0;
+    trap_done            = 1'b1;
     // default next state
     next_trap_handle_state = IDLE;
 
@@ -82,6 +82,7 @@ always @(*) begin
                     if (trap_status == `TRAP_EBREAK)    csr_trap_write_data = 32'd3;
                     else if (trap_status == `TRAP_ECALL)    csr_trap_write_data = 32'd11;
                     else // TRAP_MISALIGNED
+                    csr_trap_write_data = 32'd0;
                     trap_done = 1'b0;
                     next_trap_handle_state = WRITE_MCAUSE;
                 end
