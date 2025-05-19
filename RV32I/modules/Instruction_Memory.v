@@ -102,10 +102,15 @@ module InstructionMemory (
 		data[45] = {12'd1, 5'd27, 3'b000, 5'd28, `OPCODE_JALR}; 					// JALR: x28 = PC + 4 = 000000B8; PC = x27 + 00000001 = 00000079 -> misaligned
 		// ──────────────────────────────────────────────
 		// Debug Interface 명령어 수행을 위한 전초 작업. 기존 x22 값 FFFF_FFBC 값을 더하는 ADD 명령어를 DI에서 수행할 예정.
-		data[46] = {20'hABADC, 5'd23, `OPCODE_LUI};									// LUI: x23 = ABAD_C000
-		data[47] = {12'hB02, 5'd23, `ITYPE_ADDI, 5'd23, `OPCODE_ITYPE};				// ADDI:  x23 = x23 + -4FE = ABAD_BB02
-		data[48] = {12'd1, 5'd0, 3'd0, 5'd0, `OPCODE_ENVIRONMENT};					// EBREAK: 
+		data[46] = {32'b11111011110000000000101100010011};							// ADDI:  x22 = x0 + -68(FBC) = FFFF_FFBC
+		data[47] = {20'hABADC, 5'd23, `OPCODE_LUI};									// LUI: x23 = ABAD_C000
+		data[48] = {12'hB02, 5'd23, `ITYPE_ADDI, 5'd23, `OPCODE_ITYPE};				// ADDI:  x23 = x23 + -4FE = ABAD_BB02
+		data[49] = {12'd1, 5'd0, 3'd0, 5'd0, `OPCODE_ENVIRONMENT};					// EBREAK: 
 																					// └ADD: x22 = x22 + x23. FFFF_FFBC(x22) + ABAD_BB02(x23) = ABAD_BABE(x22)
+		// ──────────────────────────────────────────────
+		// I-타입 HINT 명령어 (CSR 동작 확인)
+		// {imm[11:0], rs1, funct3, rd, OPCODE_ITYPE}
+		data[43] = {12'h2BC, 5'd0, `ITYPE_ADDI, 5'd0, `OPCODE_ITYPE};				// ADDI:  x0 = x0 + 2BC = 0000_0000													
 		// ──────────────────────────────────────────────
 		// Trap Handler 시작 주소. mtvec = 0000_1000 = 4096 ÷ 4 Byte = 1024
 		// Trap Handler 진입 시 기존 GPR의 레지스터 내용들을 별도의 메모리 Heap 구역에 store하고 수행해야하지만, 현재 단계에서는 생략함.
@@ -127,7 +132,7 @@ module InstructionMemory (
 		data[1031] = {12'hFF, 5'd2, `ITYPE_ADDI, 5'd2, `OPCODE_ITYPE};						//addi x2, x2, 255: 		x2 레지스터(BC00_0000)에 FF 값 더하기. x2 = BC00_00FF
 
 		//ESCAPE Trap Handler @ data[1032]
-		data[1032] = {7'b0011000, 5'b0, 5'b0, 3'b0, 5'b0, `OPCODE_ENVIRONMENT};				//MRET:						PC = CSR[mepc]
+		data[1032] = {7'b0011000, 5'b00010, 5'b0, 3'b0, 5'b0, `OPCODE_ENVIRONMENT};				//MRET:						PC = CSR[mepc]
 		
 	end
 	
