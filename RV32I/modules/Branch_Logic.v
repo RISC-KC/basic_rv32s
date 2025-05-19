@@ -12,31 +12,26 @@ module BranchLogic (
 );
 
     always @(*) begin
+		branch_target = pc + imm;
         if (branch) begin
 			case (funct3)
 				`BRANCH_BEQ: begin
 					branch_taken = alu_zero;
-					if (branch_taken) branch_target = pc + imm;
 				end
 				`BRANCH_BNE: begin
 					branch_taken = ~alu_zero;
-					if (branch_taken) branch_target = pc + imm;
 				end
 				`BRANCH_BLT: begin
 					branch_taken = ~alu_zero;
-					if (branch_taken) branch_target = pc + imm;
 				end
 				`BRANCH_BGE: begin
 					branch_taken = alu_zero;
-					if (branch_taken) branch_target = pc + imm;
 				end
 				`BRANCH_BLTU: begin
 					branch_taken = ~alu_zero;
-					if (branch_taken) branch_target = pc + imm;
 				end
 				`BRANCH_BGEU: begin
 					branch_taken = alu_zero;
-					if (branch_taken) branch_target = pc + imm;
 				end
 				default: begin
 					branch_taken = 0;
