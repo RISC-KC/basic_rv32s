@@ -4,17 +4,19 @@
 module ExceptionDetector_tb;
     reg [6:0] opcode;
 	reg [2:0] funct3;
-	reg [11:0] imm;
-	reg [31:0] next_pc;
+    reg [11:0] funct12;         // funct12 12-bit
+	reg [31:0] branch_target;   // branch target address
+	reg [31:0] alu_result;      // jump target address
 	
     wire trapped;
-	wire [1:0] trap_status;
+	wire [2:0] trap_status;
 
     ExceptionDetector exception_detector (
         .opcode(opcode),
 		.funct3(funct3),
-		.imm_0(imm[0]),
-		.next_pc_lsbs(next_pc[1:0]),
+		.funct12(funct12),
+        .b_target_lsbs(branch_target[1:0]),
+		.j_target_lsbs(alu_result[1:0]),
 		
     	.trapped(trapped),
 		.trap_status(trap_status)
@@ -26,8 +28,8 @@ module ExceptionDetector_tb;
 
         opcode = 7'b0;
 		funct3 = 3'b0;
-		imm = 12'b0;
-		next_pc = 32'b0;
+		funct12 = 12'b0;
+		alu_result = 32'b0;
 
         // Test 1: No exception
 		$display("\nNo exception: ");
@@ -38,43 +40,52 @@ module ExceptionDetector_tb;
         $display("opcode: %b, trapped: %b, trap_status: %b", opcode, trapped, trap_status);
 		
 		// Test 2: EBREAK/ECALL
-		$display("\nEBREAK/ECALL: ");
+		$display("\nEBREAK/ECALL/MRET: ");
 		
 		opcode = `OPCODE_ENVIRONMENT;
 		funct3 = 3'b000;
 		
-		imm = 12'b000000000001; #1;
-        $display("opcode: %b, imm_0: %b, trapped: %b, trap_status: %b", opcode, imm[0], trapped, trap_status);
+		funct12 = 12'b000000000001; #1;
+        $display("opcode: %b, funct12[0]: %b, trapped: %b, trap_status: %b", opcode, funct12[0], trapped, trap_status);
 		
-		imm = 12'b000000000000; #1;
-        $display("opcode: %b, imm_0: %b, trapped: %b, trap_status: %b", opcode, imm[0], trapped, trap_status);
+		funct12 = 12'b000000000000; #1;
+        $display("opcode: %b, funct12[0]: %b, trapped: %b, trap_status: %b", opcode, funct12[0], trapped, trap_status);
 		
+        funct12 = 12'b001100000010; #1;
+        $display("opcode: %b, funct12: %b, trapped: %b, trap_status: %b", opcode, funct12, trapped, trap_status);
+
         // Test 3: Address misaligned
 		$display("\nAddress misaligned: ");
 		
 		opcode = `OPCODE_BRANCH;
 		
-		next_pc = 32'h000000F0; #1;
-        $display("opcode: %b, next_pc: %h, trapped: %b, trap_status: %b", opcode, next_pc, trapped, trap_status);
+        $display("\nAligned Branch: ");
+		branch_target = 32'h000000F0; #1;
+        $display("opcode: %b, branch_target: %h, trapped: %b, trap_status: %b", opcode, branch_target, trapped, trap_status);
 
-        next_pc = 32'h000000F1; #1;
-        $display("opcode: %b, next_pc: %h, trapped: %b, trap_status: %b\n", opcode, next_pc, trapped, trap_status);
+        $display("\nMisaligned Branch: ");
+        branch_target = 32'h000000F1; #1;
+        $display("opcode: %b, branch_target: %h, trapped: %b, trap_status: %b", opcode, branch_target, trapped, trap_status);
 		
 		opcode = `OPCODE_JAL;
 		
-		next_pc = 32'h000000F0; #1;
-        $display("opcode: %b, next_pc: %h, trapped: %b, trap_status: %b", opcode, next_pc, trapped, trap_status);
+        $display("\nAligned Jump: ");
+		alu_result = 32'h000000F0; #1;
+        $display("opcode: %b, alu_result: %h, trapped: %b, trap_status: %b", opcode, alu_result, trapped, trap_status);
 
-        next_pc = 32'h000000F1; #1;
-        $display("opcode: %b, next_pc: %h, trapped: %b, trap_status: %b\n", opcode, next_pc, trapped, trap_status);
+        $display("\nMisaligned Jump: ");
+        alu_result = 32'h000000F1; #1;
+        $display("opcode: %b, alu_result: %h, trapped: %b, trap_status: %b\n", opcode, alu_result, trapped, trap_status);
 
         opcode = `OPCODE_JALR;
 		
-		next_pc = 32'h000000F0; #1;
-        $display("opcode: %b, next_pc: %h, trapped: %b, trap_status: %b", opcode, next_pc, trapped, trap_status);
+        $display("\nAligned Jump: ");
+		alu_result = 32'h000000F0; #1;
+        $display("opcode: %b, alu_result: %h, trapped: %b, trap_status: %b", opcode, alu_result, trapped, trap_status);
 
-        next_pc = 32'h000000F1; #1;
-        $display("opcode: %b, next_pc: %h, trapped: %b, trap_status: %b", opcode, next_pc, trapped, trap_status);
+        $display("\nMisaligned Jump: ");
+        alu_result = 32'h000000F1; #1;
+        $display("opcode: %b, alu_result: %h, trapped: %b, trap_status: %b", opcode, alu_result, trapped, trap_status);
 
         $display("\n====================  Exception Detector Test END  ====================");
 
