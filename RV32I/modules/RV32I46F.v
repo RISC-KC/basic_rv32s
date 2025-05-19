@@ -1,5 +1,4 @@
 `include "modules/Program_Counter.v"
-`include "modules/PC_Aligner.v"
 `include "modules/PC_Controller.v"
 `include "modules/PC_Plus_4.v"
 `include "modules/Instruction_Memory.v"
@@ -27,7 +26,6 @@ module RV32I46F (
     wire [31:0] pc;
     wire [31:0] pc_plus_4_signal;
 
-    wire [31:0] raw_next_pc;
     wire [31:0] next_pc;
 
     wire [31:0] im_instruction;
@@ -50,12 +48,13 @@ module RV32I46F (
 	wire [2:0] alu_src_B_select;
     wire memory_read;
 	wire memory_write;
-    wire pc_stall;
+    wire [2:0] pcc_op;
 	wire register_file_write;
 	wire [2:0] register_file_write_data_select;
     wire cu_csr_write_enable;
 
     wire branch_taken;
+    wire [31:0] branch_target;
 
     reg [31:0] register_file_write_data;
     
@@ -100,22 +99,14 @@ module RV32I46F (
         .pc(pc)
     );
 
-    PCAligner pc_aligner (
-        .raw_next_pc(raw_next_pc),
-        .next_pc(next_pc)
-    );
-
     PCController pc_controller (
-        .jump(jump),
-	    .branch_taken(branch_taken),
-	    .trapped(trapped),
+        .pcc_op(pcc_op),
 	    .pc(pc),
         .jump_target(alu_result),
-        .imm(imm),
+        .branch_target(branch_target),
 	    .trap_target(trap_target),
-	    .pc_stall(pc_stall),
 	
-	    .next_pc(raw_next_pc)
+	    .next_pc(next_pc)
     );
 
     PCPlus4 pc_plus_4 (
@@ -129,7 +120,10 @@ module RV32I46F (
     );
 
     InstructionDecoder instruction_decoder (
-        .instr(instruction),
+        /*.debug_mode(debug_mode),
+        .im_instruction(im_instruction),
+        .dbg_instruction(dbg_instruction),*/
+        .instruction(instruction),
         .opcode(opcode),
 	    .funct3(funct3),
 	    .funct7(funct7),
@@ -150,8 +144,9 @@ module RV32I46F (
 	    .opcode(opcode),
 	    .funct3(funct3),
         .trap_done(trap_done),
+        .trapped(trapped),
+        .branch_taken(branch_taken),
 
-        .jump(jump),
 	    .branch(branch),
 	    .alu_src_A_select(alu_src_A_select),
 	    .alu_src_B_select(alu_src_B_select),
@@ -159,8 +154,8 @@ module RV32I46F (
 	    .register_file_write_data_select(register_file_write_data_select),
 	    .memory_read(memory_read),
 	    .memory_write(memory_write),
-        .pc_stall(pc_stall),
-        .csr_write_enable(cu_csr_write_enable)
+        .csr_write_enable(cu_csr_write_enable),
+        .pcc_op(pcc_op)
     );
 
     RegisterFile register_file (
@@ -207,8 +202,11 @@ module RV32I46F (
         .branch(branch),
         .funct3(funct3),
         .alu_zero(alu_zero),
+        .pc(pc),
+        .imm(imm),
     
-        .branch_taken(branch_taken)
+        .branch_taken(branch_taken),
+        .branch_target(branch_target)
     );
 
     ByteEnableLogic byte_enable_logic (
@@ -237,9 +235,9 @@ module RV32I46F (
     ExceptionDetector exception_detector (
         .opcode(opcode),
         .funct3(funct3),
-        .funct7(funct7),
-        .imm_0(raw_imm[0]),
-        .next_pc_lsbs(next_pc[1:0]),
+        .funct12(raw_imm),
+        .j_target_lsbs(alu_result[1:0]),
+        .b_target_lsbs(branch_target[1:0]),
 
         .trapped(trapped),
         .trap_status(trap_status)
@@ -299,12 +297,8 @@ module RV32I46F (
             csr_address     = raw_imm[11:0];
         end
 
-        if (debug_mode) begin
-            instruction = dbg_instruction;
-        end
-        else begin
-            instruction = im_instruction;
-        end
+        if (debug_mode) instruction = dbg_instruction;
+        else instruction = im_instruction;
 
         case (register_file_write_data_select)
             `RF_WD_LOAD: begin
