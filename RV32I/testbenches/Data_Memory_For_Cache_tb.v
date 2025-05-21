@@ -1,15 +1,15 @@
 `timescale 1ns/1ps
 
-module DataMemory_tb;
+module DataMemoryForCache_tb;
     reg clk;
     reg write_enable;
     reg [31:0] address;
     reg [31:0] write_data;
     reg [3:0] write_mask;
 
-    wire [31:0] read_data; // If cached structure, modify to cache block size. e.g.) [255:0]
+    wire [255:0] read_data; 
 
-    DataMemory data_memory (
+    DataMemoryForCache data_memory_for_cache (
         .clk(clk),
         .write_enable(write_enable),
         .address(address),
@@ -22,8 +22,8 @@ module DataMemory_tb;
     always #5 clk = ~clk;
 
     initial begin
-        $dumpfile("testbenches/results/waveforms/Data_Memory_tb_result.vcd");
-        $dumpvars(0, data_memory);
+        $dumpfile("testbenches/results/waveforms/Data_Memory_For_Cache_tb_result.vcd");
+        $dumpvars(0, data_memory_for_cache);
 
         $display("==================== Data Memory Test START ====================");
 
