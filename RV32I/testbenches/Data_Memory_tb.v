@@ -7,7 +7,7 @@ module DataMemory_tb;
     reg [31:0] write_data;
     reg [3:0] write_mask;
 
-    wire [255:0] read_data;
+    wire [31:0] read_data; // If cached structure, modify to cache block size. e.g.) [255:0]
 
     DataMemory data_memory (
         .clk(clk),
