@@ -236,8 +236,8 @@ module RV32I46F (
         .opcode(opcode),
         .funct3(funct3),
         .funct12(raw_imm),
-        .j_target_lsbs(alu_result[1:0]),
-        .b_target_lsbs(branch_target[1:0]),
+        .jump_target_lsbs(alu_result[1:0]),
+        .branch_target_lsbs(branch_target[1:0]),
 
         .trapped(trapped),
         .trap_status(trap_status)
