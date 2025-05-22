@@ -1,5 +1,5 @@
 module ID_EX_Register #(
-    parameter XLEN = 32;
+    parameter XLEN = 32
 )(
     // pipeline register control signals
     input wire clk,
@@ -56,7 +56,7 @@ module ID_EX_Register #(
 );
 
 always @(posedge clk or posedge reset) begin
-    if (reset or flush) begin
+    if (reset || flush) begin
         EX_pc <= {XLEN{1'b0}};
         EX_pc_plus_4 <= {XLEN{1'b0}};
         EX_branch_estimation <= 1'b0;

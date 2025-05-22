@@ -1,0 +1,257 @@
+$date
+	Thu May 22 23:58:43 2025
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module ID_EX_Register_tb $end
+$scope module id_ex_register $end
+$var wire 2 ! ID_alu_src_A_select [1:0] $end
+$var wire 3 " ID_alu_src_B_select [2:0] $end
+$var wire 1 # ID_branch $end
+$var wire 1 $ ID_branch_estimation $end
+$var wire 32 % ID_csr_read_data [31:0] $end
+$var wire 3 & ID_funct3 [2:0] $end
+$var wire 7 ' ID_funct7 [6:0] $end
+$var wire 32 ( ID_imm [31:0] $end
+$var wire 1 ) ID_jump $end
+$var wire 1 * ID_memory_read $end
+$var wire 1 + ID_memory_write $end
+$var wire 7 , ID_opcode [6:0] $end
+$var wire 32 - ID_pc [31:0] $end
+$var wire 32 . ID_pc_plus_4 [31:0] $end
+$var wire 12 / ID_raw_imm [11:0] $end
+$var wire 32 0 ID_read_data1 [31:0] $end
+$var wire 32 1 ID_read_data2 [31:0] $end
+$var wire 3 2 ID_register_file_write_data_select [2:0] $end
+$var wire 5 3 ID_rs1 [4:0] $end
+$var wire 1 4 clk $end
+$var wire 1 5 flush $end
+$var wire 1 6 reset $end
+$var parameter 32 7 XLEN $end
+$var reg 2 8 EX_alu_src_A_select [1:0] $end
+$var reg 3 9 EX_alu_src_B_select [2:0] $end
+$var reg 1 : EX_branch $end
+$var reg 1 ; EX_branch_estimation $end
+$var reg 32 < EX_csr_read_data [31:0] $end
+$var reg 3 = EX_funct3 [2:0] $end
+$var reg 7 > EX_funct7 [6:0] $end
+$var reg 32 ? EX_imm [31:0] $end
+$var reg 1 @ EX_jump $end
+$var reg 1 A EX_memory_read $end
+$var reg 1 B EX_memory_write $end
+$var reg 7 C EX_opcode [6:0] $end
+$var reg 32 D EX_pc [31:0] $end
+$var reg 32 E EX_pc_plus_4 [31:0] $end
+$var reg 12 F EX_raw_imm [11:0] $end
+$var reg 32 G EX_read_data1 [31:0] $end
+$var reg 32 H EX_read_data2 [31:0] $end
+$var reg 3 I EX_register_file_write_data_select [2:0] $end
+$var reg 5 J EX_rs1 [4:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+b100000 7
+$end
+#0
+$dumpvars
+b0 J
+b0 I
+b0 H
+b0 G
+b0 F
+b0 E
+b0 D
+b0 C
+0B
+0A
+0@
+b0 ?
+b0 >
+b0 =
+b0 <
+0;
+0:
+b0 9
+b0 8
+16
+05
+04
+bx 3
+bx 2
+bx 1
+bx 0
+bx /
+bx .
+bx -
+bx ,
+x+
+x*
+x)
+bx (
+bx '
+bx &
+bx %
+x$
+x#
+bx "
+bx !
+$end
+#5000
+14
+#10000
+04
+#15000
+14
+#20000
+04
+#25000
+14
+#30000
+04
+06
+#35000
+bx <
+bx ?
+bx J
+bx H
+bx G
+bx F
+bx >
+bx =
+bx C
+bx 9
+bx 8
+x:
+bx I
+xB
+xA
+x@
+x;
+bx E
+bx D
+14
+#40000
+04
+#45000
+14
+#50000
+b0 %
+b0 (
+b1100 3
+b10111011101110111011101110111011 1
+b10101010101010101010101010101010 0
+b0 /
+b11110 '
+b10 &
+b11000 ,
+b1 2
+0+
+0*
+b10 "
+b1 !
+0#
+1)
+0$
+b100 .
+b0 -
+04
+#55000
+b0 <
+b0 ?
+b1100 J
+b10111011101110111011101110111011 H
+b10101010101010101010101010101010 G
+b0 F
+b11110 >
+b10 =
+b11000 C
+b10 9
+b1 8
+0:
+b1 I
+0B
+0A
+1@
+0;
+b100 E
+b0 D
+14
+#60000
+04
+#65000
+14
+#70000
+b101 3
+b1010 1
+b101 0
+b0 '
+b0 &
+b110011 ,
+b0 2
+b0 "
+b0 !
+0)
+04
+#75000
+b101 J
+b1010 H
+b101 G
+b0 >
+b0 =
+b110011 C
+b0 9
+b0 8
+b0 I
+0@
+14
+#76000
+15
+#80000
+04
+#85000
+b0 J
+b0 H
+b0 G
+b0 C
+b0 E
+14
+#86000
+b11110000 (
+b10 3
+b0 1
+b100 0
+b11110000 /
+b10 &
+b11 ,
+b1 2
+1*
+b1 "
+1#
+1$
+b10000000000000001000000000100 .
+b10000000000000001000000000000 -
+05
+#90000
+04
+#95000
+b11110000 ?
+b10 J
+b100 G
+b11110000 F
+b10 =
+b11 C
+b1 9
+1:
+b1 I
+1A
+1;
+b10000000000000001000000000100 E
+b10000000000000001000000000000 D
+14
+#96000
