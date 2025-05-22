@@ -4,8 +4,8 @@ module IF_ID_Register_tb;
     localparam XLEN = 32;
 
     reg clk = 0;
-    reg reset;
-    reg flush;
+    reg reset = 0;
+    reg flush = 0;
 
     reg [XLEN-1:0] IF_pc;
     reg [XLEN-1:0] IF_pc_plus_4;
