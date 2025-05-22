@@ -1,0 +1,114 @@
+$date
+	Thu May 22 22:51:40 2025
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module IF_ID_Register_tb $end
+$scope module if_id_register $end
+$var wire 1 ! IF_branch_estimation $end
+$var wire 32 " IF_instruction [31:0] $end
+$var wire 32 # IF_pc [31:0] $end
+$var wire 32 $ IF_pc_plus_4 [31:0] $end
+$var wire 1 % clk $end
+$var wire 1 & flush $end
+$var wire 1 ' reset $end
+$var parameter 32 ( XLEN $end
+$var reg 1 ) ID_branch_estimation $end
+$var reg 32 * ID_instruction [31:0] $end
+$var reg 32 + ID_pc [31:0] $end
+$var reg 32 , ID_pc_plus_4 [31:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+b100000 (
+$end
+#0
+$dumpvars
+b0 ,
+b0 +
+b0 *
+0)
+1'
+x&
+0%
+bx $
+bx #
+bx "
+x!
+$end
+#5000
+1%
+#10000
+0%
+#15000
+1%
+#20000
+0%
+#25000
+1%
+#30000
+0%
+0'
+#35000
+x)
+bx *
+bx ,
+bx +
+1%
+#40000
+0%
+#45000
+1%
+#50000
+0!
+b101011110000000000000010010011 "
+b100 $
+b0 #
+0%
+#55000
+0)
+b101011110000000000000010010011 *
+b100 ,
+b0 +
+1%
+#60000
+0%
+#65000
+1%
+#70000
+1!
+b10001000100010001000100010100 $
+b10001000100010001000100010000 #
+0%
+#75000
+1)
+b10001000100010001000100010100 ,
+b10001000100010001000100010000 +
+1%
+#76000
+1&
+#80000
+0%
+#85000
+0)
+b10011 *
+b0 ,
+b0 +
+1%
+#86000
+0&
+#90000
+0%
+#95000
+1)
+b101011110000000000000010010011 *
+b10001000100010001000100010100 ,
+b10001000100010001000100010000 +
+1%
+#96000

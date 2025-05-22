@@ -1,4 +1,4 @@
-module EX_MEM_Reg #(
+module EX_MEM_Register #(
     parameter XLEN = 32;
 )(
     // pipeline register control signals

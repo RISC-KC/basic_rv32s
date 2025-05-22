@@ -1,4 +1,4 @@
-module ID_EX_Reg #(
+module ID_EX_Register #(
     parameter XLEN = 32;
 )(
     // pipeline register control signals
@@ -22,7 +22,7 @@ module ID_EX_Reg #(
     input wire ID_memory_read,
     input wire ID_memory_write,
     input wire [2:0] ID_register_file_write_data_select,
-    input wire [6:0] ID_opcode,
+    input wire [6:0] ID_opcode, 
     input wire [2:0] ID_funct3,
     input wire [6:0] ID_funct7,
     input wire [11:0] ID_raw_imm,

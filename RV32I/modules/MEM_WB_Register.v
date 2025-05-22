@@ -1,4 +1,4 @@
-module MEM_WB_Reg #(
+module MEM_WB_Register #(
     parameter XLEN = 32;
 )(
     // pipeline register control signals
