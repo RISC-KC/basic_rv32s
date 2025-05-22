@@ -5161,3 +5161,7 @@ Hazardop로 데이터 해저드가 발생했음을 알고, 선행 명령어 A의
 ==========
 
 Hazard Unit, Forward Unit에 대한 설계 내용을 46F_5SP_Architecture 폴더에 정리해두었다.
+
+#[2025.05.22.]
+And now, the end is near.
+파이프라인들을 실제 파일로 설계해보자. 
