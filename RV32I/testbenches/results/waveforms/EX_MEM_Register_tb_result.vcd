@@ -1,0 +1,196 @@
+$date
+	Fri May 23 20:45:23 2025
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module EX_MEM_Register_tb $end
+$scope module ex_mem_register $end
+$var wire 32 ! EX_alu_result [31:0] $end
+$var wire 32 " EX_csr_read_data [31:0] $end
+$var wire 1 # EX_csr_write_enable $end
+$var wire 3 $ EX_funct3 [2:0] $end
+$var wire 32 % EX_imm [31:0] $end
+$var wire 1 & EX_memory_read $end
+$var wire 1 ' EX_memory_write $end
+$var wire 7 ( EX_opcode [6:0] $end
+$var wire 32 ) EX_pc_plus_4 [31:0] $end
+$var wire 32 * EX_read_data2 [31:0] $end
+$var wire 3 + EX_register_file_write_data_select [2:0] $end
+$var wire 1 , EX_register_write_enable $end
+$var wire 1 - clk $end
+$var wire 1 . flush $end
+$var wire 1 / reset $end
+$var parameter 32 0 XLEN $end
+$var reg 32 1 MEM_alu_result [31:0] $end
+$var reg 32 2 MEM_csr_read_data [31:0] $end
+$var reg 1 3 MEM_csr_write_enable $end
+$var reg 3 4 MEM_funct3 [2:0] $end
+$var reg 32 5 MEM_imm [31:0] $end
+$var reg 1 6 MEM_memory_read $end
+$var reg 1 7 MEM_memory_write $end
+$var reg 7 8 MEM_opcode [6:0] $end
+$var reg 32 9 MEM_pc_plus_4 [31:0] $end
+$var reg 32 : MEM_read_data2 [31:0] $end
+$var reg 3 ; MEM_register_file_write_data_select [2:0] $end
+$var reg 1 < MEM_register_write_enable $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+b100000 0
+$end
+#0
+$dumpvars
+0<
+b0 ;
+b0 :
+b0 9
+b0 8
+07
+06
+b0 5
+b0 4
+03
+b0 2
+b0 1
+1/
+0.
+0-
+x,
+bx +
+bx *
+bx )
+bx (
+x'
+x&
+bx %
+bx $
+x#
+bx "
+bx !
+$end
+#5000
+1-
+#10000
+0-
+#15000
+1-
+#20000
+0-
+#25000
+1-
+#30000
+0-
+0/
+#35000
+bx 2
+bx 5
+bx :
+bx 4
+bx 8
+x3
+x<
+bx ;
+x7
+x6
+bx 9
+1-
+#40000
+0-
+#45000
+1-
+#50000
+b10000000000000000000001000000 !
+b0 "
+b10000 %
+b11011110101011011011111011101111 *
+b10 $
+b100011 (
+0#
+1,
+b0 +
+1'
+0&
+b1000 )
+0-
+#55000
+b0 2
+b10000 5
+b11011110101011011011111011101111 :
+b10 4
+b100011 8
+03
+1<
+b0 ;
+17
+06
+b1000 9
+1-
+#60000
+0-
+#65000
+1-
+#70000
+b100000000000000000000000110000 !
+b11000 %
+b0 *
+b11 (
+1#
+0,
+b1 +
+0'
+1&
+b10000 )
+0-
+#75000
+b11000 5
+b0 :
+b11 8
+13
+0<
+b1 ;
+07
+16
+b10000 9
+1-
+#76000
+1.
+#80000
+0-
+#85000
+b0 5
+b0 4
+b0 8
+03
+b0 ;
+06
+b0 9
+1-
+#86000
+b1011 !
+b10010001101000101011001111000 "
+b0 %
+b110 *
+b0 $
+b110011 (
+1,
+b0 +
+0&
+b11000 )
+0.
+#90000
+0-
+#95000
+b10010001101000101011001111000 2
+b110 :
+b110011 8
+13
+1<
+b11000 9
+1-
+#96000
