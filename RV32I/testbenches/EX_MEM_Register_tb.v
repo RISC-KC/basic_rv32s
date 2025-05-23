@@ -16,6 +16,7 @@ module EX_MEM_Register_tb;
     reg EX_csr_write_enable;
     reg [6:0] EX_opcode; 
     reg [2:0] EX_funct3;
+    reg [4:0] EX_rd;
     reg [XLEN-1:0] EX_read_data2;
     reg [XLEN-1:0] EX_imm;
     reg [XLEN-1:0] EX_csr_read_data;
@@ -31,6 +32,7 @@ module EX_MEM_Register_tb;
     wire MEM_csr_write_enable;
     wire [6:0] MEM_opcode;
     wire [2:0] MEM_funct3;
+    wire [4:0] MEM_rd;
     wire [XLEN-1:0] MEM_read_data2;
     wire [XLEN-1:0] MEM_imm;
     wire [XLEN-1:0] MEM_csr_read_data;
@@ -51,6 +53,7 @@ module EX_MEM_Register_tb;
         .EX_csr_write_enable(EX_csr_write_enable),
         .EX_opcode(EX_opcode),
         .EX_funct3(EX_funct3),
+        .EX_rd(EX_rd),
         .EX_read_data2(EX_read_data2),
         .EX_imm(EX_imm),
         .EX_csr_read_data(EX_csr_read_data),
@@ -66,6 +69,7 @@ module EX_MEM_Register_tb;
         .MEM_csr_write_enable(MEM_csr_write_enable),
         .MEM_opcode(MEM_opcode),
         .MEM_funct3(MEM_funct3),
+        .MEM_rd(MEM_rd),
         .MEM_read_data2(MEM_read_data2),
         .MEM_imm(MEM_imm),
         .MEM_csr_read_data(MEM_csr_read_data),
@@ -90,8 +94,8 @@ module EX_MEM_Register_tb;
         $display("Input now");
         $display("|     PC+4     | MEMread | MEMwrite | CSR WE | RegF WE | RF_WD select |  opcode  | funct3 |");
         $display("|   %h   |    %b    |     %b    |    %b   |    %b    |      %b     |  %b  |  %b  |", MEM_pc_plus_4, MEM_memory_read, MEM_memory_write, MEM_register_write_enable, MEM_csr_write_enable, MEM_register_file_write_data_select, MEM_opcode, MEM_funct3);
-        $display("| Register RD2 |    imm    | csr_read_data |   ALU result   |");
-        $display("|   %h   |  %h |   %h    |    %h    |\n", MEM_read_data2, MEM_imm, MEM_csr_read_data, MEM_alu_result);
+        $display("| Register RD2 |    imm    | csr_read_data |   ALU result   |  rd  |");
+        $display("|   %h   |  %h |   %h    |    %h    |  %b  |\n", MEM_read_data2, MEM_imm, MEM_csr_read_data, MEM_alu_result, MEM_rd);
         #10;
         
         // Test 1
@@ -104,6 +108,7 @@ module EX_MEM_Register_tb;
         EX_csr_write_enable = 1'b0;
         EX_opcode                  = 7'b0100011;      // STORE opcode
         EX_funct3                  = 3'b010;          // SW
+        EX_rd                      = 5'b01100;
         EX_read_data2              = 32'hDEAD_BEEF;   // Write Data
         EX_imm                     = 32'h0000_0010;   // offset 16
         EX_csr_read_data           = 32'h0000_0000;   // no CSR
@@ -112,7 +117,8 @@ module EX_MEM_Register_tb;
         @(posedge clk); #1;
         $display("Test 1: Previous value should be output now");
         $display("|     PC+4     | MEMread | MEMwrite | CSR WE | RegF WE | RF_WD select |  opcode  | funct3 |");
-        $display("|   %h   |    %b    |     %b    |    %b   |    %b    |      %b     |  %b  |  %b  |", MEM_pc_plus_4, MEM_memory_read, MEM_memory_write, MEM_register_write_enable, MEM_csr_write_enable, MEM_register_file_write_data_select, MEM_opcode, MEM_funct3);
+        $display("| Register RD2 |    imm    | csr_read_data |   ALU result   |  rd  |");
+        $display("|   %h   |  %h |   %h    |    %h    |  %b  |\n", MEM_read_data2, MEM_imm, MEM_csr_read_data, MEM_alu_result, MEM_rd);
         $display("|   %h   |  %h |   %h    |    %h    |\n", MEM_read_data2, MEM_imm, MEM_csr_read_data, MEM_alu_result);
         
         // Test 2@(posedge clk); #1;
@@ -120,8 +126,8 @@ module EX_MEM_Register_tb;
         $display("Test 2: No input(should be same)");
         $display("|     PC+4     | MEMread | MEMwrite | CSR WE | RegF WE | RF_WD select |  opcode  | funct3 |");
         $display("|   %h   |    %b    |     %b    |    %b   |    %b    |      %b     |  %b  |  %b  |", MEM_pc_plus_4, MEM_memory_read, MEM_memory_write, MEM_register_write_enable, MEM_csr_write_enable, MEM_register_file_write_data_select, MEM_opcode, MEM_funct3);
-        $display("| Register RD2 |    imm    | csr_read_data |   ALU result   |");
-        $display("|   %h   |  %h |   %h    |    %h    |\n", MEM_read_data2, MEM_imm, MEM_csr_read_data, MEM_alu_result);
+        $display("| Register RD2 |    imm    | csr_read_data |   ALU result   |  rd  |");
+        $display("|   %h   |  %h |   %h    |    %h    |  %b  |\n", MEM_read_data2, MEM_imm, MEM_csr_read_data, MEM_alu_result, MEM_rd);
 
         // Test 3
         @(negedge clk); 
@@ -133,6 +139,7 @@ module EX_MEM_Register_tb;
         EX_csr_write_enable = 1'b1;
         EX_opcode                  = 7'b0000011;      // LOAD opcode
         EX_funct3                  = 3'b010;          // LW
+        EX_rd                      = 5'b01111;
         EX_read_data2              = 32'h0000_0000;   // no RD2
         EX_imm                     = 32'h0000_0018;   // offset 24
         EX_csr_read_data           = 32'h0000_0000;   // no CSR
@@ -140,15 +147,15 @@ module EX_MEM_Register_tb;
         $display("Test 3-1: new input now(should be same)");
         $display("|     PC+4     | MEMread | MEMwrite | CSR WE | RegF WE | RF_WD select |  opcode  | funct3 |");
         $display("|   %h   |    %b    |     %b    |    %b   |    %b    |      %b     |  %b  |  %b  |", MEM_pc_plus_4, MEM_memory_read, MEM_memory_write, MEM_register_write_enable, MEM_csr_write_enable, MEM_register_file_write_data_select, MEM_opcode, MEM_funct3);
-        $display("| Register RD2 |    imm    | csr_read_data |   ALU result   |");
-        $display("|   %h   |  %h |   %h    |    %h    |\n", MEM_read_data2, MEM_imm, MEM_csr_read_data, MEM_alu_result);
+        $display("| Register RD2 |    imm    | csr_read_data |   ALU result   |  rd  |");
+        $display("|   %h   |  %h |   %h    |    %h    |  %b  |\n", MEM_read_data2, MEM_imm, MEM_csr_read_data, MEM_alu_result, MEM_rd);
 
         @(posedge clk); #1;
         $display("Test 3-2: Test 3-1 input should be output now \n");
         $display("|     PC+4     | MEMread | MEMwrite | CSR WE | RegF WE | RF_WD select |  opcode  | funct3 |");
         $display("|   %h   |    %b    |     %b    |    %b   |    %b    |      %b     |  %b  |  %b  |", MEM_pc_plus_4, MEM_memory_read, MEM_memory_write, MEM_register_write_enable, MEM_csr_write_enable, MEM_register_file_write_data_select, MEM_opcode, MEM_funct3);
-        $display("| Register RD2 |    imm    | csr_read_data |   ALU result   |");
-        $display("|   %h   |  %h |   %h    |    %h    |\n", MEM_read_data2, MEM_imm, MEM_csr_read_data, MEM_alu_result);
+        $display("| Register RD2 |    imm    | csr_read_data |   ALU result   |  rd  |");
+        $display("|   %h   |  %h |   %h    |    %h    |  %b  |\n", MEM_read_data2, MEM_imm, MEM_csr_read_data, MEM_alu_result, MEM_rd);
 
         flush = 1'b1; #10;
         flush = 1'b0;
@@ -157,8 +164,8 @@ module EX_MEM_Register_tb;
         $display("Test 4: Flushed (should be NOP and zero)");
         $display("|     PC+4     | MEMread | MEMwrite | CSR WE | RegF WE | RF_WD select |  opcode  | funct3 |");
         $display("|   %h   |    %b    |     %b    |    %b   |    %b    |      %b     |  %b  |  %b  |", MEM_pc_plus_4, MEM_memory_read, MEM_memory_write, MEM_register_write_enable, MEM_csr_write_enable, MEM_register_file_write_data_select, MEM_opcode, MEM_funct3);
-        $display("| Register RD2 |    imm    | csr_read_data |   ALU result   |");
-        $display("|   %h   |  %h |   %h    |    %h    |\n", MEM_read_data2, MEM_imm, MEM_csr_read_data, MEM_alu_result);
+        $display("| Register RD2 |    imm    | csr_read_data |   ALU result   |  rd  |");
+        $display("|   %h   |  %h |   %h    |    %h    |  %b  |\n", MEM_read_data2, MEM_imm, MEM_csr_read_data, MEM_alu_result, MEM_rd);
 
         EX_pc_plus_4               = 32'h0000_0018;   // (PC+4)
         EX_memory_read             = 1'b0;            // no MEM
@@ -168,6 +175,7 @@ module EX_MEM_Register_tb;
         EX_csr_write_enable = 1'b1;
         EX_opcode                  = 7'b0110011;      // R-type
         EX_funct3                  = 3'b000;          // ADD
+        EX_rd                      = 5'b010011;
         EX_read_data2              = 32'h0000_0006;   // (dont-care)
         EX_imm                     = 32'h0000_0000;
         EX_csr_read_data           = 32'h1234_5678;   // dummy CSR test value for pipeline
@@ -175,14 +183,14 @@ module EX_MEM_Register_tb;
         $display("Test 5-1: Input begin (should be same)");
         $display("|     PC+4     | MEMread | MEMwrite | CSR WE | RegF WE | RF_WD select |  opcode  | funct3 |");
         $display("|   %h   |    %b    |     %b    |    %b   |    %b    |      %b     |  %b  |  %b  |", MEM_pc_plus_4, MEM_memory_read, MEM_memory_write, MEM_register_write_enable, MEM_csr_write_enable, MEM_register_file_write_data_select, MEM_opcode, MEM_funct3);
-        $display("| Register RD2 |    imm    | csr_read_data |   ALU result   |");
-        $display("|   %h   |  %h |   %h    |    %h    |\n", MEM_read_data2, MEM_imm, MEM_csr_read_data, MEM_alu_result);
+        $display("| Register RD2 |    imm    | csr_read_data |   ALU result   |  rd  |");
+        $display("|   %h   |  %h |   %h    |    %h    |  %b  |\n", MEM_read_data2, MEM_imm, MEM_csr_read_data, MEM_alu_result, MEM_rd);
         #10;
         $display("Test 5-2: Test 5-1's input should be output now");
         $display("|     PC+4     | MEMread | MEMwrite | CSR WE | RegF WE | RF_WD select |  opcode  | funct3 |");
         $display("|   %h   |    %b    |     %b    |    %b   |    %b    |      %b     |  %b  |  %b  |", MEM_pc_plus_4, MEM_memory_read, MEM_memory_write, MEM_register_write_enable, MEM_csr_write_enable, MEM_register_file_write_data_select, MEM_opcode, MEM_funct3);
-        $display("| Register RD2 |    imm    | csr_read_data |   ALU result   |");
-        $display("|   %h   |  %h |   %h    |    %h    |\n", MEM_read_data2, MEM_imm, MEM_csr_read_data, MEM_alu_result);
+        $display("| Register RD2 |    imm    | csr_read_data |   ALU result   |  rd  |");
+        $display("|   %h   |  %h |   %h    |    %h    |  %b  |\n", MEM_read_data2, MEM_imm, MEM_csr_read_data, MEM_alu_result, MEM_rd);
 
         $display("\n====================  EX_MEM Register Test END  ====================");
 
