@@ -5165,3 +5165,27 @@ Hazard Unit, Forward Unit에 대한 설계 내용을 46F_5SP_Architecture 폴더
 #[2025.05.22.]
 And now, the end is near.
 파이프라인들을 실제 파일로 설계해보자. 
+IF_ID Register
+ID_EX Register
+EX_MEM Register
+MEM_WB Register
+총 4개의 파이프라인 레지스터를 만들었다. 모두 RV32I46F_5SP_R1 다이어그램을 따른다.
+
+IF_ID Register, ID_EX Register까지 테스트벤치를 마쳤고, reset신호와 flush 신호, 그리고 파이프라인 레지스터의 다음 클럭에 현재 값 출력 로직까지 모두 검증하였다. 
+내일은 EX_MEM, MEM_WB 레지스터의 테스트 벤치를 해야한다.
+오늘은 여기까지. 테스트벤치까지 잘 돌아가서 할당량에는 못미치지만 만족했다. 얼른 내일이 찾아왔으면.
+
+#[2025.05.23.]
+개인정비시간. MEM_WB 레지스터까지 테스트벤치를 모두 마쳤다. 
+20:06.
+아차. 지금보니까 Register File의 Write Enable 신호와 CSR File의 Write Enable 신호를 파이프라이닝 해두지 않은 것을 확인했다.
+이러면 안되는데. 애초에 Write Back 과정이 Register Write back인데 이러면 논리적으로 맞지 않는다. 
+CSR의 Write Enable은 Trap Controller에서 나오는 과정이 정상적인 프로그램 수행이 아니라 예외적 수행이므로 파이프라인이 flush되며 즉시 수행해야하는 것이니
+이렇게 직접 연결 (direct) 해도 되지만, 여전히 Zicsr 같은 정규 프로그램 명령어를 위해 Control Unit에서 나오는 CSR Write Enable 신호는 파이프라이닝 되는 것이 맞다.
+해결했다. ID_EX, EX_MEM, MEM_WB 레지스터 모두에 register_write_enable신호와 csr_write_enable 신호를 추가하였다. 테스트벤치도 모두 마쳤다.
+이제 기존 RV32I46F에서 5SP(5-Stage Pipeline) 탑 모듈을 만들어서 파이프라인 레지스터와 배선을 연결하여 1차적으로 동작을 확인해야겠다.
+물론, 명령어들이 데이터 해저드를 일으키게끔 선행 명령어-후행 명령어 유기성을 가지고 있기에 값은 이상하게 나오겠지만 동작하는가?를 보는데 일단 1차 확인의 의의를 둔다. 
+20:46.
+
+---연등시간---
+연등시간. 밀린 devlog를 쓰고 이제 위에서 말한 탑모듈 1차 작업에 착수한다. 22:19.
