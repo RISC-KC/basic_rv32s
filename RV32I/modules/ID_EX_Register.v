@@ -22,6 +22,8 @@ module ID_EX_Register #(
     input wire ID_memory_read,
     input wire ID_memory_write,
     input wire [2:0] ID_register_file_write_data_select,
+    input wire ID_register_write_enable,
+    input wire ID_csr_write_enable,
     input wire [6:0] ID_opcode, 
     input wire [2:0] ID_funct3,
     input wire [6:0] ID_funct7,
@@ -41,6 +43,8 @@ module ID_EX_Register #(
     output reg EX_memory_read,
     output reg EX_memory_write,
     output reg [2:0] EX_register_file_write_data_select,
+    output reg EX_register_write_enable,
+    output reg EX_csr_write_enable,
     output reg EX_branch,
     output reg [1:0] EX_alu_src_A_select,
     output reg [2:0] EX_alu_src_B_select,
@@ -65,6 +69,8 @@ always @(posedge clk or posedge reset) begin
         EX_memory_read <= 1'b0;
         EX_memory_write <= 1'b0;
         EX_register_file_write_data_select <= 3'b0;
+        EX_register_write_enable <= 1'b0;
+        EX_csr_write_enable <= 1'b0;
         EX_branch <= 1'b0;
         EX_alu_src_A_select <= 2'b0;
         EX_alu_src_B_select <= 3'b0;
@@ -86,6 +92,8 @@ always @(posedge clk or posedge reset) begin
         EX_memory_read <= ID_memory_read;
         EX_memory_write <= ID_memory_write;
         EX_register_file_write_data_select <= ID_register_file_write_data_select;
+        EX_register_write_enable <= ID_register_write_enable;
+        EX_csr_write_enable <= ID_csr_write_enable;
         EX_branch <= ID_branch;
         EX_alu_src_A_select <= ID_alu_src_A_select;
         EX_alu_src_B_select <= ID_alu_src_B_select;

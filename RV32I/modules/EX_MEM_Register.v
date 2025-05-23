@@ -12,6 +12,8 @@ module EX_MEM_Register #(
     input wire EX_memory_read,
     input wire EX_memory_write,
     input wire [2:0] EX_register_file_write_data_select,
+    input wire EX_register_write_enable,
+    input wire EX_csr_write_enable,
     input wire [6:0] EX_opcode,
     input wire [2:0] EX_funct3,
     input wire [XLEN-1:0] EX_read_data2, // Register File to Data Memory read data
@@ -27,6 +29,8 @@ module EX_MEM_Register #(
     output reg MEM_memory_read,
     output reg MEM_memory_write,
     output reg [2:0] MEM_register_file_write_data_select,
+    output reg MEM_register_write_enable,
+    output reg MEM_csr_write_enable,
     output reg [6:0] MEM_opcode,
     output reg [2:0] MEM_funct3,
     output reg [XLEN-1:0] MEM_read_data2,
@@ -43,6 +47,8 @@ always @(posedge clk or posedge reset) begin
         MEM_memory_read <= 1'b0;
         MEM_memory_write <= 1'b0;
         MEM_register_file_write_data_select <= 3'b0;
+        MEM_register_write_enable <= 1'b0;
+        MEM_csr_write_enable <= 1'b0;
         MEM_opcode <= 7'b0;
         MEM_funct3 <= 3'b0;
         MEM_read_data2 <= {XLEN{1'b0}};
@@ -56,6 +62,8 @@ always @(posedge clk or posedge reset) begin
         MEM_memory_read <= EX_memory_read;
         MEM_memory_write <= EX_memory_write;
         MEM_register_file_write_data_select <= EX_register_file_write_data_select;
+        MEM_register_write_enable <= EX_register_write_enable;
+        MEM_csr_write_enable <= EX_csr_write_enable;
         MEM_opcode <= EX_opcode;
         MEM_funct3 <= EX_funct3;
         MEM_read_data2 <= EX_read_data2;
