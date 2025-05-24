@@ -5206,3 +5206,32 @@ Reg Write 신호가 파이프라이닝 되었다는 것 자체가 쓰기 주소�
 **PC_Controller** 모듈에서 저번에 PCC_op 코드를 뺐었는데, 향후 Branch 시 `Branch Target` 주솟값은 **Branch_Predictor**에서 담당하기 때문에 현재 롤백된 PC_Controller에 있던 imm값을 없애고, `branch_target` 신호를 추가하였다. 
 
 이제 Hazard Unit을 설계해보자.
+
+Hazard Unit을 모두 설계했다.
+flush 관련 부분을 설계하면서 조금 의아해진 부분이 있어 검토를 다시 해봤는데,
+jump 명령어 수행시나 branch prediction이 틀렸을 때 파이프라인 레지스터들을 flush해야한다.
+해당 정보가 나오는 순간은 EX 단계이며, EX/MEM, MEM/WB에 담긴 정보는 해당 순간 선행 명령어이므로
+flush 되면 안된다. 때문에 해당 레지스터들에 대한 flush 신호는 필요없다.
+(명령어상에서 특정 파이프라인을 flush하라는게 있는 것도 아니고)
+남은건 IF/ID, ID/EX인데, ID/EX를 flush했다간 현재 jump/branch prediction judgement EX 단계의 진행 맥락을 잃어버리므로 ID/EX는 flush해선 안된다. 
+때문에 IF_ID_Register만 flush하는 것으로 결정했다.
+물론 탑모듈에서 합성하다보면 알겠지 하하. 
+
+이렇게 Hazard Unit에 대한 설계가 끝났고, 테스트벤치도 완료되었다.
+코드를 짜면서, Hazard op 신호에 대해 애로사항이 좀 있었는데,
+combinational logic을 구성하는 특성상 초깃값을 hazard_op = 0;을 잡고
+조건문 충족 시 hazard_op = 1'b0; 을 하는 경우가 대부분이다.
+허나 이렇게 하면 파형에서 순간적인 펄스만 생성되고 코드에 따라 다시 0으로 돌아가버려서
+해당 로직을 수행하기 위한 시간이 없어지는데
+이를 해결하기 위해서 flag를 넣어 조건문 안에 hazard_op대신 hazard_flag를 두고
+그 밖에서 hazard_op = hazard_flag로 하여 해당 신호의 변화 이전까지 combinational logic에서도 값을 유지할 수 있다는 것을 알게 되었고 구현할 수 있었다.
+
+예전에 RV32I46F 싱글 사이클 모듈 구현할 때 debug_mode 에대한 경험이 이번 문제를 수월하게 넘어가게 해주었다.
+단번에 펄스 현상 때문에 tb에서 원하는 결과값이 나오지 않는 다는 것을 유추할 수 있었고
+로직에 대해서도 직관적으로 틀린 부분이 없다는 것도 단박에 알 수 있었다. 
+flag를 한번 그 때처럼 해보자 그 때도 됐었으니까 하는 것도 한 몫했고.
+어디서 본 적 없는 내 아이디어긴 한데, 다들 이런 식으로 하지 않을까 싶다. 
+
+연등 시간 끝.
+아.. 주말외출만 아니었어도 2비트 Branch Predictor까지 만들 수 있었을 것 같은데..
+내일 그래도 어느정도 할 수 있을 것 같다.
