@@ -7,31 +7,33 @@
 :vpi_module "C:\iverilog\lib\ivl\vhdl_textio.vpi";
 :vpi_module "C:\iverilog\lib\ivl\v2005_math.vpi";
 :vpi_module "C:\iverilog\lib\ivl\va_math.vpi";
-S_0000022fd97b4b00 .scope module, "MEM_WB_Register_tb" "MEM_WB_Register_tb" 2 3;
+S_0000025acd5ec190 .scope module, "MEM_WB_Register_tb" "MEM_WB_Register_tb" 2 3;
  .timescale -9 -12;
-P_0000022fd98d95e0 .param/l "XLEN" 1 2 4, +C4<00000000000000000000000000100000>;
-v0000022fd983ad40_0 .var "MEM_alu_result", 31 0;
-v0000022fd983a5c0_0 .var "MEM_csr_read_data", 31 0;
-v0000022fd983a660_0 .var "MEM_csr_write_enable", 0 0;
-v0000022fd983ade0_0 .var "MEM_imm", 31 0;
-v0000022fd983b4c0_0 .var "MEM_pc_plus_4", 31 0;
-v0000022fd983af20_0 .var "MEM_register_file_write_data", 31 0;
-v0000022fd983ae80_0 .var "MEM_register_file_write_data_select", 2 0;
-v0000022fd983a980_0 .var "MEM_register_write_enable", 0 0;
-v0000022fd983a700_0 .net "WB_alu_result", 31 0, v0000022fd97e02e0_0;  1 drivers
-v0000022fd983b060_0 .net "WB_csr_read_data", 31 0, v0000022fd97d7690_0;  1 drivers
-v0000022fd983a8e0_0 .net "WB_csr_write_enable", 0 0, v0000022fd97a8bd0_0;  1 drivers
-v0000022fd983a7a0_0 .net "WB_imm", 31 0, v0000022fd97a9fa0_0;  1 drivers
-v0000022fd983b240_0 .net "WB_pc_plus_4", 31 0, v0000022fd983b420_0;  1 drivers
-v0000022fd983b2e0_0 .net "WB_register_file_write_data", 31 0, v0000022fd983b100_0;  1 drivers
-v0000022fd983b380_0 .net "WB_register_file_write_data_select", 2 0, v0000022fd983aca0_0;  1 drivers
-v0000022fd983aa20_0 .net "WB_register_write_enable", 0 0, v0000022fd983ab60_0;  1 drivers
-v0000022fd983aac0_0 .var "clk", 0 0;
-v0000022fd983cbb0_0 .var "flush", 0 0;
-v0000022fd983cf70_0 .var "reset", 0 0;
-E_0000022fd98d97e0 .event posedge, v0000022fd983ac00_0;
-E_0000022fd98d98a0 .event negedge, v0000022fd983ac00_0;
-S_0000022fd97db390 .scope module, "mem_wb_register" "MEM_WB_Register" 2 34, 3 1 0, S_0000022fd97b4b00;
+P_0000025acd617d00 .param/l "XLEN" 1 2 4, +C4<00000000000000000000000000100000>;
+v0000025acd6853c0_0 .var "MEM_alu_result", 31 0;
+v0000025acd685320_0 .var "MEM_csr_read_data", 31 0;
+v0000025acd685820_0 .var "MEM_csr_write_enable", 0 0;
+v0000025acd685460_0 .var "MEM_imm", 31 0;
+v0000025acd684e20_0 .var "MEM_pc_plus_4", 31 0;
+v0000025acd685500_0 .var "MEM_rd", 4 0;
+v0000025acd6856e0_0 .var "MEM_register_file_write_data", 31 0;
+v0000025acd684f60_0 .var "MEM_register_file_write_data_select", 2 0;
+v0000025acd685000_0 .var "MEM_register_write_enable", 0 0;
+v0000025acd685140_0 .net "WB_alu_result", 31 0, v0000025acd5a68d0_0;  1 drivers
+v0000025acd6851e0_0 .net "WB_csr_read_data", 31 0, v0000025acd684c40_0;  1 drivers
+v0000025acd6855a0_0 .net "WB_csr_write_enable", 0 0, v0000025acd684ec0_0;  1 drivers
+v0000025acd685640_0 .net "WB_imm", 31 0, v0000025acd685960_0;  1 drivers
+v0000025acd685780_0 .net "WB_pc_plus_4", 31 0, v0000025acd684ba0_0;  1 drivers
+v0000025acd6861f0_0 .net "WB_rd", 4 0, v0000025acd685280_0;  1 drivers
+v0000025acd687050_0 .net "WB_register_file_write_data", 31 0, v0000025acd685a00_0;  1 drivers
+v0000025acd687870_0 .net "WB_register_file_write_data_select", 2 0, v0000025acd684b00_0;  1 drivers
+v0000025acd685cf0_0 .net "WB_register_write_enable", 0 0, v0000025acd6858c0_0;  1 drivers
+v0000025acd686970_0 .var "clk", 0 0;
+v0000025acd6868d0_0 .var "flush", 0 0;
+v0000025acd6879b0_0 .var "reset", 0 0;
+E_0000025acd617a00 .event posedge, v0000025acd684ce0_0;
+E_0000025acd617580 .event negedge, v0000025acd684ce0_0;
+S_0000025acd5ec320 .scope module, "mem_wb_register" "MEM_WB_Register" 2 36, 3 1 0, S_0000025acd5ec190;
  .timescale 0 0;
     .port_info 0 /INPUT 1 "clk";
     .port_info 1 /INPUT 1 "reset";
@@ -43,218 +45,232 @@ S_0000022fd97db390 .scope module, "mem_wb_register" "MEM_WB_Register" 2 34, 3 1 
     .port_info 7 /INPUT 32 "MEM_alu_result";
     .port_info 8 /INPUT 1 "MEM_register_write_enable";
     .port_info 9 /INPUT 1 "MEM_csr_write_enable";
-    .port_info 10 /INPUT 32 "MEM_register_file_write_data";
-    .port_info 11 /OUTPUT 32 "WB_pc_plus_4";
-    .port_info 12 /OUTPUT 3 "WB_register_file_write_data_select";
-    .port_info 13 /OUTPUT 32 "WB_imm";
-    .port_info 14 /OUTPUT 32 "WB_csr_read_data";
-    .port_info 15 /OUTPUT 32 "WB_alu_result";
-    .port_info 16 /OUTPUT 1 "WB_register_write_enable";
-    .port_info 17 /OUTPUT 1 "WB_csr_write_enable";
-    .port_info 18 /OUTPUT 32 "WB_register_file_write_data";
-P_0000022fd98d9560 .param/l "XLEN" 0 3 2, +C4<00000000000000000000000000100000>;
-v0000022fd97ac470_0 .net "MEM_alu_result", 31 0, v0000022fd983ad40_0;  1 drivers
-v0000022fd98d6fa0_0 .net "MEM_csr_read_data", 31 0, v0000022fd983a5c0_0;  1 drivers
-v0000022fd97b8ff0_0 .net "MEM_csr_write_enable", 0 0, v0000022fd983a660_0;  1 drivers
-v0000022fd97b4c90_0 .net "MEM_imm", 31 0, v0000022fd983ade0_0;  1 drivers
-v0000022fd98dbf10_0 .net "MEM_pc_plus_4", 31 0, v0000022fd983b4c0_0;  1 drivers
-v0000022fd97ae8d0_0 .net "MEM_register_file_write_data", 31 0, v0000022fd983af20_0;  1 drivers
-v0000022fd97e11e0_0 .net "MEM_register_file_write_data_select", 2 0, v0000022fd983ae80_0;  1 drivers
-v0000022fd97da4d0_0 .net "MEM_register_write_enable", 0 0, v0000022fd983a980_0;  1 drivers
-v0000022fd97e02e0_0 .var "WB_alu_result", 31 0;
-v0000022fd97d7690_0 .var "WB_csr_read_data", 31 0;
-v0000022fd97a8bd0_0 .var "WB_csr_write_enable", 0 0;
-v0000022fd97a9fa0_0 .var "WB_imm", 31 0;
-v0000022fd983b420_0 .var "WB_pc_plus_4", 31 0;
-v0000022fd983b100_0 .var "WB_register_file_write_data", 31 0;
-v0000022fd983aca0_0 .var "WB_register_file_write_data_select", 2 0;
-v0000022fd983ab60_0 .var "WB_register_write_enable", 0 0;
-v0000022fd983ac00_0 .net "clk", 0 0, v0000022fd983aac0_0;  1 drivers
-v0000022fd983afc0_0 .net "flush", 0 0, v0000022fd983cbb0_0;  1 drivers
-v0000022fd983b1a0_0 .net "reset", 0 0, v0000022fd983cf70_0;  1 drivers
-E_0000022fd98d9260 .event posedge, v0000022fd983b1a0_0, v0000022fd983ac00_0;
-    .scope S_0000022fd97db390;
+    .port_info 10 /INPUT 5 "MEM_rd";
+    .port_info 11 /INPUT 32 "MEM_register_file_write_data";
+    .port_info 12 /OUTPUT 32 "WB_pc_plus_4";
+    .port_info 13 /OUTPUT 3 "WB_register_file_write_data_select";
+    .port_info 14 /OUTPUT 32 "WB_imm";
+    .port_info 15 /OUTPUT 32 "WB_csr_read_data";
+    .port_info 16 /OUTPUT 32 "WB_alu_result";
+    .port_info 17 /OUTPUT 1 "WB_register_write_enable";
+    .port_info 18 /OUTPUT 1 "WB_csr_write_enable";
+    .port_info 19 /OUTPUT 5 "WB_rd";
+    .port_info 20 /OUTPUT 32 "WB_register_file_write_data";
+P_0000025acd6171c0 .param/l "XLEN" 0 3 2, +C4<00000000000000000000000000100000>;
+v0000025acd5eb2f0_0 .net "MEM_alu_result", 31 0, v0000025acd6853c0_0;  1 drivers
+v0000025acd5e9e60_0 .net "MEM_csr_read_data", 31 0, v0000025acd685320_0;  1 drivers
+v0000025acd5a6fa0_0 .net "MEM_csr_write_enable", 0 0, v0000025acd685820_0;  1 drivers
+v0000025acd5f9060_0 .net "MEM_imm", 31 0, v0000025acd685460_0;  1 drivers
+v0000025acd621320_0 .net "MEM_pc_plus_4", 31 0, v0000025acd684e20_0;  1 drivers
+v0000025acd5f20e0_0 .net "MEM_rd", 4 0, v0000025acd685500_0;  1 drivers
+v0000025acd5f2180_0 .net "MEM_register_file_write_data", 31 0, v0000025acd6856e0_0;  1 drivers
+v0000025acd5f2220_0 .net "MEM_register_file_write_data_select", 2 0, v0000025acd684f60_0;  1 drivers
+v0000025acd5f22c0_0 .net "MEM_register_write_enable", 0 0, v0000025acd685000_0;  1 drivers
+v0000025acd5a68d0_0 .var "WB_alu_result", 31 0;
+v0000025acd684c40_0 .var "WB_csr_read_data", 31 0;
+v0000025acd684ec0_0 .var "WB_csr_write_enable", 0 0;
+v0000025acd685960_0 .var "WB_imm", 31 0;
+v0000025acd684ba0_0 .var "WB_pc_plus_4", 31 0;
+v0000025acd685280_0 .var "WB_rd", 4 0;
+v0000025acd685a00_0 .var "WB_register_file_write_data", 31 0;
+v0000025acd684b00_0 .var "WB_register_file_write_data_select", 2 0;
+v0000025acd6858c0_0 .var "WB_register_write_enable", 0 0;
+v0000025acd684ce0_0 .net "clk", 0 0, v0000025acd686970_0;  1 drivers
+v0000025acd6850a0_0 .net "flush", 0 0, v0000025acd6868d0_0;  1 drivers
+v0000025acd684d80_0 .net "reset", 0 0, v0000025acd6879b0_0;  1 drivers
+E_0000025acd6176c0 .event posedge, v0000025acd684d80_0, v0000025acd684ce0_0;
+    .scope S_0000025acd5ec320;
 T_0 ;
-    %wait E_0000022fd98d9260;
-    %load/vec4 v0000022fd983b1a0_0;
+    %wait E_0000025acd6176c0;
+    %load/vec4 v0000025acd684d80_0;
     %flag_set/vec4 8;
     %jmp/1 T_0.2, 8;
-    %load/vec4 v0000022fd983afc0_0;
+    %load/vec4 v0000025acd6850a0_0;
     %flag_set/vec4 9;
     %flag_or 8, 9;
 T_0.2;
     %jmp/0xz  T_0.0, 8;
     %pushi/vec4 0, 0, 32;
-    %assign/vec4 v0000022fd983b420_0, 0;
+    %assign/vec4 v0000025acd684ba0_0, 0;
     %pushi/vec4 0, 0, 3;
-    %assign/vec4 v0000022fd983aca0_0, 0;
+    %assign/vec4 v0000025acd684b00_0, 0;
     %pushi/vec4 0, 0, 32;
-    %assign/vec4 v0000022fd97a9fa0_0, 0;
+    %assign/vec4 v0000025acd685960_0, 0;
     %pushi/vec4 0, 0, 32;
-    %assign/vec4 v0000022fd97d7690_0, 0;
+    %assign/vec4 v0000025acd684c40_0, 0;
     %pushi/vec4 0, 0, 32;
-    %assign/vec4 v0000022fd97e02e0_0, 0;
+    %assign/vec4 v0000025acd5a68d0_0, 0;
     %pushi/vec4 0, 0, 1;
-    %assign/vec4 v0000022fd983ab60_0, 0;
+    %assign/vec4 v0000025acd6858c0_0, 0;
     %pushi/vec4 0, 0, 1;
-    %assign/vec4 v0000022fd97a8bd0_0, 0;
+    %assign/vec4 v0000025acd684ec0_0, 0;
+    %pushi/vec4 0, 0, 5;
+    %assign/vec4 v0000025acd685280_0, 0;
     %pushi/vec4 0, 0, 32;
-    %assign/vec4 v0000022fd983b100_0, 0;
+    %assign/vec4 v0000025acd685a00_0, 0;
     %jmp T_0.1;
 T_0.0 ;
-    %load/vec4 v0000022fd98dbf10_0;
-    %assign/vec4 v0000022fd983b420_0, 0;
-    %load/vec4 v0000022fd97e11e0_0;
-    %assign/vec4 v0000022fd983aca0_0, 0;
-    %load/vec4 v0000022fd97b4c90_0;
-    %assign/vec4 v0000022fd97a9fa0_0, 0;
-    %load/vec4 v0000022fd98d6fa0_0;
-    %assign/vec4 v0000022fd97d7690_0, 0;
-    %load/vec4 v0000022fd97ac470_0;
-    %assign/vec4 v0000022fd97e02e0_0, 0;
-    %load/vec4 v0000022fd97da4d0_0;
-    %assign/vec4 v0000022fd983ab60_0, 0;
-    %load/vec4 v0000022fd97b8ff0_0;
-    %assign/vec4 v0000022fd97a8bd0_0, 0;
-    %load/vec4 v0000022fd97ae8d0_0;
-    %assign/vec4 v0000022fd983b100_0, 0;
+    %load/vec4 v0000025acd621320_0;
+    %assign/vec4 v0000025acd684ba0_0, 0;
+    %load/vec4 v0000025acd5f2220_0;
+    %assign/vec4 v0000025acd684b00_0, 0;
+    %load/vec4 v0000025acd5f9060_0;
+    %assign/vec4 v0000025acd685960_0, 0;
+    %load/vec4 v0000025acd5e9e60_0;
+    %assign/vec4 v0000025acd684c40_0, 0;
+    %load/vec4 v0000025acd5eb2f0_0;
+    %assign/vec4 v0000025acd5a68d0_0, 0;
+    %load/vec4 v0000025acd5f22c0_0;
+    %assign/vec4 v0000025acd6858c0_0, 0;
+    %load/vec4 v0000025acd5a6fa0_0;
+    %assign/vec4 v0000025acd684ec0_0, 0;
+    %load/vec4 v0000025acd5f20e0_0;
+    %assign/vec4 v0000025acd685280_0, 0;
+    %load/vec4 v0000025acd5f2180_0;
+    %assign/vec4 v0000025acd685a00_0, 0;
 T_0.1 ;
     %jmp T_0;
     .thread T_0;
-    .scope S_0000022fd97b4b00;
+    .scope S_0000025acd5ec190;
 T_1 ;
     %pushi/vec4 0, 0, 1;
-    %store/vec4 v0000022fd983aac0_0, 0, 1;
+    %store/vec4 v0000025acd686970_0, 0, 1;
     %pushi/vec4 0, 0, 1;
-    %store/vec4 v0000022fd983cf70_0, 0, 1;
+    %store/vec4 v0000025acd6879b0_0, 0, 1;
     %pushi/vec4 0, 0, 1;
-    %store/vec4 v0000022fd983cbb0_0, 0, 1;
+    %store/vec4 v0000025acd6868d0_0, 0, 1;
     %end;
     .thread T_1;
-    .scope S_0000022fd97b4b00;
+    .scope S_0000025acd5ec190;
 T_2 ;
     %delay 5000, 0;
-    %load/vec4 v0000022fd983aac0_0;
+    %load/vec4 v0000025acd686970_0;
     %inv;
-    %store/vec4 v0000022fd983aac0_0, 0, 1;
+    %store/vec4 v0000025acd686970_0, 0, 1;
     %jmp T_2;
     .thread T_2;
-    .scope S_0000022fd97b4b00;
+    .scope S_0000025acd5ec190;
 T_3 ;
-    %vpi_call 2 61 "$dumpfile", "testbenches/results/waveforms/MEM_WB_Register_tb_result.vcd" {0 0 0};
-    %vpi_call 2 62 "$dumpvars", 32'sb00000000000000000000000000000000, S_0000022fd97db390 {0 0 0};
-    %vpi_call 2 65 "$display", "==================== MEM_WB_Register Test START ====================\012" {0 0 0};
+    %vpi_call 2 65 "$dumpfile", "testbenches/results/waveforms/MEM_WB_Register_tb_result.vcd" {0 0 0};
+    %vpi_call 2 66 "$dumpvars", 32'sb00000000000000000000000000000000, S_0000025acd5ec320 {0 0 0};
+    %vpi_call 2 69 "$display", "==================== MEM_WB_Register Test START ====================\012" {0 0 0};
     %pushi/vec4 1, 0, 1;
-    %store/vec4 v0000022fd983cf70_0, 0, 1;
+    %store/vec4 v0000025acd6879b0_0, 0, 1;
     %delay 30000, 0;
     %pushi/vec4 0, 0, 1;
-    %store/vec4 v0000022fd983cf70_0, 0, 1;
-    %wait E_0000022fd98d97e0;
-    %vpi_call 2 72 "$display", "Input now" {0 0 0};
-    %vpi_call 2 73 "$display", "|     PC+4     | RF_WD select |  CSR Write Enable | RegF Write Enable |" {0 0 0};
-    %vpi_call 2 74 "$display", "|   %h   |      %b     |         %b         |         %b         |", v0000022fd983b240_0, v0000022fd983b380_0, v0000022fd983a8e0_0, v0000022fd983aa20_0 {0 0 0};
-    %vpi_call 2 75 "$display", "|    BERF_WD   |     imm    | csr_read_data |   ALU result   |" {0 0 0};
-    %vpi_call 2 76 "$display", "|   %h   |  %h  |   %h    |    %h    |\012", v0000022fd983b2e0_0, v0000022fd983a7a0_0, v0000022fd983b060_0, v0000022fd983a700_0 {0 0 0};
+    %store/vec4 v0000025acd6879b0_0, 0, 1;
+    %wait E_0000025acd617a00;
+    %vpi_call 2 76 "$display", "Input now" {0 0 0};
+    %vpi_call 2 77 "$display", "|     PC+4     | RF_WD select |  CSR Write Enable | RegF Write Enable |" {0 0 0};
+    %vpi_call 2 78 "$display", "|   %h   |      %b     |         %b         |         %b         |", v0000025acd685780_0, v0000025acd687870_0, v0000025acd6855a0_0, v0000025acd685cf0_0 {0 0 0};
+    %vpi_call 2 79 "$display", "|    BERF_WD   |     imm    | csr_read_data |   ALU result   |   rd   |" {0 0 0};
+    %vpi_call 2 80 "$display", "|   %h   |  %h  |   %h    |    %h    |  %b  |\012", v0000025acd687050_0, v0000025acd685640_0, v0000025acd6851e0_0, v0000025acd685140_0, v0000025acd6861f0_0 {0 0 0};
     %delay 10000, 0;
-    %wait E_0000022fd98d98a0;
+    %wait E_0000025acd617580;
     %pushi/vec4 4, 0, 32;
-    %store/vec4 v0000022fd983b4c0_0, 0, 32;
+    %store/vec4 v0000025acd684e20_0, 0, 32;
     %pushi/vec4 2, 0, 3;
-    %store/vec4 v0000022fd983ae80_0, 0, 3;
+    %store/vec4 v0000025acd684f60_0, 0, 3;
     %pushi/vec4 0, 0, 32;
-    %store/vec4 v0000022fd983ade0_0, 0, 32;
+    %store/vec4 v0000025acd685460_0, 0, 32;
     %pushi/vec4 0, 0, 32;
-    %store/vec4 v0000022fd983a5c0_0, 0, 32;
+    %store/vec4 v0000025acd685320_0, 0, 32;
     %pushi/vec4 11, 0, 32;
-    %store/vec4 v0000022fd983ad40_0, 0, 32;
+    %store/vec4 v0000025acd6853c0_0, 0, 32;
     %pushi/vec4 1, 0, 1;
-    %store/vec4 v0000022fd983a980_0, 0, 1;
+    %store/vec4 v0000025acd685000_0, 0, 1;
     %pushi/vec4 0, 0, 1;
-    %store/vec4 v0000022fd983a660_0, 0, 1;
+    %store/vec4 v0000025acd685820_0, 0, 1;
+    %pushi/vec4 6, 0, 5;
+    %store/vec4 v0000025acd685500_0, 0, 5;
     %pushi/vec4 10, 0, 32;
-    %store/vec4 v0000022fd983af20_0, 0, 32;
-    %wait E_0000022fd98d97e0;
+    %store/vec4 v0000025acd6856e0_0, 0, 32;
+    %wait E_0000025acd617a00;
     %delay 1000, 0;
-    %vpi_call 2 91 "$display", "Test 1: Previous value should be output now" {0 0 0};
-    %vpi_call 2 92 "$display", "|     PC+4     | RF_WD select |  CSR Write Enable | RegF Write Enable |" {0 0 0};
-    %vpi_call 2 93 "$display", "|   %h   |      %b     |         %b         |         %b         |", v0000022fd983b240_0, v0000022fd983b380_0, v0000022fd983a8e0_0, v0000022fd983aa20_0 {0 0 0};
-    %vpi_call 2 94 "$display", "|    BERF_WD   |     imm    | csr_read_data |   ALU result   |" {0 0 0};
-    %vpi_call 2 95 "$display", "|   %h   |  %h  |   %h    |    %h    |\012", v0000022fd983b2e0_0, v0000022fd983a7a0_0, v0000022fd983b060_0, v0000022fd983a700_0 {0 0 0};
-    %wait E_0000022fd98d97e0;
+    %vpi_call 2 96 "$display", "Test 1: Previous value should be output now" {0 0 0};
+    %vpi_call 2 97 "$display", "|     PC+4     | RF_WD select |  CSR Write Enable | RegF Write Enable |" {0 0 0};
+    %vpi_call 2 98 "$display", "|   %h   |      %b     |         %b         |         %b         |", v0000025acd685780_0, v0000025acd687870_0, v0000025acd6855a0_0, v0000025acd685cf0_0 {0 0 0};
+    %vpi_call 2 99 "$display", "|    BERF_WD   |     imm    | csr_read_data |   ALU result   |   rd   |" {0 0 0};
+    %vpi_call 2 100 "$display", "|   %h   |  %h  |   %h    |    %h    |  %b  |\012", v0000025acd687050_0, v0000025acd685640_0, v0000025acd6851e0_0, v0000025acd685140_0, v0000025acd6861f0_0 {0 0 0};
+    %wait E_0000025acd617a00;
     %delay 1000, 0;
-    %vpi_call 2 99 "$display", "Test 2: No input(should be same)" {0 0 0};
-    %vpi_call 2 100 "$display", "|     PC+4     | RF_WD select |  CSR Write Enable | RegF Write Enable |" {0 0 0};
-    %vpi_call 2 101 "$display", "|   %h   |      %b     |         %b         |         %b         |", v0000022fd983b240_0, v0000022fd983b380_0, v0000022fd983a8e0_0, v0000022fd983aa20_0 {0 0 0};
-    %vpi_call 2 102 "$display", "|    BERF_WD   |     imm    | csr_read_data |   ALU result   |" {0 0 0};
-    %vpi_call 2 103 "$display", "|   %h   |  %h  |   %h    |    %h    |\012", v0000022fd983b2e0_0, v0000022fd983a7a0_0, v0000022fd983b060_0, v0000022fd983a700_0 {0 0 0};
-    %wait E_0000022fd98d98a0;
+    %vpi_call 2 104 "$display", "Test 2: No input(should be same)" {0 0 0};
+    %vpi_call 2 105 "$display", "|     PC+4     | RF_WD select |  CSR Write Enable | RegF Write Enable |" {0 0 0};
+    %vpi_call 2 106 "$display", "|   %h   |      %b     |         %b         |         %b         |", v0000025acd685780_0, v0000025acd687870_0, v0000025acd6855a0_0, v0000025acd685cf0_0 {0 0 0};
+    %vpi_call 2 107 "$display", "|    BERF_WD   |     imm    | csr_read_data |   ALU result   |   rd   |" {0 0 0};
+    %vpi_call 2 108 "$display", "|   %h   |  %h  |   %h    |    %h    |  %b  |\012", v0000025acd687050_0, v0000025acd685640_0, v0000025acd6851e0_0, v0000025acd685140_0, v0000025acd6861f0_0 {0 0 0};
+    %wait E_0000025acd617580;
     %pushi/vec4 8, 0, 32;
-    %store/vec4 v0000022fd983b4c0_0, 0, 32;
+    %store/vec4 v0000025acd684e20_0, 0, 32;
     %pushi/vec4 1, 0, 3;
-    %store/vec4 v0000022fd983ae80_0, 0, 3;
+    %store/vec4 v0000025acd684f60_0, 0, 3;
     %pushi/vec4 32, 0, 32;
-    %store/vec4 v0000022fd983ade0_0, 0, 32;
+    %store/vec4 v0000025acd685460_0, 0, 32;
     %pushi/vec4 0, 0, 32;
-    %store/vec4 v0000022fd983a5c0_0, 0, 32;
+    %store/vec4 v0000025acd685320_0, 0, 32;
     %pushi/vec4 268435488, 0, 32;
-    %store/vec4 v0000022fd983ad40_0, 0, 32;
+    %store/vec4 v0000025acd6853c0_0, 0, 32;
     %pushi/vec4 1, 0, 1;
-    %store/vec4 v0000022fd983a980_0, 0, 1;
+    %store/vec4 v0000025acd685000_0, 0, 1;
     %pushi/vec4 0, 0, 1;
-    %store/vec4 v0000022fd983a660_0, 0, 1;
+    %store/vec4 v0000025acd685820_0, 0, 1;
+    %pushi/vec4 7, 0, 5;
+    %store/vec4 v0000025acd685500_0, 0, 5;
     %pushi/vec4 3735928559, 0, 32;
-    %store/vec4 v0000022fd983af20_0, 0, 32;
-    %vpi_call 2 115 "$display", "Test 3-1: new input now(should be same)" {0 0 0};
-    %vpi_call 2 116 "$display", "|     PC+4     | RF_WD select |  CSR Write Enable | RegF Write Enable |" {0 0 0};
-    %vpi_call 2 117 "$display", "|   %h   |      %b     |         %b         |         %b         |", v0000022fd983b240_0, v0000022fd983b380_0, v0000022fd983a8e0_0, v0000022fd983aa20_0 {0 0 0};
-    %vpi_call 2 118 "$display", "|    BERF_WD   |     imm    | csr_read_data |   ALU result   |" {0 0 0};
-    %vpi_call 2 119 "$display", "|   %h   |  %h  |   %h    |    %h    |\012", v0000022fd983b2e0_0, v0000022fd983a7a0_0, v0000022fd983b060_0, v0000022fd983a700_0 {0 0 0};
-    %wait E_0000022fd98d97e0;
+    %store/vec4 v0000025acd6856e0_0, 0, 32;
+    %vpi_call 2 121 "$display", "Test 3-1: new input now(should be same)" {0 0 0};
+    %vpi_call 2 122 "$display", "|     PC+4     | RF_WD select |  CSR Write Enable | RegF Write Enable |" {0 0 0};
+    %vpi_call 2 123 "$display", "|   %h   |      %b     |         %b         |         %b         |", v0000025acd685780_0, v0000025acd687870_0, v0000025acd6855a0_0, v0000025acd685cf0_0 {0 0 0};
+    %vpi_call 2 124 "$display", "|    BERF_WD   |     imm    | csr_read_data |   ALU result   |   rd   |" {0 0 0};
+    %vpi_call 2 125 "$display", "|   %h   |  %h  |   %h    |    %h    |  %b  |\012", v0000025acd687050_0, v0000025acd685640_0, v0000025acd6851e0_0, v0000025acd685140_0, v0000025acd6861f0_0 {0 0 0};
+    %wait E_0000025acd617a00;
     %delay 1000, 0;
-    %vpi_call 2 122 "$display", "Test 3-2: Test 3-1 input should be output now \012" {0 0 0};
-    %vpi_call 2 123 "$display", "|     PC+4     | RF_WD select |  CSR Write Enable | RegF Write Enable |" {0 0 0};
-    %vpi_call 2 124 "$display", "|   %h   |      %b     |         %b         |         %b         |", v0000022fd983b240_0, v0000022fd983b380_0, v0000022fd983a8e0_0, v0000022fd983aa20_0 {0 0 0};
-    %vpi_call 2 125 "$display", "|    BERF_WD   |     imm    | csr_read_data |   ALU result   |" {0 0 0};
-    %vpi_call 2 126 "$display", "|   %h   |  %h  |   %h    |    %h    |\012", v0000022fd983b2e0_0, v0000022fd983a7a0_0, v0000022fd983b060_0, v0000022fd983a700_0 {0 0 0};
+    %vpi_call 2 128 "$display", "Test 3-2: Test 3-1 input should be output now \012" {0 0 0};
+    %vpi_call 2 129 "$display", "|     PC+4     | RF_WD select |  CSR Write Enable | RegF Write Enable |" {0 0 0};
+    %vpi_call 2 130 "$display", "|   %h   |      %b     |         %b         |         %b         |", v0000025acd685780_0, v0000025acd687870_0, v0000025acd6855a0_0, v0000025acd685cf0_0 {0 0 0};
+    %vpi_call 2 131 "$display", "|    BERF_WD   |     imm    | csr_read_data |   ALU result   |   rd   |" {0 0 0};
+    %vpi_call 2 132 "$display", "|   %h   |  %h  |   %h    |    %h    |  %b  |\012", v0000025acd687050_0, v0000025acd685640_0, v0000025acd6851e0_0, v0000025acd685140_0, v0000025acd6861f0_0 {0 0 0};
     %pushi/vec4 1, 0, 1;
-    %store/vec4 v0000022fd983cbb0_0, 0, 1;
+    %store/vec4 v0000025acd6868d0_0, 0, 1;
     %delay 10000, 0;
     %pushi/vec4 0, 0, 1;
-    %store/vec4 v0000022fd983cbb0_0, 0, 1;
-    %vpi_call 2 132 "$display", "Test 4: Flushed (should be NOP and zero)" {0 0 0};
-    %vpi_call 2 133 "$display", "|     PC+4     | RF_WD select |  CSR Write Enable | RegF Write Enable |" {0 0 0};
-    %vpi_call 2 134 "$display", "|   %h   |      %b     |         %b         |         %b         |", v0000022fd983b240_0, v0000022fd983b380_0, v0000022fd983a8e0_0, v0000022fd983aa20_0 {0 0 0};
-    %vpi_call 2 135 "$display", "|    BERF_WD   |     imm    | csr_read_data |   ALU result   |" {0 0 0};
-    %vpi_call 2 136 "$display", "|   %h   |  %h  |   %h    |    %h    |\012", v0000022fd983b2e0_0, v0000022fd983a7a0_0, v0000022fd983b060_0, v0000022fd983a700_0 {0 0 0};
+    %store/vec4 v0000025acd6868d0_0, 0, 1;
+    %vpi_call 2 138 "$display", "Test 4: Flushed (should be NOP and zero)" {0 0 0};
+    %vpi_call 2 139 "$display", "|     PC+4     | RF_WD select |  CSR Write Enable | RegF Write Enable |" {0 0 0};
+    %vpi_call 2 140 "$display", "|   %h   |      %b     |         %b         |         %b         |", v0000025acd685780_0, v0000025acd687870_0, v0000025acd6855a0_0, v0000025acd685cf0_0 {0 0 0};
+    %vpi_call 2 141 "$display", "|    BERF_WD   |     imm    | csr_read_data |   ALU result   |   rd   |" {0 0 0};
+    %vpi_call 2 142 "$display", "|   %h   |  %h  |   %h    |    %h    |  %b  |\012", v0000025acd687050_0, v0000025acd685640_0, v0000025acd6851e0_0, v0000025acd685140_0, v0000025acd6861f0_0 {0 0 0};
     %pushi/vec4 12, 0, 32;
-    %store/vec4 v0000022fd983b4c0_0, 0, 32;
+    %store/vec4 v0000025acd684e20_0, 0, 32;
     %pushi/vec4 3, 0, 3;
-    %store/vec4 v0000022fd983ae80_0, 0, 3;
+    %store/vec4 v0000025acd684f60_0, 0, 3;
     %pushi/vec4 0, 0, 32;
-    %store/vec4 v0000022fd983ade0_0, 0, 32;
+    %store/vec4 v0000025acd685460_0, 0, 32;
     %pushi/vec4 3405691582, 0, 32;
-    %store/vec4 v0000022fd983a5c0_0, 0, 32;
+    %store/vec4 v0000025acd685320_0, 0, 32;
     %pushi/vec4 0, 0, 32;
-    %store/vec4 v0000022fd983ad40_0, 0, 32;
+    %store/vec4 v0000025acd6853c0_0, 0, 32;
     %pushi/vec4 1, 0, 1;
-    %store/vec4 v0000022fd983a980_0, 0, 1;
+    %store/vec4 v0000025acd685000_0, 0, 1;
     %pushi/vec4 1, 0, 1;
-    %store/vec4 v0000022fd983a660_0, 0, 1;
+    %store/vec4 v0000025acd685820_0, 0, 1;
+    %pushi/vec4 17, 0, 5;
+    %store/vec4 v0000025acd685500_0, 0, 5;
     %pushi/vec4 3405691582, 0, 32;
-    %store/vec4 v0000022fd983af20_0, 0, 32;
-    %vpi_call 2 146 "$display", "Test 5-1: Input begin (should be same)" {0 0 0};
-    %vpi_call 2 147 "$display", "|     PC+4     | RF_WD select |  CSR Write Enable | RegF Write Enable |" {0 0 0};
-    %vpi_call 2 148 "$display", "|   %h   |      %b     |         %b         |         %b         |", v0000022fd983b240_0, v0000022fd983b380_0, v0000022fd983a8e0_0, v0000022fd983aa20_0 {0 0 0};
-    %vpi_call 2 149 "$display", "|    BERF_WD   |     imm    | csr_read_data |   ALU result   |" {0 0 0};
-    %vpi_call 2 150 "$display", "|   %h   |  %h  |   %h    |    %h    |\012", v0000022fd983b2e0_0, v0000022fd983a7a0_0, v0000022fd983b060_0, v0000022fd983a700_0 {0 0 0};
+    %store/vec4 v0000025acd6856e0_0, 0, 32;
+    %vpi_call 2 153 "$display", "Test 5-1: Input begin (should be same)" {0 0 0};
+    %vpi_call 2 154 "$display", "|     PC+4     | RF_WD select |  CSR Write Enable | RegF Write Enable |" {0 0 0};
+    %vpi_call 2 155 "$display", "|   %h   |      %b     |         %b         |         %b         |", v0000025acd685780_0, v0000025acd687870_0, v0000025acd6855a0_0, v0000025acd685cf0_0 {0 0 0};
+    %vpi_call 2 156 "$display", "|    BERF_WD   |     imm    | csr_read_data |   ALU result   |   rd   |" {0 0 0};
+    %vpi_call 2 157 "$display", "|   %h   |  %h  |   %h    |    %h    |  %b  |\012", v0000025acd687050_0, v0000025acd685640_0, v0000025acd6851e0_0, v0000025acd685140_0, v0000025acd6861f0_0 {0 0 0};
     %delay 10000, 0;
-    %vpi_call 2 152 "$display", "Test 5-2: Test 5-1's input should be output now" {0 0 0};
-    %vpi_call 2 153 "$display", "|     PC+4     | RF_WD select |  CSR Write Enable | RegF Write Enable |" {0 0 0};
-    %vpi_call 2 154 "$display", "|   %h   |      %b     |         %b         |         %b         |", v0000022fd983b240_0, v0000022fd983b380_0, v0000022fd983a8e0_0, v0000022fd983aa20_0 {0 0 0};
-    %vpi_call 2 155 "$display", "|    BERF_WD   |     imm    | csr_read_data |   ALU result   |" {0 0 0};
-    %vpi_call 2 156 "$display", "|   %h   |  %h  |   %h    |    %h    |\012", v0000022fd983b2e0_0, v0000022fd983a7a0_0, v0000022fd983b060_0, v0000022fd983a700_0 {0 0 0};
-    %vpi_call 2 158 "$display", "\012====================  MEM_WB_Register Test END  ====================" {0 0 0};
-    %vpi_call 2 160 "$stop" {0 0 0};
+    %vpi_call 2 159 "$display", "Test 5-2: Test 5-1's input should be output now" {0 0 0};
+    %vpi_call 2 160 "$display", "|     PC+4     | RF_WD select |  CSR Write Enable | RegF Write Enable |" {0 0 0};
+    %vpi_call 2 161 "$display", "|   %h   |      %b     |         %b         |         %b         |", v0000025acd685780_0, v0000025acd687870_0, v0000025acd6855a0_0, v0000025acd685cf0_0 {0 0 0};
+    %vpi_call 2 162 "$display", "|    BERF_WD   |     imm    | csr_read_data |   ALU result   |   rd   |" {0 0 0};
+    %vpi_call 2 163 "$display", "|   %h   |  %h  |   %h    |    %h    |  %b  |\012", v0000025acd687050_0, v0000025acd685640_0, v0000025acd6851e0_0, v0000025acd685140_0, v0000025acd6861f0_0 {0 0 0};
+    %vpi_call 2 165 "$display", "\012====================  MEM_WB_Register Test END  ====================" {0 0 0};
+    %vpi_call 2 167 "$stop" {0 0 0};
     %end;
     .thread T_3;
 # The file index is used to find the file name in the following table.

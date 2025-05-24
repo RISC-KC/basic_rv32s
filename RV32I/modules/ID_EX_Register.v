@@ -27,6 +27,7 @@ module ID_EX_Register #(
     input wire [6:0] ID_opcode, 
     input wire [2:0] ID_funct3,
     input wire [6:0] ID_funct7,
+    input wire [4:0] ID_rd,
     input wire [11:0] ID_raw_imm,
     input wire [XLEN-1:0] ID_read_data1,
     input wire [XLEN-1:0] ID_read_data2,
@@ -51,6 +52,7 @@ module ID_EX_Register #(
     output reg [6:0] EX_opcode,
     output reg [2:0] EX_funct3,
     output reg [6:0] EX_funct7,
+    output reg [4:0] EX_rd,
     output reg [11:0] EX_raw_imm,
     output reg [XLEN-1:0] EX_read_data1,
     output reg [XLEN-1:0] EX_read_data2,
@@ -77,6 +79,7 @@ always @(posedge clk or posedge reset) begin
         EX_opcode <= 7'b0;
         EX_funct3 <= 3'b0;
         EX_funct7 <= 7'b0;
+        EX_rd <= 5'b0;
         EX_raw_imm <= 12'b0;
         EX_read_data1 <= {XLEN{1'b0}};
         EX_read_data2 <= {XLEN{1'b0}};
@@ -100,6 +103,7 @@ always @(posedge clk or posedge reset) begin
         EX_opcode <= ID_opcode;
         EX_funct3 <= ID_funct3;
         EX_funct7 <= ID_funct7;
+        EX_rd <= ID_rd;
         EX_raw_imm <= ID_raw_imm;
         EX_read_data1 <= ID_read_data1;
         EX_read_data2 <= ID_read_data2;

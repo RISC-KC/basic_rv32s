@@ -23,6 +23,7 @@ module ID_EX_Register_tb;
     reg [6:0] ID_opcode; 
     reg [2:0] ID_funct3;
     reg [6:0] ID_funct7;
+    reg [4:0] ID_rd;
     reg [11:0] ID_raw_imm;
     reg [XLEN-1:0] ID_read_data1;
     reg [XLEN-1:0] ID_read_data2;
@@ -46,6 +47,7 @@ module ID_EX_Register_tb;
     wire [6:0] EX_opcode;
     wire [2:0] EX_funct3;
     wire [6:0] EX_funct7;
+    wire [4:0] EX_rd;
     wire [11:0] EX_raw_imm;
     wire [XLEN-1:0] EX_read_data1;
     wire [XLEN-1:0] EX_read_data2;
@@ -74,6 +76,7 @@ module ID_EX_Register_tb;
         .ID_opcode(ID_opcode), 
         .ID_funct3(ID_funct3),
         .ID_funct7(ID_funct7),
+        .ID_rd(ID_rd),
         .ID_raw_imm(ID_raw_imm),
         .ID_read_data1(ID_read_data1),
         .ID_read_data2(ID_read_data2),
@@ -97,6 +100,7 @@ module ID_EX_Register_tb;
         .EX_opcode(EX_opcode),
         .EX_funct3(EX_funct3),
         .EX_funct7(EX_funct7),
+        .EX_rd(EX_rd),
         .EX_raw_imm(EX_raw_imm),
         .EX_read_data1(EX_read_data1),
         .EX_read_data2(EX_read_data2),
@@ -124,8 +128,8 @@ module ID_EX_Register_tb;
         $display("|  %h  |   %h   |       %b       |   %b  |    %b   |    %b   |    %b    |    %b   |   %b   |", EX_pc, EX_pc_plus_4, EX_branch_estimation, EX_jump, EX_branch, EX_csr_write_enable, EX_register_write_enable, EX_alu_src_A_select, EX_alu_src_B_select);
         $display("| MEMread | MEMwrite | RF_WD select |  opcode  | funct3 |  funct7   |   raw_imm   |");
         $display("|    %b    |     %b    |      %b     |  %b |   %b  |  %b  |  %b  |", EX_memory_read, EX_memory_write, EX_register_file_write_data_select, EX_opcode, EX_funct3, EX_funct7, EX_raw_imm);
-        $display("| Register RD1 | Register RD2 |   rs1   |     imm    | csr_read_data |");
-        $display("|   %h   |   %h   |  %b  |  %h  |   %h   |\n", EX_read_data1, EX_read_data2, EX_rs1, EX_imm, EX_csr_read_data);
+        $display("| Register RD1 | Register RD2 |   rs1   |     imm    | csr_read_data |  rd  |");
+        $display("|   %h   |   %h   |  %b  |  %h  |   %h   | %b |\n", EX_read_data1, EX_read_data2, EX_rs1, EX_imm, EX_csr_read_data, EX_rd);
         #10;
         
         // Test 1
@@ -146,6 +150,7 @@ module ID_EX_Register_tb;
         ID_opcode = 7'b0011000;
         ID_funct3 = 3'b010;
         ID_funct7 = 7'b0011110;
+        ID_rd = 5'b00110;
         ID_raw_imm = 12'b0;
         ID_read_data1 = 32'hAAAA_AAAA;
         ID_read_data2 = 32'hBBBB_BBBB;
@@ -159,8 +164,8 @@ module ID_EX_Register_tb;
         $display("|  %h  |   %h   |       %b       |   %b  |    %b   |    %b   |    %b    |    %b   |   %b   |", EX_pc, EX_pc_plus_4, EX_branch_estimation, EX_jump, EX_branch, EX_csr_write_enable, EX_register_write_enable, EX_alu_src_A_select, EX_alu_src_B_select);
         $display("| MEMread | MEMwrite | RF_WD select |  opcode  | funct3 |  funct7   |   raw_imm   |");
         $display("|    %b    |     %b    |      %b     |  %b |   %b  |  %b  |  %b  |", EX_memory_read, EX_memory_write, EX_register_file_write_data_select, EX_opcode, EX_funct3, EX_funct7, EX_raw_imm);
-        $display("| Register RD1 | Register RD2 |   rs1   |     imm    | csr_read_data |");
-        $display("|   %h   |   %h   |  %b  |  %h  |   %h   |\n", EX_read_data1, EX_read_data2, EX_rs1, EX_imm, EX_csr_read_data);
+        $display("| Register RD1 | Register RD2 |   rs1   |     imm    | csr_read_data |  rd  |");
+        $display("|   %h   |   %h   |  %b  |  %h  |   %h   | %b |\n", EX_read_data1, EX_read_data2, EX_rs1, EX_imm, EX_csr_read_data, EX_rd);
         
         // Test 2@(posedge clk); #1;
         @(posedge clk); #1;
@@ -169,8 +174,8 @@ module ID_EX_Register_tb;
         $display("|  %h  |   %h   |       %b       |   %b  |    %b   |    %b   |    %b    |    %b   |   %b   |", EX_pc, EX_pc_plus_4, EX_branch_estimation, EX_jump, EX_branch, EX_csr_write_enable, EX_register_write_enable, EX_alu_src_A_select, EX_alu_src_B_select);
         $display("| MEMread | MEMwrite | RF_WD select |  opcode  | funct3 |  funct7   |   raw_imm   |");
         $display("|    %b    |     %b    |      %b     |  %b |   %b  |  %b  |  %b  |", EX_memory_read, EX_memory_write, EX_register_file_write_data_select, EX_opcode, EX_funct3, EX_funct7, EX_raw_imm);
-        $display("| Register RD1 | Register RD2 |   rs1   |     imm    | csr_read_data |");
-        $display("|   %h   |   %h   |  %b  |  %h  |   %h   |\n", EX_read_data1, EX_read_data2, EX_rs1, EX_imm, EX_csr_read_data);
+        $display("| Register RD1 | Register RD2 |   rs1   |     imm    | csr_read_data |  rd  |");
+        $display("|   %h   |   %h   |  %b  |  %h  |   %h   | %b |\n", EX_read_data1, EX_read_data2, EX_rs1, EX_imm, EX_csr_read_data, EX_rd);
 
         // Test 3
         @(negedge clk); 
@@ -185,11 +190,12 @@ module ID_EX_Register_tb;
         ID_memory_read                = 1'b0;
         ID_memory_write               = 1'b0;
         ID_register_file_write_data_select = 3'b000; // ALU result
-        ID_register_write_enable = 1'b1;
-        ID_csr_write_enable = 1'b0;
+        ID_register_write_enable      = 1'b1;
+        ID_csr_write_enable           = 1'b0;
         ID_opcode                     = 7'b0110011; // R-type
         ID_funct3                     = 3'b000;     // ADD
         ID_funct7                     = 7'b0000000; 
+        ID_rd                         = 5'b01000;
         ID_raw_imm                    = 12'h000;
         ID_read_data1                 = 32'h0000_0005; 
         ID_read_data2                 = 32'h0000_000A;
@@ -201,8 +207,8 @@ module ID_EX_Register_tb;
         $display("|  %h  |   %h   |       %b       |   %b  |    %b   |    %b   |    %b    |    %b   |   %b   |", EX_pc, EX_pc_plus_4, EX_branch_estimation, EX_jump, EX_branch, EX_csr_write_enable, EX_register_write_enable, EX_alu_src_A_select, EX_alu_src_B_select);
         $display("| MEMread | MEMwrite | RF_WD select |  opcode  | funct3 |  funct7   |   raw_imm   |");
         $display("|    %b    |     %b    |      %b     |  %b |   %b  |  %b  |  %b  |", EX_memory_read, EX_memory_write, EX_register_file_write_data_select, EX_opcode, EX_funct3, EX_funct7, EX_raw_imm);
-        $display("| Register RD1 | Register RD2 |   rs1   |     imm    | csr_read_data |");
-        $display("|   %h   |   %h   |  %b  |  %h  |   %h   |\n", EX_read_data1, EX_read_data2, EX_rs1, EX_imm, EX_csr_read_data);
+        $display("| Register RD1 | Register RD2 |   rs1   |     imm    | csr_read_data |  rd  |");
+        $display("|   %h   |   %h   |  %b  |  %h  |   %h   | %b |\n", EX_read_data1, EX_read_data2, EX_rs1, EX_imm, EX_csr_read_data, EX_rd);
 
         @(posedge clk); #1;
         $display("Test 3-2: Test 3-1 input should be output now \n");
@@ -210,8 +216,8 @@ module ID_EX_Register_tb;
         $display("|  %h  |   %h   |       %b       |   %b  |    %b   |    %b   |    %b    |    %b   |   %b   |", EX_pc, EX_pc_plus_4, EX_branch_estimation, EX_jump, EX_branch, EX_csr_write_enable, EX_register_write_enable, EX_alu_src_A_select, EX_alu_src_B_select);
         $display("| MEMread | MEMwrite | RF_WD select |  opcode  | funct3 |  funct7   |   raw_imm   |");
         $display("|    %b    |     %b    |      %b     |  %b |   %b  |  %b  |  %b  |", EX_memory_read, EX_memory_write, EX_register_file_write_data_select, EX_opcode, EX_funct3, EX_funct7, EX_raw_imm);
-        $display("| Register RD1 | Register RD2 |   rs1   |     imm    | csr_read_data |");
-        $display("|   %h   |   %h   |  %b  |  %h  |   %h   |\n", EX_read_data1, EX_read_data2, EX_rs1, EX_imm, EX_csr_read_data);
+        $display("| Register RD1 | Register RD2 |   rs1   |     imm    | csr_read_data |  rd  |");
+        $display("|   %h   |   %h   |  %b  |  %h  |   %h   | %b |\n", EX_read_data1, EX_read_data2, EX_rs1, EX_imm, EX_csr_read_data, EX_rd);
 
         flush = 1'b1; #10;
         flush = 1'b0;
@@ -222,8 +228,8 @@ module ID_EX_Register_tb;
         $display("|  %h  |   %h   |       %b       |   %b  |    %b   |    %b   |    %b    |    %b   |   %b   |", EX_pc, EX_pc_plus_4, EX_branch_estimation, EX_jump, EX_branch, EX_csr_write_enable, EX_register_write_enable, EX_alu_src_A_select, EX_alu_src_B_select);
         $display("| MEMread | MEMwrite | RF_WD select |  opcode  | funct3 |  funct7   |   raw_imm   |");
         $display("|    %b    |     %b    |      %b     |  %b |   %b  |  %b  |  %b  |", EX_memory_read, EX_memory_write, EX_register_file_write_data_select, EX_opcode, EX_funct3, EX_funct7, EX_raw_imm);
-        $display("| Register RD1 | Register RD2 |   rs1   |     imm    | csr_read_data |");
-        $display("|   %h   |   %h   |  %b  |  %h  |   %h   |\n", EX_read_data1, EX_read_data2, EX_rs1, EX_imm, EX_csr_read_data);
+        $display("| Register RD1 | Register RD2 |   rs1   |     imm    | csr_read_data |  rd  |");
+        $display("|   %h   |   %h   |  %b  |  %h  |   %h   | %b |\n", EX_read_data1, EX_read_data2, EX_rs1, EX_imm, EX_csr_read_data, EX_rd);
 
         ID_pc                         = 32'h1000_1000;
         ID_pc_plus_4                  = 32'h1000_1004;
@@ -241,6 +247,7 @@ module ID_EX_Register_tb;
         ID_opcode                     = 7'b0000011; // I-type LOAD
         ID_funct3                     = 3'b010;     // LW
         ID_funct7                     = 7'b0000000;
+        ID_rd                         = 5'b01111;
         ID_raw_imm                    = 12'h0F0;
         ID_read_data1                 = 32'h0000_0004; 
         ID_read_data2                 = 32'h0000_0000; // unused for load
@@ -252,16 +259,16 @@ module ID_EX_Register_tb;
         $display("|  %h  |   %h   |       %b       |   %b  |    %b   |    %b   |    %b    |    %b   |   %b   |", EX_pc, EX_pc_plus_4, EX_branch_estimation, EX_jump, EX_branch, EX_csr_write_enable, EX_register_write_enable, EX_alu_src_A_select, EX_alu_src_B_select);
         $display("| MEMread | MEMwrite | RF_WD select |  opcode  | funct3 |  funct7   |   raw_imm   |");
         $display("|    %b    |     %b    |      %b     |  %b |   %b  |  %b  |  %b  |", EX_memory_read, EX_memory_write, EX_register_file_write_data_select, EX_opcode, EX_funct3, EX_funct7, EX_raw_imm);
-        $display("| Register RD1 | Register RD2 |   rs1   |     imm    | csr_read_data |");
-        $display("|   %h   |   %h   |  %b  |  %h  |   %h   |\n", EX_read_data1, EX_read_data2, EX_rs1, EX_imm, EX_csr_read_data);
+        $display("| Register RD1 | Register RD2 |   rs1   |     imm    | csr_read_data |  rd  |");
+        $display("|   %h   |   %h   |  %b  |  %h  |   %h   | %b |\n", EX_read_data1, EX_read_data2, EX_rs1, EX_imm, EX_csr_read_data, EX_rd);
         #10;
         $display("Test 5-2: Test 5-1's input should be output now\n");
         $display("|     PC     |     PC+4     |   branch est  | jump | branch | CSR WE | RegF WE | ALUsrcA | ALUsrcB |");
         $display("|  %h  |   %h   |       %b       |   %b  |    %b   |    %b   |    %b    |    %b   |   %b   |", EX_pc, EX_pc_plus_4, EX_branch_estimation, EX_jump, EX_branch, EX_csr_write_enable, EX_register_write_enable, EX_alu_src_A_select, EX_alu_src_B_select);
         $display("| MEMread | MEMwrite | RF_WD select |  opcode  | funct3 |  funct7   |   raw_imm   |");
         $display("|    %b    |     %b    |      %b     |  %b |   %b  |  %b  |  %b  |", EX_memory_read, EX_memory_write, EX_register_file_write_data_select, EX_opcode, EX_funct3, EX_funct7, EX_raw_imm);
-        $display("| Register RD1 | Register RD2 |   rs1   |     imm    | csr_read_data |");
-        $display("|   %h   |   %h   |  %b  |  %h  |   %h   |\n", EX_read_data1, EX_read_data2, EX_rs1, EX_imm, EX_csr_read_data);
+        $display("| Register RD1 | Register RD2 |   rs1   |     imm    | csr_read_data |  rd  |");
+        $display("|   %h   |   %h   |  %b  |  %h  |   %h   | %b |\n", EX_read_data1, EX_read_data2, EX_rs1, EX_imm, EX_csr_read_data, EX_rd);
 
         $display("\n====================  ID_EX Register Test END  ====================");
 
