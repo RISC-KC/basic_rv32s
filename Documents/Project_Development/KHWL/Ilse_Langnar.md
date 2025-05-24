@@ -5202,3 +5202,7 @@ Reg Write 신호가 파이프라이닝 되었다는 것 자체가 쓰기 주소�
 
 [2025.05.24.]
 이제 Hazard Unit이랑 Forward Unit, Branch Predictor를 설계할 차례다. 
+
+**PC_Controller** 모듈에서 저번에 PCC_op 코드를 뺐었는데, 향후 Branch 시 `Branch Target` 주솟값은 **Branch_Predictor**에서 담당하기 때문에 현재 롤백된 PC_Controller에 있던 imm값을 없애고, `branch_target` 신호를 추가하였다. 
+
+이제 Hazard Unit을 설계해보자.
