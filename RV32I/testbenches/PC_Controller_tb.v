@@ -6,7 +6,7 @@ module PCController_tb;
     reg trapped;
     reg [31:0] pc;
     reg [31:0] jump_target;
-    reg [31:0] imm;
+    reg [31:0] branch_target;
     reg [31:0] trap_target;
 	reg pc_stall;
 
@@ -18,7 +18,7 @@ module PCController_tb;
         .trapped(trapped),
         .pc(pc),
         .jump_target(jump_target),
-        .imm(imm),
+        .branch_target(branch_target),
         .trap_target(trap_target),
 		.pc_stall(pc_stall),
 
@@ -34,7 +34,7 @@ module PCController_tb;
 
         pc = 32'b0;
         jump_target = 32'b0;
-        imm = 32'b0;
+        branch_target = 32'b0;
         trap_target = 32'b0;
 
         // Test 1: Pause PC update
@@ -88,7 +88,7 @@ module PCController_tb;
 		branch_taken = 1;
 		trapped = 0;
 
-        imm = 32'h0000BEEF;
+        branch_target = 32'h0000CCCC;
 		
         #10;
         $display("pc = %h => next_pc = %h", pc, next_pc);
