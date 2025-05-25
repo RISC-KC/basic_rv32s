@@ -9,7 +9,7 @@ module HazardUnit_tb;
     reg branch_prediction_miss; 
     reg EX_jump;
 
-    wire hazard_op;
+    wire [1:0] hazard_op;
     wire IF_ID_flush;
 
     HazardUnit hazard_unit (
@@ -59,7 +59,7 @@ module HazardUnit_tb;
         ID_rs2 = 5'd4;
         ID_rd = 5'd5;   // prev rd = 3
         @(posedge clk);
-        $display("Test 2 (rs1 hazard) : hazard_op = %b (expect 1)", hazard_op);
+        $display("Test 2 (rs1 hazard) : hazard_op = %b (expect 01)", hazard_op);
         $display("IF_ID_flush  = %b (expect 0)\n", IF_ID_flush);
 
         // Test 3 : rs2 hazard (prev rd == rs2)
@@ -67,7 +67,7 @@ module HazardUnit_tb;
         ID_rs2 = 5'd5;
         ID_rd = 5'd7;   // prev rd = 5
         @(posedge clk);
-        $display("Test 3 (rs2 hazard) : hazard_op = %b (expect 1)", hazard_op);
+        $display("Test 3 (rs2 hazard) : hazard_op = %b (expect 10)", hazard_op);
         $display("IF_ID_flush  = %b (expect 0)\n", IF_ID_flush);
 
         // Test 4 : no hazard 
@@ -75,7 +75,7 @@ module HazardUnit_tb;
         ID_rs2 = 5'd23;
         ID_rd = 5'd7;   // prev rd = 5
         @(posedge clk);
-        $display("Test 4 (no hazard) : hazard_op = %b (expect 0)", hazard_op);
+        $display("Test 4 (no hazard) : hazard_op = %b (expect 00)", hazard_op);
         $display("IF_ID_flush  = %b (expect 0)\n", IF_ID_flush);
 
         // Test 5 : both rs1/rs2 hazards
@@ -83,7 +83,7 @@ module HazardUnit_tb;
         ID_rs2 = 5'd7;
         ID_rd = 5'd8;   // prev rd = 7
         @(posedge clk);
-        $display("Test 5 (both)       : hazard_op = %b (expect 1)", hazard_op);
+        $display("Test 5 (both)       : hazard_op = %b (expect 11)", hazard_op);
         $display("IF_ID_flush  = %b (expect 0)\n", IF_ID_flush);
 
         // Test 6 : Branch‑mispredict flush
