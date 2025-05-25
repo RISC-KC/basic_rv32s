@@ -5266,3 +5266,12 @@ JAL이나 JALR이면 MEM_pc_plus_4.
 이제 Branch Predictor의 구현이 남았다. BHT까지 있는게 좋겠지만.. 일단 단순 2-bit FSM으로 구현해보고 탑 모듈 합성으로 모두 잘 동작하면 그 때 추가 구현하는 것으로 한다.
 계속되는 이상의 추구보단, 기대에 미치지 못하더라도 완성을 하는 것이 노력의 결실이 될테니까.
 
+단순 2-bit FSM 기반 Branch Predictor를 구현했다. 워후. 
+설계하면서 기존 5SP 설계에선 없던 EX_branch 신호를 Branch Predictor에 추가했다.
+Branch 신호 자체를 파이프라이닝한 것. 
+PR에도 올린 내용이지만, Branch Predictor의 내부 4단계 FSM (Strongly Not Taken, Weakly Not Taken, Weakly Taken, Strongly Taken)의 갱신을 위해서는 해당 시점이 branch인지를 식별해야한다.
+해당 식별 신호가 없으면 branch신호가 아닌데도 현재 prediction counter의 값을 보고 계속 업데이트를 하게 되니까. 
+그래서 추가했고, 이를 RV32I46F_5SP.R4 다이어그램에 반영했다. 벌써 101번째 PR이다. 
+이젠 테스트벤치 작성도 쉽지 않다. 파이프라이닝 시점에 맞춰서 값을 넣고, 파형이 나와서 검증 할 때도 그걸 전제하고 현재의 값이 아니라 원하는 시점의 값을 정확히 봐야하기에 꽤나 시간걸렸다.
+저녁 먹기 전까지 여기까지 마치려했는데 딱 맞출 수 있었다. 이제 밥 먹고 나서 탑모듈에서 합성하고 디버깅을 할 차례다.
+으하하. 제일 큰게 남았다. 잘 해보자. (17:29)
