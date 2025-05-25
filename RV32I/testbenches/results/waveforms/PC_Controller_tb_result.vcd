@@ -1,5 +1,5 @@
 $date
-	Fri May 23 22:26:47 2025
+	Sat May 24 22:22:17 2025
 $end
 $version
 	Icarus Verilog
@@ -10,7 +10,7 @@ $end
 $scope module PCController_tb $end
 $scope module pc_controller $end
 $var wire 1 ! branch_taken $end
-$var wire 32 " imm [31:0] $end
+$var wire 32 " branch_target [31:0] $end
 $var wire 1 # jump $end
 $var wire 32 $ jump_target [31:0] $end
 $var wire 32 % pc [31:0] $end
@@ -47,8 +47,8 @@ b11011110101011010000000000000000 $
 1#
 b100 %
 #30000
-b11011110101011011011111011101111 )
-b1011111011101111 "
+b1100110011001100 )
+b1100110011001100 "
 1!
 0#
 b11011110101011010000000000000000 %
@@ -57,7 +57,7 @@ b11001010111111101011101010111110 )
 b11001010111111101011101010111110 '
 1(
 0!
-b11011110101011011011111011101111 %
+b1100110011001100 %
 #50000
 b1000000000100 )
 0(
