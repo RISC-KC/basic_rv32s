@@ -1,0 +1,106 @@
+$date
+	Sun May 25 11:17:10 2025
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module HazardUnit_tb $end
+$scope module hazard_unit $end
+$var wire 1 ! EX_jump $end
+$var wire 5 " ID_rd [4:0] $end
+$var wire 5 # ID_rs1 [4:0] $end
+$var wire 5 $ ID_rs2 [4:0] $end
+$var wire 1 % branch_prediction_miss $end
+$var wire 1 & clk $end
+$var wire 1 ' reset $end
+$var reg 1 ( IF_ID_flush $end
+$var reg 2 ) hazard_flag [1:0] $end
+$var reg 2 * hazard_op [1:0] $end
+$var reg 5 + previous_rd [4:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+$end
+#0
+$dumpvars
+b0 +
+b0 *
+b0 )
+0(
+1'
+0&
+0%
+b0 $
+b0 #
+b0 "
+0!
+$end
+#5000
+1&
+#10000
+0&
+0'
+#15000
+b11 +
+b11 "
+b10 $
+b1 #
+1&
+#20000
+0&
+#25000
+b1 *
+b101 +
+b0 )
+b101 "
+b100 $
+b11 #
+1&
+#30000
+0&
+#35000
+b111 +
+b0 )
+b10 *
+b111 "
+b101 $
+b110 #
+1&
+#40000
+0&
+#45000
+b0 *
+b10111 $
+b10110 #
+1&
+#50000
+0&
+#55000
+b11 *
+b1000 +
+b0 )
+b1000 "
+b111 $
+b111 #
+1&
+#60000
+0&
+#65000
+1(
+b0 *
+1%
+1&
+#70000
+0&
+#75000
+1!
+0%
+1&
+#80000
+0&
+#85000
