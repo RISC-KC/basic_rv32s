@@ -1,5 +1,5 @@
 $date
-	Sun May 25 13:17:08 2025
+	Sun May 25 20:38:01 2025
 $end
 $version
 	Icarus Verilog
@@ -14,19 +14,19 @@ $var wire 32 # alu_forward_source_data_b [31:0] $end
 $var wire 32 $ alu_forward_source_data_a [31:0] $end
 $var parameter 32 % XLEN $end
 $var reg 32 & MEM_alu_result [31:0] $end
-$var reg 32 ' MEM_csr_read_data [31:0] $end
-$var reg 32 ( MEM_imm [31:0] $end
-$var reg 7 ) MEM_opcode [6:0] $end
-$var reg 32 * MEM_pc_plus_4 [31:0] $end
-$var reg 32 + MEM_read_data [31:0] $end
+$var reg 32 ' MEM_byte_enable_logic_register_file_write_data [31:0] $end
+$var reg 32 ( MEM_csr_read_data [31:0] $end
+$var reg 32 ) MEM_imm [31:0] $end
+$var reg 7 * MEM_opcode [6:0] $end
+$var reg 32 + MEM_pc_plus_4 [31:0] $end
 $var reg 2 , hazard_op [1:0] $end
 $scope module forward_unit $end
 $var wire 32 - MEM_alu_result [31:0] $end
-$var wire 32 . MEM_csr_read_data [31:0] $end
-$var wire 32 / MEM_imm [31:0] $end
-$var wire 7 0 MEM_opcode [6:0] $end
-$var wire 32 1 MEM_pc_plus_4 [31:0] $end
-$var wire 32 2 MEM_read_data [31:0] $end
+$var wire 32 . MEM_byte_enable_logic_register_file_write_data [31:0] $end
+$var wire 32 / MEM_csr_read_data [31:0] $end
+$var wire 32 0 MEM_imm [31:0] $end
+$var wire 7 1 MEM_opcode [6:0] $end
+$var wire 32 2 MEM_pc_plus_4 [31:0] $end
 $var wire 2 3 hazard_op [1:0] $end
 $var wire 2 4 alu_forward_source_select_b [1:0] $end
 $var wire 2 5 alu_forward_source_select_a [1:0] $end
@@ -50,18 +50,18 @@ b0 6
 b1 5
 b1 4
 b0 3
-b10001000100010010001000100010 2
-b10000000001000000000100 1
-b110011 0
-b10101010101010100000000000000000 /
-b11111010110011101100101011111110 .
+b10000000001000000000100 2
+b110011 1
+b10101010101010100000000000000000 0
+b11111010110011101100101011111110 /
+b10001000100010010001000100010 .
 b11011110101011011011111011101111 -
 b0 ,
-b10001000100010010001000100010 +
-b10000000001000000000100 *
-b110011 )
-b10101010101010100000000000000000 (
-b11111010110011101100101011111110 '
+b10000000001000000000100 +
+b110011 *
+b10101010101010100000000000000000 )
+b11111010110011101100101011111110 (
+b10001000100010010001000100010 '
 b11011110101011011011111011101111 &
 b0 $
 b0 #
@@ -74,8 +74,8 @@ b10 5
 b10001000100010010001000100010 $
 b10001000100010010001000100010 7
 b10001000100010010001000100010 9
-b11 )
-b11 0
+b11 *
+b11 1
 b1 ,
 b1 3
 #2000
@@ -88,8 +88,8 @@ b0 7
 b10000000001000000000100 #
 b10000000001000000000100 6
 b10000000001000000000100 9
-b1100111 )
-b1100111 0
+b1100111 *
+b1100111 1
 b10 ,
 b10 3
 #3000
@@ -100,8 +100,8 @@ b0 6
 b11011110101011011011111011101111 9
 b0 ,
 b0 3
-b110011 )
-b110011 0
+b110011 *
+b110011 1
 #4000
 b10 "
 b10 5
@@ -112,8 +112,8 @@ b11111010110011101100101011111110 7
 b11111010110011101100101011111110 #
 b11111010110011101100101011111110 6
 b11111010110011101100101011111110 9
-b1110011 )
-b1110011 0
+b1110011 *
+b1110011 1
 b11 ,
 b11 3
 #5000

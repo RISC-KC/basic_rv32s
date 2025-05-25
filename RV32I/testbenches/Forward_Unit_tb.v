@@ -8,7 +8,7 @@ reg [1:0]  hazard_op;
 reg [XLEN-1:0] MEM_imm;
 reg [XLEN-1:0] MEM_alu_result;
 reg [XLEN-1:0] MEM_csr_read_data;
-reg [XLEN-1:0] MEM_read_data;
+reg [XLEN-1:0] MEM_byte_enable_logic_register_file_write_data;
 reg [XLEN-1:0] MEM_pc_plus_4;
 reg [6:0] MEM_opcode;
 
@@ -18,15 +18,15 @@ wire [1:0] alu_forward_source_select_a;
 wire [1:0] alu_forward_source_select_b;
 
 ForwardUnit forward_unit (
-    .hazard_op                 (hazard_op),
-    .MEM_imm                   (MEM_imm),
-    .MEM_alu_result            (MEM_alu_result),
-    .MEM_csr_read_data         (MEM_csr_read_data),
-    .MEM_read_data             (MEM_read_data),
-    .MEM_pc_plus_4             (MEM_pc_plus_4),
-    .MEM_opcode                (MEM_opcode),
-    .alu_forward_source_data_a (alu_forward_source_data_a),
-    .alu_forward_source_data_b (alu_forward_source_data_b),
+    .hazard_op(hazard_op),
+    .MEM_imm(MEM_imm),
+    .MEM_alu_result(MEM_alu_result),
+    .MEM_csr_read_data(MEM_csr_read_data),
+    .MEM_byte_enable_logic_register_file_write_data(MEM_byte_enable_logic_register_file_write_data),
+    .MEM_pc_plus_4(MEM_pc_plus_4),
+    .MEM_opcode(MEM_opcode),
+    .alu_forward_source_data_a(alu_forward_source_data_a),
+    .alu_forward_source_data_b(alu_forward_source_data_b),
     .alu_forward_source_select_a(alu_forward_source_select_a),
     .alu_forward_source_select_b(alu_forward_source_select_b)
 );
@@ -41,7 +41,7 @@ initial begin
     MEM_imm   = 32'hAAAA_0000;
     MEM_alu_result    = 32'hDEAD_BEEF;
     MEM_csr_read_data = 32'hFACE_CAFE;
-    MEM_read_data     = 32'h1111_2222;
+    MEM_byte_enable_logic_register_file_write_data = 32'h1111_2222;
     MEM_pc_plus_4     = 32'h0040_1004;
 
     // Test 0 : no hazard (sel = 01, data = 0)
