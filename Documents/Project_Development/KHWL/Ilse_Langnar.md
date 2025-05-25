@@ -5247,3 +5247,22 @@ rs2값이 겹쳐서 rs2를 전방전달해야하는지, 아니면 둘 다인지�
 1-bit 신호로 사용했었는데, 이를 2-bit로 확장해서 0번째 비트가 rs1 해저드, 1번째 비트가 rs2 해저드로 인식할 수 있게끔 Hazard Unit을 수정했다. 
 
 다시 Forward Unit 설계로 되돌아가야겠다. 
+설계 완료.
+Forward Unit은 Hazard Unit으로부터 2비트 데이터 해저드 식별 신호인 hazard_op를 받아 2'b01이면 rs1 해저드, 2'b10이면 rs2 해저드, 2'b11이면 둘 다, 2'b00이면 해저드 미발생으로 처리한다.
+
+동시에 hazard_op가 활성화되어 데이터 해저드가 발생했음을 알게 되면, 
+ALU의 source 를 정상적인 데이터 흐름에서 오는 값을 나타내는 값인 2'b01값에서 2'b10으로 변경하여 전방전달된 source 값을 입력받아 연산할 수 있도록 한다. 
+이 ALU source에 대한 MUX는 RV32I46F_5SP top-module에서 구현될 예정이고, 2'b00은 미선택을 의미하기 위해 남겨두었다.
+
+hazard_op를 통해 어떤 해저드인지를 알게 되면 입력된 현행 명령어의 opcode값을 기반으로 어떤 값을 전방전달시킬지를 선택한다. 
+load라면 Data_Memory 모듈의 MEM_read_data 신호를 포워딩하고, 
+SYSTEM 명령어라면 (csr등) CSR File의 MEM_csr_read_data, 
+LUI면 MEM_imm, 
+JAL이나 JALR이면 MEM_pc_plus_4. 
+나머지는 모두 MEM_alu_result를 전방전달 하도록 했다. 
+
+탑모듈에서 잊지 말고 normal-forward source select MUX를 구현하도록 하자. 
+
+이제 Branch Predictor의 구현이 남았다. BHT까지 있는게 좋겠지만.. 일단 단순 2-bit FSM으로 구현해보고 탑 모듈 합성으로 모두 잘 동작하면 그 때 추가 구현하는 것으로 한다.
+계속되는 이상의 추구보단, 기대에 미치지 못하더라도 완성을 하는 것이 노력의 결실이 될테니까.
+
