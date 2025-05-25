@@ -19,7 +19,7 @@ module MEM_WB_Register_tb;
     reg [4:0] MEM_rd;
 
     // signals from MEM phase
-    reg [XLEN-1:0] MEM_register_file_write_data;
+    reg [XLEN-1:0] MEM_byte_enable_logic_register_file_write_data;
 
     wire [XLEN-1:0] WB_pc_plus_4;
 
@@ -31,7 +31,7 @@ module MEM_WB_Register_tb;
     wire WB_csr_write_enable;
     wire [4:0] WB_rd;
 
-    wire [XLEN-1:0] WB_register_file_write_data;
+    wire [XLEN-1:0] WB_byte_enable_logic_register_file_write_data;
 
     MEM_WB_Register #(.XLEN(32)) mem_wb_register (
         .clk(clk),
@@ -46,7 +46,7 @@ module MEM_WB_Register_tb;
         .MEM_register_write_enable(MEM_register_write_enable),
         .MEM_csr_write_enable(MEM_csr_write_enable),
         .MEM_rd(MEM_rd),
-        .MEM_register_file_write_data(MEM_register_file_write_data),
+        .MEM_byte_enable_logic_register_file_write_data(MEM_byte_enable_logic_register_file_write_data),
 
         .WB_pc_plus_4(WB_pc_plus_4),
         .WB_register_file_write_data_select(WB_register_file_write_data_select),
@@ -56,7 +56,7 @@ module MEM_WB_Register_tb;
         .WB_register_write_enable(WB_register_write_enable),
         .WB_csr_write_enable(WB_csr_write_enable),
         .WB_rd(WB_rd),
-        .WB_register_file_write_data(WB_register_file_write_data)
+        .WB_byte_enable_logic_register_file_write_data(WB_byte_enable_logic_register_file_write_data)
     );
 
     always #5 clk = ~clk;
@@ -77,7 +77,7 @@ module MEM_WB_Register_tb;
         $display("|     PC+4     | RF_WD select |  CSR Write Enable | RegF Write Enable |");
         $display("|   %h   |      %b     |         %b         |         %b         |", WB_pc_plus_4, WB_register_file_write_data_select, WB_csr_write_enable, WB_register_write_enable);
         $display("|    BERF_WD   |     imm    | csr_read_data |   ALU result   |   rd   |");
-        $display("|   %h   |  %h  |   %h    |    %h    |  %b  |\n", WB_register_file_write_data, WB_imm, WB_csr_read_data, WB_alu_result, WB_rd);
+        $display("|   %h   |  %h  |   %h    |    %h    |  %b  |\n", WB_byte_enable_logic_register_file_write_data, WB_imm, WB_csr_read_data, WB_alu_result, WB_rd);
         #10;
         
         // Test 1
@@ -90,14 +90,14 @@ module MEM_WB_Register_tb;
         MEM_register_write_enable        = 1'b1;            // Register Write Enable
         MEM_csr_write_enable             = 1'b0;
         MEM_rd                           = 5'b00110;
-        MEM_register_file_write_data     = 32'h0000_000A;   // Dummy BERF_WD data value
+        MEM_byte_enable_logic_register_file_write_data     = 32'h0000_000A;   // Dummy BERF_WD data value
 
         @(posedge clk); #1;
         $display("Test 1: Previous value should be output now");
         $display("|     PC+4     | RF_WD select |  CSR Write Enable | RegF Write Enable |");
         $display("|   %h   |      %b     |         %b         |         %b         |", WB_pc_plus_4, WB_register_file_write_data_select, WB_csr_write_enable, WB_register_write_enable);
         $display("|    BERF_WD   |     imm    | csr_read_data |   ALU result   |   rd   |");
-        $display("|   %h   |  %h  |   %h    |    %h    |  %b  |\n", WB_register_file_write_data, WB_imm, WB_csr_read_data, WB_alu_result, WB_rd);
+        $display("|   %h   |  %h  |   %h    |    %h    |  %b  |\n", WB_byte_enable_logic_register_file_write_data, WB_imm, WB_csr_read_data, WB_alu_result, WB_rd);
         
         // Test 2@(posedge clk); #1;
         @(posedge clk); #1;
@@ -105,7 +105,7 @@ module MEM_WB_Register_tb;
         $display("|     PC+4     | RF_WD select |  CSR Write Enable | RegF Write Enable |");
         $display("|   %h   |      %b     |         %b         |         %b         |", WB_pc_plus_4, WB_register_file_write_data_select, WB_csr_write_enable, WB_register_write_enable);
         $display("|    BERF_WD   |     imm    | csr_read_data |   ALU result   |   rd   |");
-        $display("|   %h   |  %h  |   %h    |    %h    |  %b  |\n", WB_register_file_write_data, WB_imm, WB_csr_read_data, WB_alu_result, WB_rd);
+        $display("|   %h   |  %h  |   %h    |    %h    |  %b  |\n", WB_byte_enable_logic_register_file_write_data, WB_imm, WB_csr_read_data, WB_alu_result, WB_rd);
 
         // Test 3
         @(negedge clk); 
@@ -117,19 +117,19 @@ module MEM_WB_Register_tb;
         MEM_register_write_enable        = 1'b1;
         MEM_csr_write_enable             = 1'b0;
         MEM_rd                           = 5'b00111;
-        MEM_register_file_write_data     = 32'hDEAD_BEEF;   // Dummy BERF_WD data value
+        MEM_byte_enable_logic_register_file_write_data     = 32'hDEAD_BEEF;   // Dummy BERF_WD data value
         $display("Test 3-1: new input now(should be same)");
         $display("|     PC+4     | RF_WD select |  CSR Write Enable | RegF Write Enable |");
         $display("|   %h   |      %b     |         %b         |         %b         |", WB_pc_plus_4, WB_register_file_write_data_select, WB_csr_write_enable, WB_register_write_enable);
         $display("|    BERF_WD   |     imm    | csr_read_data |   ALU result   |   rd   |");
-        $display("|   %h   |  %h  |   %h    |    %h    |  %b  |\n", WB_register_file_write_data, WB_imm, WB_csr_read_data, WB_alu_result, WB_rd);
+        $display("|   %h   |  %h  |   %h    |    %h    |  %b  |\n", WB_byte_enable_logic_register_file_write_data, WB_imm, WB_csr_read_data, WB_alu_result, WB_rd);
 
         @(posedge clk); #1;
         $display("Test 3-2: Test 3-1 input should be output now \n");
         $display("|     PC+4     | RF_WD select |  CSR Write Enable | RegF Write Enable |");
         $display("|   %h   |      %b     |         %b         |         %b         |", WB_pc_plus_4, WB_register_file_write_data_select, WB_csr_write_enable, WB_register_write_enable);
         $display("|    BERF_WD   |     imm    | csr_read_data |   ALU result   |   rd   |");
-        $display("|   %h   |  %h  |   %h    |    %h    |  %b  |\n", WB_register_file_write_data, WB_imm, WB_csr_read_data, WB_alu_result, WB_rd);
+        $display("|   %h   |  %h  |   %h    |    %h    |  %b  |\n", WB_byte_enable_logic_register_file_write_data, WB_imm, WB_csr_read_data, WB_alu_result, WB_rd);
 
         flush = 1'b1; #10;
         flush = 1'b0;
@@ -139,7 +139,7 @@ module MEM_WB_Register_tb;
         $display("|     PC+4     | RF_WD select |  CSR Write Enable | RegF Write Enable |");
         $display("|   %h   |      %b     |         %b         |         %b         |", WB_pc_plus_4, WB_register_file_write_data_select, WB_csr_write_enable, WB_register_write_enable);
         $display("|    BERF_WD   |     imm    | csr_read_data |   ALU result   |   rd   |");
-        $display("|   %h   |  %h  |   %h    |    %h    |  %b  |\n", WB_register_file_write_data, WB_imm, WB_csr_read_data, WB_alu_result, WB_rd);
+        $display("|   %h   |  %h  |   %h    |    %h    |  %b  |\n", WB_byte_enable_logic_register_file_write_data, WB_imm, WB_csr_read_data, WB_alu_result, WB_rd);
 
         MEM_pc_plus_4                    = 32'h0000_000C;
         MEM_register_file_write_data_select = 3'b011;       // CSR read → Register File
@@ -149,18 +149,18 @@ module MEM_WB_Register_tb;
         MEM_register_write_enable        = 1'b1;            // rd ← CSR
         MEM_csr_write_enable             = 1'b1;            // CSR write enable
         MEM_rd                           = 5'b10001;
-        MEM_register_file_write_data     = 32'hCAFE_BABE;   // Dummy BERF_WD data value
+        MEM_byte_enable_logic_register_file_write_data     = 32'hCAFE_BABE;   // Dummy BERF_WD data value
         $display("Test 5-1: Input begin (should be same)");
         $display("|     PC+4     | RF_WD select |  CSR Write Enable | RegF Write Enable |");
         $display("|   %h   |      %b     |         %b         |         %b         |", WB_pc_plus_4, WB_register_file_write_data_select, WB_csr_write_enable, WB_register_write_enable);
         $display("|    BERF_WD   |     imm    | csr_read_data |   ALU result   |   rd   |");
-        $display("|   %h   |  %h  |   %h    |    %h    |  %b  |\n", WB_register_file_write_data, WB_imm, WB_csr_read_data, WB_alu_result, WB_rd);
+        $display("|   %h   |  %h  |   %h    |    %h    |  %b  |\n", WB_byte_enable_logic_register_file_write_data, WB_imm, WB_csr_read_data, WB_alu_result, WB_rd);
         #10;
         $display("Test 5-2: Test 5-1's input should be output now");
         $display("|     PC+4     | RF_WD select |  CSR Write Enable | RegF Write Enable |");
         $display("|   %h   |      %b     |         %b         |         %b         |", WB_pc_plus_4, WB_register_file_write_data_select, WB_csr_write_enable, WB_register_write_enable);
         $display("|    BERF_WD   |     imm    | csr_read_data |   ALU result   |   rd   |");
-        $display("|   %h   |  %h  |   %h    |    %h    |  %b  |\n", WB_register_file_write_data, WB_imm, WB_csr_read_data, WB_alu_result, WB_rd);
+        $display("|   %h   |  %h  |   %h    |    %h    |  %b  |\n", WB_byte_enable_logic_register_file_write_data, WB_imm, WB_csr_read_data, WB_alu_result, WB_rd);
 
         $display("\n====================  MEM_WB_Register Test END  ====================");
 

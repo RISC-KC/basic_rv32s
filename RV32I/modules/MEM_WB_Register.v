@@ -18,7 +18,7 @@ module MEM_WB_Register #(
     input wire [4:0] MEM_rd,
 
     // signals from MEM phase
-    input wire [XLEN-1:0] MEM_register_file_write_data,
+    input wire [XLEN-1:0] MEM_byte_enable_logic_register_file_write_data,
 
     // signals to MEM register
     output reg [XLEN-1:0] WB_pc_plus_4,
@@ -31,7 +31,7 @@ module MEM_WB_Register #(
     output reg WB_csr_write_enable,
     output reg [4:0] WB_rd,
 
-    output reg [XLEN-1:0] WB_register_file_write_data
+    output reg [XLEN-1:0] WB_byte_enable_logic_register_file_write_data
 );
 
 always @(posedge clk or posedge reset) begin
@@ -46,7 +46,7 @@ always @(posedge clk or posedge reset) begin
         WB_csr_write_enable <= 1'b0;
         WB_rd <= 5'b0;
         
-        WB_register_file_write_data <= {XLEN{1'b0}};
+        WB_byte_enable_logic_register_file_write_data <= {XLEN{1'b0}};
     end else begin
         WB_pc_plus_4 <= MEM_pc_plus_4;
 
@@ -58,7 +58,7 @@ always @(posedge clk or posedge reset) begin
         WB_csr_write_enable <= MEM_csr_write_enable;
         WB_rd <= MEM_rd;
         
-        WB_register_file_write_data <= MEM_register_file_write_data;
+        WB_byte_enable_logic_register_file_write_data <= MEM_byte_enable_logic_register_file_write_data;
     end
 end
 
