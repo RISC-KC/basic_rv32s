@@ -3,14 +3,16 @@
 `include "modules/headers/itype.vh"
 `include "modules/headers/opcode.vh"
 `include "modules/headers/rf_wd_select.vh"
+`include "modules/headers/pcc_op.vh"
 
 module ControlUnit (
 	input write_done,	// signal indicating if write is done
 	input trap_done,	// signal indicating if Pre-Trap Handling is done
 	input [6:0] opcode, // opcode from Instruction Decoder
 	input [2:0] funct3, // funct3 from Instruction Decoder
-    
-	output reg jump,
+	input trapped,
+	input branch_taken,
+
 	output reg branch,
 	output reg [1:0] alu_src_A_select,
 	output reg [2:0] alu_src_B_select,
@@ -19,19 +21,21 @@ module ControlUnit (
 	output reg [2:0] register_file_write_data_select,
 	output reg memory_read,
 	output reg memory_write,
-	output reg pc_stall
-);
-
+	output reg [2:0] pcc_op
+);	
     always @(*) begin
-		pc_stall = !write_done || !trap_done;
-
-		case (opcode)
+		if (trapped && !trap_done) begin
+			pcc_op = `PCC_STALL;
+		end else if (trapped) begin
+			pcc_op = `PCC_TRAPPED;
+		end else begin 
+			case (opcode)
 			`OPCODE_LUI: begin // Load upper immediate
-				// No jump
-				jump = 0;
-				
-				// No branch
+				// No Branch
 				branch = 0;
+
+				// PC Controller opcode
+				pcc_op = `PCC_NONE;
 				
 				// No alu operation
 				alu_src_A_select = `ALU_SRC_A_NONE;
@@ -49,11 +53,11 @@ module ControlUnit (
 				memory_write = 0;
 			end
 			`OPCODE_AUIPC: begin
-				// No jump
-				jump = 0;
-				
-				// No branch
+				// No Branch
 				branch = 0;
+				
+				// PC Controller opcode
+				pcc_op = `PCC_NONE;
 				
 				// PC + {imm, 12'b0}
 				alu_src_A_select = `ALU_SRC_A_PC;
@@ -71,11 +75,11 @@ module ControlUnit (
 				memory_write = 0;
 			end
 			`OPCODE_JAL: begin
-				// Jump
-				jump = 1;
-				
 				// No branch
 				branch = 0;
+
+				// PC Controller opcode
+				pcc_op = `PCC_JUMP;
 				
 				// PC + {imm, 1'b0}
 				alu_src_A_select = `ALU_SRC_A_PC;
@@ -93,11 +97,11 @@ module ControlUnit (
 				memory_write = 0;
 			end
 			`OPCODE_JALR: begin
-				// Jump
-				jump = 1;
-				
 				// No branch
 				branch = 0;
+
+				// PC Controller opcode
+				pcc_op = `PCC_JUMP;
 				
 				// R[rs1] + imm
 				alu_src_A_select = `ALU_SRC_A_RD1;
@@ -115,9 +119,6 @@ module ControlUnit (
 				memory_write = 0;
 			end
 			`OPCODE_BRANCH: begin
-				// No jump
-				jump = 0;
-				
 				// Branch
 				branch = 1;
 				
@@ -125,6 +126,13 @@ module ControlUnit (
 				alu_src_A_select = `ALU_SRC_A_RD1;
 				alu_src_B_select = `ALU_SRC_B_RD2;
 				
+				// PC Controller opcode
+				if (branch_taken == 1) begin
+					pcc_op = `PCC_BTAKEN;
+				end else begin
+					pcc_op = `PCC_NONE;
+				end
+
 				// No CSR operation
 				csr_write_enable = 0;
 				
@@ -137,11 +145,11 @@ module ControlUnit (
 				memory_write = 0;
 			end
 			`OPCODE_LOAD: begin
-				// No jump
-				jump = 0;
-				
-				// No branch
+				// No Branch
 				branch = 0;
+
+				// PC Controller opcode
+				pcc_op = `PCC_NONE;
 				
 				// R[rs1] + imm
 				alu_src_A_select = `ALU_SRC_A_RD1;
@@ -159,11 +167,11 @@ module ControlUnit (
 				memory_write = 0;
 			end
 			`OPCODE_STORE: begin
-				// No jump
-				jump = 0;
-				
 				// No branch
 				branch = 0;
+
+				// PC Controller opcode
+				pcc_op = `PCC_NONE;
 				
 				// R[rs1] + imm
 				alu_src_A_select = `ALU_SRC_A_RD1;
@@ -181,11 +189,11 @@ module ControlUnit (
 				memory_write = 1;
 			end
 			`OPCODE_ITYPE: begin
-				// No jump
-				jump = 0;
-				
 				// No branch
 				branch = 0;
+
+				// PC Controller opcode
+				pcc_op = `PCC_NONE;
 				
 				// Operation on R[rs1] and imm
 				alu_src_A_select = `ALU_SRC_A_RD1;
@@ -209,11 +217,11 @@ module ControlUnit (
 				memory_write = 0;
 			end
 			`OPCODE_RTYPE: begin
-				// No jump
-				jump = 0;
-				
 				// No branch
 				branch = 0;
+
+				// PC Controller opcode
+				pcc_op = `PCC_NONE;
 				
 				// Operation on R[rs1] and R[rs2]
 				alu_src_A_select = `ALU_SRC_A_RD1;
@@ -231,11 +239,11 @@ module ControlUnit (
 				memory_write = 0;
 			end
 			`OPCODE_FENCE: begin
-				// No jump
-				jump = 0;
-				
 				// No branch
 				branch = 0;
+
+				// PC Controller opcode
+				pcc_op = `PCC_NONE;
 				
 				// No ALU operation
 				alu_src_A_select = `ALU_SRC_A_NONE;
@@ -253,11 +261,11 @@ module ControlUnit (
 				memory_write = 0;
 			end
 			`OPCODE_ENVIRONMENT: begin
-				// No jump
-				jump = 0;
-				
 				// No branch
 				branch = 0;
+
+				// PC Controller opcode
+				pcc_op = `PCC_NONE;
 
 				// Do CSR operation or not by funct3
 				csr_write_enable = (funct3 == 0) ? 0 : 1;
@@ -297,5 +305,5 @@ module ControlUnit (
 			end
 		endcase
     end
-
+	end
 endmodule
