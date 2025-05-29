@@ -4,123 +4,110 @@
 
 module BranchLogic_tb;
 	reg branch;
+	reg branch_estimation;
     reg [2:0] funct3;
     reg alu_zero;
-	reg [31:0] pc;
-	reg [31:0] imm;
     
     wire branch_taken;
-	wire [31:0] branch_target;
+	wire branch_prediction_miss;
 
     BranchLogic branch_logic (
         .branch(branch),
+		.branch_estimation(branch_estimation),
         .funct3(funct3),
         .alu_zero(alu_zero),
-		.pc(pc),
-		.imm(imm),
 
         .branch_taken(branch_taken),
-		.branch_target(branch_target)
+		.branch_prediction_miss(branch_prediction_miss)
     );
 
     initial begin
         // Test sequence
         $display("==================== Branch Logic Test START ====================");
 
-        branch = 0;
+        branch = 1'b0;
+		branch_estimation = 1'b0;
 		funct3 = 3'b0;
 		alu_zero = 0;
-		pc = 32'h0;
-		imm = 32'h0;
 		
         // Test 1: Branch disabled
-		$display("\nBranch disabled: ");
+		$display("[Idle] branch=%b, est=%b -> taken=%b, miss=%b", branch, branch_estimation, branch_taken, branch_prediction_miss);
 		
 		funct3 = 3'b111;
 		alu_zero = 1;
 		
 		#10;
-        $display("branch: %b, funct3: %b, alu_zero: %b, pc: %h, imm: %h, \nbranch_taken: %b, branch_target: %h\n", branch, funct3, alu_zero, pc, imm, branch_taken, branch_target);
+        $display("[Idle] branch=%b, est=%b -> taken=%b, miss=%b", branch, branch_estimation, branch_taken, branch_prediction_miss);
 		
 		branch = 1;
-		pc = 32'hDEAD_0000;
-		imm = 32'h0000_BEE8;
+		branch_estimation = 1'b0;
 
 		// Test 2: BEQ
 		$display("\nBEQ: ");
 		
 		funct3 = `BRANCH_BEQ;
 		
-		alu_zero = 0; #10;
-        $display("branch: %b, funct3: %b, alu_zero: %b, pc: %h, imm: %h, \nbranch_taken: %b, branch_target: %h\n", branch, funct3, alu_zero, pc, imm, branch_taken, branch_target);
-		
 		alu_zero = 1; #10;
-        $display("branch: %b, funct3: %b, alu_zero: %b, pc: %h, imm: %h, \nbranch_taken: %b, branch_target: %h\n", branch, funct3, alu_zero, pc, imm, branch_taken, branch_target);
+        $display("[BEQ miss] est=%b alu_zero=%b -> taken=%b, miss=%b", branch_estimation, alu_zero, branch_taken, branch_prediction_miss);
+		
+		alu_zero = 0; #10;
+        $display("[BEQ hit] est=%b alu_zero=%b -> taken=%b, miss=%b", branch_estimation, alu_zero, branch_taken, branch_prediction_miss);
 		
 		// Test 2: BNE
 		$display("\nBNE: ");
 		
 		funct3 = `BRANCH_BNE;
-		pc = 32'h1111_0000;
-		imm = 32'h0000_BEE8;
-		
-		alu_zero = 1; #10;
-        $display("branch: %b, funct3: %b, alu_zero: %b, pc: %h, imm: %h, \nbranch_taken: %b, branch_target: %h\n", branch, funct3, alu_zero, pc, imm, branch_taken, branch_target);
+		branch_estimation = 1'b1;
 		
 		alu_zero = 0; #10;
-        $display("branch: %b, funct3: %b, alu_zero: %b, pc: %h, imm: %h, \nbranch_taken: %b, branch_target: %h\n", branch, funct3, alu_zero, pc, imm, branch_taken, branch_target);
+        $display("[BNE hit] est=%b alu_zero=%b -> taken=%b, miss=%b", branch_estimation, alu_zero, branch_taken, branch_prediction_miss);
+		
+		alu_zero = 1; #10;
+        $display("[BNE miss] est=%b alu_zero=%b -> taken=%b, miss=%b", branch_estimation, alu_zero, branch_taken, branch_prediction_miss);
 		
 		// Test 3: BLT
 		$display("\nBLT: ");
 		
 		funct3 = `BRANCH_BLT;
-		pc = 32'h1111_0000;
-		imm = 32'h0000_2220;
 		
 		alu_zero = 1; #10;
-        $display("branch: %b, funct3: %b, alu_zero: %b, pc: %h, imm: %h, \nbranch_taken: %b, branch_target: %h\n", branch, funct3, alu_zero, pc, imm, branch_taken, branch_target);
+        $display("[BNE miss] est=%b alu_zero=%b -> taken=%b, miss=%b", branch_estimation, alu_zero, branch_taken, branch_prediction_miss);
 		
 		alu_zero = 0; #10;
-        $display("branch: %b, funct3: %b, alu_zero: %b, pc: %h, imm: %h, \nbranch_taken: %b, branch_target: %h\n", branch, funct3, alu_zero, pc, imm, branch_taken, branch_target);
+        $display("[BLT hit] est=%b alu_zero=%b -> taken=%b, miss=%b", branch_estimation, alu_zero, branch_taken, branch_prediction_miss);
 		
 		// Test 4: BGE
 		$display("\nBGE: ");
 		
 		funct3 = `BRANCH_BGE;
-		pc = 32'hAAAA_0000;
-		imm = 32'h0000_BBBC;
 		
 		alu_zero = 0; #10;
-        $display("branch: %b, funct3: %b, alu_zero: %b, pc: %h, imm: %h, \nbranch_taken: %b, branch_target: %h\n", branch, funct3, alu_zero, pc, imm, branch_taken, branch_target);
+        $display("[BGE miss] est=%b alu_zero=%b -> taken=%b, miss=%b", branch_estimation, alu_zero, branch_taken, branch_prediction_miss);
 		
 		alu_zero = 1; #10;
-        $display("branch: %b, funct3: %b, alu_zero: %b, pc: %h, imm: %h, \nbranch_taken: %b, branch_target: %h\n", branch, funct3, alu_zero, pc, imm, branch_taken, branch_target);
+        $display("[BGE hit] est=%b alu_zero=%b -> taken=%b, miss=%b", branch_estimation, alu_zero, branch_taken, branch_prediction_miss);
 		
 		// Test 5: BLTU
 		$display("\nBLTU: ");
 		
 		funct3 = `BRANCH_BLTU;
-		pc = 32'hCAFE_0000;
-		imm = 32'h0000_BEEF;
 		
 		alu_zero = 1; #10;
-        $display("branch: %b, funct3: %b, alu_zero: %b, pc: %h, imm: %h, \nbranch_taken: %b, branch_target: %h\n", branch, funct3, alu_zero, pc, imm, branch_taken, branch_target);
+        $display("[BLTU miss] est=%b alu_zero=%b -> taken=%b, miss=%b", branch_estimation, alu_zero, branch_taken, branch_prediction_miss);
 		
 		alu_zero = 0; #10;
-        $display("branch: %b, funct3: %b, alu_zero: %b, pc: %h, imm: %h, \nbranch_taken: %b, branch_target: %h\n", branch, funct3, alu_zero, pc, imm, branch_taken, branch_target);
+        $display("[BLTU hit] est=%b alu_zero=%b -> taken=%b, miss=%b", branch_estimation, alu_zero, branch_taken, branch_prediction_miss);
 		
 		// Test 6: BGEU
 		$display("\nBGEU: ");
 		
 		funct3 = `BRANCH_BGEU;
-		pc = 32'hAABB_0000;
-		imm = 32'h0000_CCCC;
 		
 		alu_zero = 0; #10;
-        $display("branch: %b, funct3: %b, alu_zero: %b, pc: %h, imm: %h, \nbranch_taken: %b, branch_target: %h\n", branch, funct3, alu_zero, pc, imm, branch_taken, branch_target);
+        $display("[BGEU miss] est=%b alu_zero=%b -> taken=%b, miss=%b", branch_estimation, alu_zero, branch_taken, branch_prediction_miss);
 		
 		alu_zero = 1; #10;
-        $display("branch: %b, funct3: %b, alu_zero: %b, pc: %h, imm: %h, \nbranch_taken: %b, branch_target: %h\n", branch, funct3, alu_zero, pc, imm, branch_taken, branch_target);
+        $display("[BGEU hit] est=%b alu_zero=%b -> taken=%b, miss=%b", branch_estimation, alu_zero, branch_taken, branch_prediction_miss);
 		
 		$display("\n====================  Branch Logic Test END  ====================");
 		
