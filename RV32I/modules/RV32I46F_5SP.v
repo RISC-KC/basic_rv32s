@@ -227,7 +227,7 @@ module RV32I46F5SP #(
     );
 
     PCController pc_controller (
-        .jump(jump),
+        .jump(EX_jump),
         .branch_taken(branch_estimation),
         .trapped(trapped),
 	    .pc(pc),
@@ -273,9 +273,9 @@ module RV32I46F5SP #(
 	    .opcode(opcode),
 	    .funct3(funct3),
         .trap_done(trap_done),
-        .trapped(trapped),
-        .branch_taken(branch_taken),
+        .pc_stall(pc_stall),
 
+        .jump(jump),
 	    .branch(branch),
 	    .alu_src_A_select(alu_src_A_select),
 	    .alu_src_B_select(alu_src_B_select),
@@ -333,8 +333,7 @@ module RV32I46F5SP #(
         .pc(pc),
         .imm(imm),
     
-        .branch_taken(branch_taken),
-        .branch_target(branch_target)
+        .branch_taken(branch_taken)
     );
 
     ByteEnableLogic byte_enable_logic (
@@ -389,7 +388,7 @@ module RV32I46F5SP #(
     IF_ID_Register if_id_register (
         .clk(clk),
 		.reset(reset),
-        .flush(flush),
+        .flush(IF_ID_flush),
 
         // Signals from IF Phase
         .IF_pc(pc),
@@ -422,7 +421,7 @@ module RV32I46F5SP #(
         .ID_memory_read(memory_read),
         .ID_memory_write(memory_write),
         .ID_register_file_write_data_select(register_file_write_data_select),
-        .ID_register_write_enable(register_write_enable),
+        .ID_register_write_enable(register_file_write),
         .ID_csr_write_enable(csr_write_enable),
         .ID_opcode(opcode), 
         .ID_funct3(funct3),
@@ -531,9 +530,9 @@ module RV32I46F5SP #(
     HazardUnit hazard_unit (
         .clk(clk),
         .reset(reset),
-        .ID_rs1(ID_rs1),
-        .ID_rs2(ID_rs2),
-        .ID_rd(ID_rd),
+        .ID_rs1(rs1),
+        .ID_rs2(rs2),
+        .ID_rd(rd),
         .branch_prediction_miss(branch_prediction_miss),
         .EX_jump(EX_jump),
 
@@ -546,7 +545,7 @@ module RV32I46F5SP #(
     .MEM_imm(MEM_imm),
     .MEM_alu_result(MEM_alu_result),
     .MEM_csr_read_data(MEM_csr_read_data),
-    .MEM_byte_enable_logic_register_file_write_data(MEM_byte_enable_logic_register_file_write_data),
+    .MEM_byte_enable_logic_register_file_write_data(byte_enable_logic_register_file_write_data),
     .MEM_pc_plus_4(MEM_pc_plus_4),
     .MEM_opcode(MEM_opcode),
     .alu_forward_source_data_a(alu_forward_source_data_a),
@@ -559,12 +558,12 @@ module RV32I46F5SP #(
         .clk(clk),
         .reset(reset),
         .IF_opcode(IF_opcode),
-        .IF_pc (IF_pc),
+        .IF_pc (pc),
         .IF_imm (IF_imm),
         .EX_pc (EX_pc),
         .EX_imm (EX_imm),
-        .EX_branch(EX_branch),
-        .EX_branch_taken (EX_branch_taken),
+        .EX_branch(EX_branch),  
+        .EX_branch_taken (branch_taken),
 
         .branch_estimation (branch_estimation),
         .branch_target (branch_target)
