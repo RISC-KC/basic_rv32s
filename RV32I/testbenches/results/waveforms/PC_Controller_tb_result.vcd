@@ -1,5 +1,5 @@
 $date
-	Sat May 24 22:22:17 2025
+	Thu May 29 21:57:49 2025
 $end
 $version
 	Icarus Verilog
@@ -9,7 +9,7 @@ $timescale
 $end
 $scope module PCController_tb $end
 $scope module pc_controller $end
-$var wire 1 ! branch_taken $end
+$var wire 1 ! branch_estimation $end
 $var wire 32 " branch_target [31:0] $end
 $var wire 1 # jump $end
 $var wire 32 $ jump_target [31:0] $end
