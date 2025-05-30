@@ -228,7 +228,7 @@ module RV32I46F5SP #(
 
     PCController pc_controller (
         .jump(EX_jump),
-        .branch_taken(branch_estimation),
+        .branch_estimation(branch_estimation),
         .trapped(trapped),
 	    .pc(pc),
         .jump_target(alu_result),
@@ -330,8 +330,6 @@ module RV32I46F5SP #(
         .branch(branch),
         .funct3(funct3),
         .alu_zero(alu_zero),
-        .pc(pc),
-        .imm(imm),
     
         .branch_taken(branch_taken)
     );
@@ -411,6 +409,7 @@ module RV32I46F5SP #(
         // Signals from IF_ID_Register
         .ID_pc(ID_pc),
         .ID_pc_plus_4(ID_pc_plus_4),
+        .ID_instruction(ID_instruction),
         .ID_branch_estimation(ID_branch_estimation),
 
         // Signals from ID Phase
@@ -437,6 +436,7 @@ module RV32I46F5SP #(
         // Signals to EX_MEM_Register
         .EX_pc(EX_pc),
         .EX_pc_plus_4(EX_pc_plus_4),
+        .EX_instruction(EX_instruction),
         .EX_branch_estimation(EX_branch_estimation),
         .EX_jump(EX_jump),
         .EX_memory_read(EX_memory_read),
@@ -465,7 +465,9 @@ module RV32I46F5SP #(
         .flush(flush),
 
         // Signals from ID_EX_Register
+        .EX_pc(EX_pc),
         .EX_pc_plus_4(EX_pc_plus_4),
+        .EX_instruction(EX_instruction),
         .EX_memory_read(EX_memory_read),
         .EX_memory_write(EX_memory_write),
         .EX_register_file_write_data_select(EX_register_file_write_data_select),
@@ -482,7 +484,9 @@ module RV32I46F5SP #(
         .EX_alu_result(alu_result),
 
         // Signals to MEM_WB_Register
+        .MEM_pc(MEM_pc),
         .MEM_pc_plus_4(MEM_pc_plus_4),
+        .MEM_instruction(MEM_instruction),
         .MEM_memory_read(MEM_memory_read),
         .MEM_memory_write(MEM_memory_write),
         .MEM_register_file_write_data_select(MEM_register_file_write_data_select),
@@ -503,7 +507,9 @@ module RV32I46F5SP #(
         .flush(flush),
 
         // Signals from EX_MEM_Register
+        .MEM_pc(MEM_pc),
         .MEM_pc_plus_4(MEM_pc_plus_4),
+        .MEM_instruction(MEM_instruction),
         .MEM_register_file_write_data_select(MEM_register_file_write_data_select),
         .MEM_imm(MEM_imm),
         .MEM_csr_read_data(MEM_csr_read_data),
@@ -516,7 +522,9 @@ module RV32I46F5SP #(
         .MEM_byte_enable_logic_register_file_write_data(byte_enable_logic_register_file_write_data),
 
         // Signals to WB Phase
+        .WB_pc(WB_pc),
         .WB_pc_plus_4(WB_pc_plus_4),
+        .WB_instruction(WB_instruction),
         .WB_register_file_write_data_select(WB_register_file_write_data_select),
         .WB_imm(WB_imm),
         .WB_csr_read_data(WB_csr_read_data),
