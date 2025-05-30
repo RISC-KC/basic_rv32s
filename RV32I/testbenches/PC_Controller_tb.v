@@ -2,7 +2,7 @@
 
 module PCController_tb;
     reg jump;
-    reg branch_taken;
+    reg branch_estimation;
     reg trapped;
     reg [31:0] pc;
     reg [31:0] jump_target;
@@ -14,7 +14,7 @@ module PCController_tb;
 
     PCController pc_controller (
         .jump(jump),
-        .branch_taken(branch_taken),
+        .branch_estimation(branch_estimation),
         .trapped(trapped),
         .pc(pc),
         .jump_target(jump_target),
@@ -43,7 +43,7 @@ module PCController_tb;
         pc_stall = 1;
 
         jump = 1;
-        branch_taken = 0;
+        branch_estimation = 0;
         trapped = 0;
 
         jump_target = 32'h12345678;
@@ -59,7 +59,7 @@ module PCController_tb;
         pc_stall = 0;
 
         jump = 0;
-        branch_taken = 0;
+        branch_estimation = 0;
         trapped = 0;
 
         #10;
@@ -71,7 +71,7 @@ module PCController_tb;
         pc = next_pc;
 
         jump = 1;
-		branch_taken = 0;
+		branch_estimation = 0;
 		trapped = 0;
 
         jump_target = 32'hDEAD0000;
@@ -85,7 +85,7 @@ module PCController_tb;
         pc = next_pc;
 
 		jump = 0;
-		branch_taken = 1;
+		branch_estimation = 1;
 		trapped = 0;
 
         branch_target = 32'h0000CCCC;
@@ -99,7 +99,7 @@ module PCController_tb;
         pc = next_pc;
 
 		jump = 0;
-		branch_taken = 0;
+		branch_estimation = 0;
 		trapped = 1;
 		
         trap_target = 32'hCAFEBABE;
@@ -113,7 +113,7 @@ module PCController_tb;
         pc = 32'h00001000;
 
 		jump = 0;
-		branch_taken = 0;
+		branch_estimation = 0;
 		trapped = 0;
 		
         #10;
