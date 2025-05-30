@@ -154,6 +154,7 @@ module RV32I46F5SP #(
 
     wire [XLEN-1:0] EX_pc;
     wire [XLEN-1:0] EX_pc_plus_4;
+    wire [XLEN-1:0] EX_instruction;
     wire EX_branch_estimation;
 
     // EX_MEM_Register
@@ -179,7 +180,9 @@ module RV32I46F5SP #(
 
     wire [XLEN-1:0] EX_alu_result;
 
+    wire [XLEN-1:0] MEM_pc;
     wire [XLEN-1:0] MEM_pc_plus_4;
+    wire [XLEN-1:0] MEM_instruction;
 
     wire MEM_memory_read;
     wire MEM_memory_write;
@@ -195,7 +198,9 @@ module RV32I46F5SP #(
     wire [XLEN-1:0] MEM_csr_read_data;
     wire [XLEN-1:0] MEM_alu_result;
 
+    wire [XLEN-1:0] WB_pc;
     wire [XLEN-1:0] WB_pc_plus_4;
+    wire [XLEN-1:0] WB_instruction;
 
     // MEM_WB_Register
     wire [2:0] WB_register_file_write_data_select;
@@ -404,7 +409,7 @@ module RV32I46F5SP #(
     ID_EX_Register id_ex_register (
         .clk(clk),
 		.reset(reset),
-        .flush(flush),
+        .flush(ID_EX_flush),
         
         // Signals from IF_ID_Register
         .ID_pc(ID_pc),
@@ -545,7 +550,8 @@ module RV32I46F5SP #(
         .EX_jump(EX_jump),
 
         .hazard_op(hazard_op),
-        .IF_ID_flush(IF_ID_flush)
+        .IF_ID_flush(IF_ID_flush),
+        .ID_EX_flush(ID_EX_flush)
     );
 
     ForwardUnit forward_unit (

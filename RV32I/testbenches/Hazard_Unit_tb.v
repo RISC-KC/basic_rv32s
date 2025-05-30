@@ -11,6 +11,7 @@ module HazardUnit_tb;
 
     wire [1:0] hazard_op;
     wire IF_ID_flush;
+    wire ID_EX_flush;
 
     HazardUnit hazard_unit (
         .clk(clk),
@@ -22,7 +23,8 @@ module HazardUnit_tb;
         .EX_jump(EX_jump),
 
         .hazard_op(hazard_op),
-        .IF_ID_flush(IF_ID_flush)
+        .IF_ID_flush(IF_ID_flush),
+        .ID_EX_flush(ID_EX_flush)
     );
 
     always #5 clk = ~clk;
@@ -52,7 +54,8 @@ module HazardUnit_tb;
         @(posedge clk);
         $display("Test 1 (No hazard)");
         $display("hazard_op = %b", hazard_op);
-        $display("IF_ID_flush  = %b\n", IF_ID_flush);
+        $display("IF_ID_flush  = %b", IF_ID_flush);
+        $display("ID_EX_flush  = %b\n", ID_EX_flush);
         
         // Test 2 : rs1 hazard (prev rd == rs1)
         ID_rs1 = 5'd3;
@@ -60,7 +63,8 @@ module HazardUnit_tb;
         ID_rd = 5'd5;   // prev rd = 3
         @(posedge clk);
         $display("Test 2 (rs1 hazard) : hazard_op = %b (expect 01)", hazard_op);
-        $display("IF_ID_flush  = %b (expect 0)\n", IF_ID_flush);
+        $display("IF_ID_flush  = %b (expect 0)", IF_ID_flush);
+        $display("ID_EX_flush  = %b (expect 0)\n", ID_EX_flush);
 
         // Test 3 : rs2 hazard (prev rd == rs2)
         ID_rs1 = 5'd6;
@@ -68,7 +72,8 @@ module HazardUnit_tb;
         ID_rd = 5'd7;   // prev rd = 5
         @(posedge clk);
         $display("Test 3 (rs2 hazard) : hazard_op = %b (expect 10)", hazard_op);
-        $display("IF_ID_flush  = %b (expect 0)\n", IF_ID_flush);
+        $display("IF_ID_flush  = %b (expect 0)", IF_ID_flush);
+        $display("ID_EX_flush  = %b (expect 0)\n", ID_EX_flush);
 
         // Test 4 : no hazard 
         ID_rs1 = 5'd22;
@@ -76,7 +81,8 @@ module HazardUnit_tb;
         ID_rd = 5'd7;   // prev rd = 5
         @(posedge clk);
         $display("Test 4 (no hazard) : hazard_op = %b (expect 00)", hazard_op);
-        $display("IF_ID_flush  = %b (expect 0)\n", IF_ID_flush);
+        $display("IF_ID_flush  = %b (expect 0)", IF_ID_flush);
+        $display("ID_EX_flush  = %b (expect 0)\n", ID_EX_flush);
 
         // Test 5 : both rs1/rs2 hazards
         ID_rs1 = 5'd7;
@@ -84,14 +90,16 @@ module HazardUnit_tb;
         ID_rd = 5'd8;   // prev rd = 7
         @(posedge clk);
         $display("Test 5 (both)       : hazard_op = %b (expect 11)", hazard_op);
-        $display("IF_ID_flush  = %b (expect 0)\n", IF_ID_flush);
+        $display("IF_ID_flush  = %b (expect 0)", IF_ID_flush);
+        $display("ID_EX_flush  = %b (expect 0)\n", ID_EX_flush);
 
         // Test 6 : Branch‑mispredict flush
         branch_prediction_miss = 1'b1;
         @(posedge clk);
         $display("Test 6 (branch prediction miss): ");
         $display("hazard_op = %b (expect 0)", hazard_op);
-        $display("IF_ID_flush  = %b (expect 1)\n", IF_ID_flush);
+        $display("IF_ID_flush  = %b (expect 1)", IF_ID_flush);
+        $display("ID_EX_flush  = %b (expect 1)\n", ID_EX_flush);
 
         branch_prediction_miss = 1'b0;
 
@@ -100,7 +108,19 @@ module HazardUnit_tb;
         @(posedge clk);
         $display("Test 7 (jump): ");
         $display("hazard_op = %b (expect 0)", hazard_op);
-        $display("IF_ID_flush  = %b (expect 1)\n", IF_ID_flush);
+        $display("IF_ID_flush  = %b (expect 1)", IF_ID_flush);
+        $display("ID_EX_flush  = %b (expect 1)\n", ID_EX_flush);
+
+        EX_jump = 1'b0;
+
+        // Test 8 : no hazard 
+        ID_rs1 = 5'd22;
+        ID_rs2 = 5'd23;
+        ID_rd = 5'd7;   // prev rd = 8
+        @(posedge clk);
+        $display("Test 4 (no hazard) : hazard_op = %b (expect 00)", hazard_op);
+        $display("IF_ID_flush  = %b (expect 0)", IF_ID_flush);
+        $display("ID_EX_flush  = %b (expect 0)\n", ID_EX_flush);
 
         EX_jump = 1'b0;
 
