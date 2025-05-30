@@ -7,7 +7,9 @@ module EX_MEM_Register #(
     input wire flush,
 
     // signals from ID/EX register
+    input wire [XLEN-1:0] EX_pc,
     input wire [XLEN-1:0] EX_pc_plus_4,
+    input wire [XLEN-1:0] EX_instruction,
 
     input wire EX_memory_read,
     input wire EX_memory_write,
@@ -25,7 +27,9 @@ module EX_MEM_Register #(
     input wire [XLEN-1:0] EX_alu_result,
 
     // signals to EX/MEM register
+    output reg [XLEN-1:0] MEM_pc,
     output reg [XLEN-1:0] MEM_pc_plus_4,
+    output reg [XLEN-1:0] MEM_instruction,
 
     output reg MEM_memory_read,
     output reg MEM_memory_write,
@@ -44,7 +48,9 @@ module EX_MEM_Register #(
 
 always @(posedge clk or posedge reset) begin
     if (reset || flush) begin
+        MEM_pc <= 32'b0;
         MEM_pc_plus_4 <= {XLEN{1'b0}};
+        MEM_instruction <= 32'h0000_0013;
 
         MEM_memory_read <= 1'b0;
         MEM_memory_write <= 1'b0;
@@ -60,7 +66,9 @@ always @(posedge clk or posedge reset) begin
 
         MEM_alu_result <= {XLEN{1'b0}};
     end else begin
+        MEM_pc <= EX_pc;
         MEM_pc_plus_4 <= EX_pc_plus_4;
+        MEM_instruction <= EX_instruction;
 
         MEM_memory_read <= EX_memory_read;
         MEM_memory_write <= EX_memory_write;

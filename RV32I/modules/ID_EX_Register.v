@@ -12,6 +12,7 @@ module ID_EX_Register #(
     // signals from IF/ID register
     input wire [XLEN-1:0] ID_pc,
     input wire [XLEN-1:0] ID_pc_plus_4,
+    input wire [XLEN-1:0] ID_instruction,
     input wire ID_branch_estimation,
 
     // signals from ID phase
@@ -38,6 +39,7 @@ module ID_EX_Register #(
     // signals to EX/MEM register
     output reg [XLEN-1:0] EX_pc,
     output reg [XLEN-1:0] EX_pc_plus_4,
+    output reg [XLEN-1:0] EX_instruction,
     output reg EX_branch_estimation,
 
     output reg EX_jump,
@@ -65,6 +67,7 @@ always @(posedge clk or posedge reset) begin
     if (reset || flush) begin
         EX_pc <= {XLEN{1'b0}};
         EX_pc_plus_4 <= {XLEN{1'b0}};
+        EX_instruction <= 32'h0000_0013;
         EX_branch_estimation <= 1'b0;
 
         EX_jump <= 1'b0;
@@ -89,6 +92,7 @@ always @(posedge clk or posedge reset) begin
     end else begin
         EX_pc <= ID_pc;
         EX_pc_plus_4 <= ID_pc_plus_4;
+        EX_instruction <= ID_instruction;
         EX_branch_estimation <= ID_branch_estimation;
 
         EX_jump <= ID_jump;
