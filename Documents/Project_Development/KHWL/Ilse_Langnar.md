@@ -5322,6 +5322,11 @@ branch_estimation과 branch_prediction_miss로 신호를 분리해서, 실제 ta
 오늘은 여기까지.
 
 #[2025.05.27.]
+EX_jump에서 misaligned 시 일단 jump라서 NOP flush 되는데, 이것 때문에 jump에서 misaligned 되었다는 문맥이 없어져
+Trap PTH가 1단계만 진행되고 그냥 다음 ADDI x0 x0 0 으로 넘어가서 TH가 안되는 상황 발생했다. 
+-> trapped 신호를 Hazard Unit에 연결, trapped 가 올라가면 파이프라인 레지스터 ID_EX_Register, EX_MEM_Register를 stall함. ID_EX_Register stall은 PTH가 될 때 까지 해당 문맥을 유지하기 위함이며, EX_MEM_Register는 비정상 명령어의 선행 명령어는 끝까지 수행이 보장되어야하므로 stall 함. 
+PTH는 최소 2Cycle. 때문에 EX 문제 발생시 WB단계는 이미 WB처리 끝나고, stall되어 MEM에 있던게 WB으로 넘어가면 WB처리가 끝남. 이렇게 선행 명령어가 끝. 근데 MEM_WB_Register는 별도 처리 없냐? ㅇㅇ 없음. 선행 명령어 두개가 이미 끝났고 어차피 같은 주소에 같은 값 두 번 적는다고 현재 시스템에서 데이터 문제가 생기지는 않기 때문. 
+
 ## Branch Prediction 실패 이후 해당 실제 분기 주소로 분기하지 못한 문제에 대한 내용.
 PC는 클럭신호에 따라 주솟값을 그 이전에 지장된 값을 출력하기에 branch_prediction_miss시 EX단계의 계산값을 PCC에 주고 그걸 PCC가 PC한테 전달을 한다고 해도 해당 값으로 분기하지 못한다. 
 때문에 이 EX단계의 주소계산을 Branch Logic으로 옮겼고, PCC에서 brnach_estimation_target과 branch_target_actual 두가지 신호로 동시에 받고있어 조건문을 통해 prediction 이 맞는지 틀린지를 판단 후 PC에게 next_pc를 해당 주소로 출력할 수 있도록 했다.
