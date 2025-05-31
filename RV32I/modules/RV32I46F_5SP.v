@@ -58,7 +58,7 @@ module RV32I46F5SP #(
     wire [19:0] raw_imm;
     
     // Immediate Generator
-    wire [31:0] imm;
+    wire [XLEN-1:0] imm;
 
     // Control Unit
     wire pc_stall;
@@ -74,24 +74,25 @@ module RV32I46F5SP #(
 
     // Branch Logic and Branch Predictor
     wire branch_taken;
-    wire [31:0] branch_target;
+    wire [XLEN-1:0] branch_target;
+    wire [XLEN-1:0] branch_target_actual;
 
     // Register File
     reg [31:0] register_file_write_data;
     
     // Register File
-    wire [31:0] read_data1;
-    wire [31:0] read_data2;
+    wire [XLEN-1:0] read_data1;
+    wire [XLEN-1:0] read_data2;
 
     // ALU Controller
     wire [3:0] alu_op;
 
     // ALUsrcA, srcB MUX
-    reg [31:0] src_A;
-    reg [31:0] src_B;
+    reg [XLEN-1:0] src_A;
+    reg [XLEN-1:0] src_B;
 
     // ALU
-    wire [31:0] alu_result;
+    wire [XLEN-1:0] alu_result;
     wire alu_zero;
 	
     // Data Memory and Byte Enable Logic
@@ -103,9 +104,10 @@ module RV32I46F5SP #(
 
     // CSR File
     wire csr_write_enable;
-    reg [11:0] csr_address;
-    reg [31:0] csr_write_data;
-    wire [31:0] csr_read_data;
+    reg [11:0] csr_read_address;
+    reg [11:0] csr_write_address;
+    reg [XLEN-1:0] csr_write_data;
+    wire [XLEN-1:0] csr_read_data;
 
     // Exception_Detector
     wire trapped;
@@ -115,9 +117,9 @@ module RV32I46F5SP #(
     wire trap_done;
     wire debug_mode;
     wire tc_csr_write_enable;
-    wire [31:0] trap_target;
+    wire [XLEN-1:0] trap_target;
     wire [11:0] csr_trap_address;
-    wire [31:0] csr_trap_write_data;
+    wire [XLEN-1:0] csr_trap_write_data;
 
     // IF_ID_Register
     wire [XLEN-1:0] IF_pc;
@@ -144,6 +146,7 @@ module RV32I46F5SP #(
     wire [2:0] ID_funct3;
     wire [6:0] ID_funct7;
     wire [4:0] ID_rd;
+    wire [4:0] ID_rs1;
     wire [4:0] ID_rs2;
     wire [11:0] ID_raw_imm;
     wire [XLEN-1:0] ID_read_data1;
@@ -154,7 +157,7 @@ module RV32I46F5SP #(
 
     wire [XLEN-1:0] EX_pc;
     wire [XLEN-1:0] EX_pc_plus_4;
-    wire [XLEN-1:0] EX_instruction;
+    wire [31:0] EX_instruction;
     wire EX_branch_estimation;
 
     // EX_MEM_Register
@@ -175,6 +178,7 @@ module RV32I46F5SP #(
     wire [XLEN-1:0] EX_read_data1;
     wire [XLEN-1:0] EX_read_data2;
     wire [4:0] EX_rs1;
+    wire [4:0] EX_rs2;
     wire [XLEN-1:0] EX_imm;
     wire [XLEN-1:0] EX_csr_read_data;
 
@@ -182,7 +186,7 @@ module RV32I46F5SP #(
 
     wire [XLEN-1:0] MEM_pc;
     wire [XLEN-1:0] MEM_pc_plus_4;
-    wire [XLEN-1:0] MEM_instruction;
+    wire [31:0] MEM_instruction;
 
     wire MEM_memory_read;
     wire MEM_memory_write;
@@ -195,16 +199,19 @@ module RV32I46F5SP #(
     wire [XLEN-1:0] MEM_byte_enable_logic_register_file_write_data;
     wire [XLEN-1:0] MEM_read_data2;
     wire [XLEN-1:0] MEM_imm;
+    wire [XLEN-1:0] MEM_raw_imm;
     wire [XLEN-1:0] MEM_csr_read_data;
     wire [XLEN-1:0] MEM_alu_result;
 
     wire [XLEN-1:0] WB_pc;
     wire [XLEN-1:0] WB_pc_plus_4;
+    wire [6:0] WB_opcode;
     wire [XLEN-1:0] WB_instruction;
 
     // MEM_WB_Register
     wire [2:0] WB_register_file_write_data_select;
     wire [XLEN-1:0] WB_imm;
+    wire [XLEN-1:0] WB_raw_imm;
     wire [XLEN-1:0] WB_csr_read_data;
     wire [XLEN-1:0] WB_alu_result;
     wire WB_register_write_enable;
@@ -214,15 +221,31 @@ module RV32I46F5SP #(
     wire [XLEN-1:0] WB_byte_enable_logic_register_file_write_data;
 
     // Hazard Unit
+    wire IF_ID_flush;
+    wire ID_EX_flush;
+    wire csr_hazard_mem;
+    wire csr_hazard_wb;
     wire [1:0] hazard_op;
 
     // Forward Unit
+    wire [1:0] hazard_mem;
+    wire [1:0] hazard_wb;
+    wire [XLEN-1:0] csr_forward_data;
     wire [XLEN-1:0] alu_forward_source_data_a;
     wire [XLEN-1:0] alu_forward_source_data_b;
     wire [1:0] alu_forward_source_select_a;
     wire [1:0] alu_forward_source_select_b;
+    reg [XLEN-1:0] alu_normal_source_a;
+    reg [XLEN-1:0] alu_normal_source_b;
 
-    assign csr_write_enable = cu_csr_write_enable | tc_csr_write_enable;
+    assign csr_write_enable = WB_csr_write_enable | tc_csr_write_enable;
+
+    // Branch Predictor
+    wire branch_estimation;
+    wire [XLEN-1:0] MEM_csr_write_data = MEM_alu_result;
+    wire [XLEN-1:0] WB_csr_write_data = WB_alu_result;
+    wire [11:0] MEM_csr_write_address = MEM_raw_imm[11:0];
+    wire [11:0] WB_csr_write_address = WB_raw_imm[11:0];
 
     ProgramCounter program_counter (
         .clk(clk),
@@ -234,10 +257,12 @@ module RV32I46F5SP #(
     PCController pc_controller (
         .jump(EX_jump),
         .branch_estimation(branch_estimation),
+        .branch_prediction_miss(branch_prediction_miss),
         .trapped(trapped),
 	    .pc(pc),
         .jump_target(alu_result),
         .branch_target(branch_target),
+        .branch_target_actual(branch_target_actual),
 	    .trap_target(trap_target),
         .pc_stall(pc_stall),
 	    .next_pc(next_pc)
@@ -250,7 +275,7 @@ module RV32I46F5SP #(
 
     InstructionMemory instruction_memory (
         .pc(pc),
-        .instruction(im_instruction)
+        .instruction(ID_instruction)
     );
 
     InstructionDecoder instruction_decoder (
@@ -295,9 +320,9 @@ module RV32I46F5SP #(
         .clk(clk),
         .read_reg1(rs1),
         .read_reg2(rs2),
-        .write_reg(rd),
+        .write_reg(WB_rd),
         .write_data(register_file_write_data),
-        .write_enable(register_file_write),
+        .write_enable(WB_register_file_write),
 	
         .read_data1(read_data1),
         .read_data2(read_data2)
@@ -305,8 +330,8 @@ module RV32I46F5SP #(
 
     DataMemory data_memory (
         .clk(clk),
-        .write_enable(memory_write),
-        .address(alu_result[11:2]),
+        .write_enable(MEM_memory_write),
+        .address(MEM_alu_result[11:2]),
         .write_data(data_memory_write_data),
         .write_mask(write_mask),
 
@@ -314,10 +339,10 @@ module RV32I46F5SP #(
     );
 
     ALUController alu_controller (
-        .opcode(opcode),
-	    .funct3(funct3),
-        .funct7_5(funct7[5]),
-        .imm_10(imm[10]),
+        .opcode(EX_opcode),
+	    .funct3(EX_funct3),
+        .funct7_5(EX_funct7[5]),
+        .imm_10(EX_imm[10]),
 	
         .alu_op(alu_op)
     );
@@ -332,20 +357,25 @@ module RV32I46F5SP #(
     );
 
     BranchLogic branch_logic (
-        .branch(branch),
-        .funct3(funct3),
+        .branch(EX_branch),
+        .branch_estimation(branch_estimation),
+        .funct3(EX_funct3),
         .alu_zero(alu_zero),
+        .pc(EX_pc),
+        .imm(EX_imm),
     
-        .branch_taken(branch_taken)
+        .branch_taken(branch_taken),
+        .branch_prediction_miss(branch_prediction_miss),
+        .branch_target_actual(branch_target_actual)
     );
 
     ByteEnableLogic byte_enable_logic (
-        .memory_read(memory_read),
-        .memory_write(memory_write),
-        .funct3(funct3),
-	    .register_file_read_data(read_data2),
+        .memory_read(MEM_memory_read),
+        .memory_write(MEM_memory_write),
+        .funct3(MEM_funct3),
+	    .register_file_read_data(MEM_read_data2),
 	    .data_memory_read_data(data_memory_read_data),
-	    .address(alu_result),
+	    .address(MEM_alu_result),
 	
 	    .register_file_write_data(byte_enable_logic_register_file_write_data),
 	    .data_memory_write_data(data_memory_write_data),
@@ -355,19 +385,22 @@ module RV32I46F5SP #(
     CSRFile csr_file (
         .clk(clk),
         .reset(reset),
-        .csr_write_enable(csr_write_enable),
-        .csr_address(csr_address),
+        .csr_write_enable(tc_csr_write_enable | WB_csr_write_enable),
+        .csr_read_address(csr_read_address),
+        .csr_write_address(csr_write_address),
         .csr_write_data(csr_write_data),
 
         .csr_read_data(csr_read_data)
     );
 
     ExceptionDetector exception_detector (
-        .opcode(opcode),
+        .ID_opcode(opcode),
+        .EX_opcode(EX_opcode),
         .funct3(funct3),
         .funct12(raw_imm),
         .jump_target_lsbs(alu_result[1:0]),
         .branch_target_lsbs(branch_target[1:0]),
+        .branch_estimation(branch_estimation),
 
         .trapped(trapped),
         .trap_status(trap_status)
@@ -377,7 +410,8 @@ module RV32I46F5SP #(
         .clk(clk),
         .reset(reset),
         .trap_status(trap_status),
-        .pc(pc),
+        .ID_pc(ID_pc),
+        .EX_pc(EX_pc),
         .csr_read_data(csr_read_data),
 
         .debug_mode(debug_mode),
@@ -388,10 +422,11 @@ module RV32I46F5SP #(
         .csr_trap_write_data(csr_trap_write_data)
     );
 
-    IF_ID_Register if_id_register (
+    IF_ID_Register #(.XLEN(XLEN)) if_id_register (
         .clk(clk),
 		.reset(reset),
         .flush(IF_ID_flush),
+        .pipeline_stall(pipeline_stall),
 
         // Signals from IF Phase
         .IF_pc(pc),
@@ -399,17 +434,18 @@ module RV32I46F5SP #(
         .IF_instruction(instruction),
         .IF_branch_estimation(branch_estimation),
 
-        // Signals to ID_EX_Register
+        // Signals to ID_EX_Register and ID Phase
         .ID_pc(ID_pc),
         .ID_pc_plus_4(ID_pc_plus_4),
         .ID_instruction(ID_instruction),
         .ID_branch_estimation(ID_branch_estimation)
     );
 
-    ID_EX_Register id_ex_register (
+    ID_EX_Register #(.XLEN(XLEN)) id_ex_register (
         .clk(clk),
 		.reset(reset),
         .flush(ID_EX_flush),
+        .pipeline_stall(pipeline_stall),
         
         // Signals from IF_ID_Register
         .ID_pc(ID_pc),
@@ -426,7 +462,7 @@ module RV32I46F5SP #(
         .ID_memory_write(memory_write),
         .ID_register_file_write_data_select(register_file_write_data_select),
         .ID_register_write_enable(register_file_write),
-        .ID_csr_write_enable(csr_write_enable),
+        .ID_csr_write_enable(cu_csr_write_enable),
         .ID_opcode(opcode), 
         .ID_funct3(funct3),
         .ID_funct7(funct7),
@@ -435,6 +471,7 @@ module RV32I46F5SP #(
         .ID_read_data1(read_data1),
         .ID_read_data2(read_data2),
         .ID_rs1(rs1),
+        .ID_rs2(rs2),
         .ID_imm(imm),
         .ID_csr_read_data(csr_read_data),
 
@@ -460,14 +497,16 @@ module RV32I46F5SP #(
         .EX_read_data1(EX_read_data1),
         .EX_read_data2(EX_read_data2),
         .EX_rs1(EX_rs1),
+        .EX_rs2(EX_rs2),
         .EX_imm(EX_imm),
         .EX_csr_read_data(EX_csr_read_data)
     );
 
-    EX_MEM_Register ex_mem_register (
+    EX_MEM_Register #(.XLEN(XLEN)) ex_mem_register (
         .clk(clk),
 		.reset(reset),
-        .flush(flush),
+        //.flush(flush),
+        .pipeline_stall(pipeline_stall),
 
         // Signals from ID_EX_Register
         .EX_pc(EX_pc),
@@ -482,6 +521,7 @@ module RV32I46F5SP #(
         .EX_funct3(EX_funct3),
         .EX_rd(EX_rd),
         .EX_read_data2(EX_read_data2),
+        .EX_raw_imm(EX_raw_imm),
         .EX_imm(EX_imm),
         .EX_csr_read_data(EX_csr_read_data),
 
@@ -501,15 +541,16 @@ module RV32I46F5SP #(
         .MEM_funct3(MEM_funct3),
         .MEM_rd(MEM_rd),
         .MEM_read_data2(MEM_read_data2),
+        .MEM_raw_imm(MEM_raw_imm),
         .MEM_imm(MEM_imm),
         .MEM_csr_read_data(MEM_csr_read_data),
         .MEM_alu_result(MEM_alu_result)
     );
 
-    MEM_WB_Register mem_wb_register (
+    MEM_WB_Register #(.XLEN(XLEN)) mem_wb_register (
         .clk(clk),
 		.reset(reset),
-        .flush(flush),
+        // .flush(flush),
 
         // Signals from EX_MEM_Register
         .MEM_pc(MEM_pc),
@@ -517,6 +558,8 @@ module RV32I46F5SP #(
         .MEM_instruction(MEM_instruction),
         .MEM_register_file_write_data_select(MEM_register_file_write_data_select),
         .MEM_imm(MEM_imm),
+        .MEM_raw_imm(MEM_raw_imm),
+        .MEM_opcode(MEM_opcode),
         .MEM_csr_read_data(MEM_csr_read_data),
         .MEM_alu_result(MEM_alu_result),
         .MEM_register_write_enable(MEM_register_write_enable),
@@ -532,6 +575,8 @@ module RV32I46F5SP #(
         .WB_instruction(WB_instruction),
         .WB_register_file_write_data_select(WB_register_file_write_data_select),
         .WB_imm(WB_imm),
+        .WB_raw_imm(WB_raw_imm),
+        .WB_opcode(WB_opcode),
         .WB_csr_read_data(WB_csr_read_data),
         .WB_alu_result(WB_alu_result),
         .WB_register_write_enable(WB_register_write_enable),
@@ -543,29 +588,63 @@ module RV32I46F5SP #(
     HazardUnit hazard_unit (
         .clk(clk),
         .reset(reset),
+        .trap_done(trap_done),
         .ID_rs1(rs1),
         .ID_rs2(rs2),
-        .ID_rd(rd),
+        .MEM_rd(MEM_rd),
+        .MEM_register_write_enable(MEM_register_write_enable),
+        .MEM_csr_write_enable(MEM_csr_write_enable),
+        .MEM_csr_write_address(MEM_csr_write_address),
+        .WB_rd(WB_rd),
+        .WB_register_write_enable(WB_register_write_enable),
+        .WB_csr_write_enable(WB_csr_write_enable),
+        .WB_csr_write_address(WB_raw_imm[11:0]),
+        .EX_rs1(EX_rs1),
+        .EX_rs2(EX_rs2),
+        .EX_rd(EX_rd),
+        .EX_register_write_enable(EX_register_write_enable),
+        .EX_opcode(EX_opcode),
+        .EX_imm(EX_imm[11:0]),
         .branch_prediction_miss(branch_prediction_miss),
         .EX_jump(EX_jump),
 
-        .hazard_op(hazard_op),
+        .hazard_mem(hazard_mem),
+        .hazard_wb(hazard_wb),
+        .csr_hazard_mem(csr_hazard_mem),
+        .csr_hazard_wb(csr_hazard_wb),
+
         .IF_ID_flush(IF_ID_flush),
-        .ID_EX_flush(ID_EX_flush)
+        .ID_EX_flush(ID_EX_flush),
+        .pipeline_stall(pipeline_stall)
     );
 
     ForwardUnit forward_unit (
-    .hazard_op(hazard_op),
-    .MEM_imm(MEM_imm),
-    .MEM_alu_result(MEM_alu_result),
-    .MEM_csr_read_data(MEM_csr_read_data),
-    .MEM_byte_enable_logic_register_file_write_data(byte_enable_logic_register_file_write_data),
-    .MEM_pc_plus_4(MEM_pc_plus_4),
-    .MEM_opcode(MEM_opcode),
-    .alu_forward_source_data_a(alu_forward_source_data_a),
-    .alu_forward_source_data_b(alu_forward_source_data_b),
-    .alu_forward_source_select_a(alu_forward_source_select_a),
-    .alu_forward_source_select_b(alu_forward_source_select_b)
+        .hazard_mem(hazard_mem),
+        .hazard_wb(hazard_wb),
+        .MEM_imm(MEM_imm),
+        .MEM_alu_result(MEM_alu_result),
+        .MEM_csr_read_data(MEM_csr_read_data),
+        .byte_enable_logic_register_file_write_data(byte_enable_logic_register_file_write_data),
+        .MEM_pc_plus_4(MEM_pc_plus_4),
+        .MEM_opcode(MEM_opcode),
+        .WB_opcode(WB_opcode),
+        .WB_imm(WB_imm),
+        .WB_alu_result(WB_alu_result),
+        .WB_csr_read_data(WB_csr_read_data),
+        .WB_byte_enable_logic_register_file_write_data(WB_byte_enable_logic_register_file_write_data),
+        .WB_pc_plus_4(WB_pc_plus_4),
+        .alu_forward_source_data_a(alu_forward_source_data_a),
+        .alu_forward_source_data_b(alu_forward_source_data_b),
+        .alu_forward_source_select_a(alu_forward_source_select_a),
+        .alu_forward_source_select_b(alu_forward_source_select_b),
+
+        .csr_hazard_mem(csr_hazard_mem),
+        .csr_hazard_wb(csr_hazard_wb),
+        .MEM_csr_write_data(MEM_csr_write_data),
+        .WB_csr_write_data(WB_csr_write_data),
+        .csr_read_data(csr_read_data),
+
+        .csr_forward_data(csr_forward_data)
     );
 
     BranchPredictor #(.XLEN(XLEN)) branch_predictor(
@@ -574,9 +653,7 @@ module RV32I46F5SP #(
         .IF_opcode(IF_opcode),
         .IF_pc (pc),
         .IF_imm (IF_imm),
-        .EX_pc (EX_pc),
-        .EX_imm (EX_imm),
-        .EX_branch(EX_branch),  
+        .EX_branch(EX_branch),
         .EX_branch_taken (branch_taken),
 
         .branch_estimation (branch_estimation),
@@ -584,66 +661,80 @@ module RV32I46F5SP #(
     );
 
     always @(*) begin
-        if (alu_src_A_select == `ALU_SRC_A_RD1) begin
-            src_A = read_data1;
+        if (EX_alu_src_A_select == `ALU_SRC_A_RD1) begin
+            alu_normal_source_a = EX_read_data1;
         end
-        else if (alu_src_A_select == `ALU_SRC_A_PC) begin
-            src_A = pc;
+        else if (EX_alu_src_A_select == `ALU_SRC_A_PC) begin
+            alu_normal_source_a = EX_pc;
         end
-        else if (alu_src_A_select == `ALU_SRC_A_RS1) begin
-            src_A = {27'b0, rs1};
+        else if (EX_alu_src_A_select == `ALU_SRC_A_RS1) begin
+            alu_normal_source_a = {27'b0, EX_rs1};
         end
         else begin
-            src_A = 32'b0;
+            alu_normal_source_a = 32'b0;
         end
 
-        if (alu_src_B_select == `ALU_SRC_B_RD2) begin
-            src_B = read_data2;
+        if (EX_alu_src_B_select == `ALU_SRC_B_RD2) begin
+            alu_normal_source_b = EX_read_data2;
         end
-        else if (alu_src_B_select == `ALU_SRC_B_IMM) begin
-            src_B = imm;
+        else if (EX_alu_src_B_select == `ALU_SRC_B_IMM) begin
+            alu_normal_source_b = EX_imm;
         end
-        else if (alu_src_B_select == `ALU_SRC_B_SHAMT) begin
-            src_B = {27'b0, imm[4:0]};
+        else if (EX_alu_src_B_select == `ALU_SRC_B_SHAMT) begin
+            alu_normal_source_b = {27'b0, EX_imm[4:0]};
         end
-        else if (alu_src_B_select == `ALU_SRC_B_CSR) begin
-            src_B = csr_read_data;
+        else if (EX_alu_src_B_select == `ALU_SRC_B_CSR) begin
+            alu_normal_source_b = csr_forward_data;
         end
         else begin
-            src_B = 32'b0;
+            alu_normal_source_b = 32'b0;
         end
 
         if (trapped) begin
             csr_write_data  = csr_trap_write_data;
-            csr_address     = csr_trap_address;
+            csr_write_address = csr_trap_address;
+            csr_read_address = csr_trap_address;
         end
         else begin
-            csr_write_data  = alu_result;
-            csr_address     = raw_imm[11:0];
+            csr_write_data = WB_alu_result;
+            csr_write_address = WB_raw_imm[11:0];
+            csr_read_address = raw_imm[11:0];
         end
 
         if (debug_mode) instruction = dbg_instruction;
         else instruction = im_instruction;
 
-        case (register_file_write_data_select)
+        case (WB_register_file_write_data_select)
             `RF_WD_LOAD: begin
-                register_file_write_data = byte_enable_logic_register_file_write_data;
+                register_file_write_data = WB_byte_enable_logic_register_file_write_data;
             end
             `RF_WD_ALU: begin
-                register_file_write_data = alu_result;
+                register_file_write_data = WB_alu_result;
             end
             `RF_WD_LUI: begin
-                register_file_write_data = imm;
+                register_file_write_data = WB_imm;
             end
             `RF_WD_JUMP: begin
-                register_file_write_data = pc_plus_4_signal;
+                register_file_write_data = WB_pc_plus_4;
             end
             `RF_WD_CSR: begin
-                register_file_write_data = csr_read_data;
+                register_file_write_data = WB_csr_read_data;
             end
             default: begin
                 register_file_write_data = 32'b0;
             end
+        endcase
+
+        case (alu_forward_source_select_a)
+            2'b10: src_A = alu_forward_source_data_a;
+            2'b11: src_A = alu_forward_source_data_a;
+            default: src_A = alu_normal_source_a;
+        endcase
+
+        case (alu_forward_source_select_b)
+            2'b10: src_B = alu_forward_source_data_b;
+            2'b11: src_B = alu_forward_source_data_b;
+            default: src_B = alu_normal_source_b;
         endcase
     end
 
