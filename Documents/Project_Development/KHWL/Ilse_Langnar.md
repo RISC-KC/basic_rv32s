@@ -5287,6 +5287,8 @@ branch_prediction_miss 신호에 따라 0일경우 계속 IF단계의 pc+imm값�
 #[2025.05.26.]
 작성일은 2025.05.29. 그 며칠동안, 인생을 걸고 혼신을 다해 달려나가느라 그 어떠한 기록도 남기지 못했다.
 지금 작성하는 내용은 그 때의 회상기록이다. 
+더티파일을 만들어서 그걸 디버깅하는 기록. 실제로 본 RISC-KC 에서 더티파일의 완성을 기록화하기 위해 하나씩 디버깅하면서 하는데, 더티파일에선 없었던 상황이 생긴다거나, 있던 상황이 없다거나 하는 경우가 생겼다.
+이 점 감안하고 기록을 보길 바란다. 
 
 밤새 생각하다 잠들고 아침점호 끝나자마자 사지방가서 밥도 굶고 파형분석했다. 요 며칠 동안 개발가능한 시간엔 밥도 안먹고 계속 하는 중.
 28일부터 FPGA 구현을 위해 교육을 들으러 가고, 그 때 가서는 이미 개발이 마쳐져있어야하기 때문에 정말 시간이 없다. 내일이 사실상 마감.(27일)
@@ -5301,7 +5303,29 @@ branch_prediction_miss 신호에 따라 0일경우 계속 IF단계의 pc+imm값�
 
 문제 3. Register에서 소스로 rs1 입력은 잘 되는데 해당 값이 나오질 않는다. 
 
+ALU source값이 제대로 나오질 않아 찾아보니 탑 모듈에서 ALU 소스에서 포워딩된 값을 쓸 수 있도록 MUX를 만들었어야 했는데, 누락되어있었다. 수정했다.
+또한 Branch Predictor의 EX_branch_taken 신호가 제대로 연결되어있지 않아 수정했다. 
+
+trapped에서 trap_done으로 파이프라인 stall 기준 신호 바꾸니까 기존에 PTH 수행 후 pipeline stall로 Trap Handler 주솟값 분기가 이루어지질 않았는데, 이를 해결할 수 있었다.
+PTH끝나고 정상적으로 stall 풀려서 트랩핸들러 넘어간다.
+
+csr_write_enable 신호가 Trap Controller에서 나오는 신호와, 파이프라인되어 Control Unit에서 나오는 신호를 OR 처리했어야했는데, 탑 모듈에서 누락되어있어 수정했다.
+
+Branch Predictor에서 branch prediction Strongly Not Taken이 기본값이라 후행명령어를 그냥 수행한다. 근데 분명 prediction이 틀렸는데 EX단계의 pc+imm값으로 분기하질 않는다.
+branch_target값도 해당 주소로 잘 나오는데, 왜지?
+일단 1차적으로 pc값을 IF_pc 라는 있지도 않은 신호를 파생하던 문제를 발견해서 수정했다. 잘 됐는데 이상하게 pcc의 branch taken은 0이다. 왜지?
+아무래도 기존에 branch_taken을 branch_prediction값을 파생시켜서 생긴 문제로 보인다.
+branch_estimation과 branch_prediction_miss로 신호를 분리해서, 실제 taken시 branch_Target. estimation이 참이면 마찬가지로 b_target으로. 아니면 그냥 넘기는 방식으로 했다.
+
+이런. WB 포워딩이 필요한 사례가 발생했다.
+188611ps 부분에서, WB에서 retire한 명령어가 rd 주소에 쓴 값을 후후행 명령어가 이미 EX단계로 와서 해당 갱신된 rd값을 들고있지 않는 문제가 발생한다. 포워딩유닛에서 WB단계의 포워딩도 구현해야한다.
+오늘은 여기까지.
+
 #[2025.05.27.]
+## Branch Prediction 실패 이후 해당 실제 분기 주소로 분기하지 못한 문제에 대한 내용.
+PC는 클럭신호에 따라 주솟값을 그 이전에 지장된 값을 출력하기에 branch_prediction_miss시 EX단계의 계산값을 PCC에 주고 그걸 PCC가 PC한테 전달을 한다고 해도 해당 값으로 분기하지 못한다. 
+때문에 이 EX단계의 주소계산을 Branch Logic으로 옮겼고, PCC에서 brnach_estimation_target과 branch_target_actual 두가지 신호로 동시에 받고있어 조건문을 통해 prediction 이 맞는지 틀린지를 판단 후 PC에게 next_pc를 해당 주소로 출력할 수 있도록 했다.
+근데 왜 branch_prediction_miss가 한번 1로 되면 계속 1이지? RTL 코드에서 조합회로 조건문 미충족시 기본값을 0으로 해두는 걸 적용안했나부다. 이걸 해결하면 끝인 듯.
 
-
-후일담이지만, PC는 클럭신호에 따라 주솟값을 그 이전에 지장된 값을 출력하기에 branch_prediction_miss시 EX단계의 계산값을 PCC에 주고 그걸 PCC가 PC한테 전달을 한다고 해도 해당 값으로 분기하지 못한다. 때문에 이 EX단계의 주소계산을 Branch Logic으로 옮겼고, PCC에서 brnach_estimation_target과 branch_target_actual 두가지 신호로 동시에 받고있어 조건문을 통해 prediction 이 맞는지 틀린지를 판단 후 PC에게 next_pc를 해당 주소로 출력할 수 있도록 했다.
+#[2025.05.28.]
+완성이다. 00:54.
