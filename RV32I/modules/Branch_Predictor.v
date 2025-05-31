@@ -8,8 +8,6 @@ module BranchPredictor #(
     input wire [6:0] IF_opcode,
     input wire [XLEN-1:0] IF_pc,
     input wire [XLEN-1:0] IF_imm,
-    input wire [XLEN-1:0] EX_pc,
-    input wire [XLEN-1:0] EX_imm,
     input wire EX_branch,
     input wire EX_branch_taken,
     
@@ -23,6 +21,7 @@ module BranchPredictor #(
     always @(*) begin
         if (IF_opcode == `OPCODE_BRANCH) begin
             branch_estimation = prediction_counter[1];
+            branch_target = prediction_target;
         end
         else begin
             branch_estimation = 1'b0;
@@ -35,15 +34,11 @@ module BranchPredictor #(
             prediction_counter <= 2'b00;
             branch_target <= {XLEN{1'b0}};
         end else begin
-            branch_target <= prediction_target;
             if (IF_opcode == `OPCODE_BRANCH) begin
                 branch_prediction <= branch_estimation;
             end
         
         if (EX_branch && (EX_branch_taken !== 1'bx)) begin
-            if (branch_prediction != EX_branch_taken) begin
-                branch_target <= EX_branch_taken ? (EX_pc + EX_imm) : (EX_pc + {{XLEN-3{1'b0}}, 3'd4});
-            end 
                 case ({EX_branch_taken, prediction_counter})
                 // Not Taken 0, prediction_counter 00
                     3'b0_00: prediction_counter <= 2'b00; // Strongly Not Taken <- if not taken again, still 00.
