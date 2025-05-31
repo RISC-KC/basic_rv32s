@@ -5334,3 +5334,134 @@ PC는 클럭신호에 따라 주솟값을 그 이전에 지장된 값을 출력�
 
 #[2025.05.28.]
 완성이다. 00:54.
+KAIST IDEC에서 교육을 받기 위해 오늘 출발한다.
+Xlinix FPGA 구현을 위한 교육이다. 3일 과정인데, 이제 더티파일에 작업하면서 기록 못한 변경사항들을 하나하나 commit, PR을 넣고
+5월 안에 적어도 '완성'의 기록이 남는 것이 좋으니, 만약 시간이 없다고 판단되면 각 모듈의 최종파일을 한번에 commit 하도록 하겠다.
+물론 각 변경사항은 해당 PR에 기록하겠다. 
+
+#[2025.05.31.]
+그 동안 교육을 받았고, FPGA 관련해서 어떻게 구현하면 되는지 Vivado의 FPGA 합성 워크플로우를 익히게 되었다.
+디버깅 및 Timing Constraints 설정들 등등..
+RTL 코드 단에서 기존 iverilog로 작성하는 것 보다 Vivado에서 Simulation이랑 Synthesis를 돌리는게 훨씬 더 많은 정보들과 오류들을 색출해낸다.
+정보를 보니, Latch로 합성된게 꽤 있었고, 그 다음으로는 Timing Constraints를 설정해주고 그걸로 해결하지 못하는
+Timing Violation들을 해결해야한다. xdc 파일을 다루는 법을 좀 알아야할 것 같고...
+이제 로드라인이 다시 정리된다.
+1. FPGA에서 Timing 관련 오류 및 Latch 합성 해결
+2. FPGA에 FreeRTOS 같은 단순한 OS 탑재
+3. FPGA에 화면출력과 키보드, 마우스 입력 구현
+4. 성능 테스트 및 Doom 실행
+
+이걸 6월 한달 안에 해야한다. 
+1번이 어느정도 걸리는지에 따라 아마 결정될 것 같은데, 문제는 본 로직이 너무 커서 한번 Synthesis할 때 시간이 꽤 걸린다는 것. 
+그리고 메모리가 많이 필요하다는 것. 16GB로 구성한 내 컴퓨터에서 Synthesis를 하룻밤 돌리니까 log상 새벽 3시에 OOME가 떴었다. 
+
+이제 시간이 없다. 
+여태 있었던 밀린 개발 기록들을 본 docs에 올리고 최종파일을 commit 하도록 하겠다.
+솔직히, 이번에 더티파일을 기반으로 메인 파일을 수정하면서 더티에서는 발생했던 상황이 발생하지 않고, 더 적은 수정으로 기능을 점점 갖춰나가길래
+최적화가 가능하다고 생각되어 그렇게 하고 싶었으나, 프로젝트의 '완수'가 중요하지 완벽을 지금 상황에서 목적으로 둬서는 안된다.
+추구는 하더라도. 
+아래는 그 개발 기록들이다. 
+
+RV32I46F_5SP에서는, Trap 발생시 파이프라인 레지스터들을 flush하는 로직이 빠져있다.
+이걸 넣으려고 하는데, Exception 발생 시, PC의 업데이트를 멈추고 기존 명령어들이 모두 처리 된 뒤 
+Trap Handling을 진행하도록 하면 될 것 같다.
+기존 레지스터의 데이터들을 Trap handler로 분기하면서 데이터 메모리에 저장해놨다가 mret 명령어시 다시 불러오도록. 
+
+예를 들어 misaligned exception이라고 하자. 
+(현재 지원하는 trap 은 misaligned instruction address, EBREAK, ECALL, mret 뿐. fencei는 원래 캐시가 있어야했는데 개발기간 문제로 드랍해서 지원하지 않는다.)
+이걸 IF단계에서 Exception Detector가 감지, Branch Predictor에서 IF단계의 branch target을 계산한 값과 
+EX단계에서 Jump address를 계산한 값을 모두 받는다. 
+opcode를 통해서 어떤 명령어형태인지 파악하고 jump 이전에 처리중인 명령어들은 문맥이 없으니 
+마저 WB까지 이루어질 때 까지 PC를 멈추고 flush를 한 뒤에 처리한다.
+
+EX단계에서 Jump의 misaligned를 알았고, 그걸로 trap이 시동되어 pc_stall도 되었고, flush도 되었는데 
+그 다음 클럭 사이클에 EX단계는 Jump의 후행 명령어인 flush로 인한 NOP가 와서 
+EX단계의 opcode가 JAL이 아니어서 trapped가 풀리고 PTH도 수행이 안되니 trap_done도 다시 1로 올라가서 멋대로 다음 명령어를 수행해버린다.
+이건 아마.. 파이프라인 레지스터의 갱신을 중단하고 현재 값을 그대로 유지하는 stall 신호를 추가하는 것이 좋은 선택일 것 같다.
+
+탑모듈 테스트벤치 중.
+PCC가 branch_estimation값을 받아서 branch_target을 쓸지 말지 정하는데, not taken으로 estimate했다가 
+실제로 EX_branch_taken 값이 1이라서 잘못 예측한거면 해당 EX 단계에 있는 pc값과 imm값을 더한 branch target을 branch predictor 모듈에서 계산한다. 이 branch target을 쓰라고 코드를 짜고 싶은데...
+현재 branch predictor의 상태가 strongly not taken이든 weakly not taken이든, 그것과 반하는 결과가 EX단계에서 도출되면 branch_target을 next_pc로 쓰게 하고 싶은 것.
+-> 이건 위의 해답으로 귀결되었다. ## Branch Prediction 실패 이후 해당 실제 분기 주소로 분기하지 못한 문제에 대한 내용. 을 참고.
+PC는 클럭신호에 따라 주솟값을 그 이전에 지장된 값을 출력하기에 
+branch_prediction_miss시 EX단계의 계산값을 PCC에 주고 그걸 PCC가 PC한테 전달을 한다고 해도 해당 값으로 분기하지 못한다. 
+때문에 이 EX단계의 주소계산을 Branch Logic으로 옮겼고, 
+PCC에서 brnach_estimation_target과 branch_target_actual 두가지 신호로 동시에 받고있어 
+조건문을 통해 prediction 이 맞는지 틀린지를 판단 후 PC에게 next_pc를 해당 주소로 출력할 수 있도록 했다.
+
+WB단계의 포워딩이 핋요한 경우. 2025.05.25.에 대한 내용이다.
+hazard unit에서 mem, wb 관련 해저드 신호를 hazard_op로서 각개 출력한다. 
+hazard_mem, hazard_wb로.
+그리고 그걸 포워딩유닛에서 받아서 처리한다.
+
+처음에 포워딩이 잘 되지 않았다.
+Forwarding을 이제 MEM뿐만 아니라 WB까지 수행하므로 탑 모듈에서 해당 로직이 바뀌어야하는 것.
+그래서 아래와 같은 로직으로 변경했다.
+alu_normal_source_A / alu_normal_source_B. 
+alu_forward_source_data_A / alu_forward_source_data_B
+alu_forward_source_select_A / alu_forward_source_select_B.
+각각 현재 파이프라인 값, 포워딩 값, 그리고 그걸 선택하는값이다. 
+
+## 분기예측 쪽 문제
+misprediction으로인한 flush도 잘 되었고, prediction counter도 제대로 갱신되었고, NOP도 설계대로 삽입되었고, 
+근데 branch_estimation이 branch taken과 같은데도 불구하고 한번 branch_prediction_miss가 1로 올라가고 나서 내려오질 않는다. 
+코드에서 miss의 0 초기화 코드가 없는 것을 보고 추가함으로서 해결했다. 
+
+## branch의 misprediction 수행 문제
+miprediction으로 인해 EX단계에서 계산된 Branch Target으로 분기해야하지만, 
+다음 클럭에서 branch 신호가 꺼져있어서 PCC가 그대로 다음 PC+4값으로 IF단계의 PC가 갱신됐다.
+이 경우엔, EX단계의 branch taken 신호를 MEM단계까지 파이프라이닝해서 PCC에서 misprediction이고 
+MEM단계 branch 신호가 1이면 branch target으로 분기 한다고 로직을 짜면 되려나?
+믕... 이 경우도 위의 분기 예측기 주소 관련 문제로 귀결.
+## Branch Prediction 실패 이후 해당 실제 분기 주소로 분기하지 못한 문제에 대한 내용. 을 참고.
+이 때, 해당 분기 주소 계산을 어디서 하는가? 에 대해 생각을 해봤지만, 
+(Branch Predictor에서 해당 EX단계의 imm값과 pc값을 더해 실제 분기 주소를 계산하는 로직은 의미가 없으니까, 이를 Branch Predictor 내의 콤비네이셔널 로직으로 수정해도 되는 거 아닌가? 꼭 Branch Logic에서 해야하는가?)
+
+이건 Predictor에서 IF단계의 예측 소스와 EX결과 기반 갱신이라는 단순한 로직으로서 구성되는 편이 모듈의 경계를 깔끔하게 유지한다 판단하여
+Branch Logic에서 해당 계산까지 포함하는 것으로 결정하였다. 
+
+WB포워딩이 안되길래 뭐지 했다가 탑모듈을 보니 alu_forward_source_select에서 MEM단계만 포워딩하도록 되어있어
+수정하는걸 깜빡했다는 것을 알아차리고 수정하였다.
+하지만 alu_forward_source_select_a랑 b가 해당 타이밍에 전혀 변하지 않고 0으로 되어있다. 
+HazardUnit에서 hazard_wb가 올라가야하는데, 아예 변화가 없는 걸 보면 WB단계 포워딩 조건을 검출하지 못해서 hazard_wb 신호 자체가 가지 않은 것 같다., 뭐지?
+지금 파형을 잘 보니, 문제가 되는 EX_rs1이 0c일 때, WB_rd는 애초에 다른 값이라서 해저드 발생이 안되었다고 보는게 맞고 로직 자체는 문제가 없다. 
+근데 문제는, 문제의 xor명령어에서 이미 retire된 sll 값의 rd 값을 소스로 하고 있는데, 이건 WB단계를 지나 이미 Register File에 저장되었고, 
+WB단계의 rd는 이미 그 다음 명령어이니까 해저드 색출이 안되는 것 같다. 
+이 경우엔 포워딩을 어떻게 해줘야하는걸까? 
+이미 Register File로 저장이 되어있는데 저장 되기 전에 해당 주소의 값을 갖고 와서 EX단계에서 쓰려고 하는건데..
+이걸 위해서 WB_IF_Register를 또 하나 만들어서 거기에 방금 retire된 명령어의 rd값을 집어넣어 포워딩을 할 수 있도록 해야하나?
+아니다. 같은 클럭에서 WB가 같은 레지스터를 쓰려고 할 때, 즉 rd값이랑 rs1이 레지스터파일에서 같다면, 
+읽기 데이터 = 쓰기 데이터로 bypass 로직을 추가했다. 
+해결!
+
+CSR쪽 포워딩이 안되는 것 같다. 
+CSR명령어가 CSR값을 읽고 쓰는 걸 동시에 하다 보니 생기는 문제인가? 
+원래 싱글 사이클대로라면, csrrs로 mepc에 2fc값이 저장되고, 그 직후 csrrc에서 mepc값을 불러오게 되는데, Zicsr 명령어는 rd가 아니라 rs끼리 겹쳐도 데이터 해저드가 발생하는구나..이걸 어떻게 해결하면 좋을까? CSR File을 고쳐야하나?
+포워딩유닛과 해저드유닛에서 CSR의 포워딩을 지원하는 것으로 해결했다.
+
+파형을 보면, ECALL을 설계대로 ID단계에서 Exception Detector가 탐지를 해 trap_status를 010 즉 ECALL로 올려 
+해당 Pre-Trap Handling의 내용이 적힌 Trap Controller의 내부 루틴대로 잘 진행되었다. 
+하지만, 이 PTH가 끝나면 305 csr_trap_address에서 읽은 mtvec값 0x0000_1000을 읽어서 해당 주소로 PC가 분기해서 진행되어야하는데, csr_trap_address로 305번지를 csr한테 줬는데, 주솟값이 안나왔다. 0x0000_0000이 나와버렸다. 
+근데 또 막상 misaligned의 PTH에서는 305주소를 요청하면 0x0000_1000를 잘 출력하고 해당 주소로 잘 분기를 한다.
+뭐가 문젤까? 
+PCC에서는 trapped가 활성화되었는데 PCC로 인출되는 csr_read_data값이 0x00000000이라서 의도하지 않은 명령어가 IF단계부터 파이프라이닝되어 문제다. 어떻게 해결하면 좋을까??
+ECALL이 ID에서 탐지되면 IF단계에서 인출된 명령어를 flush하고 싶은데.. 
+Hazard Unit에서 trapped 신호에 IF_ID_Flush를 1로 올려주는 방식으로 해결했다.
+
+# CSR File의 읽기 쓰기 주소 이원화에 대한 건
+ID단계에서 읽은 주솟값이 WB단계가 되어서야 값이 인출됐다.
+쓰기 작업이 아니고서야 csr의 address를 ID단계에서 디코딩된 raw_imm값으로 하고 싶은데 
+현재 탑모듈 코드가 WB에서의 address를 받아오라고 하고 있어서 생긴 문제 같다. 
+명령어 처리를 위해서 CSR File에 입력된 주소의 값이 바로나와줘야하는데, 의도와는 다르게 WB단계의 주솟값을 받고 있으니까. 
+싱글사이클 일 때는 문제가 없었는데, 이렇게 되니까 쓰기용 주소 입력 포트를 따로(WB단계 주소를 받아오는 용도), 그리고 읽기용 주소 포트를 따로 두는게 해결방안이지 않을까? 현재 구현된 그냥 Register File처럼 읽기용 주소와 쓰기용 주소를 분리해서 읽기와 쓰기의 race가 일어나지 않도록 하는 것이다. 
+
+생각해보니까, Trap Controller에서도 CSR File 모듈에 접근해서 PTH를 수행할 때 csr address에 바로 쓰기를 해야하는데, 
+이렇게 되면 Write address 주소 입력 포트가 CSR File에 생긴다고 해도 
+WB단계에서 CSR에 Zicsr확장의 명령어들 수행의 결과 값을 쓰기 위해 CSR_Write Address에 접근할거고, 
+Trap이 발생되면 파이프라인들을 stall하지만 WB단계와 Trap Controller의 주소 접근 충돌이 날 수 있는 것 아닌가? 
+그리고 Trap Controller는 읽기를 위한 주소신호 출력과 쓰기를 위한 주소 신호 출력을 csr_trap_address 하나의 신호로만 사용하는데, 
+이러면 Trap Controller에서 csr address 출력 포트를 읽기 포트와 쓰기 포트로 이원화 시킬 필요가 있고, 
+마찬가지로 CSR에서는 Trap Controller의 Write address 포트와 WB단계의 write address 포트로 이원화해야하는건가? 
+그리고 Trap Controller에서 수행하는 PTH를 위한 CSR 접근인지 아닌지를 알아야 하니까 Trap Controller 모듈에서 나오는 trap_done 신호를 CSR File에 입력신호로 추가하고? 맞나...??
+아니다. 애초에 WB단계 CSR명령어는 이미 파이프라인되어있는 명령어라 트랩 검출 이전, (애초에 로직이 트랩시 기존 명령어들을 모두 마치고 handling을 수행한다.)이 수행되고 그 이후 Trap이 해당 맥락에 관여하니 그럴 일은 없다. CSR의 주소 입력 신호를 읽기 주소 입력과 쓰기 주소 입력으로 각각 이원화하는 것으로 해결했다. 
