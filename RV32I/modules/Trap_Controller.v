@@ -3,7 +3,8 @@
 module TrapController (
     input wire        clk,
     input wire        reset,
-    input wire [31:0] pc,
+    input wire [31:0] ID_pc,
+    input wire [31:0] EX_pc,
     input wire [2:0]  trap_status,      // indicates current trap type
     input wire [31:0] csr_read_data,
 
@@ -70,7 +71,9 @@ always @(*) begin
                     // write current pc value to mepc CSR
                     csr_write_enable = 1'b1;
                     csr_trap_address = 12'h341; //mepc
-                    csr_trap_write_data = pc;
+                    if (trap_status == `TRAP_ECALL) begin
+                    csr_trap_write_data = ID_pc;
+                    end else csr_trap_write_data = EX_pc;
                     trap_done = 1'b0;
                     next_trap_handle_state = WRITE_MEPC;
                 end
@@ -96,8 +99,7 @@ always @(*) begin
                     end
                     else begin
                         // ECALL, MISALIGNED : read mtvec trap handler CSR value
-                        csr_trap_address = 12'h305;  // mtvec
-                        trap_target = csr_read_data;
+                        csr_write_enable = 1'b0;
                         trap_done = 1'b0;
                         next_trap_handle_state = READ_MTVEC;
                     end

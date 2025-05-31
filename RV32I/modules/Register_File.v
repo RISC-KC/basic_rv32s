@@ -12,10 +12,35 @@ module RegisterFile (
 
     reg [31:0] registers [0:31]; // 32 registers with 32 bits each
 
+    /* If the waveform shows unknown value 'x' in register file's data, deannotate this.
+    integer i;
+    initial begin
+    for (i = 1; i < 32; i = i + 1) registers[i] = 32'b0;
+    end*/
+
     // Read operation
     always @(*) begin
-        read_data1 = (read_reg1 == 5'd0) ? 32'd0 : registers[read_reg1]; // x0 is always 0
-        read_data2 = (read_reg2 == 5'd0) ? 32'd0 : registers[read_reg2]; // x0 is always 0
+        if (read_reg1 == 5'd0) begin
+            read_data1 = 32'd0;
+        end
+
+        else if (write_enable && (write_reg == read_reg1)) begin
+            read_data1 = write_data;
+        end
+        else begin
+            read_data1 = registers[read_reg1];
+        end
+
+        if (read_reg2 == 5'd0) begin
+            read_data2 = 32'd0;
+        end
+
+        else if (write_enable && (write_reg == read_reg2)) begin
+            read_data2 = write_data;
+        end
+        else begin
+            read_data2 = registers[read_reg2];
+        end
     end
 
     // Write operation

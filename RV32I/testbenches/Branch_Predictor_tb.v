@@ -10,8 +10,6 @@ module BranchPredictor_tb #(
     reg [6:0] IF_opcode;
     reg [XLEN-1:0] IF_pc;
     reg [XLEN-1:0] IF_imm;
-    reg [XLEN-1:0] EX_pc;
-    reg [XLEN-1:0] EX_imm;
     reg EX_branch;
     reg EX_branch_taken;
     
@@ -24,8 +22,6 @@ module BranchPredictor_tb #(
         .IF_opcode(IF_opcode),
         .IF_pc (IF_pc),
         .IF_imm (IF_imm),
-        .EX_pc (EX_pc),
-        .EX_imm (EX_imm),
         .EX_branch(EX_branch),
         .EX_branch_taken (EX_branch_taken),
 
@@ -50,8 +46,6 @@ module BranchPredictor_tb #(
         IF_opcode = 7'b0;
         IF_pc = {XLEN{1'b0}};
         IF_imm = {XLEN{1'b0}};
-        EX_pc = {XLEN{1'b0}};
-        EX_imm = {XLEN{1'b0}};
         EX_branch = 1'b0;
         EX_branch_taken = 1'bx;
         // ---------------------------------------------------------------
@@ -63,9 +57,7 @@ module BranchPredictor_tb #(
         repeat (2) @(negedge clk);
 
         // misprediction, prediction counter is now Weakly Not Taken.
-        EX_pc = 32'h0000_0000;
-        EX_imm = 32'd8;
-        EX_branch_taken = 1'b1; // Target address = 0x0000_0008
+        EX_branch_taken = 1'b1;
         EX_branch = 1'b1;
         #10;
         // ---------------------------------------------------------------
@@ -77,8 +69,6 @@ module BranchPredictor_tb #(
         repeat (2) @(negedge clk);
 
         // well predicted, prediction counter is now Strongly Not Taken.
-        EX_pc = 32'h0000_0008;
-        EX_imm = 32'd12;
         EX_branch = 1'b1;
         EX_branch_taken = 1'b0; // Target address = 0x0000_000C (PC+4)
         #10;
@@ -91,10 +81,8 @@ module BranchPredictor_tb #(
         repeat (2) @(negedge clk);
 
         // misprediction, prediction counter is now Weakly Not Taken.
-        EX_pc = 32'h0000_000C;
-        EX_imm = 32'd8;
         EX_branch = 1'b1;
-        EX_branch_taken = 1'b1; // Target address = 0x0000_0014 (PC+imm)
+        EX_branch_taken = 1'b1; 
         #10;
         // ---------------------------------------------------------------
         // Test 4: Prediction = NT, Actual = Taken (mispredicted)
@@ -105,8 +93,6 @@ module BranchPredictor_tb #(
         repeat (2) @(negedge clk);
 
         // mispredicted, prediction counter is now Weakly Taken.
-        EX_pc = 32'h0000_0014;
-        EX_imm = 32'd12;
         EX_branch = 1'b1;
         EX_branch_taken = 1'b1; // Target address = 0x0000_0020
         #10;
@@ -119,12 +105,11 @@ module BranchPredictor_tb #(
         repeat (2) @(negedge clk);
 
         // well predicted, prediction counter is now Strongly Taken.
-        EX_pc = 32'h0000_0020;
-        EX_imm = 32'd8;
         EX_branch = 1'b1;
         EX_branch_taken = 1'b1; // Target address = 0x0000_0028
         #10;
         // ---------------------------------------------------------------
+        $display("==================== Branch Predictor Test FINISH ====================");
         #40;
         $finish;
     end

@@ -2,18 +2,20 @@
 `include "modules/headers/trap.vh"
 
 module ExceptionDetector (
-	input [6:0] opcode,				// opcode
+	input [6:0] ID_opcode,			// opcode from ID Phase
+	input [6:0] EX_opcode,			// opcode from EX Phase
 	input [2:0] funct3,				// funct3
 	input [11:0] funct12,			// raw_imm field to distinguish EBREAK, ECALL and MRET
 	input [1:0] jump_target_lsbs,		// LSBs of jump target
 	input [1:0] branch_target_lsbs,		// LSBs of branch target
+	input branch_estimation,
 	
     output reg trapped,				// signal indicating if trap has occurred
 	output reg [2:0] trap_status	// current trap status
 );
 	
 	always @(*) begin
-		case (opcode)
+		case (ID_opcode)
 			`OPCODE_FENCE: begin	// Zifence
 				if (funct3 == 3'b001) begin
 					trapped = 1'b1;
@@ -39,18 +41,8 @@ module ExceptionDetector (
 					trap_status = `TRAP_NONE;
 				end
 			end
-			`OPCODE_JAL, `OPCODE_JALR: begin // Misaligned
-				if (jump_target_lsbs == 2'b0) begin
-					trapped = 0;
-					trap_status = `TRAP_NONE;
-				end
-				else begin
-					trapped = 1;
-					trap_status = `TRAP_MISALIGNED;
-				end
-			end
-
 			`OPCODE_BRANCH: begin // Misaligned
+			if (branch_estimation == 1'b1) begin
 				if (branch_target_lsbs == 2'b0) begin
 					trapped = 0;
 					trap_status = `TRAP_NONE;
@@ -60,12 +52,24 @@ module ExceptionDetector (
 					trap_status = `TRAP_MISALIGNED;
 				end
 			end
+			end
 
 			default: begin
 				trapped = 0;
 				trap_status = `TRAP_NONE;
 			end
         endcase
+
+		if (EX_opcode == `OPCODE_JAL || EX_opcode == `OPCODE_JALR) begin
+			if (jump_target_lsbs == 2'b0) begin
+					trapped = 0;
+					trap_status = `TRAP_NONE;
+				end
+				else begin
+					trapped = 1;
+					trap_status = `TRAP_MISALIGNED;
+				end
+		end
 	end
 	
 endmodule

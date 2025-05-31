@@ -5,6 +5,7 @@ module ID_EX_Register #(
     input wire clk,
     input wire reset,
     input wire flush,
+    input wire pipeline_stall,
 
     // signal from IF phase
     // input wire [XLEN-1:0] IF_PC but why? What was this for?
@@ -12,8 +13,8 @@ module ID_EX_Register #(
     // signals from IF/ID register
     input wire [XLEN-1:0] ID_pc,
     input wire [XLEN-1:0] ID_pc_plus_4,
-    input wire [XLEN-1:0] ID_instruction,
     input wire ID_branch_estimation,
+    input wire [31:0] ID_instruction,
 
     // signals from ID phase
     input wire ID_jump,
@@ -33,14 +34,15 @@ module ID_EX_Register #(
     input wire [XLEN-1:0] ID_read_data1,
     input wire [XLEN-1:0] ID_read_data2,
     input wire [4:0] ID_rs1,
+    input wire [4:0] ID_rs2,
     input wire [XLEN-1:0] ID_imm,
     input wire [XLEN-1:0] ID_csr_read_data,
 
     // signals to EX/MEM register
     output reg [XLEN-1:0] EX_pc,
     output reg [XLEN-1:0] EX_pc_plus_4,
-    output reg [XLEN-1:0] EX_instruction,
     output reg EX_branch_estimation,
+    output reg [31:0] EX_instruction,
 
     output reg EX_jump,
     output reg EX_memory_read,
@@ -59,6 +61,7 @@ module ID_EX_Register #(
     output reg [XLEN-1:0] EX_read_data1,
     output reg [XLEN-1:0] EX_read_data2,
     output reg [4:0] EX_rs1,
+    output reg [4:0] EX_rs2,
     output reg [XLEN-1:0] EX_imm,
     output reg [XLEN-1:0] EX_csr_read_data
 );
@@ -67,8 +70,8 @@ always @(posedge clk or posedge reset) begin
     if (reset || flush) begin
         EX_pc <= {XLEN{1'b0}};
         EX_pc_plus_4 <= {XLEN{1'b0}};
-        EX_instruction <= 32'h0000_0013;
         EX_branch_estimation <= 1'b0;
+        EX_instruction <= 32'h0000_0013; // ADDI x0, x0, 0 = RISC-V NOP, HINT
 
         EX_jump <= 1'b0;
         EX_memory_read <= 1'b0;
@@ -87,13 +90,40 @@ always @(posedge clk or posedge reset) begin
         EX_read_data1 <= {XLEN{1'b0}};
         EX_read_data2 <= {XLEN{1'b0}};
         EX_rs1 <= 5'b0;
+        EX_rs2 <= 5'b0;
         EX_imm <= {XLEN{1'b0}};
         EX_csr_read_data <= {XLEN{1'b0}};
+    end else if (pipeline_stall) begin
+        EX_pc <= EX_pc;
+        EX_pc_plus_4 <= EX_pc_plus_4;
+        EX_branch_estimation <= EX_branch_estimation;
+        EX_instruction <= EX_instruction;
+
+        EX_jump <= EX_jump;
+        EX_memory_read <= EX_memory_read;
+        EX_memory_write <= EX_memory_write;
+        EX_register_file_write_data_select <= EX_register_file_write_data_select;
+        EX_register_write_enable <= EX_register_write_enable;
+        EX_csr_write_enable <= EX_csr_write_enable;
+        EX_branch <= EX_branch;
+        EX_alu_src_A_select <= EX_alu_src_A_select;
+        EX_alu_src_B_select <= EX_alu_src_B_select;
+        EX_opcode <= EX_opcode;
+        EX_funct3 <= EX_funct3;
+        EX_funct7 <= EX_funct7;
+        EX_rd <= EX_rd;
+        EX_raw_imm <= EX_raw_imm;
+        EX_read_data1 <= EX_read_data1;
+        EX_read_data2 <= EX_read_data2;
+        EX_rs1 <= EX_rs1;
+        EX_rs2 <= EX_rs2;
+        EX_imm <= EX_imm;
+        EX_csr_read_data <= EX_csr_read_data;
     end else begin
         EX_pc <= ID_pc;
         EX_pc_plus_4 <= ID_pc_plus_4;
-        EX_instruction <= ID_instruction;
         EX_branch_estimation <= ID_branch_estimation;
+        EX_instruction <= ID_instruction;
 
         EX_jump <= ID_jump;
         EX_memory_read <= ID_memory_read;
@@ -112,6 +142,7 @@ always @(posedge clk or posedge reset) begin
         EX_read_data1 <= ID_read_data1;
         EX_read_data2 <= ID_read_data2;
         EX_rs1 <= ID_rs1;
+        EX_rs2 <= ID_rs2;
         EX_imm <= ID_imm;
         EX_csr_read_data <= ID_csr_read_data;
     end
