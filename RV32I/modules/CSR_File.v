@@ -43,6 +43,7 @@ module CSRFile (
     // Reset Operation
     always @(posedge clk or posedge reset) begin
       if (reset) begin
+        mtvec   <= DEFAULT_mtvec;
         mepc    <= DEFAULT_mepc;
         mcause  <= DEFAULT_mcause;
       end
