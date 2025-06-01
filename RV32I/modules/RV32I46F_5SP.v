@@ -148,7 +148,7 @@ module RV32I46F5SP #(
     wire [4:0] ID_rd;
     wire [4:0] ID_rs1;
     wire [4:0] ID_rs2;
-    wire [11:0] ID_raw_imm;
+    wire [19:0] ID_raw_imm;
     wire [XLEN-1:0] ID_read_data1;
     wire [XLEN-1:0] ID_read_data2;
     wire [XLEN-1:0] ID_imm;
@@ -173,7 +173,7 @@ module RV32I46F5SP #(
     wire [2:0] EX_funct3;
     wire [6:0] EX_funct7;
     wire [4:0] EX_rd;
-    wire [11:0] EX_raw_imm;
+    wire [19:0] EX_raw_imm;
     wire [XLEN-1:0] EX_read_data1;
     wire [XLEN-1:0] EX_read_data2;
     wire [4:0] EX_rs1;
@@ -395,7 +395,7 @@ module RV32I46F5SP #(
         .ID_opcode(opcode),
         .EX_opcode(EX_opcode),
         .funct3(funct3),
-        .funct12(raw_imm),
+        .funct12(raw_imm[11:0]),
         .jump_target_lsbs(alu_result[1:0]),
         .branch_target_lsbs(branch_target[1:0]),
         .branch_estimation(branch_estimation),
