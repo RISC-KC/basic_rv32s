@@ -15,6 +15,7 @@ module BranchPredictor #(
     output reg [XLEN-1:0] branch_target
 );
     reg [1:0] prediction_counter;
+    reg branch_prediction;
     wire [XLEN-1:0] prediction_target = branch_estimation ? (IF_pc + IF_imm) : (IF_pc + {{XLEN-3{1'b0}},3'd4});
 
     always @(*) begin
@@ -29,10 +30,15 @@ module BranchPredictor #(
 
     always @(posedge clk or posedge reset) begin
         if (reset) begin
+            branch_prediction <= 1'b0;
             prediction_counter <= 2'b00;
             branch_target <= {XLEN{1'b0}};
         end else begin
-            if (EX_branch && (EX_branch_taken !== 1'bx)) begin
+            if (IF_opcode == `OPCODE_BRANCH) begin
+                branch_prediction <= branch_estimation;
+            end
+        
+        if (EX_branch && (EX_branch_taken == 1'b1 || EX_branch_taken == 1'b0)) begin
                 case ({EX_branch_taken, prediction_counter})
                 // Not Taken 0, prediction_counter 00
                     3'b0_00: prediction_counter <= 2'b00; // Strongly Not Taken <- if not taken again, still 00.
