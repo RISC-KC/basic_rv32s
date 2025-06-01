@@ -13,7 +13,7 @@ module MEM_WB_Register #(
 
     input wire [2:0] MEM_register_file_write_data_select,
     input wire [XLEN-1:0] MEM_imm,
-    input wire [11:0] MEM_raw_imm,
+    input wire [19:0] MEM_raw_imm,
     input wire [XLEN-1:0] MEM_csr_read_data,
     input wire [XLEN-1:0] MEM_alu_result,
     input wire MEM_register_write_enable,
@@ -31,7 +31,7 @@ module MEM_WB_Register #(
 
     output reg [2:0] WB_register_file_write_data_select,
     output reg [XLEN-1:0] WB_imm,
-    output reg [11:0] WB_raw_imm,
+    output reg [19:0] WB_raw_imm,
     output reg [XLEN-1:0] WB_csr_read_data,
     output reg [XLEN-1:0] WB_alu_result,
     output reg WB_register_write_enable,
@@ -50,7 +50,7 @@ always @(posedge clk or posedge reset) begin
 
         WB_register_file_write_data_select <= 3'b0;
         WB_imm <= {XLEN{1'b0}};
-        WB_raw_imm <= 12'b0;
+        WB_raw_imm <= 20'b0;
         WB_csr_read_data <= {XLEN{1'b0}};
         WB_alu_result <= {XLEN{1'b0}};
         WB_register_write_enable <= 1'b0;
