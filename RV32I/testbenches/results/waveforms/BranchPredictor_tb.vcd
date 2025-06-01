@@ -1,5 +1,5 @@
 $date
-	Sat May 31 17:54:51 2025
+	Sun Jun 01 11:29:16 2025
 $end
 $version
 	Icarus Verilog
@@ -19,9 +19,8 @@ $var wire 1 ' reset $end
 $var wire 32 ( prediction_target [31:0] $end
 $var parameter 32 ) XLEN $end
 $var reg 1 * branch_estimation $end
-$var reg 1 + branch_prediction $end
-$var reg 32 , branch_target [31:0] $end
-$var reg 2 - prediction_counter [1:0] $end
+$var reg 32 + branch_target [31:0] $end
+$var reg 2 , prediction_counter [1:0] $end
 $upscope $end
 $upscope $end
 $enddefinitions $end
@@ -31,9 +30,8 @@ b100000 )
 $end
 #0
 $dumpvars
-b0 -
 b0 ,
-0+
+b0 +
 0*
 bx (
 1'
@@ -55,7 +53,7 @@ $end
 #25000
 1&
 #30000
-b100 ,
+b100 +
 b100 (
 0&
 0!
@@ -74,10 +72,10 @@ b1100011 $
 1"
 0&
 #55000
-b1 -
+b1 ,
 1&
 #60000
-b1100 ,
+b1100 +
 b1100 (
 0!
 b1100 #
@@ -94,10 +92,10 @@ b1000 %
 1!
 0&
 #85000
-b0 -
+b0 ,
 1&
 #90000
-b10000 ,
+b10000 +
 b10000 (
 0!
 b1000 #
@@ -114,10 +112,10 @@ b1100 %
 1!
 0&
 #115000
-b1 -
+b1 ,
 1&
 #120000
-b11000 ,
+b11000 +
 b11000 (
 0!
 b1100 #
@@ -133,20 +131,19 @@ b10100 %
 1!
 0&
 #145000
-b100000 ,
+b100000 +
 b100000 (
 1*
-b10 -
+b10 ,
 1&
 #150000
-b101000 ,
+b101000 +
 b101000 (
 0!
 b1000 #
 b100000 %
 0&
 #155000
-1+
 1&
 #160000
 0&
@@ -156,7 +153,7 @@ b100000 %
 1!
 0&
 #175000
-b11 -
+b11 ,
 1&
 #180000
 0&
