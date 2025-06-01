@@ -22,7 +22,7 @@ module EX_MEM_Register #(
     input wire [4:0] EX_rd,
     input wire [XLEN-1:0] EX_read_data2, // Register File to Data Memory read data
     input wire [XLEN-1:0] EX_imm,
-    input wire [11:0] EX_raw_imm,
+    input wire [19:0] EX_raw_imm,
     input wire [XLEN-1:0] EX_csr_read_data,
 
     // signals from EX phase
@@ -43,7 +43,7 @@ module EX_MEM_Register #(
     output reg [4:0] MEM_rd,
     output reg [XLEN-1:0] MEM_read_data2,
     output reg [XLEN-1:0] MEM_imm,
-    output reg [11:0] MEM_raw_imm,
+    output reg [19:0] MEM_raw_imm,
     output reg [XLEN-1:0] MEM_csr_read_data,
 
     output reg [XLEN-1:0] MEM_alu_result
@@ -65,7 +65,7 @@ always @(posedge clk or posedge reset) begin
         MEM_rd <= 5'b0;
         MEM_read_data2 <= {XLEN{1'b0}};
         MEM_imm <= {XLEN{1'b0}};
-        MEM_raw_imm <= 12'b0;
+        MEM_raw_imm <= 20'b0;
         MEM_csr_read_data <= {XLEN{1'b0}};
 
         MEM_alu_result <= {XLEN{1'b0}};

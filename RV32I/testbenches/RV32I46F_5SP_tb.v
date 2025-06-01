@@ -25,7 +25,7 @@ module RV32I46F5SP_tb;
 
         reset = 0;
 
-        #795;
+        #1015;
 
         $display("\n====================  RV32I46F_5SP Test END  ====================");
         $stop;

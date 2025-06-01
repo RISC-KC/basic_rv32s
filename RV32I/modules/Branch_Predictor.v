@@ -38,7 +38,7 @@ module BranchPredictor #(
                 branch_prediction <= branch_estimation;
             end
         
-        if (EX_branch && (EX_branch_taken !== 1'bx)) begin
+        if (EX_branch && (EX_branch_taken == 1'b1 || EX_branch_taken == 1'b0)) begin
                 case ({EX_branch_taken, prediction_counter})
                 // Not Taken 0, prediction_counter 00
                     3'b0_00: prediction_counter <= 2'b00; // Strongly Not Taken <- if not taken again, still 00.
