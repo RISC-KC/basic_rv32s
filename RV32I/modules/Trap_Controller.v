@@ -25,14 +25,18 @@ localparam  IDLE          = 2'b00,
 
 // traditional FSM state architecture
 reg [1:0] trap_handle_state, next_trap_handle_state;
+reg debug_mode_enable;
 
 // FSM update logic and debug_mode reset
 always @(posedge clk or posedge reset) begin
     if (reset) begin
         trap_handle_state <= IDLE;
-        debug_mode <= 1'b0; 
+        debug_mode_enable <= 1'b0;
     end 
-    else trap_handle_state <= next_trap_handle_state;
+    else begin
+        trap_handle_state <= next_trap_handle_state;
+        debug_mode_enable <= debug_mode;
+    end
 end
 
 always @(*) begin
@@ -45,7 +49,8 @@ always @(*) begin
     trap_done            = 1'b1;
     // default next state
     next_trap_handle_state = IDLE;
-
+    debug_mode = debug_mode_enable;
+    
     case (trap_status)
         // traps that doesn't require multiple PTH FSM
         `TRAP_NONE: begin
