@@ -7,7 +7,7 @@ module ByteEnableLogic (
     input [2:0] funct3,							// funct3
 	input [31:0] register_file_read_data,		// data read from register file
 	input [31:0] data_memory_read_data,			// data read from data memory
-	input [31:0] address,						// address for checking alignment
+	input [1:0] address,						// address for checking alignment
 	
 	output reg [31:0] register_file_write_data,	// data to write at register file
 	output reg [31:0] data_memory_write_data,	// data to write at data memory
