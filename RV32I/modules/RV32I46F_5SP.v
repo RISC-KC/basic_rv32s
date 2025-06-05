@@ -97,7 +97,6 @@ module RV32I46F5SP #(
 	
     // Data Memory and Byte Enable Logic
     wire [31:0] data_memory_read_data;
-    wire [31:0] data_memory_address;
 	wire [31:0] byte_enable_logic_register_file_write_data;
     wire [31:0] data_memory_write_data;
     wire [3:0] write_mask;
@@ -122,38 +121,12 @@ module RV32I46F5SP #(
     wire [XLEN-1:0] csr_trap_write_data;
     
     // IF_ID_Register
-    wire [XLEN-1:0] IF_pc;
-    wire [XLEN-1:0] IF_pc_plus_4;
-    wire [31:0] IF_instruction;
-    wire IF_branch_estimation;
-
     wire [XLEN-1:0] ID_pc;
     wire [XLEN-1:0] ID_pc_plus_4;
     wire [31:0] ID_instruction;
     wire ID_branch_estimation;
 
     // ID_EX_Register
-    wire ID_jump;
-    wire ID_branch;
-    wire [1:0] ID_alu_src_A_select;
-    wire [2:0] ID_alu_src_B_select;
-    wire ID_memory_read;
-    wire ID_memory_write;
-    wire [2:0] ID_register_file_write_data_select;
-    wire ID_register_write_enable;
-    wire ID_csr_write_enable;
-    wire [6:0] ID_opcode; 
-    wire [2:0] ID_funct3;
-    wire [6:0] ID_funct7;
-    wire [4:0] ID_rd;
-    wire [4:0] ID_rs1;
-    wire [4:0] ID_rs2;
-    wire [19:0] ID_raw_imm;
-    wire [XLEN-1:0] ID_read_data1;
-    wire [XLEN-1:0] ID_read_data2;
-    wire [XLEN-1:0] ID_imm;
-    wire [XLEN-1:0] ID_csr_read_data;
-
     wire [XLEN-1:0] EX_pc;
     wire [XLEN-1:0] EX_pc_plus_4;
     wire EX_branch_estimation;
@@ -181,8 +154,6 @@ module RV32I46F5SP #(
     wire [XLEN-1:0] EX_imm;
     wire [XLEN-1:0] EX_csr_read_data;
 
-    wire [XLEN-1:0] EX_alu_result;
-
     wire [XLEN-1:0] MEM_pc;
     wire [XLEN-1:0] MEM_pc_plus_4;
     wire [31:0] MEM_instruction;
@@ -195,7 +166,6 @@ module RV32I46F5SP #(
     wire [6:0] MEM_opcode;
     wire [2:0] MEM_funct3;
     wire [4:0] MEM_rd;
-    wire [XLEN-1:0] MEM_byte_enable_logic_register_file_write_data;
     wire [XLEN-1:0] MEM_read_data2;
     wire [XLEN-1:0] MEM_imm;
     wire [19:0] MEM_raw_imm;
@@ -373,7 +343,7 @@ module RV32I46F5SP #(
         .funct3(MEM_funct3),
 	    .register_file_read_data(MEM_read_data2),
 	    .data_memory_read_data(data_memory_read_data),
-	    .address(MEM_alu_result),
+	    .address(MEM_alu_result[1:0]),
 	
 	    .register_file_write_data(byte_enable_logic_register_file_write_data),
 	    .data_memory_write_data(data_memory_write_data),
@@ -587,8 +557,6 @@ module RV32I46F5SP #(
     );
 
     HazardUnit hazard_unit (
-        .clk(clk),
-        .reset(reset),
         .trap_done(trap_done),
         .ID_rs1(rs1),
         .ID_rs2(rs2),
@@ -603,7 +571,6 @@ module RV32I46F5SP #(
         .EX_rs1(EX_rs1),
         .EX_rs2(EX_rs2),
         .EX_rd(EX_rd),
-        .EX_register_write_enable(EX_register_write_enable),
         .EX_opcode(EX_opcode),
         .EX_imm(EX_imm[11:0]),
         .branch_prediction_miss(branch_prediction_miss),
