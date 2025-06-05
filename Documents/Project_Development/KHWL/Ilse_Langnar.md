@@ -5556,3 +5556,9 @@ Vivado의 Linter를 돌려본다..!! [First_Linter_Result](Devlog_images/FirstLi
 아하. 아무래도 재선언을 하지 않은 것으로 보아 이 문제는 아닌 것 같고. 사진을 보면 reset시 `debug_mode`를 0으로 초기화하려고 그걸 순차논리에 포함시켰고
 일반적으로 해당 값은 조합논리에서 다루는데 이러면 두 로직에서 값을 할당하게끔 되어 문제가 발생하는 것을 아마 경고한 것 같다.
 ![multi-driven_debug_mode](Devlog_images/TrapControllermultidriven.png)
+
+debug_mode_enable 신호로 역할을 쪼개어 해결했다.
+Branch_predictor에 있는 `branch_target` 신호도 multi-driven이라는데, 뭐가 문제일까.
+아하. ![branch_target_multi-drvien](Devlog_images/branch_target_multi-driven.png) 
+reset에서 순차식으로 0을 초기화하는데, 실제 값은 조합논리에서 생성되어 문제인 것 같다.
+이건 조합논리에서 기본값을 0으로 두어도 조건에 따른 주솟값을 계산하며 해당 조건은 순간 신호가 아니니 상관없을 것 같다.
