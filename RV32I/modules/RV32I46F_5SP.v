@@ -347,7 +347,8 @@ module RV32I46F5SP #(
 	
 	    .register_file_write_data(byte_enable_logic_register_file_write_data),
 	    .data_memory_write_data(data_memory_write_data),
-        .write_mask(write_mask)
+        .write_mask(write_mask),
+        .misaligned(misalinged_memory)
     );
 
     CSRFile csr_file (
@@ -369,6 +370,7 @@ module RV32I46F5SP #(
         .jump_target_lsbs(alu_result[1:0]),
         .branch_target_lsbs(branch_target[1:0]),
         .branch_estimation(branch_estimation),
+        .misalinged_memory(misalinged_memory),
 
         .trapped(trapped),
         .trap_status(trap_status)
@@ -380,6 +382,7 @@ module RV32I46F5SP #(
         .trap_status(trap_status),
         .ID_pc(ID_pc),
         .EX_pc(EX_pc),
+        .MEM_pc(MEM_pc),
         .csr_read_data(csr_read_data),
 
         .debug_mode(debug_mode),
@@ -520,6 +523,7 @@ module RV32I46F5SP #(
     MEM_WB_Register #(.XLEN(XLEN)) mem_wb_register (
         .clk(clk),
 		.reset(reset),
+        .pipeline_stall(pipeline_stall),
         //.flush(flush),
 
         // Signals from EX_MEM_Register

@@ -5,6 +5,7 @@ module TrapController (
     input wire        reset,
     input wire [31:0] ID_pc,
     input wire [31:0] EX_pc,
+    input wire [31:0] MEM_pc,
     input wire [2:0]  trap_status,      // indicates current trap type
     input wire [31:0] csr_read_data,
 
@@ -25,18 +26,14 @@ localparam  IDLE          = 2'b00,
 
 // traditional FSM state architecture
 reg [1:0] trap_handle_state, next_trap_handle_state;
-reg debug_mode_enable;
 
 // FSM update logic and debug_mode reset
 always @(posedge clk or posedge reset) begin
     if (reset) begin
         trap_handle_state <= IDLE;
-        debug_mode_enable <= 1'b0;
+        debug_mode <= 1'b0; 
     end 
-    else begin
-        trap_handle_state <= next_trap_handle_state;
-        debug_mode_enable <= debug_mode;
-    end
+    else trap_handle_state <= next_trap_handle_state;
 end
 
 always @(*) begin
@@ -49,8 +46,7 @@ always @(*) begin
     trap_done            = 1'b1;
     // default next state
     next_trap_handle_state = IDLE;
-    debug_mode = debug_mode_enable;
-    
+
     case (trap_status)
         // traps that doesn't require multiple PTH FSM
         `TRAP_NONE: begin
@@ -78,7 +74,10 @@ always @(*) begin
                     csr_trap_address = 12'h341; //mepc
                     if (trap_status == `TRAP_ECALL) begin
                     csr_trap_write_data = ID_pc;
+                    end else if (trap_status == `TRAP_MISALIGNED_MEMORY) begin
+                        csr_trap_write_data = MEM_pc;
                     end else csr_trap_write_data = EX_pc;
+
                     trap_done = 1'b0;
                     next_trap_handle_state = WRITE_MEPC;
                 end
@@ -89,7 +88,7 @@ always @(*) begin
                     csr_trap_address = 12'h342; //mcause
                     if (trap_status == `TRAP_EBREAK)    csr_trap_write_data = 32'd3;
                     else if (trap_status == `TRAP_ECALL)    csr_trap_write_data = 32'd11;
-                    else // TRAP_MISALIGNED
+                    else // TRAP_MISALIGNED_INSTRUCTION
                     csr_trap_write_data = 32'd0;
                     trap_done = 1'b0;
                     next_trap_handle_state = WRITE_MCAUSE;
@@ -103,7 +102,7 @@ always @(*) begin
                         next_trap_handle_state = IDLE;
                     end
                     else begin
-                        // ECALL, MISALIGNED : read mtvec trap handler CSR value
+                        // ECALL, MISALIGNED_INSTRUCTION : read mtvec trap handler CSR value
                         csr_write_enable = 1'b0;
                         trap_done = 1'b0;
                         next_trap_handle_state = READ_MTVEC;

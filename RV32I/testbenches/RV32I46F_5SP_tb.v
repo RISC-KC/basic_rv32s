@@ -13,7 +13,7 @@ module RV32I46F5SP_tb;
     always #5 clk = ~clk;
 
     initial begin
-        $dumpfile("testbenches/results/waveforms/RV32I46F5SP_opt_tb_result.vcd");
+        $dumpfile("testbenches/results/waveforms/RV32I46F5SP_opt_tb_result2.vcd");
         $dumpvars(0, rv32i46f_5sp);
 
         $display("==================== RV32I46F_5SP Test START ====================");
@@ -25,7 +25,7 @@ module RV32I46F5SP_tb;
 
         reset = 0;
 
-        #1015;
+        #1315;
 
         $display("\n====================  RV32I46F_5SP Test END  ====================");
         $stop;

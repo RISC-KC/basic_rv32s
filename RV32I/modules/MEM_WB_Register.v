@@ -4,6 +4,7 @@ module MEM_WB_Register #(
     // pipeline register control signals
     input wire clk,
     input wire reset,
+    input wire pipeline_stall,
     //input wire flush,
 
     // signals from EX/MEM register
@@ -59,7 +60,23 @@ always @(posedge clk or posedge reset) begin
         WB_opcode <= 7'b0;
         
         WB_byte_enable_logic_register_file_write_data <= {XLEN{1'b0}};
-    end else begin
+    end else if (pipeline_stall) begin
+        WB_pc <= WB_pc;
+        WB_pc_plus_4 <= WB_pc_plus_4;
+        WB_instruction <= WB_instruction;
+
+        WB_register_file_write_data_select <= WB_register_file_write_data_select;
+        WB_imm <= WB_imm;
+        WB_raw_imm <= WB_raw_imm;
+        WB_csr_read_data <= WB_csr_read_data;
+        WB_alu_result <= WB_alu_result;
+        WB_register_write_enable <= WB_register_write_enable;
+        WB_csr_write_enable <= WB_csr_write_enable;
+        WB_rd <= WB_rd;
+        WB_opcode <= WB_opcode;
+        
+        WB_byte_enable_logic_register_file_write_data <= WB_byte_enable_logic_register_file_write_data;
+    end begin
         WB_pc <= MEM_pc;
         WB_pc_plus_4 <= MEM_pc_plus_4;
         WB_instruction <= MEM_instruction;
