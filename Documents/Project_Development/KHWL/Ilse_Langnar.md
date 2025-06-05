@@ -5575,3 +5575,38 @@ RTL이 정확해져서 더 밑천이 드러난 것 뿐인가.
 끙... 그래도 확실히 실력이 계속 늘고 있는 것 같다. 
 처음 Trap Controller 구현할 때 머리 굴리느라 진짜 힘들었던 것이 생각나는데, 이제는 그게 기본으로 아무렇지도 않게 잘 추가했다.
 로직을 잘 짜둬서그런가. 하하. 하지만 FPGA 구현은 다른문제니까..,. FPGA 프로젝트에 이걸 이식하고 다시 Timing Closure 작업을 마저해야겠다. 
+
+오키. Vivado 에서 그냥 프로젝트파일 새로 만들어서 Behavior Simulation을 다시 돌려봤다. 전부 예상값대로 잘 나온다.
+
+탑 모듈에서 Vivado를 위한 최적화를 모두 commit했고, 다시 새 프로젝트를 파서 돌리고 있다.
+Synthesis를 돌리면서, 각 Strategy별 타이밍을 확인했고, rebuilt 방식의 PerfOptimized High 설정으로 하기로 했다.
+대략 15ns의 violation.. 파이프라인의 stall신호를 if가 아니라 삼항문으로 모두 대체해서 0.1ns 의 마진을 확보했다.
+그래서 일단 느려도 동작하는게 중요한 시점이니 XDC에서 10ns가 아니라 25ns로 잡아서 40MHz에서 동작이 제대로 되긴 하는지를 확인할 것이다.
+25.5ns 로 해서 violation은 없는데, 혹시 몰라서 Critical Warning들을 확인해보니까, IO관련한 내용은 고사하고, Timing Loops를 찾았다고 한다. 뭐지이게?
+찾아봐야겠다. 
+
+일단 violation 없는 상태에서 Post Synthesis Timing Simulation을 돌렸다.
+결과는 참담. 의도하지 않았고, 알 수도 없는 신호들이 이상한 값들을 토해내고 있었고 정상적으로 프로그램이 흘러가긴 커녕, 특정 시점부턴 X값과 Z값이 도배된다.
+아,, 이걸 도대체 어떻게 해야한담..
+
+하.. 일단 파형을 디버깅 하기 이전에 오류부터 모두 다 잡아야 한다.
+정말 다른 탓을 할 요소가 없고 나서야 이 파형들을 건들여야할 것만 같은 느낌이다. 지금으로서는 이게 왜 이렇게 되는지 가늠조차 안가니까, Vivado에서 제시하는 모든 Warnings, Critical Warnings, Errors를 모두 해결해보자.
+Timing Loop 발생, Combinational Loop란다.
+리스트는 다음과 같다.
+ALU, Exception Detector, CSR File, Trap Controller, RV32I46F_5SP 탑모듈.
+Timing Analysis에서 나온 목록에서는 Forward Unit과 IF ID Register, Branch Predictor가 포함된다.
+이걸 어떻게 해결해야할까. 
+이 것들은 아예 조합식으로 웬만해서 작동하는데, 전부 동기식으로 재구성해야하나?
+그런데 그러면., 아예 한 사이클씩 밀려서 파형이.,하아., RTL 코드부터 다시 가야한다....
+심지어 이렇게 해도 될지 안될지를 모른다......
+그래도 어떡하겠는가.. 이거 말곤 할 수 있는 것이 지금 없는데..
+
+이걸 해결하고 나서, fanout이 227이나 되는 그걸 해결해보고... 믕.,,.
+하하. FF를 넣으면서 동기식으로 만들어야하네.
+37F부터 이 오류가 없으리란 법이 없으니 각 아키텍처별로 검토를 해서 하나하나 단계별로 수정해야겠다.
+
+37F 근본 구조에서 비롯된게, ALU.
+43F는 CSR_File
+46F는 Trap Controler, Forward Unit, 
+46F5SP는 Branch Predictor, IF ID Register, Forward Unit.
+하아., ALU의 파이프라이닝? 이건 좀 생각도 못하겠는데 애초에 조합회로가 아니던가? 그냥 출력단을 레지스터화 하는 것으로 족한건가?
