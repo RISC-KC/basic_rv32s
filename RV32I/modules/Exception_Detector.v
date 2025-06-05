@@ -4,7 +4,6 @@
 module ExceptionDetector (
 	input [6:0] ID_opcode,			// opcode from ID Phase
 	input [6:0] EX_opcode,			// opcode from EX Phase
-	input [6:0] MEM_opcode,
 	input [2:0] funct3,				// funct3
 	input [11:0] funct12,			// raw_imm field to distinguish EBREAK, ECALL and MRET
 	input [1:0] jump_target_lsbs,		// LSBs of jump target
@@ -71,12 +70,9 @@ module ExceptionDetector (
 					trap_status = `TRAP_MISALIGNED_INSTRUCTION;
 				end
 		end
-
-		if (MEM_opcode == `OPCODE_STORE) begin
-			if (misalinged_memory) begin
-				trapped = 1;
-				trap_status = `TRAP_MISALIGNED_MEMORY;
-			end
+		if (misalinged_memory) begin
+			trapped = 1;
+			trap_status = `TRAP_MISALIGNED_MEMORY;
 		end
 	end
 	
