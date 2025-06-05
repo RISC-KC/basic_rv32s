@@ -5562,3 +5562,16 @@ Branch_predictor에 있는 `branch_target` 신호도 multi-driven이라는데, �
 아하. ![branch_target_multi-drvien](Devlog_images/branch_target_multi-driven.png) 
 reset에서 순차식으로 0을 초기화하는데, 실제 값은 조합논리에서 생성되어 문제인 것 같다.
 이건 조합논리에서 기본값을 0으로 두어도 조건에 따른 주솟값을 계산하며 해당 조건은 순간 신호가 아니니 상관없을 것 같다.
+적용 완료. 해결했다. 
+
+아니 왜 더 증가했지 타이밍이
+RTL이 정확해져서 더 밑천이 드러난 것 뿐인가.
+일단 Synthesis option에서 18ns까지 늘어난걸 Flow_PerfOptimized_high 로 바꿔서 15ns 정도로 줄였다.
+14ns는 flatten을 full로 해야되는데, 이러면 디버깅이 난해해지니 rebuilt를 유지했다. 여기서부터 다시 디버깅이 시작된다...
+
+으어. 검토를 하다보니 BE_Logic 모듈에 있던 misaligned memory address exception 신호를 발견하였고
+이에 대한 Trap Handling을 구현하지 않고 누락했다는 것을 알게 되었다.
+부랴부랴 14시부터 만들기 시작했고, 15시 09분에 더티파일로 구현을 완성했으며, 15:49분에 최종 push 및 PR 을 마쳤다. 
+끙... 그래도 확실히 실력이 계속 늘고 있는 것 같다. 
+처음 Trap Controller 구현할 때 머리 굴리느라 진짜 힘들었던 것이 생각나는데, 이제는 그게 기본으로 아무렇지도 않게 잘 추가했다.
+로직을 잘 짜둬서그런가. 하하. 하지만 FPGA 구현은 다른문제니까..,. FPGA 프로젝트에 이걸 이식하고 다시 Timing Closure 작업을 마저해야겠다. 
