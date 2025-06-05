@@ -5546,3 +5546,13 @@ Hazard Unit의 clk, reset 신호 없앴고
 Linter를 돌려야하지만 시간이 거의 끝났으므로 여기까지의 Timing Analysis를 해본다.
 11.434ns. 어림잡아 여유 12ns에 오고, 얼추 80MHz는 나오는 것 같다. 오늘은 여기까지.
 내일은 이 코드들을 commit하고, 그걸 기반으로 linter에서 지적되는 모든 Warning들을 파악하고 Synthesis로 넘어가서 디버깅을 이어하겠다.
+
+# [2025.06.05. ]
+아침부터 전투휴무 오전 개발 시작! (09:26)
+확인해보니 저번에 이미 feat/pipeline_registers 브랜치에서 raw_imm값 변경을 해 두었기에 별도로 현재 시점에서 commit 할 변경사항은 없는 것 같다. 
+Vivado의 Linter를 돌려본다..!! [First_Linter_Result](Devlog_images/FirstLinterResult.png)
+위의 ASSIGN-6 문제는 메세지에 언급된 인덱스의 값을 실제로 쓰지 않는다 (읽지 않는다)는 뜻 인 것 같은데, 모두 의도된 바가 맞다. 그러니 수정 없이 넘어가도 좋다.
+다음 ASSIGN-7. **Branch Predictor** 모듈에 있는 `branch_target` 신호와 **Trap Controller**에 있는 `debug_mode` 신호가 multi-driven 되었다는 것 같은데, 코드를 한번 봐야겠다.
+아하. 아무래도 재선언을 하지 않은 것으로 보아 이 문제는 아닌 것 같고. 사진을 보면 reset시 `debug_mode`를 0으로 초기화하려고 그걸 순차논리에 포함시켰고
+일반적으로 해당 값은 조합논리에서 다루는데 이러면 두 로직에서 값을 할당하게끔 되어 문제가 발생하는 것을 아마 경고한 것 같다.
+![multi-driven_debug_mode](Devlog_images/TrapControllermultidriven.png)
