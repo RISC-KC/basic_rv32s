@@ -25,6 +25,7 @@ module BranchPredictor #(
         end
         else begin
             branch_estimation = 1'b0;
+            branch_target = {XLEN{1'b0}};
         end
     end
 
@@ -32,7 +33,6 @@ module BranchPredictor #(
         if (reset) begin
             branch_prediction <= 1'b0;
             prediction_counter <= 2'b00;
-            branch_target <= {XLEN{1'b0}};
         end else begin
             if (IF_opcode == `OPCODE_BRANCH) begin
                 branch_prediction <= branch_estimation;
