@@ -365,7 +365,6 @@ module RV32I46F5SP #(
     ExceptionDetector exception_detector (
         .ID_opcode(opcode),
         .EX_opcode(EX_opcode),
-        .MEM_opcode(MEM_opcode),
         .funct3(funct3),
         .funct12(raw_imm[11:0]),
         .jump_target_lsbs(alu_result[1:0]),
@@ -524,6 +523,7 @@ module RV32I46F5SP #(
     MEM_WB_Register #(.XLEN(XLEN)) mem_wb_register (
         .clk(clk),
 		.reset(reset),
+        .pipeline_stall(pipeline_stall),
         //.flush(flush),
 
         // Signals from EX_MEM_Register
