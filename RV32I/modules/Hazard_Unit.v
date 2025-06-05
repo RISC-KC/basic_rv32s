@@ -17,7 +17,6 @@ module HazardUnit (
     input wire [11:0] WB_csr_write_address, // WB_imm[11:0]
 
     input wire [4:0] EX_rd,
-    input wire EX_register_write_enable,
     input wire [6:0] EX_opcode,
     input wire [4:0] EX_rs1,
     input wire [4:0] EX_rs2,
