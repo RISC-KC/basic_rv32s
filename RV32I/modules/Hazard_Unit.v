@@ -1,8 +1,6 @@
 `include "modules/headers/opcode.vh"
 
 module HazardUnit (
-    input wire clk,
-    input wire reset,
     input wire trap_done,
 
     input wire [4:0] ID_rs1,
