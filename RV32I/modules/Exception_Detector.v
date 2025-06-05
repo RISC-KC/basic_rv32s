@@ -9,6 +9,7 @@ module ExceptionDetector (
 	input [1:0] jump_target_lsbs,		// LSBs of jump target
 	input [1:0] branch_target_lsbs,		// LSBs of branch target
 	input branch_estimation,
+	input misalinged_memory,		// misalinged detection from BE_Logic
 	
     output reg trapped,				// signal indicating if trap has occurred
 	output reg [2:0] trap_status	// current trap status
@@ -49,11 +50,10 @@ module ExceptionDetector (
 				end 
 				else begin
 					trapped = 1;
-					trap_status = `TRAP_MISALIGNED;
+					trap_status = `TRAP_MISALIGNED_INSTRUCTION;
 				end
 			end
 			end
-
 			default: begin
 				trapped = 0;
 				trap_status = `TRAP_NONE;
@@ -67,8 +67,12 @@ module ExceptionDetector (
 				end
 				else begin
 					trapped = 1;
-					trap_status = `TRAP_MISALIGNED;
+					trap_status = `TRAP_MISALIGNED_INSTRUCTION;
 				end
+		end
+		if (misalinged_memory) begin
+			trapped = 1;
+			trap_status = `TRAP_MISALIGNED_MEMORY;
 		end
 	end
 	
