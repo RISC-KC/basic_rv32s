@@ -5610,3 +5610,53 @@ Timing Analysis에서 나온 목록에서는 Forward Unit과 IF ID Register, Bra
 46F는 Trap Controler, Forward Unit, 
 46F5SP는 Branch Predictor, IF ID Register, Forward Unit.
 하아., ALU의 파이프라이닝? 이건 좀 생각도 못하겠는데 애초에 조합회로가 아니던가? 그냥 출력단을 레지스터화 하는 것으로 족한건가?
+
+# [2025.06.06.]
+의도치 않게 오전을 날려버렸다. 너무 피곤했던 것 같다.
+
+오후. 빠르게 점심을 먹고 CSR의 레지스터화부터 시작했다. (12:43)
+가볍게 CSR의 출력단에 csr_data_out이라는 걸로 해두고 기존 csr_read_data는 내부 레지스터로 두었다.
+그에 맞게 탑모듈도 수정했다.
+남은건 Valid 신호인데, CSR에 csr_ready 신호를 추가했고, Control Unit에서 이를 받아 PC_Stall을 하게끔 함과 동시에 
+Hazard Unit에도 csr_ready 신호를 줘서 csr_ready가 아니라면 모든 파이프라인 레지스터를 stall하도록 했다.
+
+CSR을 건들면서, 읽기 전용 CSR에 쓰기를 시도하면 그냥 단순히 NOP가 되는 것이 아니라 Illegal Instruction exception을 내어야하는 것을 누락했다는 것을 발견해서 추가 로직을 구현했다.
+이제 읽기 전용 CSR에 쓰기 시도가 들어가면 (CSRRS, CSRRC x0은 제외. 이는 해당 CSR에 변경을 가하지 않으므로) Illegal Instruction Exception을 낸다.
+CSR File에서 이를 감지해서 illegal csr 신호를 Exception Detector에 보내고, Exception Detector에서 trap_status를 111 : Illegal Instruction으로 하여 Trap Controller에 전달한다.
+Trap Controller는 이를 인식해 mepc를 WB_PC값으로 쓰고 나머지 PTH를 진행해서 Trap Handler로 분기한다. 
+Illegal Instruction 즉 잘못된 CSR에 대한 쓰기는 WB단계에서 알게되므로 (csr_write_address 는 trap이 아니고서야 WB단계의 주소를 가져온다.) WB_pc를 mepc에 저장하는 것으로 했다. 
+Illegal Instruction 을 요하는 exception 상황이 이 뿐만 아니라 여러가지이고 그걸 탐지하는 단계도 달라질 수 있을 것 같은데, 이건 추후 설계에서 따로 조건문을 추가하는 방향으로 수정해야겠다.
+
+동기식 CSR로 바꾸면서 PTH에 READ_MEPC 단계를 추가했다. 더 이상 MRET이 한 사이클 안에 mepc 주소로 분기할 수 없게되어 두 번째 사이클 즉 mepc의 값이 나올 때까지 동일한 주소를 넣으며 기다리는 것이다. debug mode는 바로 풀게 보존했고, trap_done은 READ_MEPC에서 1로 다시 올라가도록 했다. 
+
+파형을 검증하다가 웬만큼 잘 진행이 되도록 했다. (17:29)
+다만 Illegal Instruction Exception이 예상과는 다르게 움직인 구간이 두 곳 있어서 이를 디버깅하는게 남아있다.
+본 CSR File 레지스터화의 본 목적은 Combinational Loop의 해결.
+따라서 이게 해결되었는지를 우선 보기 위해 위 문제를 잠시 미루고 Vivado로 넘어갔다. 
+Simulation을 하고 Z값이 조금 보이긴 했지만 일단 EBREAK 디버그 최종 명령어 ABADBABE까지 값이 잘 잡혀 바로 Synthesis로 넘어갔다.
+결과는 오우. Timing Loop이 6개 정도 보고되었던 것으로 기억하는데, 그게 3개로 줄어들었고 타이밍이 (!!) 처음엔 잘못본건가 했는데, WNS가 37.565ns로 잡혀있었다. 
+-37.565ns가 아니라. 저번에 PSTS를 위해서 클럭을 그냥 50ns로 포기하고 했었는데, 이젠 Total Delay가 12.108ns이다. 대략 15ns, 즉 75MHz 부근까지 줄일 수 있는 것..!!!
+다행이다. Combinational Loop 문제를 해결해도 타이밍이 개판일 것 같아 불안했는데, 간만에 동기를 추가로 얻는 것 같다.
+
+저녁점호
+
+이제 Vivado Behavior Simulation을 기반으로 디버깅을 수행할 차례다.
+봐야할 것은 ALU result, write_reg, write_data 그리고 파이프라인별 PC, Instruction이다.
+이걸 해결하고, 나머지 Combinational Loop 경로를 조정해야겠다. 
+
+아 이런. Misaligned에 오타가 있어서 로직이 제대로 작동 안했던 것 같다. 고치고 다시 해봐야겠다.
+
+아 맞다. 이번에 CSR File을 레지스터화 하면서 기존 46F Architecture에서 누락한 부분을 발견했었다.
+Misaligned Instruction Address Access 즉 JAL, JALR 명령어에서 잘못된 주소로 jump시도를 했을 때, PTH를 수행하고 Trap Handler로 분기하는 것 까진 잘 했는데,
+JAL의 수행역할 중 나머지 R[rd] <= PC + 4 를 수행하지 못하게 무효화하는 것을 깜빡했다.
+이 점을 고쳐서 이젠 해당 명령어가 flush되며 실제 Register에 해당 값을 저장하는 것을 수행하지 않고 단순 NOP가 수행되며 당연하게도 Trap Handler로 분기한다.
+그리고 Trap Handler에 이제 Illegal Instruction Exception 지원이 추가되었으니 mcause 값을 비교하기 위해서 x8에 2를 저장하는 명령어를 추가했다. (Instruction Memory)
+
+파형 분석 중. 일단 write_reg와 write_data를 비교하고 있다.
+기존 46F 아키텍처에서는 Misaligned에서는 x2에 255를 더했지만 중복이슈로 rd를 x30으로 옮겼다.
+때문에 원래 02에 bc00_00ff가 저장되어야하는데 30인 1e에 저장된다.
+
+음. 765ns부근에 있는 mvendorid에 대한 쓰기가 illegal instruction이 떠야하는데, 뜨지 않고
+이번 레지스터화로 인한 한 사이클 밀린 것에 대한 타이밍 맞추기로 인해 의도한 동작이 되지 않는 것 같다. 이번 이슈 이후 모든 파형은 예상값대로 움직임을 확인했다.
+이것만 이제.. 내일 다시 분석해서 해결하면 될 듯 하다. 적어도 이번 주 내에는 FPGA Timing Analysis 끝내길 바란다.
+오늘은 여기까지! 
