@@ -5660,3 +5660,67 @@ JAL의 수행역할 중 나머지 R[rd] <= PC + 4 를 수행하지 못하게 무
 이번 레지스터화로 인한 한 사이클 밀린 것에 대한 타이밍 맞추기로 인해 의도한 동작이 되지 않는 것 같다. 이번 이슈 이후 모든 파형은 예상값대로 움직임을 확인했다.
 이것만 이제.. 내일 다시 분석해서 해결하면 될 듯 하다. 적어도 이번 주 내에는 FPGA Timing Analysis 끝내길 바란다.
 오늘은 여기까지! 
+
+[2025.06.07.]
+Illegal Instruction Exception 지원을 위해 여러가지 시도해보았으나..
+처음에는 Illegal Instruction Exception이 한 사이클 늦게 뜨는 문제가 발생.
+그걸 해결했더니 이젠 mtvec 값을 제대로 읽어오지 못하는 문제 발생.
+그걸 해결하려고 코드를 짰더니 iverilog에서는 아예 시뮬레이션이 Freeze되고, Vivado에서는 파형이 보이지만 의도하지 않은 동작들을 보였다.
+CSR File에서 Exception을 탐지하고 그걸 Detector로 보내 trap status 코드를 Trap Controller에게 주도록 해봤지만 앞서 말한 Freeze문제가 났었다.
+거기에 WB단계에서 알게 되는 이 Exception이 만약 그 전에 또 다른 CSR 접근 관련 이슈가 터지게 되면 더 이상 로직을 추적하기가 어려워지는 문제가 발생한다.
+때문에 Exception Detection이 하나의 일관된 파이프라인 단계에서 이뤄지는 것이 좋을 것 이라는 결론에 도달했고, EX단계에 가야하는 분기 예외 이외에 다른 것들은 ID단계에서 처리한다.
+그래서 아예 Exception Detector에 rs1값이랑 csr_write_enable 값을 줘서 CSR 쓰기 활성화, CSRRW같이 해당 CSR에 값 변화를 무조건 요청하고 거기에 유효한 쓰기 주솟값이 아닐 경우, Exception을 발생시키도록 했다.
+하지만 이 것도 마찬가지로 iverilog 시뮬레이션에서 Freeze를 일으켰고 마찬가지로 Vivado에서는 잘 나왔으나 이번에는 의도치 않은 주솟값에 write enable 신호가 같이 들어가서 엄한 주소를 mepc로 저장해 잘못된 분기를 진행하는 현상을 발견했다. 
+
+여러모로 로직이 혼자서 추적하기 어려워지는 상황에 직면하여 현재 리팩토링과 Timing Closure 및 Behavior 오류가 발생하지 않는 이상 로직의 추가는 하지 않기로 했다.
+RISC-V에서는 엄격한 예외처리를 원칙으로 하기에 이런 동작을 지원하지 않는다면 표준에 부합하지 않을 수 있으나.. 어쩌겠는가.
+다시 한 번 강조하지만, 완벽을 추구하되 완성을 놓쳐서는 안되는 법이다. 
+때문에 Illegal Instruction 관련을 현재 개발까지 주석처리 하고 온전히 동기식 모듈로 만든데에 검증을 진행하여 다음 Combinational Loop을 해결하도록 하겠다.
+
+아. 도중에 보니까 ECALL 관련 로직을 잘못 짠 것이 보인다.
+여태 검증하면서 Instruction Memory의 예상값 주석이 잘못된 것을 확인하고 이를 수정했는데,
+이번에는 ECALL 때문에 PTH에 진입하며 EX단계와 MEM 단계에 머문 CSR 접근 명령어들이 수행을 완료하지 못하고 무효화 처리 되는 것을 확인했다.
+MRET으로 돌아간다고 한들, ECALL은 ID단계에서 파악되어 해당 ECALL mepc값의 +4된 값으로 가니 ECALL 이전에 EX와 MEM단계에 있던 두 명령어를 살릴 수 없다.
+그렇다고 다시 해당 명령어들로 돌아가면 어차피 ECALL이 다시 수행되니까 재귀문에 빠질 뿐이고.
+ECALL감지시, 두 사이클을 stall하고 진행하는 것으로 로직을 수정해야겠다.
+ECALL일 때 FSM을 대기하는걸 만들어서 WB단계의 명령어까지 살렸지만 ECALL의 PTH자체가 수행이 안되는 것을 확인했다. 이것 부터 고치는게 좋을 것 같다. (여기까지 오는데 1시간 30분 걸렸다...)
+
+생각해보자.. 왜 ECALL PTH가 안넘어갈까...
+그래. ECALL이 되면 ID단계의 ECALL을 식별할 instruction이 stall되어야하는데 flush 되면서 ECALL에 대한 문맥이 없어진다.
+이 것 때문에 아예 ED에서 Trap임을 인식하지 못하니 PTH로 진행이 되지 않는 것이다. 실제로 파형에 IF_ID_Register의 flush가 있다. 이를 없애보자.
+아까 디버깅하면서 ECALL시 IF_ID_Register Flush를 하는 로직을 Hazard Unit에 넣었었는데, 이를 삭제하지 못한 것 같다. 이를 지우니까 PTH로 잘 넘어간다. 이제 남은 명령어들을 살리는 작업을 해보자.
+
+이런. 파형에서 놓친게 있다. 다행히 빨리 발견했는데,
+ECALL PTH로 Trap Handler까지 분기하자마자 ECALL에 뒤따라오는 Misaligned 명령어가 있는데 이게 또 PTH를 일으켜 ECALL을 처리하지도 못했는데 다시 Trap Handler로 넘어간다.
+문제다. ECALL의 PTH가 끝나면, 원칙상 Trap Handler로 분기하며 그 전에 있던 모든 명령어를 없애야겠다. 
+어차피 ECALL은 다른 연산을 수행하는 것이 아니라 System Environment Call이라 Trap Handler로 넘어가는 것으로 족하다. 
+생각해보니 Trap Handler로 넘어가게 되는 모든 Exception들은 IF단계에 Trap Handler의 첫번째 주소가 와서 첫 명령어가 실행되는 순간 선행되고 있던 모든 명령어를 flush하는게 옳아보인다. 
+TH를 부른 이상 그 이후 명령어는 필요 없고, TH를 부른 그 명령어 자체도 사실 PTH 때문에 유지되어야 했던 것이지 이미 TH로 분기한 이상 필요는 없으니까. 
+(없어져야하는 게 맞다. Exception을 부른 명령어가 정상수행되어 값이 반영되는 처리가 되어서는 안된다. )
+
+Trap Controller에서 GOTO_MTVEC에 도달했을 때 마침 IF 단계의 PC값도 TH의 시작 주솟값 (mtvec)이니까 이 때 Hazard Unit으로 flush하라는 신호를 보내도록 하면 되겠다.
+pth_done_flush 신호를 추가했고, 역할은 같지만 기존 misaligned_flush가 READ_MTVEC때 1로 올랐던 것과 달리 GO_MTVEC으로 옮기니 문제가 해결되었다. 
+근데 이건 놓쳤었던 29번째 잘못된 JAL명령어의 Trap Handler로 분기하지 않는 버그를 잡아내면서 확인했고, 여전히 ECALL은 수행이 의도와는 조금 다르다. 
+파형 분석중..왜 PTH를 두번 수행하지?
+
+후... 1시간 30분 여러가지 방법을 시도해보다가 (csr_access를 따로 뺀다던가... 등등)
+다시 롤백했다. 원점.. 다시 시작해보자..
+
+아예 이번 기회에 심층 검증을 하는 것 같다.
+기존 46F5SP, 46F, 43F에서 검증을 너무 대충했나...
+데이터메모리의 주소 입력이 alu_result의 11:2로 되어있는데, 아마 ChoiCube84가 어차피 하위 2비트 미정렬 방지용으로 컷 한 것 같은데, 이러면 실제로는 Data Memory에서 의도된 alu result 주소값에 2비트 쉬프팅된 값으로 주소가 잡힌다. 파형보면서 Instruction Memory TestBench 에 적힌 의도값이랑 다르길래 혹시나 해서 9:0으로 다시 바꿔보니 맞다.
+
+이런. SH Misaligned Memory도 PTH와 TH로 정상분기되지만 해당 문제의 명령어의 처리를 NOP하진 못한다. 이 것도 해결해야한다...
+이건 추가 기능도 아니고 원래 잘 되어야 했던 부분을 하는건데.. 하아.,.... 또 다른 Combinational Loop은 도대체 언제 해결할 수 있을까...
+이건 MEM단계에서 Trap을 감지하면 늦는다... MEM단계에서 감지해서 Write Enable을 빼앗는다고 쳐도 이미 그것보다 적히는 시간이 더 빠를 것이고 한 단계(클럭사이클) 안에서 어떤 신호가 더 먼저 작용할건지를 생각할 바에
+그 전 사이클에서 선제적으로 차단하는 것이 효과적일 것이다. EX단계에서 어차피 alu_result도 나오고 opcode와 funct3로 어떤 Store 명령어인지 구분할 수 있으니까..
+BE_Logic에서 misalign 감지 로직을 없애고, EX단계에 있는 신호들을 Exception Detector로 넘겨서 처리하도록 추가해야겠다...
+해결! 근데 그 뒤에 뒤따라오는 LW 명령어의 Mialigned가 Traphandler 분기 이후 갑자기 또 PTH-TH를 일으켜서 흐름에 문제가 생겼다.
+그래서 pth_done_flush에 IF_ID_Register Flush까지 포함했다. 
+
+다음 문제.. 28번째 명령어 AUIPC 직후 Misaligned JAL인데, 이게 EX에서 PTH-TH를 하고 EX_pc 기준 다음명령어로 가다보니, 해당 PTH일 때 모든 MEM_WB를 제외한 모든 파이프라인 레지스터들이 flush된다. 
+혹시 몰라서 misaligned instruction flush를 잠시 없애봤는데, (원래 파형에서 pth_done_flush 그 이전에 하나 찍히고 같이 찍히길래 그걸 혹여나 테스트해보려고 없앤 것이다.) 해결되었다...
+엄. 원래 아까는 이렇게 하면 JAL 명령어가 살아서 해당 R[rd] = PC + 4 가 처리되어벼리길래 이 명령어를 Hazard Unit에 추가한 것이었는데.. 당혹스럽지만 할게 산더미라 일단 넘어가본다.
+
+후. 거의 다 온 것 같다. 분기 예측도 Instruction Memory에서 x7에 대한 값을 TH에서 쓰다보니 이걸 고려하지 않고 시나리오를 짰던 것을 수정하여 제대로 작동함을 확인했다. 
+이제 CSR명령어들인데, CSR이 동기식으로 변하여 읽기 값이 한 사이클 뒤에 출력되는 것은 확인 되었는데, Register에 Write되는 것이 주소와 타이밍이 맞지 않는 것 같다. 
