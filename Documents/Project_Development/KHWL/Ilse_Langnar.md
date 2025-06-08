@@ -5736,3 +5736,63 @@ Zicsr은 읽기와 쓰기를 동시에 처리하는데, 읽기는 ID단계에서
 
 아. MEM, WB의 CSR 포워딩만 구현되어있다. 이제 EX단계의 포워딩도 구현해두면 될 것같은데... 시간이 다 됐다.
 오늘은 여기까지. 내일 꼭 해보자.. (아 내일 취지인데..)
+
+아 오버타임 6분해서 했는데 왜 안되는 것 같지
+파형은내일 봐야겠다 여기까지
+
+#[2025.06.08]
+CSR에 쓰여지는건 잘 쓰여진다. 근데 그게 21번 레지스터 쓰기에도 반영이 되어야하는데.. 안되네
+이건 WB 포워딩인것 같은데..하하! 해결했다.
+문제를 조금 잘 못 보고 있어서 노트에 하나씩 정리하면서 해결해봤다. 딱 30분 언저리 걸렸다.
+문제 상황은, 동일한 CSR에 동일한 R[rd] 값을 가진 명령어가 연속으로 수행되며 선행 명령어 A로 인해서 변경된 CSR의 값을 후행 명령어 B가 읽지 못한채로 WB단계에 도달해
+B가 가진 만료된 CSR의 값을 R[rd]에 쓰는 것이 문제. 원래는 A에서 변경한 새로운 CSR의 값을 B가 읽어서 R[rd]에 넣어야하는데 그게 안된 것이다.
+앞서 ALU에서는 이미 이 hazard에 대해서 포워딩이 돼 제대로 계산된 값이 인출되어 CSR에는 제대로 된 값이 쓰기가 된 것이었지만, Register File에 저장할 값은 포워딩 로직이 구현되어있지 않았다.
+(애초에 이건 생각지도 못했으니. 컴퓨터 구조 및 설계 책에서 해저드를 설명하면서 책에서 설명된 것 보다 더 많은 것들이 존재한다고 한 이유를 어렴풋이 이해하는 것 같다.)
+때문에 이를 고찰해보니 답을 찾을 수 있었다. 
+WB단계에서 retire하는 선행 명령어 A의 alu_result가 곧 후행 명령어 B의 R[rd]에 써야할 reg_write_data일테니 A의 alu_result를 포워딩하면 된다.
+하지만 A는 이미 retire했으므로 WB레지스터에서 alu_result를 갖고와봤자 자기 스스로의 데이터를 포워딩하고 이는 의도된 동작이 아니기에 하면 안된다.
+답안 : retire instruction의 alu_result값을 저장하는 레지스터를 top_module에서 추가로 설계해 csr-reg hazard 발생 시 register_file_write_data를 retired_alu_result로 하도록 MUX를 설계한다.
+그리고 Hazard Unit에서는 물론 WB-MEM 할 수도 있지만 일관된 타이밍 검출 및 처리를 위해 모듈 내부에 별도의 retire_rd와 retire_alu_result를 넣고 아래와 같은 hazard 검출 요건과 로직을 만든다.
+
+wire reg_csr_hazard = (EX_opcode == `OPCODE_ENVIRONMENT && (WB_rd == retire_rd) && (WB_csr_write_address == retire_csr_write_address));
+
+always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            retire_rd <= 5'b0;
+            retire_csr_write_address <= 12'b0;    
+        end else begin
+            retire_rd <= WB_rd;
+            retire_csr_write_address <= WB_csr_write_address;
+        end
+        
+    end
+
+해저드 검출은, CSR(SYSTEM; ENVIRONMENT OPCODE) 명령어이면서 WB할 레지스터의 주소가 retire_rd와 동일하고, WB할 csr의 주소가 retire_csr_write_address와 동일할 때 발생한다고 정의한다.
+그리고 각 retire_rd, retire_csr_write_address 값은 클럭에 맞춰 한 사이클 지연을 가져 비교할 수 있도록 한다. 
+
+Top module에서 retired_alu_result와 register_file_write_data MUX를 정의한 로직은 다음과 같다.
+
+always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            retired_alu_result <= {XLEN{1'b0}};
+        end else begin
+            retired_alu_result <= WB_alu_result;
+        end
+    end
+
+`RF_WD_CSR: begin
+                if (csr_reg_hazard) begin
+                    register_file_write_data = retired_alu_result;
+                end else begin
+                    register_file_write_data = WB_csr_read_data; 
+                end
+            end
+
+이제 파형을 다시 검증해볼까? ㅎㅎ
+
+흠. 40번째 명령어인데, 결과가 조금 이상하다.
+CSRRWI: x22 = FFFF_FFBC, CSR[342] = 0000_0000; // R[x22] = 0000_0000, CSR[342] = 0000_0003
+CSR[342] mcause에는 3이란 값이 잘 쓰였는데, R[x22]에는 0000_0074라는 엉뚱한 값이 쓰여졌다.
+CSR[342]는 기존에 0이 맞았고. 그럼 R[x22]에는 0000_0000이 쓰이는게 맞는데..
+이상하다. csr_hazard_mem이 떠있다. 그래서 register_file_write_data_select 신호값도 010, WB_ALU_result를 R[rd]에 저장할 값으로 보내고 있는데...
+csr_hazard_mem의 로직이 잘못된건가? 확인해봐야겠다.
