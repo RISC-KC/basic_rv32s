@@ -5795,4 +5795,53 @@ CSRRWI: x22 = FFFF_FFBC, CSR[342] = 0000_0000; // R[x22] = 0000_0000, CSR[342] =
 CSR[342] mcause에는 3이란 값이 잘 쓰였는데, R[x22]에는 0000_0074라는 엉뚱한 값이 쓰여졌다.
 CSR[342]는 기존에 0이 맞았고. 그럼 R[x22]에는 0000_0000이 쓰이는게 맞는데..
 이상하다. csr_hazard_mem이 떠있다. 그래서 register_file_write_data_select 신호값도 010, WB_ALU_result를 R[rd]에 저장할 값으로 보내고 있는데...
-csr_hazard_mem의 로직이 잘못된건가? 확인해봐야겠다.
+csr_hazard_mem의 로직이 잘못된건가? 확인해봐야겠다. 엣. register_file_write_data_select는 Control Unit 주관인데...
+흠.. 거의 알 것 같은데.. 취지 가야겠다. (11:14)
+
+12:06 복귀.
+음. 현재 명령어는 csrrsi. 즉 rs1 필드의 값과 CSR값을 계산해야하기에 ALUsrc는 A B 각각 rs1, CSR이 맞다. 그래서 3 3이고.
+csr_hazard_mem의 조건은 MEM단계에 CSR_WE가 활성화되어있고, MEM단계 raw_imm(csr_write_address)이랑 EX단계 raw_imm이랑 같을 때.
+
+잉 뭔가 이상하다... WB_raw_imm이 305로 되었을 때 mtvec값인 0000_1000이 WB_csr_read_data로 나왔어야하는데, 나오질 않는다.
+어라. 원래 Zicsr 명령어로 csr에 접근해서 읽기라도 하는 순간에는 무조건 csr_ready가 0으로 내려갔다가 1로 올라오면서 값이 인출되어야하는데 csr_ready가 0으로 내려가지도 않는다. 뭐지?
+csrrc까지는 잘 됐는데, csrrwi부터 그런다. Zicsr 상수 명령어에서만 그런건가? PTH에서도 잘 되니까..찾아봐야겠다. 
+캬. 쾌거. CSR File에서 순차 로직에, 
+if (csr_access && !csr_processing) begin
+          csr_processing <= 1'b1;
+          csr_read_out <= csr_read_data;
+        end else if (csr_processing) begin
+          csr_processing <= 1'b0;
+          csr_read_out <= csr_read_data;
+        end
+
+즉 읽기 수행시에만 csr_read_out 나가게 했었던걸 발견했고, 이를 바꾸려고 csr_access를 바꾸려다가 마땅한 조건이 떠오르질 않았다. 
+(쓰기까지 csr_access에 포함하거나 별도의 선언을 하게 되면 쓰기까지 2사이클로 아예 타이밍이 틀어진다.) 
+그래서 저 아래에 그냥 else if (csr_write_enable) begin 해서 csr_processing과 상관 없이 csr_read_out <= csr_read_data;를 넣었다. (물론 조건을 위에서부터 확인하기 때문에 관련이 아예 없는게 아니겠지만.)
+그러자 csr_read_out이 제대로 읽히기 시작해서 다음 문제로 넘어가기로 했다.
+x22에 사이클 두 번동안 쓰기되어야하는 것은 옳다. 헌데 데이터가 한 차례 밀렸고 없어야하는 데이터가 있는 상황.
+0000_0000, 0000_1000 모두 x22에 쓰여야하는데 첫 쓰기 사이클에는 0000_0074가 와있고, 두번째는 0000_0000. 세번째는 다음인 x23에 0000_1000이 쓰인다. 원래 x23에는 0000_1007이 쓰여야하는데.
+0000_1007은 심지어 ALU에서도 잘 계산되어 나왔다. 흠,,
+
+0000_0074가 어디서 나왔을까? 찾아보자. 
+
+그리고 그 전에 ECALL이 ID 페이즈에서 감지된 뒤 전체 파이프라인 stall이 걸려서 기존에 있던 명령어들이 retire하지만 내부에 변경사항을 주지 못한 것을 해결하기 위해서 새로운 로직을 짰다.
+ID단계의 ECALL 앞의 EX, MEM, WB의 명령어들이 retire하기 위해 Trap Controller 내부에 standby_mode 라는 출력을 만들었고, ECALL시 STANDBY와 그 이후 ECALL 전용 MEPC 값 쓰기 FSM 단계를 추가 구성하였다.
+Hazard Unit에서도 standby_mode 신호를 받아 IF_ID, ID_EX만 stall하고 standby_mode가 아닐때는 PTH를 위한 전체 파이프라인 stall이 되도록 아래와 같이 구성했다. 
+ if (standby_mode) begin
+            IF_ID_stall = 1'b1;
+            ID_EX_stall = 1'b1;
+            EX_MEM_stall = 1'b0;
+            MEM_WB_stall = 1'b0;
+        end else if (!trap_done || !csr_ready) begin
+            IF_ID_stall = 1'b1;
+            ID_EX_stall = 1'b1;
+            EX_MEM_stall = 1'b1;
+            MEM_WB_stall = 1'b1;
+        end
+그리고 탑 모듈에서도 standby_mode가 아니고 trapped 일 경우에만 csr_trap_address와 같은 trap_controller의 신호들을 받아올 수 있도록 했다.
+standby_mode에서는 평시처럼 WB단계의 retire하는 명령어들의 값을 그대로 받도록 한다는 뜻. 
+로직을 떠올리고 시뮬레이션 두 번 정도로 해결했다. 대기로직을 처음에 바로 완성했는데, 탑 모듈에서 해당 MUX 선택 로직을 수정안한 것 때문에 두 번 걸렸다 ㅎㅎ..
+
+40, 41, 42 CSR상수 명령어들이 CSR에 쓰는 값들이 원래는 안쓰여지고 넘어갔었는데, 이젠 다 쓰여지고 PTH로 넘어가서 수행이 된다. 이제 남은 문제는 레지스터..
+레지스터 x22에 의도하지 않은 0000_0074값이 쓰여지는 문제... 그리고 그 의도치 않은 값 때문에 들어가야할 값들이 주솟값과 한 사이클 미뤄진 문제...
+추적해보자..
