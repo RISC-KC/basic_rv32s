@@ -4,8 +4,8 @@ module MEM_WB_Register #(
     // pipeline register control signals
     input wire clk,
     input wire reset,
-    input wire pipeline_stall,
-    //input wire flush,
+    input wire MEM_WB_stall,
+    input wire flush,
 
     // signals from EX/MEM register
     input wire [XLEN-1:0] MEM_pc,
@@ -19,6 +19,7 @@ module MEM_WB_Register #(
     input wire [XLEN-1:0] MEM_alu_result,
     input wire MEM_register_write_enable,
     input wire MEM_csr_write_enable,
+    input wire [4:0] MEM_rs1,
     input wire [4:0] MEM_rd,
     input wire [6:0] MEM_opcode,
 
@@ -37,6 +38,7 @@ module MEM_WB_Register #(
     output reg [XLEN-1:0] WB_alu_result,
     output reg WB_register_write_enable,
     output reg WB_csr_write_enable,
+    output reg [4:0] WB_rs1,
     output reg [4:0] WB_rd,
     output reg [6:0] WB_opcode,
 
@@ -44,7 +46,7 @@ module MEM_WB_Register #(
 );
 
 always @(posedge clk or posedge reset) begin
-    if (reset/* || flush*/) begin
+    if (reset || flush) begin
         WB_pc <= {XLEN{1'b0}};
         WB_pc_plus_4 <= {XLEN{1'b0}};
         WB_instruction <= 32'h0000_0013; // ADDI x0, x0, 0 = RISC-V NOP, HINT
@@ -56,27 +58,12 @@ always @(posedge clk or posedge reset) begin
         WB_alu_result <= {XLEN{1'b0}};
         WB_register_write_enable <= 1'b0;
         WB_csr_write_enable <= 1'b0;
+        WB_rs1 <= 5'b0;
         WB_rd <= 5'b0;
         WB_opcode <= 7'b0;
         
         WB_byte_enable_logic_register_file_write_data <= {XLEN{1'b0}};
-    end else if (pipeline_stall) begin
-        WB_pc <= WB_pc;
-        WB_pc_plus_4 <= WB_pc_plus_4;
-        WB_instruction <= WB_instruction;
-
-        WB_register_file_write_data_select <= WB_register_file_write_data_select;
-        WB_imm <= WB_imm;
-        WB_raw_imm <= WB_raw_imm;
-        WB_csr_read_data <= WB_csr_read_data;
-        WB_alu_result <= WB_alu_result;
-        WB_register_write_enable <= WB_register_write_enable;
-        WB_csr_write_enable <= WB_csr_write_enable;
-        WB_rd <= WB_rd;
-        WB_opcode <= WB_opcode;
-        
-        WB_byte_enable_logic_register_file_write_data <= WB_byte_enable_logic_register_file_write_data;
-    end begin
+    end else if (!MEM_WB_stall) begin
         WB_pc <= MEM_pc;
         WB_pc_plus_4 <= MEM_pc_plus_4;
         WB_instruction <= MEM_instruction;
@@ -88,11 +75,12 @@ always @(posedge clk or posedge reset) begin
         WB_alu_result <= MEM_alu_result;
         WB_register_write_enable <= MEM_register_write_enable;
         WB_csr_write_enable <= MEM_csr_write_enable;
+        WB_rs1 <= MEM_rs1;
         WB_rd <= MEM_rd;
         WB_opcode <= MEM_opcode;
         
         WB_byte_enable_logic_register_file_write_data <= MEM_byte_enable_logic_register_file_write_data;
-    end
+    end 
 end
 
 endmodule

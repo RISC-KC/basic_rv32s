@@ -5,7 +5,7 @@ module IF_ID_Register #(
     input wire clk,
     input wire reset,
     input wire flush,
-    input wire pipeline_stall,
+    input wire IF_ID_stall,
 
     // signals from IF phase
     input wire [XLEN-1:0] IF_pc,
@@ -32,13 +32,7 @@ always @(posedge clk or posedge reset) begin
         ID_pc_plus_4 <= {XLEN{1'b0}};
         ID_instruction <= 32'h0000_0013; // ADDI x0, x0, 0 = RISC-V NOP, HINT
         ID_branch_estimation <= 1'b0;
-    end else if (pipeline_stall) begin
-        ID_pc <= ID_pc;
-        ID_pc_plus_4 <= ID_pc_plus_4;
-        ID_instruction <= ID_instruction;
-        ID_branch_estimation <= ID_branch_estimation;
-    end
-    else begin
+    end else if (!IF_ID_stall) begin
         ID_pc <= IF_pc;
         ID_pc_plus_4 <= IF_pc_plus_4;
         ID_instruction <= IF_instruction;
