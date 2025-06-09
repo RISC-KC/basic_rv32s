@@ -7,6 +7,7 @@
 module ControlUnit (
 	input write_done,	// signal indicating if write is done
 	input trap_done,	// signal indicating if Pre-Trap Handling is done
+	input csr_ready,
 	input [6:0] opcode, // opcode from Instruction Decoder
 	input [2:0] funct3, // funct3 from Instruction Decoder
     
@@ -23,7 +24,7 @@ module ControlUnit (
 );
 
     always @(*) begin
-		pc_stall = !write_done || !trap_done;
+		pc_stall = !write_done || !trap_done || !csr_ready;
         jump = 1'b0;
         branch = 1'b0;
         alu_src_A_select = `ALU_SRC_A_NONE;
@@ -33,6 +34,7 @@ module ControlUnit (
         register_file_write_data_select = `RF_WD_NONE;
         memory_read = 1'b0;
         memory_write = 1'b0;
+
 		case (opcode)
 			`OPCODE_LUI: begin // Load upper immediate
 				// No jump
@@ -303,14 +305,17 @@ module ControlUnit (
 				memory_read = 0;
 				memory_write = 0;
 			end
-		default: begin
-			funct3 = 3'b0;
-			funct7 = 7'b0;
-			rs1 = 5'b0;
-			rs2 = 5'b0;
-			rd = 5'b0;
-			raw_imm = 20'b0;
-		end
+			default: begin
+            jump = 1'b0;
+            branch = 1'b0;
+            alu_src_A_select = `ALU_SRC_A_NONE;
+            alu_src_B_select = `ALU_SRC_B_NONE; 
+            csr_write_enable = 1'b0;
+            register_file_write = 1'b0;
+            register_file_write_data_select = `RF_WD_NONE;
+            memory_read = 1'b0;
+            memory_write = 1'b0;
+            end
 		endcase
     end
 
