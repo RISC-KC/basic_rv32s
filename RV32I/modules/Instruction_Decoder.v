@@ -73,6 +73,14 @@ module InstructionDecoder (
 				
 				raw_imm = 32'b0;
 			end
+			default: begin
+			funct3 = 3'b0;
+            funct7 = 7'b0;
+            rs1 = 5'b0;
+            rs2 = 5'b0;
+            rd = 5'b0;
+            raw_imm = 20'b0;
+            end
 		endcase
     end
 
