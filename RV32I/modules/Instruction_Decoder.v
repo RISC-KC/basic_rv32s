@@ -13,12 +13,6 @@ module InstructionDecoder (
 );
     always @(*) begin
 		opcode = instruction[6:0];
-        funct3 = 3'b0;
-        funct7 = 7'b0;
-        rs1 = 5'b0;
-        rs2 = 5'b0;
-        rd = 5'b0;
-        raw_imm = 20'b0;
         case (opcode)
 			`OPCODE_LUI, `OPCODE_AUIPC: begin // U-type
                 rd = instruction[11:7];
