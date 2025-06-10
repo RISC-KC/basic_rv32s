@@ -11,12 +11,11 @@ module RegisterFile (
 );
 
     reg [31:0] registers [0:31]; // 32 registers with 32 bits each
-
-    /* If the waveform shows unknown value 'x' in register file's data, deannotate this.
+    
     integer i;
     initial begin
     for (i = 1; i < 32; i = i + 1) registers[i] = 32'b0;
-    end*/
+    end
 
     // Read operation
     always @(*) begin
