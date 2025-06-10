@@ -5,7 +5,7 @@ module ID_EX_Register #(
     input wire clk,
     input wire reset,
     input wire flush,
-    input wire pipeline_stall,
+    input wire ID_EX_stall,
 
     // signal from IF phase
     // input wire [XLEN-1:0] IF_PC but why? What was this for?
@@ -93,33 +93,7 @@ always @(posedge clk or posedge reset) begin
         EX_rs2 <= 5'b0;
         EX_imm <= {XLEN{1'b0}};
         EX_csr_read_data <= {XLEN{1'b0}};
-    end else if (pipeline_stall) begin
-        EX_pc <= EX_pc;
-        EX_pc_plus_4 <= EX_pc_plus_4;
-        EX_branch_estimation <= EX_branch_estimation;
-        EX_instruction <= EX_instruction;
-
-        EX_jump <= EX_jump;
-        EX_memory_read <= EX_memory_read;
-        EX_memory_write <= EX_memory_write;
-        EX_register_file_write_data_select <= EX_register_file_write_data_select;
-        EX_register_write_enable <= EX_register_write_enable;
-        EX_csr_write_enable <= EX_csr_write_enable;
-        EX_branch <= EX_branch;
-        EX_alu_src_A_select <= EX_alu_src_A_select;
-        EX_alu_src_B_select <= EX_alu_src_B_select;
-        EX_opcode <= EX_opcode;
-        EX_funct3 <= EX_funct3;
-        EX_funct7 <= EX_funct7;
-        EX_rd <= EX_rd;
-        EX_raw_imm <= EX_raw_imm;
-        EX_read_data1 <= EX_read_data1;
-        EX_read_data2 <= EX_read_data2;
-        EX_rs1 <= EX_rs1;
-        EX_rs2 <= EX_rs2;
-        EX_imm <= EX_imm;
-        EX_csr_read_data <= EX_csr_read_data;
-    end else begin
+    end else if (!ID_EX_stall) begin
         EX_pc <= ID_pc;
         EX_pc_plus_4 <= ID_pc_plus_4;
         EX_branch_estimation <= ID_branch_estimation;
@@ -145,7 +119,7 @@ always @(posedge clk or posedge reset) begin
         EX_rs2 <= ID_rs2;
         EX_imm <= ID_imm;
         EX_csr_read_data <= ID_csr_read_data;
-    end
+    end 
 end
 
 endmodule
