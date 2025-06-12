@@ -5966,4 +5966,30 @@ UNDEFINED (X) 오류가 생긴 것이라 추측했다. 이는 이제 파형을 �
 trap_status가 CC가 활성화 되어있을 때 원인신호를 추적할 수 없는 단위로 변경되어 제대로된 값을 도출해내지 못하여 이렇게 되는 것 같은데,
 Exception Detector도 조합로직이 아니라, 동기식으로 바꿔야하나? 흠,,
 하긴 명령어의 수행 자체에서 디코딩된 정보들을 조합하여 Exception을 찾아내는 모듈이니까 해당 문제의 명령어가 탐지되어 다음 사이클에 Trap을 발생시킨다 한들, 현재 구조에선 WB에서 발생하는 Exception은 없으니까
-문제 없을 것 같다. 독립적으로 동작하는 모델이다보니 추가적으로 수정할 소요도 적어질 것 같고. 한 번 수정해봐야겠다. ㅈ
+문제 없을 것 같다. 독립적으로 동작하는 모델이다보니 추가적으로 수정할 소요도 적어질 것 같고. 한 번 수정해봐야겠다. 
+음. Exception Detector를 동기식으로 전환하면서 Detection 타이밍이 다음 사이클로 밀린 관계로 PTH의 MTVEC 진입을 두 FSM에 거쳐서 진행하도록 해야했고 (trapped신호가 1사이클 늦게 풀리므로) 
+mepc에 적는 pc값의 타이밍을 기존 EX단계에서 MEM 단계로 전환해야 했다. 이렇게 해서 어느정도 로직이 되었는데, (여태까지 만든 변경사항 중 가장 순조롭다) ecall시 타이밍이 조금 다르다보니
+trapped로 전환되면서 WB단계의 csr_write_enable이 끊겨 제대로 retire되어야하는 데이터가 retire되지 않는 상황이 발생해 이 것만 해결하면 된다. 이미 abadbabe 출력은 확인했으니..
+저녁점호하고 와야겠다.
+
+시작하자 (21:47)
+Exception Detector에서 trapped신호를 보내면, 그걸 즉시 Top module의 CSR Write Enable source MUX 신호로 쓰지 말고,
+해당 신호를 trap_controller에서 받아서 IDLE에서 실제로 아무 동작을 수행하지 않고 다음 단계로 넘어가게 하도록 하는 대신 IDLE 단계에서 csr_trap_enable 신호를 출력하도록 해서 해당 신호를 기반으로 
+CSR write enable source를 조정하면 될 것 같다. 아, 아니지. 애초에 Trap Controller에 별도의 csr_write_enable신호가 출력으로 나가고 있었구나. 이럼 차라리 TC의 csr_write_enable신호를
+MUX의 제어신호로 하면 될 것 같은데.. 타이밍이 좀 우려되긴 하지만 해보긴 하자. 
+기존에 탑 모듈에서 csr_write_enable_source를 trapped를 제어신호로 하여 MUX로 처리하고 있었는데
+assign csr_write_enable_source = tc_csr_write_enable ? tc_csr_write_enable : WB_csr_write_enable; 로 변경하여 해결했다. (설마 Combinatorial Loop는 안생기겠지..)
+나머지 진행도 CSR RAW 문제 제외하고 모두 예상값대로 수행되는 것을 확인했다. 수정된 코드를 기반으로 PSTS를 해보자.
+일단 Behavior Simulation은 iverilog 시뮬값과 동일해 보인다.
+Synthesis 해보고 PSFS, PSTS 바로 들어가보자.
+다행히 Synthesis에서 Loop이 보고되진 않았다. 
+
+아... 거의 그대로인데.. 이제는 아예 파형에서 trap_status가 잡히질 않는다.
+출력을 동기식으로 하는 것이 아니라 exception 판단 자체를 동기식으로 해야하나?
+흠,,, 수정해보자.
+
+미치겠다. 수정할게 너무 많다.
+벌써 6월 중순인데. 과감하게 46F 아키텍처를 포기하고 43F로 돌아가보도록 한다
+결국 Trap Handler 분기 시점에서 이상하게 되는거니까, Trap 관련을 비활성화 하고, I/O를 만들고 나면 이후 추가하면서 문제를 해결하는 것으로 로드라인을 변경한다.
+근데... 아니 그냥 Instruction Memory 내용 자체를 Trap 없게 만들었는데도 왜 같은 시점에서 이러는거지????
+돌겠네. 
