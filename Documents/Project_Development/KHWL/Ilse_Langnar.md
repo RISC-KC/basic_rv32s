@@ -5993,3 +5993,14 @@ Synthesis 해보고 PSFS, PSTS 바로 들어가보자.
 결국 Trap Handler 분기 시점에서 이상하게 되는거니까, Trap 관련을 비활성화 하고, I/O를 만들고 나면 이후 추가하면서 문제를 해결하는 것으로 로드라인을 변경한다.
 근데... 아니 그냥 Instruction Memory 내용 자체를 Trap 없게 만들었는데도 왜 같은 시점에서 이러는거지????
 돌겠네. 
+
+# [2025.06.13.]
+잘 되던 프로젝트가 갑자기 Synthesis에서 timing constraints를 met하지 못하더니 object가 없다고 뜨고 모든 파일에 syntax error가 뜨고 진행이 안되기 시작했다.
+하아.,
+허탈하게도, 새 프로젝트를 만들어서 지금까지 한 Exception Detector의 출력을 동기식으로 만든 변경 사항까지를 적용해서 Synthesis 후 Timing Simulation을 돌렸더니..
+이게 웬걸, abadbabe까지 정상 진행됐다...
+곧바로 Implementation까지 직행.. Timing Simulation을 돌려보니... csr 쓰기 신호가 timing 문제로 한 사이클 더 필요한데 닿지 않아 값이 쓰이지 않아 mtvec이 이상한 값으로 들어가 무한 루프가 걸리는걸 발견했는데,
+어차피 Dhrystone과 같은 벤치마크에서 시스템명령어는 사용하지 않을 것 같아 일단 해결을 시도해보고 문제가 그대로이기에 일단 FPGA 구현으로 넘어가도 상관 없게 되었으니 Dhrystone을 ROM에 넣고 있다.
+내일은 이걸 구현하고, FPGA에 download해서 디버깅을 진행하면 좋을 것 같다.
+단번에 되리라고는 기대하지 않는다. 그래도.. 될 가능성이 보이니까 진행한다.
+잘 해보자..
