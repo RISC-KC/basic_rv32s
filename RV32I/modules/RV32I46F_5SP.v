@@ -228,7 +228,7 @@ module RV32I46F5SP #(
     assign retire_instruction = writeback_instruction;
 
     wire csr_write_enable_source;
-    assign csr_write_enable_source = trapped ? tc_csr_write_enable : WB_csr_write_enable;
+    assign csr_write_enable_source = tc_csr_write_enable ? tc_csr_write_enable : WB_csr_write_enable;
 
     ProgramCounter program_counter (
         .clk(clk),
@@ -377,13 +377,19 @@ module RV32I46F5SP #(
     );
 
     ExceptionDetector exception_detector (
+        .clk(clk),
+        .reset(reset),
         .ID_opcode(opcode),
         .ID_funct3(funct3),
         .EX_opcode(EX_opcode),
         .EX_funct3(EX_funct3),
+        .MEM_opcode(MEM_opcode),
+        .MEM_funct3(MEM_funct3),
         .raw_imm(raw_imm[11:0]),
+        .EX_raw_imm(EX_raw_imm[11:0]),
         .csr_write_enable(cu_csr_write_enable),
         .alu_result(alu_result[1:0]), // for jump_target_lsbs and data_memory_address_lsbs
+        .MEM_alu_result(MEM_alu_result[1:0]),
         .branch_target_lsbs(branch_target[1:0]),
         .branch_estimation(branch_estimation),
 
