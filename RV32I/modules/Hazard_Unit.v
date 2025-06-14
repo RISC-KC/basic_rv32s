@@ -123,6 +123,7 @@ module HazardUnit (
             IF_ID_flush = 1'b1;
             ID_EX_flush = 1'b1;
             EX_MEM_flush = 1'b1;
+            MEM_WB_flush = 1'b1;
         end
 
         if (standby_mode) begin // For ID Phase Excpetion handling
