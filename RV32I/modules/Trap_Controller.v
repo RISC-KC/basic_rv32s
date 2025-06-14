@@ -119,7 +119,7 @@ always @(*) begin
                         // write current pc value to mepc CSR
                         csr_write_enable = 1'b1;
                         csr_trap_address = 12'h341; //mepc
-                        csr_trap_write_data = EX_pc;
+                        csr_trap_write_data = MEM_pc;
                         trap_done = 1'b0;
                         next_trap_handle_state = WRITE_MEPC;
                     end
@@ -148,7 +148,7 @@ always @(*) begin
                     // write current pc value to mepc CSR
                     csr_write_enable = 1'b1;
                     csr_trap_address = 12'h341; //mepc
-                    csr_trap_write_data = ID_pc;
+                    csr_trap_write_data = EX_pc;
                     trap_done = 1'b0;
                     next_trap_handle_state = WRITE_MEPC;
                 end
@@ -195,14 +195,16 @@ always @(*) begin
                     end
                     trap_done = 1'b1;
                     pth_done_flush = 1'b1;
-                    next_trap_handle_state = IDLE;
+                    next_trap_handle_state = GOTO_MTVEC;
                 end
 
                 GOTO_MTVEC: begin
                     // keep mtvec value output
                     csr_trap_address = 12'h305; // mtvec
                     trap_target = csr_read_data;
-                    if (trap_status == `TRAP_MISALIGNED_STORE || trap_status == `TRAP_MISALIGNED_LOAD) begin
+                    if (trap_status == `TRAP_MISALIGNED_INSTRUCTION) begin
+                        misaligned_instruction_flush = 1'b1;
+                    end else if (trap_status == `TRAP_MISALIGNED_STORE || trap_status == `TRAP_MISALIGNED_LOAD) begin
                         misaligned_memory_flush = 1'b1;
                     end
                     trap_done = 1'b1;
