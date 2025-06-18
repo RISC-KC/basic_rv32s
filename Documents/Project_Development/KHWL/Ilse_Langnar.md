@@ -6032,3 +6032,66 @@ Dhrystone 컴파일된걸 Instruction memory에 readmemh로 올려서 성능을 
 그리고 남은 시간동안은, DMIPS를 올리는데에 집중한다. 지금 50MHz니까 Critical Path를 정비해서 100MHz 이상으로 올리는 것을 목표로 한다.
 Doom은.. 이거 다 하고도 시간이 남으면 구현해보자..
 오늘은 여기까지.
+
+# [2025.06.16.]
+Clock Enable 적용 시작(18:58)
+Clock Enable 모두 적용 했고, Vivado에서 기존 프로젝트에 파일들이 탑 모듈의 탑모듈이 생기며 손을 쓰기 힘들 정도로 틀어져 새 프로젝트를 만들고 클린하게 정리했다
+버튼, OLED 인터페이스 100MHz, CPU 50MHz였고, Timing Violation 처음에 CPU의 50MHz 클럭을 토글식으로 구현한 데에 있어 발생했던 것을 카운터 식으로 바꿔서 해결했고
+OLED도 Timing Violation 뜨길래 50MHz로 낮췄고, Button도 마찬가지로 50MHz로 낮췄다. Behavior Simulation을 돌려보려고 하였으나, 뭔가 느낌이 많이 달라서 클럭 연결의 문제라고 생각하고 어차피 
+CPU도 제대로 tb 돌아갔던 것 그대로 코드 썼고, SoC도 마찬가지로 iverilog에서 원하는 값이 나왔기 때문에 Synthesis로 바로 넘어갔다.
+Timing Contraints관련인가, timing not met 나와서 XDC에서 constraints를 추가했고 Implementation에서는 결과가 더 좋게 나올까 싶어 Implementation을 돌렸다.
+create_generated_clock -name clk_50mhz -source [get_ports clk] -divide_by 2 [get_pins clk_50mhz_reg/Q]
+set_multicycle_path -setup 2 -from [get_clocks clk_50mhz] -to [get_pins */*clk_enable*]
+clk50mhz로 인한 의도치 않은 timing 계산에 대한 violation 알림을 끄기 위해 set_false_path도 썼다.
+그리고 SoC TOP 모듈에서 출력에 debug pc랑 instruction을 모두 내보내는 것 때문에 IO 핀이 부족해져서 어차피 OLED로 확인 가능할 것이기 때문에 코드에서 과감히 output을 제외했다.
+결과를 봐야하는데.. 시간이 다 되어서 여기까지.
+
+# [2025.06.17.]
+결과를 보니까 여전히 포트 문제가 나서 xdc 파일에 set_property ... [get_ports debug_*] 이런 와일드카드 때문에 의도치 않은 수 많은 신호들이 연관되어 버린 것을 확인했다
+이를 없애서 해결했고, Implementation 성공.
+Timing도 괜찮지만 이번엔 또 다음 목록과 같은 곳에서 not reached by a timing clock Critical Warning이 떴다.
+TIMING #1 The clock pin FSM_onehot_display_update_state_reg[0]/C is not reached by a timing clock 
+TIMING #4 The clock pin FSM_onehot_step_state_reg[0]/C is not reached by a timing clock 
+TIMING #7 The clock pin button_controller/button_prev_reg[0]/C is not reached by a timing clock 
+TIMING #12 The clock pin button_controller/button_rising_edge_reg[0]/C is not reached by a timing clock 
+TIMING #17 The clock pin button_controller/button_stable_reg[0]/C is not reached by a timing clock 
+TIMING #22 The clock pin button_controller/button_sync_reg[0][0]/C is not reached by a timing clock 
+TIMING #37 The clock pin button_controller/continuous_counter_reg[0]/C is not reached by a timing clock 
+TIMING #62 The clock pin button_controller/continuous_mode_reg_reg/C is not reached by a timing clock 
+TIMING #63 The clock pin button_controller/continuous_pulse_reg/C is not reached by a timing clock 
+TIMING #64 The clock pin button_controller/debounce_counter_reg[0][0]/C is not reached by a timing clock 
+TIMING #159 The clock pin button_controller/display_mode_reg_reg[0]/C is not reached by a timing clock 
+TIMING #161 The clock pin button_controller/mode_changed_reg_reg/C is not reached by a timing clock 
+TIMING #162 The clock pin button_controller/reg_changed_reg_reg/C is not reached by a timing clock 
+TIMING #163 The clock pin button_controller/selected_register_reg_reg[0]/C is not reached by a timing clock 
+TIMING #168 The clock pin button_controller/step_pulse_reg_reg/C is not reached by a timing clock 
+TIMING #169 The clock pin button_controller/step_pulse_reg_reg_lopt_replica/C is not reached by a timing clock 
+TIMING #170 The clock pin cpu_clk_enable_reg/C is not reached by a timing clock 
+TIMING #171 The clock pin oled_interface/FSM_onehot_spi_state_reg[0]/C is not reached by a timing clock 
+TIMING #174 The clock pin oled_interface/FSM_onehot_state_reg[0]/C is not reached by a timing clock 
+TIMING #181 The clock pin oled_interface/delay_counter_reg[0]/C is not reached by a timing clock 
+TIMING #201 The clock pin oled_interface/frame_buffer_reg[0][1]/C is not reached by a timing clock 
+종류별로 발췌했고 201부터 1000까지 프레임 버퍼의 not reached by a timing clock 이다. 그래서 이를 해결하기 위해서 create_generated_clock을 xdc에 추가했다.
+기존에 지웠었는데 다시 만든 것.
+그랬더니 이제 CDC; Clock Domain Crossing 발생해서 clk to clk_50mhz를 false path로 해서 없앴다.
+그랬더니 CKLD #1 Clock net clk_50mhz is not driven by a Clock Buffer and has more than 512 loads. Driver(s): FSM_onehot_display_update_state_reg[0]/C,
+FSM_onehot_display_update_state_reg[1]/C,
+FSM_onehot_display_update_state_reg[2]/C, FSM_onehot_step_state_reg[0]/C,
+FSM_onehot_step_state_reg[1]/C, FSM_onehot_step_state_reg[2]/C,
+clk_50mhz_i_1/I1, clk_50mhz_reg/Q, cpu_clk_enable_reg/C,
+reset_sync_reg[0]/C, reset_sync_reg[1]/C, reset_sync_reg[2]/C,
+rv32i46f_5sp_debug/clk, update_display_reg_reg/C, update_pending_reg/C
+(the first 15 of 17 listed) 가 떠서 자세히 보니까 Clock Buffer가 없으면 위험하다는 것 같아 buffer를 넣어뒀고.. 이제 에러가 없다.
+Implementation 시작.
+
+# [2025.06.18.]
+OLED를 구현하려고 애써보았으나, 시간과 기간의 문제로 일단 잠정보류 후, 가장 빠르게 현재 상태를 확인해보기 위해 8개의 LED를 instruction 하위 7:0 비트를 할당하여 
+가운데 버튼을 통해 순차 실행하므로서 명령어의 처리 흐름을 간이로 검증했다. 그 결과, trap handler 분기까지 정상적으로 의도된 대로 작동하는 것을 확인할 수 있었고,
+비슷한 방식으로 레지스터의 값을 볼 수 있도록 LED 인터페이스를 통해서 검증하기로 했다. 이걸 내일까지 마칠 것이고, 바로 UART 로 넘어가서 Dhrystone 구동을 통해 성능을 측정해서 종지부를 찍을 예정이다.
+정말 험난하고도 먼 모험이었다. ChoiCube84에게 우선 감사의 말을 전하고, 남은 마무리까지 잘 이행하도록 해야겠다.
+2025.06.18. 
+23:43.
+RV32I46F_5SP
+FPGA Implementation.
+
+KHWL && ChoiCube84
