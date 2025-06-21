@@ -1,5 +1,6 @@
 module ProgramCounter (
     input clk,
+    input clk_enable,
     input reset,
     input [31:0] next_pc, // Next pc value
     output reg [31:0] pc // Current pc value
@@ -9,7 +10,7 @@ module ProgramCounter (
         if (reset) begin
             pc <= 32'b0; // Reset to 0
         end 
-		else begin
+		else if (clk_enable) begin
             pc <= next_pc; // Update pc value
         end
     end
