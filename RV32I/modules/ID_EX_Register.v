@@ -3,6 +3,7 @@ module ID_EX_Register #(
 )(
     // pipeline register control signals
     input wire clk,
+    input clk_enable,
     input wire reset,
     input wire flush,
     input wire ID_EX_stall,
@@ -67,7 +68,7 @@ module ID_EX_Register #(
 );
 
 always @(posedge clk or posedge reset) begin
-    if (reset || flush) begin
+    if (reset) begin
         EX_pc <= {XLEN{1'b0}};
         EX_pc_plus_4 <= {XLEN{1'b0}};
         EX_branch_estimation <= 1'b0;
@@ -93,32 +94,60 @@ always @(posedge clk or posedge reset) begin
         EX_rs2 <= 5'b0;
         EX_imm <= {XLEN{1'b0}};
         EX_csr_read_data <= {XLEN{1'b0}};
-    end else if (!ID_EX_stall) begin
-        EX_pc <= ID_pc;
-        EX_pc_plus_4 <= ID_pc_plus_4;
-        EX_branch_estimation <= ID_branch_estimation;
-        EX_instruction <= ID_instruction;
+    end else if (clk_enable) begin
+        if (flush) begin
+            EX_pc <= {XLEN{1'b0}};
+            EX_pc_plus_4 <= {XLEN{1'b0}};
+            EX_branch_estimation <= 1'b0;
+            EX_instruction <= 32'h0000_0013; // ADDI x0, x0, 0 = RISC-V NOP, HINT
 
-        EX_jump <= ID_jump;
-        EX_memory_read <= ID_memory_read;
-        EX_memory_write <= ID_memory_write;
-        EX_register_file_write_data_select <= ID_register_file_write_data_select;
-        EX_register_write_enable <= ID_register_write_enable;
-        EX_csr_write_enable <= ID_csr_write_enable;
-        EX_branch <= ID_branch;
-        EX_alu_src_A_select <= ID_alu_src_A_select;
-        EX_alu_src_B_select <= ID_alu_src_B_select;
-        EX_opcode <= ID_opcode;
-        EX_funct3 <= ID_funct3;
-        EX_funct7 <= ID_funct7;
-        EX_rd <= ID_rd;
-        EX_raw_imm <= ID_raw_imm;
-        EX_read_data1 <= ID_read_data1;
-        EX_read_data2 <= ID_read_data2;
-        EX_rs1 <= ID_rs1;
-        EX_rs2 <= ID_rs2;
-        EX_imm <= ID_imm;
-        EX_csr_read_data <= ID_csr_read_data;
+            EX_jump <= 1'b0;
+            EX_memory_read <= 1'b0;
+            EX_memory_write <= 1'b0;
+            EX_register_file_write_data_select <= 3'b0;
+            EX_register_write_enable <= 1'b0;
+            EX_csr_write_enable <= 1'b0;
+            EX_branch <= 1'b0;
+            EX_alu_src_A_select <= 2'b0;
+            EX_alu_src_B_select <= 3'b0;
+            EX_opcode <= 7'b0;
+            EX_funct3 <= 3'b0;
+            EX_funct7 <= 7'b0;
+            EX_rd <= 5'b0;
+            EX_raw_imm <= 20'b0;
+            EX_read_data1 <= {XLEN{1'b0}};
+            EX_read_data2 <= {XLEN{1'b0}};
+            EX_rs1 <= 5'b0;
+            EX_rs2 <= 5'b0;
+            EX_imm <= {XLEN{1'b0}};
+            EX_csr_read_data <= {XLEN{1'b0}};
+        end else if (!ID_EX_stall) begin
+            EX_pc <= ID_pc;
+            EX_pc_plus_4 <= ID_pc_plus_4;
+            EX_branch_estimation <= ID_branch_estimation;
+            EX_instruction <= ID_instruction;
+
+            EX_jump <= ID_jump;
+            EX_memory_read <= ID_memory_read;
+            EX_memory_write <= ID_memory_write;
+            EX_register_file_write_data_select <= ID_register_file_write_data_select;
+            EX_register_write_enable <= ID_register_write_enable;
+            EX_csr_write_enable <= ID_csr_write_enable;
+            EX_branch <= ID_branch;
+            EX_alu_src_A_select <= ID_alu_src_A_select;
+            EX_alu_src_B_select <= ID_alu_src_B_select;
+            EX_opcode <= ID_opcode;
+            EX_funct3 <= ID_funct3;
+            EX_funct7 <= ID_funct7;
+            EX_rd <= ID_rd;
+            EX_raw_imm <= ID_raw_imm;
+            EX_read_data1 <= ID_read_data1;
+            EX_read_data2 <= ID_read_data2;
+            EX_rs1 <= ID_rs1;
+            EX_rs2 <= ID_rs2;
+            EX_imm <= ID_imm;
+            EX_csr_read_data <= ID_csr_read_data;
+        end 
     end 
 end
 
