@@ -5,6 +5,7 @@
 
 module ExceptionDetector (
     input clk,
+    input clk_enable,
     input reset,
     input [6:0] ID_opcode,            // opcode from ID Phase
     input [6:0] EX_opcode,            // opcode from EX Phase
@@ -284,7 +285,7 @@ module ExceptionDetector (
         if (reset) begin
             trapped <= 1'b0;
             trap_status <= `TRAP_NONE;
-        end else begin
+        end else if (clk_enable) begin
             trapped <= trapped_combinatorial;
             trap_status <= trap_status_combinatorial;
         end
