@@ -251,38 +251,8 @@ module RV32I46F5SPDebug #(
     assign debug_pc = pc;
     assign debug_instruction = instruction;
     
-    // Each Pipeline Phases' PC value
-    assign debug_if_pc = pc;
-    assign debug_id_pc = ID_pc;
-    assign debug_ex_pc = EX_pc;
-    assign debug_mem_pc = MEM_pc;
-    assign debug_wb_pc = WB_pc;
-    
-    // Each Pipeline Phases' Instruction
-    assign debug_if_instruction = instruction;
-    assign debug_id_instruction = ID_instruction;
-    assign debug_ex_instruction = EX_instruction;
-    assign debug_mem_instruction = MEM_instruction;
-    assign debug_wb_instruction = WB_instruction;
-    
-    // Control signal debug
-    assign pipeline_stall = (IF_ID_stall || ID_EX_stall || EX_MEM_stall || MEM_WB_stall);
-    assign debug_pipeline_stall = pipeline_stall;
-    assign debug_branch_taken = branch_taken;
-    assign debug_jump_taken = EX_jump;
-    assign debug_trap_occurred = trapped;
-    
     // ALU Debug
     assign debug_alu_result = alu_result;
-    assign debug_alu_src_a = src_A;
-    assign debug_alu_src_b = src_B;
-    
-    // Memory access Debug
-    assign debug_mem_addr = MEM_alu_result;
-    assign debug_mem_write_data = data_memory_write_data;
-    assign debug_mem_read_data = data_memory_read_data;
-    assign debug_mem_write_enable = MEM_memory_write;
-    assign debug_mem_read_enable = MEM_memory_read;
 
     // === Module instances ===
     
