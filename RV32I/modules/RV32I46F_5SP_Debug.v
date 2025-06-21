@@ -35,19 +35,19 @@ module RV32I46F5SPDebug #(
     input reset,
     
     // Debug Interface
-    output [31:0] debug_pc,                    // Current PC
+    output [XLEN-1:0] debug_pc,                    // Current PC
     output [31:0] debug_instruction,           // Current instruction
-    output [31:0] debug_reg_data,             
+    output [XLEN-1:0] debug_reg_data,             
     output [4:0] debug_reg_addr,
 
     // ALU result Debug
-    output [31:0] debug_alu_result
+    output [XLEN-1:0] debug_alu_result
 );
 
     // Program Counter and PC Plus 4
-    wire [31:0] pc;
-    wire [31:0] pc_plus_4_signal;
-    wire [31:0] next_pc;
+    wire [XLEN-1:0] pc;
+    wire [XLEN-1:0] pc_plus_4_signal;
+    wire [XLEN-1:0] next_pc;
     
     // Instruction Memory and Debug Interface
     wire [31:0] im_instruction;
@@ -90,7 +90,7 @@ module RV32I46F5SPDebug #(
     wire branch_prediction_miss;
 
     // Register File
-    reg [31:0] register_file_write_data;
+    reg [XLEN-1:0] register_file_write_data;
     
     // Register File
     wire [XLEN-1:0] read_data1;
@@ -108,9 +108,9 @@ module RV32I46F5SPDebug #(
     wire alu_zero;
     
     // Data Memory and Byte Enable Logic
-    wire [31:0] data_memory_read_data;
-    wire [31:0] byte_enable_logic_register_file_write_data;
-    wire [31:0] data_memory_write_data;
+    wire [XLEN-1:0] data_memory_read_data;
+    wire [XLEN-1:0] byte_enable_logic_register_file_write_data;
+    wire [XLEN-1:0] data_memory_write_data;
     wire [3:0] write_mask;
 
     // CSR File
@@ -237,8 +237,8 @@ module RV32I46F5SPDebug #(
 
     // Branch Predictor
     wire branch_estimation;
-    wire [31:0] MEM_csr_write_data = MEM_alu_result;
-    wire [31:0] WB_csr_write_data = WB_alu_result;
+    wire [XLEN-1:0] MEM_csr_write_data = MEM_alu_result;
+    wire [XLEN-1:0] WB_csr_write_data = WB_alu_result;
     wire [11:0] MEM_csr_write_address = MEM_raw_imm[11:0];
     wire [11:0] EX_csr_write_address = EX_raw_imm[11:0];
 
