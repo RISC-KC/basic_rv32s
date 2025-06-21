@@ -1,7 +1,7 @@
 `include "modules/RV32I46F_5SP_Debug.v"
 `include "modules/Button_Controller.v"
 `include "modules/UART_TX.v"
-`include "modules/UART_Debug_Controller.v"
+`include "modules/Debug_UART_Controller.v"
 
 module RV32I46F5SPSoCTOP #(
     parameter XLEN = 32
