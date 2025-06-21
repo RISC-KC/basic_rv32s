@@ -3,6 +3,7 @@
 
 module HazardUnit (
     input clk,
+    input clk_enable,
     input reset, 
 
     input wire trap_done,
@@ -74,7 +75,7 @@ module HazardUnit (
         if (reset) begin
             retire_rd <= 5'b0;
             retire_csr_write_address <= 12'b0;    
-        end else begin
+        end else if (clk_enable) begin
             retire_rd <= WB_rd;
             retire_csr_write_address <= WB_csr_write_address;
         end
