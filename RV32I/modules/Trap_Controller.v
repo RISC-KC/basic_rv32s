@@ -4,6 +4,7 @@ module TrapController #(
     parameter XLEN = 32
 )(
     input wire clk,
+    input wire clk_enable,
     input wire reset,
     input wire [XLEN-1:0] ID_pc,
     input wire [XLEN-1:0] EX_pc,
@@ -48,8 +49,7 @@ always @(posedge clk or posedge reset) begin
     if (reset) begin
         trap_handle_state <= IDLE;
         debug_mode_reg <= 1'b0; 
-    end 
-    else begin 
+    end else if (clk_enable) begin
         trap_handle_state <= next_trap_handle_state;
         // debug_mode logics
         case (trap_status)
