@@ -3,16 +3,17 @@
 module CSRFile #(
     parameter XLEN = 32
 )(
-    input clk,                    // clock signal
-    input reset,                  // reset signal
+    input clk,                            // clock signal
+    input clk_enable,
+    input reset,                          // reset signal
     input trapped,
-    input csr_write_enable,       // write enable signal
-    input [11:0] csr_read_address,       // address to read
-    input [11:0] csr_write_address,      // address to write
-    input [XLEN-1:0] csr_write_data,         // data to write
+    input csr_write_enable,               // write enable signal
+    input [11:0] csr_read_address,        // address to read
+    input [11:0] csr_write_address,       // address to write
+    input [XLEN-1:0] csr_write_data,      // data to write
 
-    output reg [XLEN-1:0] csr_read_out,          // data from CSR Unit
-    output reg csr_ready                // signal to stall the process while accessing the CSR until it outputs the desired value.
+    output reg [XLEN-1:0] csr_read_out,   // data from CSR Unit
+    output reg csr_ready                  // signal to stall the process while accessing the CSR until it outputs the desired value.
     );
 
     wire [XLEN-1:0] mvendorid = 32'h52_56_4B_43;    // "RVKC" ; "R"ISC-"V", "K"HWL & "C"hoiCube84.
@@ -29,8 +30,11 @@ module CSRFile #(
     reg csr_processing;
     reg [XLEN-1:0] csr_read_data;
 
+    reg csr_write_enable_buffer;
+
     wire csr_access;
     wire valid_csr_address;
+    wire csr_write_enable_edge = csr_write_enable && !csr_write_enable_buffer;
 
     assign csr_access = valid_csr_address;
     assign valid_csr_address = (csr_read_address == 12'hF11) || // mvendorid
@@ -85,7 +89,8 @@ module CSRFile #(
         mcause  <= DEFAULT_mcause;
         csr_processing <= 1'b0;
         csr_read_out <= {XLEN{1'b0}};
-      end else begin
+        csr_write_enable_buffer <= 1'b0;
+      end else if (clk_enable) begin
         if (csr_access && !csr_processing) begin
           csr_processing <= 1'b1;
           csr_read_out <= csr_read_data;
@@ -96,8 +101,10 @@ module CSRFile #(
           csr_read_out <= csr_read_data;
         end
 
+        csr_write_enable_buffer <= csr_write_enable;
+
         // Write Operation
-        if ((trapped && csr_write_enable) || (csr_write_enable)) begin
+        if ((trapped && csr_write_enable_edge) || (csr_write_enable_edge)) begin
         case (csr_write_address)
           12'h305: mtvec  <= csr_write_data;
           12'h341: mepc   <= csr_write_data;
