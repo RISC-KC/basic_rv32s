@@ -62,35 +62,12 @@ module RV32I46F5SPSoCTOP #(
     // CPU Internal states debug signals
     wire [31:0] pc_value;
     wire [31:0] current_instruction;
-    wire [31:0] selected_reg_value;
     wire [4:0] debug_reg_addr_wire;
     wire [31:0] debug_reg_data_wire;
-    /*
-    // Pipeline Debug signals
-    wire [31:0] debug_if_pc_wire, debug_id_pc_wire, debug_ex_pc_wire;
-    wire [31:0] debug_mem_pc_wire, debug_wb_pc_wire;
-    wire [31:0] debug_if_instruction_wire, debug_id_instruction_wire;
-    wire [31:0] debug_ex_instruction_wire, debug_mem_instruction_wire;
-    wire [31:0] debug_wb_instruction_wire;
-    
-    // Control Signals
-    wire debug_pipeline_stall_wire;
-    wire debug_branch_taken_wire;
-    wire debug_jump_taken_wire;
-    wire debug_trap_occurred_wire;
-    */
+
     // ALU Signals
-    wire [31:0] debug_alu_result_wire; /*
-    wire [31:0] debug_alu_src_a_wire;
-    wire [31:0] debug_alu_src_b_wire;
-    
-    // Memory Signals
-    wire [31:0] debug_mem_addr_wire;
-    wire [31:0] debug_mem_write_data_wire;
-    wire [31:0] debug_mem_read_data_wire;
-    wire debug_mem_write_enable_wire;
-    wire debug_mem_read_enable_wire;
-    */
+    wire [31:0] debug_alu_result_wire;
+
     // internal reset control signals
     wire internal_reset;
     reg reset_sync [0:2];
@@ -161,37 +138,8 @@ module RV32I46F5SPSoCTOP #(
         .debug_instruction(current_instruction),
         .debug_reg_addr(debug_reg_addr_wire),
         .debug_reg_data(debug_reg_data_wire),
-        /*
-        // Pipeline states
-        .debug_if_pc(debug_if_pc_wire),
-        .debug_id_pc(debug_id_pc_wire),
-        .debug_ex_pc(debug_ex_pc_wire),
-        .debug_mem_pc(debug_mem_pc_wire),
-        .debug_wb_pc(debug_wb_pc_wire),
-        
-        .debug_if_instruction(debug_if_instruction_wire),
-        .debug_id_instruction(debug_id_instruction_wire),
-        .debug_ex_instruction(debug_ex_instruction_wire),
-        .debug_mem_instruction(debug_mem_instruction_wire),
-        .debug_wb_instruction(debug_wb_instruction_wire),
-        
-        // Control Signals
-        .debug_pipeline_stall(debug_pipeline_stall_wire),
-        .debug_branch_taken(debug_branch_taken_wire),
-        .debug_jump_taken(debug_jump_taken_wire),
-        .debug_trap_occurred(debug_trap_occurred_wire),
-        */
-        // ALU execution
-        .debug_alu_result(debug_alu_result_wire)/*, 
-        .debug_alu_src_a(debug_alu_src_a_wire),
-        .debug_alu_src_b(debug_alu_src_b_wire),
-        
-        // Memory Access
-        .debug_mem_addr(debug_mem_addr_wire),
-        .debug_mem_write_data(debug_mem_write_data_wire),
-        .debug_mem_read_data(debug_mem_read_data_wire),
-        .debug_mem_write_enable(debug_mem_write_enable_wire),
-        .debug_mem_read_enable(debug_mem_read_enable_wire)*/
+
+        .debug_alu_result(debug_alu_result_wire)
     );
     
     // Synchronous Reset
