@@ -6172,6 +6172,15 @@ CPU에는 Dhrystone을 올렸ek.
 문제는 지금 loop. 자꾸 jal ra, -80으로 되돌아가게 되고, 이걸 마주치지 않으려면 그 이전에 있는 beq a0, s3, -16이 not taken 되어야하는데 taken이 되고있다. 
 그럼 어디서부터 이 둘이 같게되었는지를 찾아보고 그러다보니까 메모리 영역 문제를 찾게되었다. 
 0x1000은 datamem, 0000은 ROM으로 한다면 그냥 명령어에서 data memory의 0000_1664를 load하면 1000_5990에 저장한 값이 나오게 될 수도 있다.
+
+우리 Instruction Memory는 ROM으로 pc값에 대한 명령어만 나오게 하고 있는데, 그럼 이 주소 필드 0x0000nnnn 들에 대해 읽는 요청이 당연히 있을 수 있으니까 그에 대한 처리를 해야할 것 같다. 
+명령어를 수행하면서 load나 store는 모두 data memory에서 처리되는데 막상 data memory에서 쓰이는건 0x1000nnnn 영역이니까 0x0000nnnn에 대한 처리가 data memory로 들어오게 되면 
+그건 instruction memory의 값을 출력해주는게 올바른 것 같고... 
+이래서 통합 메모리 위에 분리된 instruction cache와 data cache를 갖는구나. instruction 만 담아두는 메모리는 IF단계에 위치해서 MEM단계에서 그 값을 불러오기에는 구조적으로 골치아파지니까 
+이 경우 cache miss를 내고 RAM에 잡힌 통합 메모리에 있는 0x0000nnnn에 대한 데이터를 그냥 갖고오면 되니까... 
+메모리 계층구조가 단순히 속도 때문만이 아니라 구조적 최적화에 대한 내용도 품고 있는 거라고 봐도 되겠지? 
+일단은, 임시적으로 data memory 안에 instruction memory 안에 있는 데이터를 모두 넣고, 그걸 rom처럼 읽기만 가능하게끔 수정하면 좋을 것 같다.
+아니면 그냥 Data memory 안에서 주소 영역이 그에 겹치면 Instruction Memory에서 인출된 값을 그대로 출력하도록 해도 괜찮을 것 같다.
 Instruction Memory의 내용을 Data Memory에서 출력할 수 있도록 변경.
 조치했는데도 여전히 loop는 같다. 어떡하면 좋지?
 지금 디버깅은 iverilog simulation vcd로 파형 보면서 진행하고 있다. 
@@ -6265,3 +6274,53 @@ BE Logic에서 주소의 하위 2비트 address[1:0]가 사용되질 않아 항�
 
 일단 data_init을 따로 빼니까 loop는 없어진 것 같아서 그대로 시뮬기반 파일에서 변경사항 있는 RTL만 빼서 적용하고, (Data Memory, Instruction Memory, core 모듈 인스턴스 수정)
 FPGA synth-impl-bitstream 중.
+
+이런. 다른 이상한 Loop이 나왔다. 
+생각해보니 예전에 미뤄둔 부분인 Load 부분의 lb, lh에 대한 미흡한 구현이 있던 것 같아 이를 보완해서 다시 돌렸다.
+그렇게 20:50. 0x0000_006F jal x0 0 명령어를 끝으로 dhrystone이 모두 돌아갔다!!!!
+
+이제 그 성능 측정을 위해 mcycle값이랑 minstret 값을 받아서 계산을 해봐야한다.
+원래대로라면 그렇게 끝나자마자 자동으로 final cycles, final intructions 가 나와야하는데 안나오네.
+관련해서 수정을 해야겠따.
+차라리 기존에 있는 버튼 로직에서 alu result가 나오던 우측 버튼을 final cycles랑 final instructions가 나오게 바꿔야겠다.
+이게 훨씬 구현 자체는 빠를 듯.
+
+Instruction Memory에 rom read address, data 관련 로직을 추가해서 (data memory-instruction memory 통로) 타이밍이 0.02x 정도로 엄청 빡빡해졌다.
+어라. 왜 다른 버튼들 다 작동도 안하고 000000000FE만 나오지? 
+
+DebugUartController에서 alu_result에서 final_Cycles, instructions로 바꾸면서 교체하지 못한 로직이 있길래 마저 교체하고 다시 돌린다.
+Synthesis 옵션도 Performance Opti 로 했고, Implementation도 Performance Explore로 해봤다.
+과연 얼마나 변할까? 
+Dhrystone을 내장시키고 난 뒤엔 합성에 거의 10분이 걸렸는데, 이번엔 어떻게 될까...
+아 그리고, risc-v 툴체인이 로컬 시스템에 없는게 너무 아쉬워서 방법을 찾던 도중, 친구가 구글 colab을 추천해줘서 둘러보고 있다.
+rv32i ilp32 multilib로 해서 make하는 중인데, 확실히 시간이 꽤 걸린다. 그래도 속도는 빠르고 용량도 넉넉해서 한번 사용할 가치는 있는 것 같아서 계속 빌드 켜 놓는 중.
+
+와.
+다른 버튼들 동작은 안하는데, 일단 ㅋㅋㅋ 성능 자료가 나왔다.
+
+## [RV32I46F_5SP @ 50MHz Dhrystone benchmark]
+00000000FEA94
+Instr: 000000000009DDF0
+이렇게 떴다. 위에는 Cycles일거고 (final_cycles)
+아래는 final Instructions.
+
+각각 1,043,092 / 646,640 이다.
+총 사이클이 1,043,092 사이클 걸렸다는 것.
+이걸로 DMIPS와 DMIPS/Hz를 계산해보자.
+우리 클럭 50MHz.
+
+수행 시간은 1043092/50×10^6이다. 0.0208618초.
+Dhrystones/second = 반복횟수 / 수행 시간 = 2000 (DHRY_ITERS) / 0.0208618 = 95875
+
+DMIPS = 초당 1757 Dhrystones
+95875 / 1757 = 54.6DMIPS
+
+54.6DMIPS / 50MHz = 1.09DMIPS/MHz.
+
+이야. 하하. 하하하하하!!!!
+이제 이 파일들을 develop에 push하고, 캬.. ㅋㅋ
+데이터 나온 것들 종합하고, 코드 최적화하면서 최종 블럭 다이어그램을 수정하면 된다..
+길잡이로서 쓰던 다이어그램을 이제 구현 이후 완성된 설계도로서 최종본을 그린다니..
+감회가 색다르다. 23:21에 성능 계산 다했는데, 부모님께 전화하고 싶다. 아.
+지금은 23:59.
+이만 마친다.
