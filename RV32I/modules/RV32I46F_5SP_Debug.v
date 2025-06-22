@@ -505,7 +505,7 @@ module RV32I46F5SPDebug #(
         .ID_rs1(rs1),
         .ID_rs2(rs2),
         .ID_imm(imm),
-        .ID_csr_read_data(csr_read_data),
+        .ID_csr_read_data(csr_read_out),
 
         .EX_pc(EX_pc),
         .EX_pc_plus_4(EX_pc_plus_4),
