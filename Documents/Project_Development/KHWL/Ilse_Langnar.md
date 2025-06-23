@@ -6263,6 +6263,13 @@ PC = 96c 무한반복...
 그러다가 또 970에서 0000_0000이 되고. 
 루프.
 
+이 문제는.. 다음과 같은 결과로 해결되었다.
+FPGA에서 계속 loop 돌길래 뭐지 하고 5 시간 동안의 디버깅에 거쳐 jump, branch est의 조건 우선순위 문제인것을 발견하고 PCC를 수정.
+branch estimation은 jump가 EX도달 하여 분기하기 이전에 IF단계에 생길 수 있지만 jump가 앞에 있는 이상 무시되어야하기에 jump가 branch est보다 우선순위가 높아야한다.
+branch_prediction_miss 또한 마찬가지. 틀렸다면 IF단계의 est가 의미 없기에 branch Prediction miss는 branch est보다 높아야 한다.
+branch miss랑 jump는 서로 같다.(둘이 똑같이 EX단계에서 알 수 있으므로) 그리고 이 둘은 충돌할 수 없으므로 상관 없음. jump를 1순위, 그 아래로 2-3순위로 배치했다.
+
+그런데도 루프가 생긴다..
 애초부터 컴파일이 잘못되었나? linker의 문제인가..
 여러가지 보니까 아무래도 data가 원래 초기화되면서 값들이 올라가야하는데 관련한 내용을 boot.s에서 빼먹은 것 같다. 그래서 이를 수동으로 올렸다.
 dhrystone.mem 에서 1424(1부터 하면 1425)부터 data들인데, 이걸 별도로 data_init.mem으로 바꿔서 data memory initial begin에 올렸다.
@@ -6276,7 +6283,7 @@ BE Logic에서 주소의 하위 2비트 address[1:0]가 사용되질 않아 항�
 FPGA synth-impl-bitstream 중.
 
 이런. 다른 이상한 Loop이 나왔다. 
-생각해보니 예전에 미뤄둔 부분인 Load 부분의 lb, lh에 대한 미흡한 구현이 있던 것 같아 이를 보완해서 다시 돌렸다.
+생각해보니 예전에 미뤄둔 부분인 Load 부분의 lb, lh에 대한 미흡한 구현이 있던 것 같아 이를 보완해서 다시 돌렸다. (위에서 언급한 BE Logic)
 그렇게 20:50. 0x0000_006F jal x0 0 명령어를 끝으로 dhrystone이 모두 돌아갔다!!!!
 
 이제 그 성능 측정을 위해 mcycle값이랑 minstret 값을 받아서 계산을 해봐야한다.
@@ -6324,3 +6331,159 @@ DMIPS = 초당 1757 Dhrystones
 감회가 색다르다. 23:21에 성능 계산 다했는데, 부모님께 전화하고 싶다. 아.
 지금은 23:59.
 이만 마친다.
+
+# [2025.06.23.]
+계획을 수정했다.
+https://isocc.org/?page_id=180
+2025년 10월 15일부터 18일에 거쳐 이뤄지는 ISOCC; International SoC design Conference의 논문 최초 제출이 2025.06.27일에 마감한다.
+등재가 되던 안되던, 짧은 시간안에 본 개발이력과 코드를 가지고 논문을 완성해서 러프한 느낌이 있더라도 제출하도록 한다.
+Github에 PR은 그 이후 주말에 날 잡고 할 예정.
+Git에서 Release를 나눠서 할 것이다.
+우선 basic_rv32s 레포지토리의 메인 시나리오는 모두 완료되었다. 
+RV32I37F, RV32I43F, RV32I46F, RV32I46F_5SP, 46F5SP_SoC
+이렇게 총 5가지의 배포판을 만들 것이며, RV32I46F까지는 RTL 합성(시뮬레이션)으로만.
+그리고 RV32I46F_5SP와 46F5SP_SoC는 FPGA로 합성 가능하다고 표기할 것이다. 
+
+논문의 내용은...
+
+RV32I46F_5SP에 대한 내용 뿐만 아니라, basic_rv32s를 개발한 그 내용을 다룰 것이다.
+basic_rv32s 레포지토리의 본 목적은 RV32I ISA기반 CPU를 설계하며 학술적인 탐구와 이해도를 높이는 데 있기도 하지만,
+그 개발 기록과 디버그 로그, 그리고 각 리비전별로 바뀐 내역을 공개하여 CPU를 만들지 않은 입문자들부터 관심이 있는 모든이에게 이를 만들고 응용할 수 있는 가이드라인을 제시하는데 있다.
+명확한 설계법이 있는 것은 아니지만, 그 흐름을 제시하고자 하고, 그리고 그렇게 설계한 CPU의 성능평가와 발생했던 문제점들, 그걸 해결하기 위한 내용들을 적을 것이다.
+코어 다이어그램과 SoC 다이어그램. 실제 FPGA에 구현하여 UART를 통해 디버깅과 성능 측정한 사진. 다른 RISC-V RV32I 기반 프로세서들과 성능을 정량적으로 비교한 표.
+LUT랑 뭐 그런게 얼마나 사용되었고, 전력은 얼마나 소비하는지.. 이 성능이 x86 CPU
+RISC-V에 대한 이론적 배경과 본 설계에서는 어떻게 접목하였고, 기반이 된 헤네시 설계 기법에서 달라진 모듈들과 기능들이 뭔지.
+CPU 코어를 구성하는 각 모듈들에 대한 세부적인 로직 설명들. 향후 연구 계획, 개발 로그와 이를 코어로서 다른 곳에 사용할 수 있도록 하는 가이드라인과 개발 이력들을 GitHub에 MIT 라이센스로 제공하여
+RISC-V 생태계에 기여하고 본 학문에 대한 진입 장벽을 조금이라도 낮게 만들기 위함. 사람들이 흥미를 가져서 입문할 수 있게 하도록. 나도 해볼 수 있겠다 같은.
+
+세부적인 목차를 만들어보자. 
+논문 연구의 목적과 본 논문에서 뭘 다루는지에 대한 한눈 파악 초록 (ABSTRACT)
+- 연구에서 제시하는 것 : 
+헤네시 설계 법에 따라 설계한 베이스 CPU 모델 RV32I37F, 37F 아키텍처와 이를 기반하여 명령어 지원 수를 늘린 43F아키텍처, 46F 아키텍처 소개.
+그리고 46F 아키텍처의 5단계 파이프라이닝과 이를 FPGA로 검증한 것. (사용한 보드 Digilent社 Nexys Video Artix-7 FPGA; XC7A200T-1SBG484C Xilinx Artix-7 칩 기반)
+그리고 검증하면서 만든 46F5SP_SoC 의 설계와 이를 통해 측정한 RV32I46F_5SP CPU 코어의 성능, 타 RV32I 프로세서와 실제 데스크탑용 CPU와의 벤치마크 성능 비교
+해당 CPU 코어들과 SoC를 만들면서 적용한 설계법들과 모듈들의 구성 설명.
+진행하며 당면했던 문제들과 그를 해결한 방법. 
+디버깅을 위해 고안한 방안과 그 구현 방법들. (직접 만든 테스트 시나리오 기반 명령어 하나씩 결과를 UART로 받아볼 수 있는 디버그 인터페이스, Dhrystone을 위한 벤치마크 실행 인터페이스)
+본 연구에 대해 개발기록과 소스코드를 포함한 모든 내용을 Github에 MIT라이센스로 배포하였고 RISC-V 생태계 기여했다는 것.
+
+- 연구 목적 : CPU설계에 대한 학술적 탐구, RISC-V 생태계 기여, 
+CPU 설계에 대한 기초 수준(싱글사이클 RV32I 헤네시 설계법 기반)으로부터 해저드 처리 및 분기예측, 예외처리기가 포함된 5단계 파이프라인 수퍼스칼라 프로세서 설계까지의 체계화된 설계 가이드라인 제공.
+
+위 가이드라인은 개발 로그와 각 아키텍처의 명확한 구분, 그리고 각 아키텍처별 '신호 단위'수준의 세세한 블럭 다이어그램 설계도와 각 모듈별 로직의 설명이 포함됨.
+주석이 없는 clean code와 주석처리된 가이드 코드 두개 다 제공.
+Github의 특성을 이용해서 자유로운 issue 처리와 관심이 있는 모든 사람들과 소통하며 본 구조를 더 개선시킬 여지 도모.
+그리고 논문으로서 본 연구에 대한 이론적인 내용과 목적을 기록하여 알리고, 남겨 마이크로아키텍처 설계에 있어 도움이 되기 위함.
+
+초록에서 위 내용을 언급하도록 잘 조율해보면 된다.
+
+본문..
+
+RISC-V의 기초 설명
+(유래, 특성, 이론적 배경, 우리가 여기서 뭘 썼는지)
+본문
+아키텍처 만든 것들 뭐 있는지
+37F 아키텍처 다이어그램 (RV32I37F)
+각 모듈별 설명과 설계법 소개
+43F 아키텍처 다이어그램 (RV32I43F)
+추가된 모듈과 해당 의도, 설계법
+46F 아키텍처 다이어그램 (RV32I46F)
+추가된 모듈과 해당 의도, 설계법
+46F5SP 아키텍처 다이어그램 (RV32I46F_5SP)
+
+46F5SP의 FPGA 구현 내용
+- 아키텍처의 실제 물성 합성을 위한 변경 내용 
+(Combinatorial Loop 해결, 동기식 CSR 및 Exception Detector, 그리고 그 것 때문에 로직이 어떻게 달라지는지, 어떻게 구현했는지 등등.)
+- 합성 툴 Vivado 2024.2, Synthesis, Implementation 전략 flatten hierarchy rebuilt, Flow PerfOptimized_high, Performance_Explore 합성 및 구현.
+
+46F5SP_SoC의 FPGA 구현 내용
+- UART TX 기반 버튼, LED를 이용한 초경량 디버그 인터페이스
+- Dhrystone을 Instruction Memory에 담는 과정, 컴파일 툴체인 RISC-V GNU GCC march rv32i, ilp32. -o2, 반복횟수 1000회.
+- Dhrystone 담으면서 생긴 문제들과 그걸 해결한 방안. (아키텍처 특성상 메모리 매핑이 메모리 모듈별로 독립적이지 않음. )
+(원래 의도는 Instruction Memory에 수행할 명령어들이 모두 담겨져 있고, Data Memory를 접근 할 때 알아서 되는 것이었는데, 프로그램에서는 ROM과 RAM의 영역이 나누어져 있고 그 주소에 대한 매핑이 추가로 필요했음.)
+(Instruction Memory에서 순차적으로 실행되는 것을 기대하고 만든 설계지만, 프로그램 수행 중 ROM을 접근하여 load하는 것도 있다는 것을 알게됨.) 
+(Data Memory에서 Instruction Memory의 내용을 bypassing 해주는 로직을 추가하므로서 해결함.)
+- 나온 성능 1.09DMIPS/MHz. (RV32I46F_5SP @ 50MHz) 
+
+사용된 FPGA 리소스 LUT들, 예상 소비 전력 리포트, Device 면적 사진.
+도출된 46F5SP 아키텍처의 성능과 타 RV32I 기반 프로세서들, 실제 데스크탑용 프로세서와의 비교.
+현재 아키텍처의 한계: 
+- CSR RAW Hazard 
+- Short CSR_WE Hazard
+- MISALIGNED LOAD, STORE를 분리해서 처리하지 않고 하나의 Exception으로 취급하였다는 점.
+- Exception Detector가 동기식으로 바뀌면서 원래대로면 EX단계에서 store할 대상지가 misaligned인지 판단하고 exception해서 해당 메모리 주소에 쓰기가 되지 않아야하는데 
+  MEM단계에서 exception이 처리되기 시작하면서 쓰기와 동시에 TH가 진행이 됨. 
+- 분기예측기가 단순 2-bit FSM기반. 
+- 캐시가 없음. 
+- Exception, Trap Handler는 있지만 아직 Interrupt를 처리하지 못함. 
+타이밍 개선의 여지가 있음. Critical Path를 조사해서 단축시킬 아키텍처적인 개선이 이뤄질 여지 충분.
+클럭도 더 높이 나아갈 여지가 있음. 
+
+향후 연구 계획:
+위에 언급된 RV32I 표준 지원을 위한 이슈를 해결
+(CSR RAW Hazard, Short CSR_WE Hazard, RISC-V Privileged Architecture Manual을 기반으로 한 Exception, Trap 처리)
+FPGA로 오면서 생긴 구조적 문제 해결
+분기예측기 성능 개선
+설계안에는 포함되었지만, 구현하지 못한 캐시와 통합 메모리 구조의 구현
+RISC-V Linux Kernel 구동을 위한 아키텍처의 전반적인 확장. (RV64IMAFDC; RV64G)
+IDEC MPW 프로그램을 통한 프로세서 실제 프로토타입 생산 후 검증
+듀얼 코어 구조와 외부장치 Interrupt 구현을 통해 RV32I 명령어 완전지원 아키텍처 제시(50F 아키텍처 제시; FENCE류 명령어의 지원 추가)
+
+제일 먼저 이슈 해결부터 할 듯.
+
+참고 문헌 : 
+- 메모리 효율성을 높이기 위한 압축 명령어를 지원하는 32-비트 파이프라인 RISC-V프로세서 설계 및 구현
+
+- RISC-V 아키텍처 기반 6단계 파이프라인 RV32I프로세서의 설계 및 구현
+
+- FPGA를 이용한 32-bit RISC-V 5단계 파이프라인 프로세서 설계 및 구현
+
+- 임베디드 환경에서의32-bit RISC-V RV32IM 파이프라인 프로세서 설계 및 구현
+
+- Dynamic Branch Prediction 기반의 32-Bit RISC-V RV32IM 프로세서 설계 및 구현
+
+- VexRiscv - SpinalHDL RV32G Processor
+
+- An Analysis of Correlation and Predictability: What Makes Two-Level Branch Predictors Work
+
+- Towards Developing High Performance RISC-V Processors Using Agile Methodology
+
+- Scott McFarling, “Combining Branch Predictors,”
+McFarling, Scott. Combining branch predictors. Vol. 49. Technical Report TN-36, Digital Western Research Laboratory, 1993.
+
+00
+FPGA를 이용한 32-bit RISC-V RV32I 기반 최적화된 캐시 구조 설계 및 분석 연구
+
+Dynamic Branch Prediction 기반의 32-Bit RISC-V RV32IM 프로세서 설계 및 구현
+
+RISC-V 아키텍처 기반 6단계 파이프라인 RV32I프로세서의 설계 및 구현
+
+고성능 임베디드 디바이스를 위한 RV32IMC명령어 확장을 지원하는 RISC-V 파이프라인 프로세서 설계 및 구현
+
+메모리 효율성을 높이기 위한 압축 명령어를 지원하는 32-비트 파이프라인 RISC-V프로세서 설계 및 구현
+
+RISC-V RV32I 파이프라인 프로세서 및 주변장치 FPGA 검증
+
+임베디드 환경에서의 32-bit RISC-V RV32IM 파이프라인 프로세서 설계 및 구현
+
+FPGA를 이용한 32-bit RISC-V 5단계 파이프라인 프로세서 설계 및 구현
+
+
+RISC-V32I칩 구현 및 RV-32IM설계
+
+16-비트 압축 명령과 32-비트 정수 명령을 지원하는 RISC-V 마이크로프로세서의 하드웨어 설계
+
+FPGA 합성을 통한 RISC-V R-타입 ISA 동작 검증 및 리소스 분석
+
+FPGA를 이용한 32-bit RISC-V 프로세서 설계 및 평가
+
+RISC-V multicore performance enhancing architecture based on temporary caching
+
+비순차실행을 지원하는 고성능 RISC-V CPU 코어를 위한 검증 플랫폼
+
+RISC-V 프로세서의 모의실행 및 합성
+
+이정도. 햐... 논문의 시간이다... ㅋㅋㅋㅋ 그토록 바라왔던..
+
+오늘은 여기까지. 
+내일은 블럭 다이어그램 완성을 하고, 논문의 초록을 적는 것 부터 시작해봐야겠다.!!
