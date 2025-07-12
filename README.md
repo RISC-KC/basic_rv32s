@@ -82,7 +82,7 @@ clean RTL source code of actual synthesized core.
 
 ### testbenches/
 
-testbench RTL code of each modules ( top module, module instances )  
+testbench RTL code of each module ( top module, module instances )  
 result with `.vvp` and waveform `.vcd` files included.
 
 ---
@@ -110,16 +110,24 @@ The Development logs might possibily not match with the current design, if there
 <sub>Un-organized raw devlog in `documents/project_devlog` contains more imformations than the organized logs in `/guidelines`/ but even non-relative words are included. Also, project's developers are from **Republic of Korea**. All the raw devlogs are written originally in **Korean**. Please be aware of these. </sub>
 
 In architecture documentations, we've included the **specifications of all modules** with **Signal-level Block Diagram**.
-The I/O signals of each modules, the purpose of the modules, logic behavior.
+The I/O signals of each module, the purpose of the modules, logic behavior.
 This contains not only the top CPU module, but **all modules that constructs the processor**.
 
 Since the last processor design of **basic_RV32s** is synthesized and implemented on **FPGA**, we also provide a project file so everyone can modify and implement the suggested core design.  
 
 This project was done in limited environment (serving military duty, only 1 FPGA board, 2 developers, approx. 2 hours per day). We hope some other implementation reports. Please contact us if you have already. 📡  
 
+---
+
 ## Architectures and Specifications  
 
+### Naming conventions
+
+RV32I43F = **RV32I** that supports **43** instructions. **Final**(latest) version.  
+RV32I46F_5SP = **RV32I** that supports **46** instructions. **Final**(latest) version. **5-Stage Pipelined** architecture.  
+
 **basic_RV32s** provides 4 RISC-V core designs and 1 SoC design for FPGA verification. 
+
 |Processor|ISA|Added modules|note|
 |-----|:---:|---|---|
 |RV32I37F|RV32I<sup>a</sup>|-|Base single-cycle architecture|
@@ -138,7 +146,21 @@ It utilizes **FPGA** on-board GPIOs such as LEDs, buttons and UART.
 
 ### RV32I37F
 
+Work In Progress
 
+### RV32I43F
+
+Work In Progress
+
+### RV32I46F
+
+Work In Progress
+
+### RV32I46F_5SP
+
+Work In Progress
+
+---
 
 ## FPGA Implementation Results
 
@@ -166,11 +188,31 @@ Table below is FPGA implementation results.
 
 ## Getting Started
 
-asdasd  
+**basic_RV32s** can be simply cloned by using
+```git
+$ git clone https://github.com/RISC-KC/basic_rv32s.git
+```
+Our repository provides multiple core designs.  
+We've made **all module designs to be compatible to each architecture**, but this lowers the FPGA performance including area.  
+So we suggest to get **releases / packages** for better FPGA experience.  
+
+### 💾 Releases
+Each release provide clean RTL source codes for synthesis.  
+There are 4 release types for each architecture. (37F, 43F, 46F, 46F_5SP)  
+
+
+### 📦 Packages
+Development Environment including Vivado Project files are provided in each Package.  
+
+Work In Progress
+
+---
 
 ## Contribution
 
 asdfasdf  
+
+---
 
 ## Lisence
 
