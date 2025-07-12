@@ -127,7 +127,9 @@ This project was done in limited environment (serving military duty, only 1 FPGA
 - RV32I**46F_5SP** ( 5-Stage Pipeline version of RV32I46F )
 * 46F5SP_SoC  ( RV32I46F_5SP + GPIO + UART + Benchmarks )  
   Made for debugging and running **Dhrystone** benchmark the core design.  
-  It utilizes **FPGA** on-board GPIOs such as LEDs, buttons and UART.  
+  It utilizes **FPGA** on-board GPIOs such as LEDs, buttons and UART.
+  <img width="1755" height="1240" alt="basic_rv32s drawio (2)" src="https://github.com/user-attachments/assets/5f0c7fea-dfc0-4212-ac4b-5125d8859ae6" />
+<sub> Architectures of basic_RV32s' processors </sub>
 
 starts with **RV32I37F** which supports RV32I, RISC-V Base Integer set excluding EBREAK, ECALL, FENCE instructions.  
 To verify the core IP design, we've made SoC design for FPGA implementation.
