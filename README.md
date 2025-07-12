@@ -31,14 +31,14 @@ Since most of lectures I've heard were using Verilog, all of RTL codes we provid
 
 ### Table of Contents
 
-- [Introduction](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#introduction)
-- [Branches & Directories](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#branches--directories)
-- [About Guidelines](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#about-guidelines)
-- [Arhictectures and Specifications](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#architectures-and-specifications)
-- [FPGA Implementation Results](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#fpga-implementation-results)
-- [Getting Started](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#getting-started)
-- Contributions
-- License  
+- [Introduction](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#introduction)  
+- [Branches & Directories](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#branches--directories)  
+- [About Guidelines](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#about-guidelines)  
+- [Arhictectures and Specifications](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#architectures-and-specifications)  
+- [FPGA Implementation Results](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#fpga-implementation-results)  
+- [Getting Started](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#getting-started)  
+- [Contributions](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#contribution)  
+- [License](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#contribution)  
 
 -----
 
