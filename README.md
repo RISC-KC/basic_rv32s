@@ -5,7 +5,7 @@ basic_RV32s is a **framework for learning Processor design with RISC-V** ISA (In
 It provides step-by-step guideline for designing processor **from single-cycle processor to 5 Stage Pipelined with Exception Handling**.  
 
 ## Introduction
-I've always wondered how to make CPU and I wanted to make my own.  
+KHWL: I've always wondered how to make CPU and I wanted to make my own.  
 Although it was a far dream for me, I've gave it a try when I was serving the Korean Military duty, and made the result pretty legitimatley.  
 While designing the Architecture of processor, I've felt the gap between the theories and actual implementations at certain point and it took a long way to discover the problem and resolve it.  
 
@@ -14,7 +14,7 @@ I've documented all the **development progresses, train of thoughts, debug logs*
 Since most of lectures I've heard were using Verilog, all of RTL codes we provide are written in pure **Verilog**. 
 
 ### Key Features
-- ❓ What's in it? : CPU + SoC + **framework for learning**.
+- 📦 What's in it? : CPU + SoC + **framework for learning**.
 - ⌨️ Written in pure **Verilog 2001**.
 - 🧱 **Modular design for each core design**, enhancing the scalability of the architecture and helping understanding.
 - 🔌 **FPGA** Synthesizable sources.
@@ -32,18 +32,19 @@ Since most of lectures I've heard were using Verilog, all of RTL codes we provid
 - Contributions
 - License  
 
+-----
+
 ## Branches & Directories
 
-### Branches
+### 📌Branches
 - `main`  
-  lately released version of the repository.
+  Latest released version of the repository.
 - `develop`  
-  currently ongoing version of the repository.
-  this branch only revises the RTL source code in **modules/** and **testbenches/**.
+  Current ongoing version of the repository.  
+  This branch only revises the RTL source code in **modules/** and **testbenches/**.
 - `docs`  
-  revises the **documents/** directory.
------
-### Directories
+  Revises the **documents/** directory.
+### 📌Directories
 ### documents/  
 Documentations of baisc_rv32s.  
 
@@ -70,8 +71,37 @@ clean RTL source code of actual synthesized core.
 testbench RTL code of each modules ( top module, module instances )  
 result with `.vvp` and waveform `.vcd` files included.
 
+---
+
 ## How to use Guidelines
-WIP
+**basic_RV32s** follows three design principles to guide an intuitive and efficient hardware architecture design.
+1. Streamline I/O signals to reduce complextiy.
+2. Define clear module roles with focused logic to enhance modularity.
+3. Priortize performance improvements even when conflicting with the above principles, with effectiveness validated through testing.  
+
+In directory `documents/guidelines/`, we provide comprehensive resources for learning and understanding the design of processors in **basic_RV32s**.  
+- 🗃 **Incremental architecture documentation**  
+  presenting each evolution with design decisions.
+- 📑 **Dual-format verilog RTL source code**  
+  offering annotated version from clean source code.
+- 📖 **Development logs**  
+  organized version based on raw devlogs located in `documents/project_devlog/`.
+- 🔍 **Debug traces**, problem-solving approaches.
+- 📜 **Design iteration histories**
+- 🔬 **Verification methodologies**
+  providing UART-based debugging and **Dhrystone** benchmark setup on **FPGA**.  
+
+The Development logs might possibily not match with the current design, if there's some certain missing logs which is needed, you may request for it.  
+<sub>Un-organized raw devlog in `documents/project_devlog` contains more imformations than the organized logs in `/guidelines`/ but even non-relative words are included. Also, project's developers are from **Republic of Korea**. All the raw devlogs are written originally in **Korean**. Please be aware of these.<sub>
+
+In architecture documentations, we've included the **specifications of all modules** with **Signal-level Block Diagram**.
+The I/O signals of each modules, the purpose of the modules, logic behavior.
+This contains not only the top CPU module, but **all modules that constructs the processor**.
+
+Since the last processor design of **basic_RV32s** is synthesized and implemented on **FPGA**, we also provide a project file so everyone can modify and implement the suggested core design.  
+
+This project was done in limited environment (serving military duty, only 1 FPGA board, 2 developers, approx. 2 hours per day). We hope some other implementation reports. Please contact us if you have already. 📡
+
 ----- Work In Progress -----
 ----- temp -----
 It starts with **RV32I37F** which supports RV32I, RISC-V Base Integer set excluding EBREAK, ECALL, FENCE instructions.  
