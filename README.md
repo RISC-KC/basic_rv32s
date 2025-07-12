@@ -36,7 +36,6 @@ Since most of lectures I've heard were using Verilog, all of RTL codes we provid
 - About Guidelines
 - Arhictectures and Specifications
 - FPGA porting and Results
-- Development Environment
 - Getting Started
 - Contributions
 - License  
@@ -61,20 +60,20 @@ Since most of lectures I've heard were using Verilog, all of RTL codes we provid
 
 Documentations of baisc_rv32s.  
 
-**/diagrams/**  
+- **/diagrams/**  
 Processor design's signal-level block diagrams, Including archived legacies.  
 PDF, PNG, drawio files.  
 
-**/project_devlog/**  
+- **/project_devlog/**  
 The raw development logs of main contributors.  
 
-**/theories_and_logics/**  
+- **/theories_and_logics/**  
 Description of each designed architecture down to logic block's signal and logics. 
 
-**/guidelines/**  
+- **/guidelines/**  
 Annotated RTL sources, tutorials, organized devlogs, debug logs.  
 
-**/references/**  
+- **/references/**  
 References that helped.  
 
 ### modules/
@@ -121,13 +120,19 @@ This project was done in limited environment (serving military duty, only 1 FPGA
 ## Architectures and Specifications  
 
 **basic_RV32s** provides 4 RISC-V core designs and 1 SoC design for FPGA verification. 
-- RV32I**37F** ( RV32I )
-- RV32I**43F** ( RV32I + Zicsr )
-- RV32I**46F** ( RV32I + Zicsr + ECALL, EBREAK )
-- RV32I**46F_5SP** ( 5-Stage Pipeline version of RV32I46F )
-* 46F5SP_SoC  ( RV32I46F_5SP + GPIO + UART + Benchmarks )  
-  Made for debugging and running **Dhrystone** benchmark the core design.  
-  It utilizes **FPGA** on-board GPIOs such as LEDs, buttons and UART.
+|Processor|ISA|Added modules|note|
+|-----|:---:|---|---|
+|RV32I37F|RV32I<sup>a</sup>|-|Base single-cycle architecture|
+|RV32I43F|RV32I<sup>a</sup>  +Zicsr|CSR File|supports Zicsr 6 instructions|
+|RV32I46F|RV32I<sup>b</sup>  +Zicsr|Exception Detector, Trap Controller, MUXs|supports ECALL, EBREAK|
+|RV32I46F_5SP|RV32I<sup>b</sup>  +Zicsr|2-bit FSM Dynamic Branch Predictor, Hazard Unit, Forward Unit|5-Stage Pipelined|
+|46F5SP_SoC<sup>*</sup>|-|Button Controller, Debug UART Controller, UART TX, Benchmark Controller|GPIO, UART implemented SoC for Dhrystone|  
+
+<sup>a</sup> Partial RV32I which excluded ECALL, EBREAK, FENCE, FENCE.TSO, PAUSE instructions.  
+<sup>b</sup> Partial RV32I which excluded FENCE, FENCE.TSO, PAUSE instructions.  
+<sup>*</sup> 46F5SP_SoC is made for debugging and running **Dhrystone** benchmark the core design.  
+It utilizes **FPGA** on-board GPIOs such as LEDs, buttons and UART.  
+  
   <img width="1755" height="1240" alt="basic_rv32s drawio (2)" src="https://github.com/user-attachments/assets/5f0c7fea-dfc0-4212-ac4b-5125d8859ae6" />
 <sub> Architectures of basic_RV32s' processors </sub>
 
@@ -155,3 +160,9 @@ Table below is FPGA implementation results.
 
 <sup>* **Dhrystone** benchmark and **Trap Handler** hard coded using readmemh. Resource varies depends on the program in Memories.</sup>  
 <sup>** All memories are inffered as **LUT-based distributed RAM**.</sup>  
+
+---
+
+## Getting Started
+
+Work In Progress
