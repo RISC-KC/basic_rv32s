@@ -31,12 +31,12 @@ Since most of lectures I've heard were using Verilog, all of RTL codes we provid
 
 ### Table of Contents
 
-- Introduction
-- Branches & Directories
-- About Guidelines
-- Arhictectures and Specifications
-- FPGA porting and Results
-- Getting Started
+- [Introduction](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#introduction)
+- [Branches & Directories](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#branches--directories)
+- [About Guidelines](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#about-guidelines)
+- [Arhictectures and Specifications](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#architectures-and-specifications)
+- [FPGA Implementation Results](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#fpga-implementation-results)
+- [Getting Started](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#getting-started)
 - Contributions
 - License  
 
@@ -136,8 +136,9 @@ It utilizes **FPGA** on-board GPIOs such as LEDs, buttons and UART.
   <img width="1755" height="1240" alt="basic_rv32s drawio (2)" src="https://github.com/user-attachments/assets/5f0c7fea-dfc0-4212-ac4b-5125d8859ae6" />
 <sub> Architectures of basic_RV32s' processors </sub>
 
-starts with **RV32I37F** which supports RV32I, RISC-V Base Integer set excluding EBREAK, ECALL, FENCE instructions.  
-To verify the core IP design, we've made SoC design for FPGA implementation.
+### RV32I37F
+
+
 
 ## FPGA Implementation Results
 
@@ -158,11 +159,19 @@ Table below is FPGA implementation results.
 |RV32I43F|-|-|-|-|-|-|
 |RV32I37F|-|-|-|-|-|-|
 
-<sup>* **Dhrystone** benchmark and **Trap Handler** hard coded using readmemh. Resource varies depends on the program in Memories.</sup>  
+<sup>* **Dhrystone** benchmark and **Trap Handler** hard coded using readmemh. Resource varies depends on the program in memories. This will soon be standardized.</sup>  
 <sup>** All memories are inffered as **LUT-based distributed RAM**.</sup>  
 
 ---
 
 ## Getting Started
 
-Work In Progress
+asdasd  
+
+## Contribution
+
+asdfasdf  
+
+## Lisence
+
+Copyleft.
