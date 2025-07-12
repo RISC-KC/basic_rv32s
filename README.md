@@ -133,3 +133,25 @@ This project was done in limited environment (serving military duty, only 1 FPGA
 
 starts with **RV32I37F** which supports RV32I, RISC-V Base Integer set excluding EBREAK, ECALL, FENCE instructions.  
 To verify the core IP design, we've made SoC design for FPGA implementation.
+
+## FPGA Implementation Results
+
+**RV32I46F_5SP** core implemented **46F5SP_SoC** was implemented on **Digilent Nexys Video** board (**AMD Xilinx Artix-7 XC7A200T FPGA**).  
+FPGA Synthesis and Implementations were done in **Vivado 2024.2**.  
+- 20ns (50 MHz) timing constraints
+- Synthesis Strategy : Flow_PerfOptimized_high
+- Implementation Strategy : Performance_Explore
+
+Single-Cycle processors' FPGA implementation is not done yet. It will be added soon after the military duty ends. (Around Sep. 2025)
+Table below is FPGA implementation results.  
+
+|Processor|LUTs|FFs|BRAMs|DSPs|Fmax|DMIPS/MHz|
+|-----|:---:|:---:|:---:|:---:|:---:|:---:|
+|46F5SP_SoC|11,660<sup>*</sup>|2,383|0<sup>**</sup>|0|50 MHz|1.09|
+|RV32I46F_5SP|3,010|2,383|0<sup>**</sup>|0|``|``|
+|RV32I46F|-|-|-|-|-|-|
+|RV32I43F|-|-|-|-|-|-|
+|RV32I37F|-|-|-|-|-|-|
+
+<sup>* **Dhrystone** benchmark and **Trap Handler** hard coded using readmemh. Resource varies depends on the program in Memories.</sup>  
+<sup>** All memories are inffered as **LUT-based distributed RAM**.</sup>  
