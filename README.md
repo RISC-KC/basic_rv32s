@@ -88,7 +88,8 @@ result with `.vvp` and waveform `.vcd` files included.
 ### fpga/
 
 Vivado project files for FPGA synthesis and implementation.  
-Contains such as `.xpr` `.xdc` files to import the whole project easily.
+Contains such as `.xpr` `.xdc` files to import the whole project easily.  
+Also, the project file includes clean RTL code without annotations. 
 
 ---
 
@@ -175,7 +176,7 @@ FPGA Synthesis and Implementations were done in **Vivado 2024.2**.
 - Synthesis Strategy : Flow_PerfOptimized_high
 - Implementation Strategy : Performance_Explore
 
-Single-Cycle processors' FPGA implementation is not done yet. It will be added soon after the military duty ends. (Around Sep. 2025)
+Single-Cycle processors' FPGA implementation is not done yet. It will be added soon after the military duty ends. (Around Sep. 2025)  
 Table below is FPGA implementation results.  
 
 |Processor|LUTs|FFs|BRAMs|DSPs|Fmax|DMIPS/MHz|
@@ -197,16 +198,68 @@ Table below is FPGA implementation results.
 ```git
 $ git clone https://github.com/RISC-KC/basic_rv32s.git
 ```
-Since we 
 
-### 💾 Releases
+### 🔎 Core behavior Simulations  
 
-Our repository provides multiple core designs.  
-We've made **all module designs to be compatible to each architecture**, but this lowers the FPGA performance including area.  
-So we suggest to get **attatched `.zip` file in releases** for better FPGA experience.  
-Each release provide clean RTL source codes for synthesis.  
-There are 4 release types for each architecture. (37F, 43F, 46F, 46F_5SP)  
+Required : Icarus Verilog for using `./test.sh` command.
 
+```git
+$ cd [source_code_directory]
+$ ./test.sh RV32I37F.v RV32I37F_tb.v
+```
+This would run testbench as coded in `testbenches/`.  
+The result of the simulation `.vvp` is generated in `testbenches/results/`.  
+`.vcd` waveform result is generated in `testbenches/results/waveforms/`.  
+
+Waveform can be viewed **GTKwave** or [Surfer-project](https://surfer-project.org/).  
+
+### 🎛 FPGA implementation  
+
+- Vivado environment (tested on 2024.2)  
+  - In `fpga/` directory, select architecture source directory which you want to implement on your FPGA. (37F, 43F, 46F, 46F_5SP)  
+    Launch Vivado and import project file which you have selected.
+
+  - Current FPGA implementation's SoC can be applied to 43F, 46F, 46F5SP architecture. (release v1.0.0)   
+    37F Architecture needs additional logics to replace the existing `mcycle` and `minstret` CSR to implement on **46F5SP_SoC** since it doesn't have CSR module.  
+  
+  - The RTL source code of **RV32I46F_5SP** in `fpga/` directory has `clk_enable` signal for sequential execution debugging.  
+    If you need only the core IP itself, use the source in `modules/` directory.  
+
+- Other IDE  
+  You can manually import the sources located in `modules/` directory.  
+
+### 📥 Setup RV32I RISC-V GNU toolchain with GCC.
+Follow this guideline provided by official RISC-V github.
+https://github.com/riscv-collab/riscv-gnu-toolchain
+
+Make sure to configure the toolchain build with one of the following commands.
+```
+./configure --with-multilib-generator="rv32i-ilp32--"
+or
+./configure --prefix=/opt/riscv --with-arch=rv32i --with-abi=ilp32
+make linux
+```
+
+### ⚠️ Notice
+
+**Default program** is some RV32I instructions which is integrated in **Insturction Memory**.  
+If you are going to simulate the **C program** which has been compiled through **RISC-V GNU GCC toolchain; RV32I**, the memory configuration is needed.  
+Make sure the linker script of the compile's memory map is same as following.  
+
+```
+...
+MEMORY
+{
+    ROM (rx) : ORIGIN = 0x00000000, LENGTH = 64K
+    RAM (rw) : ORIGIN = 0x10000000, LENGTH = 32K
+}
+...
+```
+
+If you are not beginner as I am, you can just modify this memory settings.  
+Since the actual FPGA implementation is only done in **RV32I46F_5SP**, we suggest to use 46F_5SP architecture for C compiled program simulation.  
+
+We'll going to work about easy C program import on SoC soon.  
 
 ---
 
