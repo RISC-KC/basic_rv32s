@@ -37,8 +37,7 @@ Since most of lectures I've heard were using Verilog, all of RTL codes we provid
 - [Arhictectures and Specifications](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#architectures-and-specifications)  
 - [FPGA Implementation Results](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#fpga-implementation-results)  
 - [Getting Started](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#getting-started)  
-- [Contributions](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#contribution)  
-- [License](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#contribution)  
+- [Future Works](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#future-works)  
 
 -----
 
@@ -152,7 +151,40 @@ It utilizes **FPGA** on-board GPIOs such as LEDs, buttons and UART.
 
 ### RV32I37F
 
-Work In Progress
+- **ISA**: RISC-V RV32I v2.1  
+  (except fence, fence.tso, pause, ecall, ebreak = total 37 instructions)  
+- Modules and Signals table
+  |Module name|Acronyms|Inputs|Outputs|Signals|
+  |:---|:---:|:---|:---|:---:|
+  |**Program Control**|
+  |Program Counter|PC|next_pc, clk, reset|pc|3+1=4|  
+  |PC Controlelr|PCC|jump, branch_taken, pc, imm, jump_target|next_pc|5+1=6|
+  |PC Aligner|-|raw_next_pc|next_pc|1+1=2|
+  |**Memory Units**|
+  |Instruction Memory|IM|pc|instruction|1+1=2|
+  |Instruction Decoder|ID|instruction|opcode, funct3, funct7, rs1, rs2, rd, raw_imm|1+7=8|
+  |Register File|Reg|clk, read_reg1, read_reg2, write_reg, write_data, write_enable|read_data1, read_data2|6+2=8|
+  |Data Memory|DM|clk, write_enable, address, write_data, write_mask|read_data|5+1=6|
+  |**Controls**|
+  |Control Unit|CU|opcode, funct3|jump, branch, alu_src_A_select, alu_src_B_select, register_file_write, register_file_write_data_select, memory_read, memory_write|2+8=10|
+  |ALU Controller|-|opcode, funct3, funct7_5, imm_10|alu_op|4+1=5|
+  |**Executions**|
+  |Arithmetic Logic Unit|ALU|srcA, srcB, alu_op|alu_result, alu_zero|3+2=5|
+  |Branch Logic|-|branch, alu_zero, funct3|branch_taken|3+1=4|
+  |Byte Enable Logic|BE_Logic|memory_read, memory_write, funct3, register_file_read_data, data_memory_read_data, address|register_file_write_data, data_memory_write_data, write_mask|6+3=9|
+  |Immediate Generator|imm_gen|opcode, raw_imm|imm|2+1=3|
+  |PC plus 4|-|pc|pc_plus_4|1+1=2|
+  |**MUXs**|
+  |ALUsrcMUX_A|-|read_data1, pc, alu_src_A_select|srcA|  
+  |ALUsrcMUX_B|-|read_data2, imm, alu_src_B_select|srcB|
+  |Reg_WD_MUX|-|byte_enable_logic_register_write_data, alu_result, imm, pc_plus_4|register_file_write_data|
+
+- Total 14 Modules, 74 Signals.
+
+⚠️ Note: Misaligned address access is handled as zero-ing the low 2-bits from address. 
+
+For each module's logic description, go to `docs/modules_and_signals/` for more imformation.
+**Each module has its own logic behavior documentations which includes I/O signals, Logics and Note.**
 
 ### RV32I43F
 
@@ -189,6 +221,10 @@ Table below is FPGA implementation results.
 
 <sup>* **Dhrystone** benchmark and **Trap Handler** hard coded using readmemh. Resource varies depends on the program in memories. This will soon be standardized.</sup>  
 <sup>** All memories are inffered as **LUT-based distributed RAM**.</sup>  
+
+Various performance benchmark (such as coremark) will be added soon.  
+We assume that the processor can reach higher clock speed and performance, but at the moment we couldn't keep the development in touch due to personal schedule (military duty, school admission).  
+This will be worked soon also.
 
 ---
 
@@ -263,12 +299,11 @@ We'll going to work about easy C program import on SoC soon.
 
 ---
 
-## Contribution
+## Future Works
 
-asdfasdf  
-
----
-
-## Lisence
-
-Copyleft.
+1. issue resolvations
+2. Single-Cycle core FPGA implementation and Evaluation
+3. Additional benchmarks (Coremark, RISC-V ISA tests)
+4. Standardized FPGA synthesis resource measurement
+5. Optimize critical paths and reach higher clock speed and performance
+6. Easy method for running C program on SoC
