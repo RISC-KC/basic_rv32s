@@ -2,7 +2,7 @@
 
 <img width="900" height="342" alt="basic_rv32s_logo" src="https://github.com/user-attachments/assets/e339df67-0331-42f9-a235-73147ff81225" />
 
-basic_RV32s is a **framework for learning Processor design with RISC-V** ISA (Instruction Set Architecture).  
+basic_RV32s is a **framework for learning Processor design with RISC-V RV32I** ISA (Instruction Set Architecture).  
 It provides step-by-step guideline for designing processor **from single-cycle processor to 5 Stage Pipelined with Exception Handling**.  
 
 ## Introduction
@@ -78,12 +78,17 @@ References that helped.
 
 ### modules/
 
-clean RTL source code of actual synthesized core.
+Clean RTL source code of actual synthesized core.
 
 ### testbenches/
 
-testbench RTL code of each module ( top module, module instances )  
+Testbench RTL code of each module ( top module, module instances )  
 result with `.vvp` and waveform `.vcd` files included.
+
+### fpga/
+
+Vivado project files for FPGA synthesis and implementation.  
+Contains such as `.xpr` `.xdc` files to import the whole project easily.
 
 ---
 
@@ -192,19 +197,16 @@ Table below is FPGA implementation results.
 ```git
 $ git clone https://github.com/RISC-KC/basic_rv32s.git
 ```
-Our repository provides multiple core designs.  
-We've made **all module designs to be compatible to each architecture**, but this lowers the FPGA performance including area.  
-So we suggest to get **releases / packages** for better FPGA experience.  
+Since we 
 
 ### 💾 Releases
+
+Our repository provides multiple core designs.  
+We've made **all module designs to be compatible to each architecture**, but this lowers the FPGA performance including area.  
+So we suggest to get **attatched `.zip` file in releases** for better FPGA experience.  
 Each release provide clean RTL source codes for synthesis.  
 There are 4 release types for each architecture. (37F, 43F, 46F, 46F_5SP)  
 
-
-### 📦 Packages
-Development Environment including Vivado Project files are provided in each Package.  
-
-Work In Progress
 
 ---
 
