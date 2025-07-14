@@ -10,8 +10,8 @@ It provides step-by-step guideline for designing processor **from single-cycle p
 KHWL
 > I've always wondered how to make CPU and I wanted to make my own.  
 > Although it was a far dream for me, I've gave it a try when I was serving the Korean Military duty. And made the result pretty legitimatley.  
-<img width="6984" height="4964" alt="250711 RV32I46F_5SP_Final" src="https://github.com/user-attachments/assets/e6b9f3b9-f1b1-4859-8d48-7258575c4002"/>
-<sub> Signal-Level Block Diagram of RV32I46F_5SP Core </sub>
+<img width="6984" height="4968" alt="250714 RV32I46F_5SP_Final_R9 (1)" src="https://github.com/user-attachments/assets/6da12c7b-438f-422a-aab7-6d54af781a91" />
+<sup> Signal-Level Block Diagram of RV32I46F_5SP Core </sup>
 <br>
 <br>
 While designing the Architecture of processor, I've felt the gap between the theories and actual implementations at certain point and it took a long way to discover the problem and resolve it.  
@@ -260,7 +260,7 @@ For each module's logic description, go to `docs/modules_and_signals/` for more 
 - Total 16 Modules, 102 Signals.  
  
  <details>
- <summary>Modules and Signals table</summary>
+ <summary>Click to view Modules and Signals table</summary>
 
 
 - Modules and Signals table
@@ -309,10 +309,10 @@ For each module's logic description, go to `docs/modules_and_signals/` for more 
 - **ISA**: RISC-V RV32I v2.1  + **Zicsr** v2.0 + mret*  
   (except fence, fence.tso, pause, = total 46 instructions)  
   <sup>*privileged architecture version 20240411, 3.3.2. Trap-Return Instructions, page 51 </sup>  
-- Total n Modules, m Signals.  
+- Total 23 Modules, 338 Signals.  
  
  <details>
- <summary>Modules and Signals table</summary>
+ <summary>Click to view Modules and Signals table</summary>
 
 
 - Modules and Signals table
@@ -322,7 +322,7 @@ For each module's logic description, go to `docs/modules_and_signals/` for more 
   |Program Counter|PC|clk, reset, next_pc|pc|3+1=4|  
   |**PC Controller**|PCC|jump, branch_estimation, branch_prediction_miss, trapped, pc, jump_target, branch_target, branch_target_actual, trap_target, pc_stall|next_pc|10+1=11|
   |**Exception Detector**|ED|clk, reset, **ID_opcode, EX_opcode, MEM_opcode, ID_funct3, EX_funct3, MEM_funct3**, alu_result, **MEM_alu_result**, raw_imm, **EX_raw_imm**, csr_write_enable, branch_target_lsbs, **branch_estimation**|trapped, trap_status|15+2=17|
-  |Trap Controller|TC|clk, reset, pc, trap_status, csr_read_data|trap_target, debug_mode, csr_write_enable, csr_trap_address, csr_trap_write_data, trap_done|5+6=11|
+  |**Trap Controller**|TC|clk, reset, **ID_pc, EX_pc, MEM_pc, WB_pc**, trap_status, csr_read_data|trap_target, debug_mode, csr_write_enable, csr_trap_address, csr_trap_write_data, trap_done, **misaligned_instruction_flush, misaligned_memory_flush, pth_done_flush, standby_mode**|8+10=18|
   |**Memory Units**|
   |Instruction Memory|IM|pc|im_instruction|1+1=2|
   |Instruction Decoder|ID|instruction|opcode, funct3, funct7, rs1, rs2, rd, raw_imm|1+7=8|
@@ -477,3 +477,13 @@ We'll going to work about easy C program import on SoC soon.
 4. Standardized FPGA synthesis resource measurement
 5. Optimize critical paths and reach higher clock speed and performance
 6. Easy method for running C program on SoC
+
+---
+
+## Acknowledgment
+
+Hartfelt thanks to [@ChoiCube84](https://github.com/ChoiCube84) for being an incredible project companion throughout this processor design journey. Even in the challenging environment of military service, your consistent support and dedication made this project possible. 
+
+**Contributors:**
+- [@T410N](https://github.com/t410n) (KHWL) - Project Lead & Architecture Design
+- [@ChoiCube84](https://github.com/ChoiCube84) - Development & Project support
