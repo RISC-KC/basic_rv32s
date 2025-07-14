@@ -5284,7 +5284,7 @@ branch_prediction_miss 신호에 따라 0일경우 계속 IF단계의 pc+imm값�
 때문에 기존 스칼라구조 (Single cycle 구조) 46F 아키텍처에 있던 Branch Logic의 branch_target 로직을 없애야한다. 
 아니 그래도 값들이 이상하네 왜 register file에서 값이 제대로 안나오지
 
-#[2025.05.26.]
+# [2025.05.26.]
 작성일은 2025.05.29. 그 며칠동안, 인생을 걸고 혼신을 다해 달려나가느라 그 어떠한 기록도 남기지 못했다.
 지금 작성하는 내용은 그 때의 회상기록이다. 
 더티파일을 만들어서 그걸 디버깅하는 기록. 실제로 본 RISC-KC 에서 더티파일의 완성을 기록화하기 위해 하나씩 디버깅하면서 하는데, 더티파일에선 없었던 상황이 생긴다거나, 있던 상황이 없다거나 하는 경우가 생겼다.
@@ -5321,7 +5321,7 @@ branch_estimation과 branch_prediction_miss로 신호를 분리해서, 실제 ta
 188611ps 부분에서, WB에서 retire한 명령어가 rd 주소에 쓴 값을 후후행 명령어가 이미 EX단계로 와서 해당 갱신된 rd값을 들고있지 않는 문제가 발생한다. 포워딩유닛에서 WB단계의 포워딩도 구현해야한다.
 오늘은 여기까지.
 
-#[2025.05.27.]
+# [2025.05.27.]
 EX_jump에서 misaligned 시 일단 jump라서 NOP flush 되는데, 이것 때문에 jump에서 misaligned 되었다는 문맥이 없어져
 Trap PTH가 1단계만 진행되고 그냥 다음 ADDI x0 x0 0 으로 넘어가서 TH가 안되는 상황 발생했다. 
 -> trapped 신호를 Hazard Unit에 연결, trapped 가 올라가면 파이프라인 레지스터 ID_EX_Register, EX_MEM_Register를 stall함. ID_EX_Register stall은 PTH가 될 때 까지 해당 문맥을 유지하기 위함이며, EX_MEM_Register는 비정상 명령어의 선행 명령어는 끝까지 수행이 보장되어야하므로 stall 함. 
@@ -5332,14 +5332,14 @@ PC는 클럭신호에 따라 주솟값을 그 이전에 지장된 값을 출력�
 때문에 이 EX단계의 주소계산을 Branch Logic으로 옮겼고, PCC에서 brnach_estimation_target과 branch_target_actual 두가지 신호로 동시에 받고있어 조건문을 통해 prediction 이 맞는지 틀린지를 판단 후 PC에게 next_pc를 해당 주소로 출력할 수 있도록 했다.
 근데 왜 branch_prediction_miss가 한번 1로 되면 계속 1이지? RTL 코드에서 조합회로 조건문 미충족시 기본값을 0으로 해두는 걸 적용안했나부다. 이걸 해결하면 끝인 듯.
 
-#[2025.05.28.]
+# [2025.05.28.]
 완성이다. 00:54.
 KAIST IDEC에서 교육을 받기 위해 오늘 출발한다.
 Xlinix FPGA 구현을 위한 교육이다. 3일 과정인데, 이제 더티파일에 작업하면서 기록 못한 변경사항들을 하나하나 commit, PR을 넣고
 5월 안에 적어도 '완성'의 기록이 남는 것이 좋으니, 만약 시간이 없다고 판단되면 각 모듈의 최종파일을 한번에 commit 하도록 하겠다.
 물론 각 변경사항은 해당 PR에 기록하겠다. 
 
-#[2025.05.31.]
+# [2025.05.31.]
 그 동안 교육을 받았고, FPGA 관련해서 어떻게 구현하면 되는지 Vivado의 FPGA 합성 워크플로우를 익히게 되었다.
 디버깅 및 Timing Constraints 설정들 등등..
 RTL 코드 단에서 기존 iverilog로 작성하는 것 보다 Vivado에서 Simulation이랑 Synthesis를 돌리는게 훨씬 더 많은 정보들과 오류들을 색출해낸다.
@@ -5465,3 +5465,1025 @@ Trap이 발생되면 파이프라인들을 stall하지만 WB단계와 Trap Contr
 마찬가지로 CSR에서는 Trap Controller의 Write address 포트와 WB단계의 write address 포트로 이원화해야하는건가? 
 그리고 Trap Controller에서 수행하는 PTH를 위한 CSR 접근인지 아닌지를 알아야 하니까 Trap Controller 모듈에서 나오는 trap_done 신호를 CSR File에 입력신호로 추가하고? 맞나...??
 아니다. 애초에 WB단계 CSR명령어는 이미 파이프라인되어있는 명령어라 트랩 검출 이전, (애초에 로직이 트랩시 기존 명령어들을 모두 마치고 handling을 수행한다.)이 수행되고 그 이후 Trap이 해당 맥락에 관여하니 그럴 일은 없다. CSR의 주소 입력 신호를 읽기 주소 입력과 쓰기 주소 입력으로 각각 이원화하는 것으로 해결했다. 
+
+# [2025.06.04.]
+## FPGA 구현 개발에 대한 기록
+
+요 며칠 새 기록을 남기는 걸 깜빡했다. 정확히는 이렇다 할 성과가 없었기 때문인데, 어느정도 Vivado에 익숙해지기 위한 인고의 시간들이라 생각한다.
+2025.06.01부터 기록을 남겨 보겠다. 
+
+### [2025.06.01]
+우선, 현재 탑 모듈 자체를 바로 import해서 구현을 시작했었다. Elaboration을 하면서 Timing Violation이 떴고, 여기서부터 삽질이 시작됐다.
+FPGA 교육을 들으면서 어느정도 이번 RV32I46F_5SP의 FPGA 구현 시도를 해봤는데, Timing Constraints를 위한 Wizard를 돌리고 거기서 Recommend된 옵션들을 모두 넣으니까 아예 합성하는데 반 나절이 걸리는 것이다.
+이게 좀 이상해서 교수님께 여쭤봤고, 교수님께서 개발하신 RV32I기반 5~6단계 파이프라인 프로세서도 해봤자 5분 내외로 합성이 된다고 답변을 받았다. 역시 Timing Constraints에서 문제가 좀 있는 것 같다.
+그래서 Timing Constraints를 아예 없애고 다시 합성을 하여 Timing Analysis를 하여 얼마정도의 Violation이 나는지 확인했다. 
+결과는 30ns 언저리. 현재 FPGA 보드에서는 100MHz를 목표로 하고 있기에 약 20ns가 넘는 violation이다. 여기서부터 첫 삽질이 시작된다.
+해당 경로를 확인하니, C->CE 경로 즉 클록에서 클록 활성화를 위해 경로가 설정된 것인데, 
+(FPGA에서는 RTL 로직을 배선할 때 그들만의 규칙을 갖고 합성한다. 그리고 그 결과에서 Critical Path; 가장 긴 루트가 그 정도 레이턴시가 나오게 된 것.)
+그 경로가 내가 만든 RV32I46F_5SP에서 전혀 쓰이지 않는 연관성을 지닌 모듈들 끼리의 신호였다. id_ex_register에서 if_id_register로 신호를 보낸다던가, 
+Trap Controller의 내부 FSM을 위한 reg에서 다른 모듈로 클록이 간다든가.. 알 수 없는 것들 투성이라, 이걸 어떻게 해결하면 좋은지에 대해서 찾아보기 시작했고, 의도치 않은 배선 즉 실제로는 쓰이지 않는 경로의 경우 
+Implementation 단계에서 최적화 작업 시 없어지니 해당 경로를 set_false_path 라는 XDC Timing Constraints를 설정해 해당 경로에 대한 Timing Violation을 Report에서 무시할 수 있다고 한다.
+이를 XDC 파일에 문법을 적어서 저장하고 다시 합성을 하는데, 해당 설정이 적용이 안되길래 실제 변화를 보지도 못하고 그대로 하루를 보냈다. 물론 그 마지막 몇 분 사이에 적용법을 알게되었지만.
+XDC파일을 직접 수정하는게 아니라(사실 직접 수정하는게 맞는 것 같긴 한데 내가 뭔가를 놓친 것인지 적용이 되질 않는다.) Edit Timing Constraints에서 조건을 추가하는 방식으로 적용할 수 있다.
+2025.06.01.에서 언급한 의도치 않은 경로들 사이의 C->CE 경로들이 대략 수 백개 떴던 것들을 모두 set_false_path 를 통해서 모두 배제하여 Timing Violation을 모두 없앨 수 있었다. 
+수백개의 신호를 일일히 추가할 수는 없는 일인지라, id_ex_register/*/*/* 같은 문법을 해당 경로 자체를 배재하는 식으로 했었다. 
+하지만 여기서 발생하는 의문. 혹여나 내가 실제로 쓰이는 경로들을 제외해버렸다면 실제 합성에서도 문제가 야기될 수 있고 Timing 자체가 안맞는 걸 무시한 것일테니 제대로 동작도 안될 것이라는 생각.
+사실 여기까지 작업하는데도 꽤나 시간이 걸렸던 터라, Implementation까지 한 뒤 뒤늦게 Simulation의 Post-Implementation Timing Simulation을 구동해봤다.
+아직 사용한지 얼마 되질 않아서 까맣게 잊고 있었다. 돌려보니 영 알 수가 없는 파형들, 그리고 없어진 꽤나 많은 모듈들, 직감적으로 무엇인가 잘못된 것임을 느꼈다. 
+
+### [2025.06.02]
+당직. KAIST 입학지원서 및 자기소개서, 입증자료 양식을 인쇄하여 어떤 것들을 채울 것인지를 대략적으로 정했다.
+그리고 당직 도중에 사지방을 잠시 사용할 수 있게 되어서 틈새 작업을 좀 했다.
+아예 Timing Constraints를 모두 지우고, 현재 RTL 코드의 Vivado 시뮬레이션 자체가 의도된 값이 잘 나오는지를 확인했다.
+결과는 참담. X값은 많지 않았지만 (대부분 Register File의 초기화 부재 문제. ) Z값이 꽤나 많이 뜬 것이었다. 왜일까.
+iverilog말고 Vivado로 처음부터 RTL을 할 걸 그랬다는 푸념을 조금 늘어놓았다. 
+Vivado에서 옆의 Flow 창에 있는 순서대로 진행을 하는 것이 어느정도 설계 워크플로우를 표준적으로 제시하는 느낌이라 각 단계별로 오류들과 경고들을 완벽히 파악하고 개선하고 넘어가기로 했다.
+그래서 우선, 다시 첫 단계로 돌아와서 Behavior Simulation을 수행하여 파형에서 Z와 X값들이 뜨는 것들을 보고 이 값들을 우선 모두 없애는 것부터 시작하기로 했다.
+어느정도 Z값을 없애다가.. 나왔다.
+
+### [2025.06.03]
+X와 Z값들을 모두 없앴다. 기존 탑 모듈에서 내 Verilog HDL을 다루는 실력 미숙으로 모듈에서 파생한 신호를 별도로 탑 모듈에서 추가로 중복 선언을 한 탑모듈 변수들이 Z값들을 토해낸 것이다.
+이를 모두 없앴고, 레지스터를 초기화하는 로직을 포함하여 파형 내 X값들도 모두 없애는데 성공했다.
+이 결과로, Timing이 꽤나 단축되었다. 12ns 대충 2ns내외의 violation. 기존에 35MHz 정도(30ns violation)에 비해 꽤나 향상되었다.
+그리고 앞서 있던 원본 RTL코드에 있던 이상한 path의 C -> CE경로가 많이 사라졌다. 하지만 그래도 완전히 없어진 것은 아니다. 
+그리고 이건 Synthesis단계의 내용일 뿐이라 Implementation에서는 또 어떻게 달라질지 모른다.
+목표가 10ns인데 12ns 내외 즉 1.x 대의 violation이면 RTL을 어떻게 최적화하면 될 것 같아서 여러모로 분석해봤다.
+일단 Vivado에서 Synthesis Stratage도 HighPerf로 바꾸고 여러가지 해봤는데, 설정으로 줄일 수 있는 Timing 여유는 폭이 그렇게 크진 않은 것 같다. 
+지금부터는 RTL 코드를 만져야할 때이다.
+. . .
+조합회로의 연속으로 이루어지는 로직 때문에 Combinational Loop이 형성되었고 이 때문에 Timing 분석이 정확하지 않을 수 있다는 경고를 확인했다.
+여러번 거친 조사 끝에, 이는 너무 깊은 수준의 조합 로직을 가진 경우 Vivado 자체에서 뭐 합성 어쩌구..., fanout에 따라 reg가 복제되어 안좋은게 생기고.,.
+내부의 출력을 레지스터화 해서 조합논리회로끼리의 구성을 플립플롭으로 끊는 것인데, 이러면 사실상 해당 모듈이 동기식으로 변하게 된다. 
+그래서 파이프라이닝에서 한 사이클 기다려야하는 대기 시간이 생기는데 이를 위해서 또 파이프라인 제어 신호와 원하는 값의 동작이 끝났으니 해당 대기를 풀어도 된다는 식별신호 로직을 만들어야한다.
+과거 RV32I50F 구성할 때나 썼던 Read Done, Write Done이 되살아날 때 인 것 같다.
+IDEC 2024때 RISC-V CPU 설계 및 FPGA 검증 강의를 들으면서 적은 강의 노트를 다시 읽는데, 지금 와서 보니까 뼈가 되는 말들이 적혀있다.
+FPGA에서는 동기식 읽기만 가능하다는 제약이 있으므로, 비동기식 메모리에 플립플롭을 박아 레지스터화를 하여 클럭에 맞게끔 동작해야한다.
+그리고 이러한 변경사항 때문에, 타이밍이 다 틀어진다. 이걸 당시에 싱글사이클 프로세서 구현을 위해 PLL 기능을 사용해 파훼했다. 
+그리고 이걸 파이프라인 구조로 오면, 계속 타이밍이 다 밀리는데 이걸 학부생 수준에서는 해결 불가..라고?
+하. 보여주지. 이미 한번 넘어온 산이다.
+
+### [2025.06.04.] 그렇게 다시 오늘로 돌아온다. 
+오전에는 아예 이렇게 된거, 모든 메모리를 동기식으로 바꾸자.. 라는 생각을 했다. 하지만 지금 이 개발 로그들을 다 쓴 지금
+'굳이?' 싶다는 생각이 먼저 들었다. 정말로 FPGA에서 비동기식 읽기가 불가능한가?
+그럼 실제 칩을 생산하는 경우엔 모든 메모리를 동기식으로 작동시킨다는 뜻이 되는데, CLK 라이징 엣지에서만 값을 읽고 처리하는 것은 큰 비효율을 야기시키며
+이러면 조합논리회로가 있을 이유도 적잖이 퇴색된다. 애초에 캐시가 조합논리회로로서 동작하는 SRAM 아니었나? (POWER에서는 L3를 DRAM으로 처리하긴 하지만. )
+FPGA에서 비동기식 읽기를 지원못할 이유가 전혀 없다고 생각된다. 용도 자체가 프로세서의 검증이랑 실물화로서 사용되는 이상 이 필수불가결한 요소가 안된다는 건 상상이 안되니까.
+물론 그 내부의 물성을 알아야하긴 하겠지만은.
+LUT RAM이 아마 비동기식 읽기, 동기식 쓰기.
+BRAM이 동기식으로 모두 처리하는 것이라 아마 당시 강의에서 쓰인 칩에서는 그렇게 말한 게 아닐까 싶긴한데..
+이미 너무 많은 뭔가를 하면서 파일의 투명성이 손실된 것 같은 기분이 든다. 아예 처음부터 FPGA 프로젝트를 다시 생성해야겠다.
+알아낸 것은 많아도, 복잡한 변경사항은 없었기 때문에 (재선언 된 쓰이지 않는 탑 모듈 신호 선언 삭제, 레지스터 파일 초기화로직 추가) 다시 처음부터 하나하나 해봐야겠다.
+Timing Constraints도 기본 클럭 생성말곤 한게 없으니까.
+
+한 편으로는, 싱글사이클 프로세서에 IO를 모두 구현하고 파이프라이닝으로 넘어갈까 싶은데, 아니다. 이건 소요를 증대시킬 뿐이다. 
+처음부터 시작해보자.
+
+Hazard Unit의 clk, reset 신호 없앴고
+파이프라인 레지스터들에 raw_imm이 [11:0] 으로 오선언 되어있던 것 고치면서 z 신호들 잡았고
+탑 모듈에서 재선언한 안쓰이는 신호들 없애면서 불필요한 z값들 없앴다.
+파형 올 그린.
+
+Linter를 돌려야하지만 시간이 거의 끝났으므로 여기까지의 Timing Analysis를 해본다.
+11.434ns. 어림잡아 여유 12ns에 오고, 얼추 80MHz는 나오는 것 같다. 오늘은 여기까지.
+내일은 이 코드들을 commit하고, 그걸 기반으로 linter에서 지적되는 모든 Warning들을 파악하고 Synthesis로 넘어가서 디버깅을 이어하겠다.
+
+# [2025.06.05. ]
+아침부터 전투휴무 오전 개발 시작! (09:26)
+확인해보니 저번에 이미 feat/pipeline_registers 브랜치에서 raw_imm값 변경을 해 두었기에 별도로 현재 시점에서 commit 할 변경사항은 없는 것 같다. 
+Vivado의 Linter를 돌려본다..!! [First_Linter_Result](Devlog_images/FirstLinterResult.png)
+위의 ASSIGN-6 문제는 메세지에 언급된 인덱스의 값을 실제로 쓰지 않는다 (읽지 않는다)는 뜻 인 것 같은데, 모두 의도된 바가 맞다. 그러니 수정 없이 넘어가도 좋다.
+다음 ASSIGN-7. **Branch Predictor** 모듈에 있는 `branch_target` 신호와 **Trap Controller**에 있는 `debug_mode` 신호가 multi-driven 되었다는 것 같은데, 코드를 한번 봐야겠다.
+아하. 아무래도 재선언을 하지 않은 것으로 보아 이 문제는 아닌 것 같고. 사진을 보면 reset시 `debug_mode`를 0으로 초기화하려고 그걸 순차논리에 포함시켰고
+일반적으로 해당 값은 조합논리에서 다루는데 이러면 두 로직에서 값을 할당하게끔 되어 문제가 발생하는 것을 아마 경고한 것 같다.
+![multi-driven_debug_mode](Devlog_images/TrapControllermultidriven.png)
+
+debug_mode_enable 신호로 역할을 쪼개어 해결했다.
+Branch_predictor에 있는 `branch_target` 신호도 multi-driven이라는데, 뭐가 문제일까.
+아하. ![branch_target_multi-drvien](Devlog_images/branch_target_multi-driven.png) 
+reset에서 순차식으로 0을 초기화하는데, 실제 값은 조합논리에서 생성되어 문제인 것 같다.
+이건 조합논리에서 기본값을 0으로 두어도 조건에 따른 주솟값을 계산하며 해당 조건은 순간 신호가 아니니 상관없을 것 같다.
+적용 완료. 해결했다. 
+
+아니 왜 더 증가했지 타이밍이
+RTL이 정확해져서 더 밑천이 드러난 것 뿐인가.
+일단 Synthesis option에서 18ns까지 늘어난걸 Flow_PerfOptimized_high 로 바꿔서 15ns 정도로 줄였다.
+14ns는 flatten을 full로 해야되는데, 이러면 디버깅이 난해해지니 rebuilt를 유지했다. 여기서부터 다시 디버깅이 시작된다...
+
+으어. 검토를 하다보니 BE_Logic 모듈에 있던 misaligned memory address exception 신호를 발견하였고
+이에 대한 Trap Handling을 구현하지 않고 누락했다는 것을 알게 되었다.
+부랴부랴 14시부터 만들기 시작했고, 15시 09분에 더티파일로 구현을 완성했으며, 15:49분에 최종 push 및 PR 을 마쳤다. 
+끙... 그래도 확실히 실력이 계속 늘고 있는 것 같다. 
+처음 Trap Controller 구현할 때 머리 굴리느라 진짜 힘들었던 것이 생각나는데, 이제는 그게 기본으로 아무렇지도 않게 잘 추가했다.
+로직을 잘 짜둬서그런가. 하하. 하지만 FPGA 구현은 다른문제니까..,. FPGA 프로젝트에 이걸 이식하고 다시 Timing Closure 작업을 마저해야겠다. 
+
+오키. Vivado 에서 그냥 프로젝트파일 새로 만들어서 Behavior Simulation을 다시 돌려봤다. 전부 예상값대로 잘 나온다.
+
+탑 모듈에서 Vivado를 위한 최적화를 모두 commit했고, 다시 새 프로젝트를 파서 돌리고 있다.
+Synthesis를 돌리면서, 각 Strategy별 타이밍을 확인했고, rebuilt 방식의 PerfOptimized High 설정으로 하기로 했다.
+대략 15ns의 violation.. 파이프라인의 stall신호를 if가 아니라 삼항문으로 모두 대체해서 0.1ns 의 마진을 확보했다.
+그래서 일단 느려도 동작하는게 중요한 시점이니 XDC에서 10ns가 아니라 25ns로 잡아서 40MHz에서 동작이 제대로 되긴 하는지를 확인할 것이다.
+25.5ns 로 해서 violation은 없는데, 혹시 몰라서 Critical Warning들을 확인해보니까, IO관련한 내용은 고사하고, Timing Loops를 찾았다고 한다. 뭐지이게?
+찾아봐야겠다. 
+
+일단 violation 없는 상태에서 Post Synthesis Timing Simulation을 돌렸다.
+결과는 참담. 의도하지 않았고, 알 수도 없는 신호들이 이상한 값들을 토해내고 있었고 정상적으로 프로그램이 흘러가긴 커녕, 특정 시점부턴 X값과 Z값이 도배된다.
+아,, 이걸 도대체 어떻게 해야한담..
+
+하.. 일단 파형을 디버깅 하기 이전에 오류부터 모두 다 잡아야 한다.
+정말 다른 탓을 할 요소가 없고 나서야 이 파형들을 건들여야할 것만 같은 느낌이다. 지금으로서는 이게 왜 이렇게 되는지 가늠조차 안가니까, Vivado에서 제시하는 모든 Warnings, Critical Warnings, Errors를 모두 해결해보자.
+Timing Loop 발생, Combinational Loop란다.
+리스트는 다음과 같다.
+ALU, Exception Detector, CSR File, Trap Controller, RV32I46F_5SP 탑모듈.
+Timing Analysis에서 나온 목록에서는 Forward Unit과 IF ID Register, Branch Predictor가 포함된다.
+이걸 어떻게 해결해야할까. 
+이 것들은 아예 조합식으로 웬만해서 작동하는데, 전부 동기식으로 재구성해야하나?
+그런데 그러면., 아예 한 사이클씩 밀려서 파형이.,하아., RTL 코드부터 다시 가야한다....
+심지어 이렇게 해도 될지 안될지를 모른다......
+그래도 어떡하겠는가.. 이거 말곤 할 수 있는 것이 지금 없는데..
+
+이걸 해결하고 나서, fanout이 227이나 되는 그걸 해결해보고... 믕.,,.
+하하. FF를 넣으면서 동기식으로 만들어야하네.
+37F부터 이 오류가 없으리란 법이 없으니 각 아키텍처별로 검토를 해서 하나하나 단계별로 수정해야겠다.
+
+37F 근본 구조에서 비롯된게, ALU.
+43F는 CSR_File
+46F는 Trap Controler, Forward Unit, 
+46F5SP는 Branch Predictor, IF ID Register, Forward Unit.
+하아., ALU의 파이프라이닝? 이건 좀 생각도 못하겠는데 애초에 조합회로가 아니던가? 그냥 출력단을 레지스터화 하는 것으로 족한건가?
+
+# [2025.06.06.]
+의도치 않게 오전을 날려버렸다. 너무 피곤했던 것 같다.
+
+오후. 빠르게 점심을 먹고 CSR의 레지스터화부터 시작했다. (12:43)
+가볍게 CSR의 출력단에 csr_data_out이라는 걸로 해두고 기존 csr_read_data는 내부 레지스터로 두었다.
+그에 맞게 탑모듈도 수정했다.
+남은건 Valid 신호인데, CSR에 csr_ready 신호를 추가했고, Control Unit에서 이를 받아 PC_Stall을 하게끔 함과 동시에 
+Hazard Unit에도 csr_ready 신호를 줘서 csr_ready가 아니라면 모든 파이프라인 레지스터를 stall하도록 했다.
+
+CSR을 건들면서, 읽기 전용 CSR에 쓰기를 시도하면 그냥 단순히 NOP가 되는 것이 아니라 Illegal Instruction exception을 내어야하는 것을 누락했다는 것을 발견해서 추가 로직을 구현했다.
+이제 읽기 전용 CSR에 쓰기 시도가 들어가면 (CSRRS, CSRRC x0은 제외. 이는 해당 CSR에 변경을 가하지 않으므로) Illegal Instruction Exception을 낸다.
+CSR File에서 이를 감지해서 illegal csr 신호를 Exception Detector에 보내고, Exception Detector에서 trap_status를 111 : Illegal Instruction으로 하여 Trap Controller에 전달한다.
+Trap Controller는 이를 인식해 mepc를 WB_PC값으로 쓰고 나머지 PTH를 진행해서 Trap Handler로 분기한다. 
+Illegal Instruction 즉 잘못된 CSR에 대한 쓰기는 WB단계에서 알게되므로 (csr_write_address 는 trap이 아니고서야 WB단계의 주소를 가져온다.) WB_pc를 mepc에 저장하는 것으로 했다. 
+Illegal Instruction 을 요하는 exception 상황이 이 뿐만 아니라 여러가지이고 그걸 탐지하는 단계도 달라질 수 있을 것 같은데, 이건 추후 설계에서 따로 조건문을 추가하는 방향으로 수정해야겠다.
+
+동기식 CSR로 바꾸면서 PTH에 READ_MEPC 단계를 추가했다. 더 이상 MRET이 한 사이클 안에 mepc 주소로 분기할 수 없게되어 두 번째 사이클 즉 mepc의 값이 나올 때까지 동일한 주소를 넣으며 기다리는 것이다. debug mode는 바로 풀게 보존했고, trap_done은 READ_MEPC에서 1로 다시 올라가도록 했다. 
+
+파형을 검증하다가 웬만큼 잘 진행이 되도록 했다. (17:29)
+다만 Illegal Instruction Exception이 예상과는 다르게 움직인 구간이 두 곳 있어서 이를 디버깅하는게 남아있다.
+본 CSR File 레지스터화의 본 목적은 Combinational Loop의 해결.
+따라서 이게 해결되었는지를 우선 보기 위해 위 문제를 잠시 미루고 Vivado로 넘어갔다. 
+Simulation을 하고 Z값이 조금 보이긴 했지만 일단 EBREAK 디버그 최종 명령어 ABADBABE까지 값이 잘 잡혀 바로 Synthesis로 넘어갔다.
+결과는 오우. Timing Loop이 6개 정도 보고되었던 것으로 기억하는데, 그게 3개로 줄어들었고 타이밍이 (!!) 처음엔 잘못본건가 했는데, WNS가 37.565ns로 잡혀있었다. 
+-37.565ns가 아니라. 저번에 PSTS를 위해서 클럭을 그냥 50ns로 포기하고 했었는데, 이젠 Total Delay가 12.108ns이다. 대략 15ns, 즉 75MHz 부근까지 줄일 수 있는 것..!!!
+다행이다. Combinational Loop 문제를 해결해도 타이밍이 개판일 것 같아 불안했는데, 간만에 동기를 추가로 얻는 것 같다.
+
+저녁점호
+
+이제 Vivado Behavior Simulation을 기반으로 디버깅을 수행할 차례다.
+봐야할 것은 ALU result, write_reg, write_data 그리고 파이프라인별 PC, Instruction이다.
+이걸 해결하고, 나머지 Combinational Loop 경로를 조정해야겠다. 
+
+아 이런. Misaligned에 오타가 있어서 로직이 제대로 작동 안했던 것 같다. 고치고 다시 해봐야겠다.
+
+아 맞다. 이번에 CSR File을 레지스터화 하면서 기존 46F Architecture에서 누락한 부분을 발견했었다.
+Misaligned Instruction Address Access 즉 JAL, JALR 명령어에서 잘못된 주소로 jump시도를 했을 때, PTH를 수행하고 Trap Handler로 분기하는 것 까진 잘 했는데,
+JAL의 수행역할 중 나머지 R[rd] <= PC + 4 를 수행하지 못하게 무효화하는 것을 깜빡했다.
+이 점을 고쳐서 이젠 해당 명령어가 flush되며 실제 Register에 해당 값을 저장하는 것을 수행하지 않고 단순 NOP가 수행되며 당연하게도 Trap Handler로 분기한다.
+그리고 Trap Handler에 이제 Illegal Instruction Exception 지원이 추가되었으니 mcause 값을 비교하기 위해서 x8에 2를 저장하는 명령어를 추가했다. (Instruction Memory)
+
+파형 분석 중. 일단 write_reg와 write_data를 비교하고 있다.
+기존 46F 아키텍처에서는 Misaligned에서는 x2에 255를 더했지만 중복이슈로 rd를 x30으로 옮겼다.
+때문에 원래 02에 bc00_00ff가 저장되어야하는데 30인 1e에 저장된다.
+
+음. 765ns부근에 있는 mvendorid에 대한 쓰기가 illegal instruction이 떠야하는데, 뜨지 않고
+이번 레지스터화로 인한 한 사이클 밀린 것에 대한 타이밍 맞추기로 인해 의도한 동작이 되지 않는 것 같다. 이번 이슈 이후 모든 파형은 예상값대로 움직임을 확인했다.
+이것만 이제.. 내일 다시 분석해서 해결하면 될 듯 하다. 적어도 이번 주 내에는 FPGA Timing Analysis 끝내길 바란다.
+오늘은 여기까지! 
+
+# [2025.06.07.]
+Illegal Instruction Exception 지원을 위해 여러가지 시도해보았으나..
+처음에는 Illegal Instruction Exception이 한 사이클 늦게 뜨는 문제가 발생.
+그걸 해결했더니 이젠 mtvec 값을 제대로 읽어오지 못하는 문제 발생.
+그걸 해결하려고 코드를 짰더니 iverilog에서는 아예 시뮬레이션이 Freeze되고, Vivado에서는 파형이 보이지만 의도하지 않은 동작들을 보였다.
+CSR File에서 Exception을 탐지하고 그걸 Detector로 보내 trap status 코드를 Trap Controller에게 주도록 해봤지만 앞서 말한 Freeze문제가 났었다.
+거기에 WB단계에서 알게 되는 이 Exception이 만약 그 전에 또 다른 CSR 접근 관련 이슈가 터지게 되면 더 이상 로직을 추적하기가 어려워지는 문제가 발생한다.
+때문에 Exception Detection이 하나의 일관된 파이프라인 단계에서 이뤄지는 것이 좋을 것 이라는 결론에 도달했고, EX단계에 가야하는 분기 예외 이외에 다른 것들은 ID단계에서 처리한다.
+그래서 아예 Exception Detector에 rs1값이랑 csr_write_enable 값을 줘서 CSR 쓰기 활성화, CSRRW같이 해당 CSR에 값 변화를 무조건 요청하고 거기에 유효한 쓰기 주솟값이 아닐 경우, Exception을 발생시키도록 했다.
+하지만 이 것도 마찬가지로 iverilog 시뮬레이션에서 Freeze를 일으켰고 마찬가지로 Vivado에서는 잘 나왔으나 이번에는 의도치 않은 주솟값에 write enable 신호가 같이 들어가서 엄한 주소를 mepc로 저장해 잘못된 분기를 진행하는 현상을 발견했다. 
+
+여러모로 로직이 혼자서 추적하기 어려워지는 상황에 직면하여 현재 리팩토링과 Timing Closure 및 Behavior 오류가 발생하지 않는 이상 로직의 추가는 하지 않기로 했다.
+RISC-V에서는 엄격한 예외처리를 원칙으로 하기에 이런 동작을 지원하지 않는다면 표준에 부합하지 않을 수 있으나.. 어쩌겠는가.
+다시 한 번 강조하지만, 완벽을 추구하되 완성을 놓쳐서는 안되는 법이다. 
+때문에 Illegal Instruction 관련을 현재 개발까지 주석처리 하고 온전히 동기식 모듈로 만든데에 검증을 진행하여 다음 Combinational Loop을 해결하도록 하겠다.
+
+아. 도중에 보니까 ECALL 관련 로직을 잘못 짠 것이 보인다.
+여태 검증하면서 Instruction Memory의 예상값 주석이 잘못된 것을 확인하고 이를 수정했는데,
+이번에는 ECALL 때문에 PTH에 진입하며 EX단계와 MEM 단계에 머문 CSR 접근 명령어들이 수행을 완료하지 못하고 무효화 처리 되는 것을 확인했다.
+MRET으로 돌아간다고 한들, ECALL은 ID단계에서 파악되어 해당 ECALL mepc값의 +4된 값으로 가니 ECALL 이전에 EX와 MEM단계에 있던 두 명령어를 살릴 수 없다.
+그렇다고 다시 해당 명령어들로 돌아가면 어차피 ECALL이 다시 수행되니까 재귀문에 빠질 뿐이고.
+ECALL감지시, 두 사이클을 stall하고 진행하는 것으로 로직을 수정해야겠다.
+ECALL일 때 FSM을 대기하는걸 만들어서 WB단계의 명령어까지 살렸지만 ECALL의 PTH자체가 수행이 안되는 것을 확인했다. 이것 부터 고치는게 좋을 것 같다. (여기까지 오는데 1시간 30분 걸렸다...)
+
+생각해보자.. 왜 ECALL PTH가 안넘어갈까...
+그래. ECALL이 되면 ID단계의 ECALL을 식별할 instruction이 stall되어야하는데 flush 되면서 ECALL에 대한 문맥이 없어진다.
+이 것 때문에 아예 ED에서 Trap임을 인식하지 못하니 PTH로 진행이 되지 않는 것이다. 실제로 파형에 IF_ID_Register의 flush가 있다. 이를 없애보자.
+아까 디버깅하면서 ECALL시 IF_ID_Register Flush를 하는 로직을 Hazard Unit에 넣었었는데, 이를 삭제하지 못한 것 같다. 이를 지우니까 PTH로 잘 넘어간다. 이제 남은 명령어들을 살리는 작업을 해보자.
+
+이런. 파형에서 놓친게 있다. 다행히 빨리 발견했는데,
+ECALL PTH로 Trap Handler까지 분기하자마자 ECALL에 뒤따라오는 Misaligned 명령어가 있는데 이게 또 PTH를 일으켜 ECALL을 처리하지도 못했는데 다시 Trap Handler로 넘어간다.
+문제다. ECALL의 PTH가 끝나면, 원칙상 Trap Handler로 분기하며 그 전에 있던 모든 명령어를 없애야겠다. 
+어차피 ECALL은 다른 연산을 수행하는 것이 아니라 System Environment Call이라 Trap Handler로 넘어가는 것으로 족하다. 
+생각해보니 Trap Handler로 넘어가게 되는 모든 Exception들은 IF단계에 Trap Handler의 첫번째 주소가 와서 첫 명령어가 실행되는 순간 선행되고 있던 모든 명령어를 flush하는게 옳아보인다. 
+TH를 부른 이상 그 이후 명령어는 필요 없고, TH를 부른 그 명령어 자체도 사실 PTH 때문에 유지되어야 했던 것이지 이미 TH로 분기한 이상 필요는 없으니까. 
+(없어져야하는 게 맞다. Exception을 부른 명령어가 정상수행되어 값이 반영되는 처리가 되어서는 안된다. )
+
+Trap Controller에서 GOTO_MTVEC에 도달했을 때 마침 IF 단계의 PC값도 TH의 시작 주솟값 (mtvec)이니까 이 때 Hazard Unit으로 flush하라는 신호를 보내도록 하면 되겠다.
+pth_done_flush 신호를 추가했고, 역할은 같지만 기존 misaligned_flush가 READ_MTVEC때 1로 올랐던 것과 달리 GO_MTVEC으로 옮기니 문제가 해결되었다. 
+근데 이건 놓쳤었던 29번째 잘못된 JAL명령어의 Trap Handler로 분기하지 않는 버그를 잡아내면서 확인했고, 여전히 ECALL은 수행이 의도와는 조금 다르다. 
+파형 분석중..왜 PTH를 두번 수행하지?
+
+후... 1시간 30분 여러가지 방법을 시도해보다가 (csr_access를 따로 뺀다던가... 등등)
+다시 롤백했다. 원점.. 다시 시작해보자..
+
+아예 이번 기회에 심층 검증을 하는 것 같다.
+기존 46F5SP, 46F, 43F에서 검증을 너무 대충했나...
+데이터메모리의 주소 입력이 alu_result의 11:2로 되어있는데, 아마 ChoiCube84가 어차피 하위 2비트 미정렬 방지용으로 컷 한 것 같은데, 이러면 실제로는 Data Memory에서 의도된 alu result 주소값에 2비트 쉬프팅된 값으로 주소가 잡힌다. 파형보면서 Instruction Memory TestBench 에 적힌 의도값이랑 다르길래 혹시나 해서 9:0으로 다시 바꿔보니 맞다.
+
+이런. SH Misaligned Memory도 PTH와 TH로 정상분기되지만 해당 문제의 명령어의 처리를 NOP하진 못한다. 이 것도 해결해야한다...
+이건 추가 기능도 아니고 원래 잘 되어야 했던 부분을 하는건데.. 하아.,.... 또 다른 Combinational Loop은 도대체 언제 해결할 수 있을까...
+이건 MEM단계에서 Trap을 감지하면 늦는다... MEM단계에서 감지해서 Write Enable을 빼앗는다고 쳐도 이미 그것보다 적히는 시간이 더 빠를 것이고 한 단계(클럭사이클) 안에서 어떤 신호가 더 먼저 작용할건지를 생각할 바에
+그 전 사이클에서 선제적으로 차단하는 것이 효과적일 것이다. EX단계에서 어차피 alu_result도 나오고 opcode와 funct3로 어떤 Store 명령어인지 구분할 수 있으니까..
+BE_Logic에서 misalign 감지 로직을 없애고, EX단계에 있는 신호들을 Exception Detector로 넘겨서 처리하도록 추가해야겠다...
+해결! 근데 그 뒤에 뒤따라오는 LW 명령어의 Mialigned가 Traphandler 분기 이후 갑자기 또 PTH-TH를 일으켜서 흐름에 문제가 생겼다.
+그래서 pth_done_flush에 IF_ID_Register Flush까지 포함했다. 
+
+다음 문제.. 28번째 명령어 AUIPC 직후 Misaligned JAL인데, 이게 EX에서 PTH-TH를 하고 EX_pc 기준 다음명령어로 가다보니, 해당 PTH일 때 모든 MEM_WB를 제외한 모든 파이프라인 레지스터들이 flush된다. 
+혹시 몰라서 misaligned instruction flush를 잠시 없애봤는데, (원래 파형에서 pth_done_flush 그 이전에 하나 찍히고 같이 찍히길래 그걸 혹여나 테스트해보려고 없앤 것이다.) 해결되었다...
+엄. 원래 아까는 이렇게 하면 JAL 명령어가 살아서 해당 R[rd] = PC + 4 가 처리되어벼리길래 이 명령어를 Hazard Unit에 추가한 것이었는데.. 당혹스럽지만 할게 산더미라 일단 넘어가본다.
+
+후. 거의 다 온 것 같다. 분기 예측도 Instruction Memory에서 x7에 대한 값을 TH에서 쓰다보니 이걸 고려하지 않고 시나리오를 짰던 것을 수정하여 제대로 작동함을 확인했다. 
+이제 CSR명령어들인데, CSR이 동기식으로 변하여 읽기 값이 한 사이클 뒤에 출력되는 것은 확인 되었는데, Register에 Write되는 것이 주소와 타이밍이 맞지 않는 것 같다. 
+
+아마 오늘은 여기까지 할 것 같기에... 기록을 먼저 남겨둔다.
+Instruction Memory 38번까지는 모두 진행됐다. 야호. PTH는 여태 잘 되던걸 알고 있으니까 나머지 4개의 연속적인 CSR 명령어들을 모두 수행할 수 있으면 되는건데,..
+일단 현재 문제는, CSR의 Read와 Write의 시간차이가 있어서, CSR의 데이터 출력을 포워딩해야한다는 것. 이미 구현했던 것 같은데, 무슨 차이가 있지?
+문제를 더 자세히 묘사하자면, (내일 기억못할 나를 위해) 1045ns 부근에 ID단계에서 csrrw로 요청한 mvendorid 값을 입력받고 1055ns에서 출력한다. 그리고 연달아서 바로 다음으로
+1065ns에서 csrrs로 mepc값, 1075 mepc 반환, 1085 csrrc mepc값, 1095 mepc 반환. 이렇게인데.
+Zicsr은 읽기와 쓰기를 동시에 처리하는데, 읽기는 ID단계에서 진행되어 두 클럭에 걸쳐 나온다고 해도 쓰기가 WB 단계 즉 3사이클 이후에 적용된다.
+= 같은 주소에 대해서 두 번 이상 Zicsr로 접근할 경우, 최대 이후 3개 명령어까지 첫 csr 명령어가 해당 주소에 쓸 데이터가 반영되지 않은 값을 받게 된다. 
+이러면 포워딩을 해줘야하는데.... 기존 로직을 한번 봐보자.
+
+아. MEM, WB의 CSR 포워딩만 구현되어있다. 이제 EX단계의 포워딩도 구현해두면 될 것같은데... 시간이 다 됐다.
+오늘은 여기까지. 내일 꼭 해보자.. (아 내일 취지인데..)
+
+아 오버타임 6분해서 했는데 왜 안되는 것 같지
+파형은내일 봐야겠다 여기까지
+
+# [2025.06.08]
+CSR에 쓰여지는건 잘 쓰여진다. 근데 그게 21번 레지스터 쓰기에도 반영이 되어야하는데.. 안되네
+이건 WB 포워딩인것 같은데..하하! 해결했다.
+문제를 조금 잘 못 보고 있어서 노트에 하나씩 정리하면서 해결해봤다. 딱 30분 언저리 걸렸다.
+문제 상황은, 동일한 CSR에 동일한 R[rd] 값을 가진 명령어가 연속으로 수행되며 선행 명령어 A로 인해서 변경된 CSR의 값을 후행 명령어 B가 읽지 못한채로 WB단계에 도달해
+B가 가진 만료된 CSR의 값을 R[rd]에 쓰는 것이 문제. 원래는 A에서 변경한 새로운 CSR의 값을 B가 읽어서 R[rd]에 넣어야하는데 그게 안된 것이다.
+앞서 ALU에서는 이미 이 hazard에 대해서 포워딩이 돼 제대로 계산된 값이 인출되어 CSR에는 제대로 된 값이 쓰기가 된 것이었지만, Register File에 저장할 값은 포워딩 로직이 구현되어있지 않았다.
+(애초에 이건 생각지도 못했으니. 컴퓨터 구조 및 설계 책에서 해저드를 설명하면서 책에서 설명된 것 보다 더 많은 것들이 존재한다고 한 이유를 어렴풋이 이해하는 것 같다.)
+때문에 이를 고찰해보니 답을 찾을 수 있었다. 
+WB단계에서 retire하는 선행 명령어 A의 alu_result가 곧 후행 명령어 B의 R[rd]에 써야할 reg_write_data일테니 A의 alu_result를 포워딩하면 된다.
+하지만 A는 이미 retire했으므로 WB레지스터에서 alu_result를 갖고와봤자 자기 스스로의 데이터를 포워딩하고 이는 의도된 동작이 아니기에 하면 안된다.
+답안 : retire instruction의 alu_result값을 저장하는 레지스터를 top_module에서 추가로 설계해 csr-reg hazard 발생 시 register_file_write_data를 retired_alu_result로 하도록 MUX를 설계한다.
+그리고 Hazard Unit에서는 물론 WB-MEM 할 수도 있지만 일관된 타이밍 검출 및 처리를 위해 모듈 내부에 별도의 retire_rd와 retire_alu_result를 넣고 아래와 같은 hazard 검출 요건과 로직을 만든다.
+
+wire reg_csr_hazard = (EX_opcode == `OPCODE_ENVIRONMENT && (WB_rd == retire_rd) && (WB_csr_write_address == retire_csr_write_address));
+
+always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            retire_rd <= 5'b0;
+            retire_csr_write_address <= 12'b0;    
+        end else begin
+            retire_rd <= WB_rd;
+            retire_csr_write_address <= WB_csr_write_address;
+        end
+        
+    end
+
+해저드 검출은, CSR(SYSTEM; ENVIRONMENT OPCODE) 명령어이면서 WB할 레지스터의 주소가 retire_rd와 동일하고, WB할 csr의 주소가 retire_csr_write_address와 동일할 때 발생한다고 정의한다.
+그리고 각 retire_rd, retire_csr_write_address 값은 클럭에 맞춰 한 사이클 지연을 가져 비교할 수 있도록 한다. 
+
+Top module에서 retired_alu_result와 register_file_write_data MUX를 정의한 로직은 다음과 같다.
+
+always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            retired_alu_result <= {XLEN{1'b0}};
+        end else begin
+            retired_alu_result <= WB_alu_result;
+        end
+    end
+
+`RF_WD_CSR: begin
+                if (csr_reg_hazard) begin
+                    register_file_write_data = retired_alu_result;
+                end else begin
+                    register_file_write_data = WB_csr_read_data; 
+                end
+            end
+
+이제 파형을 다시 검증해볼까? ㅎㅎ
+
+흠. 40번째 명령어인데, 결과가 조금 이상하다.
+CSRRWI: x22 = FFFF_FFBC, CSR[342] = 0000_0000; // R[x22] = 0000_0000, CSR[342] = 0000_0003
+CSR[342] mcause에는 3이란 값이 잘 쓰였는데, R[x22]에는 0000_0074라는 엉뚱한 값이 쓰여졌다.
+CSR[342]는 기존에 0이 맞았고. 그럼 R[x22]에는 0000_0000이 쓰이는게 맞는데..
+이상하다. csr_hazard_mem이 떠있다. 그래서 register_file_write_data_select 신호값도 010, WB_ALU_result를 R[rd]에 저장할 값으로 보내고 있는데...
+csr_hazard_mem의 로직이 잘못된건가? 확인해봐야겠다. 엣. register_file_write_data_select는 Control Unit 주관인데...
+흠.. 거의 알 것 같은데.. 취지 가야겠다. (11:14)
+
+12:06 복귀.
+음. 현재 명령어는 csrrsi. 즉 rs1 필드의 값과 CSR값을 계산해야하기에 ALUsrc는 A B 각각 rs1, CSR이 맞다. 그래서 3 3이고.
+csr_hazard_mem의 조건은 MEM단계에 CSR_WE가 활성화되어있고, MEM단계 raw_imm(csr_write_address)이랑 EX단계 raw_imm이랑 같을 때.
+
+잉 뭔가 이상하다... WB_raw_imm이 305로 되었을 때 mtvec값인 0000_1000이 WB_csr_read_data로 나왔어야하는데, 나오질 않는다.
+어라. 원래 Zicsr 명령어로 csr에 접근해서 읽기라도 하는 순간에는 무조건 csr_ready가 0으로 내려갔다가 1로 올라오면서 값이 인출되어야하는데 csr_ready가 0으로 내려가지도 않는다. 뭐지?
+csrrc까지는 잘 됐는데, csrrwi부터 그런다. Zicsr 상수 명령어에서만 그런건가? PTH에서도 잘 되니까..찾아봐야겠다. 
+캬. 쾌거. CSR File에서 순차 로직에, 
+if (csr_access && !csr_processing) begin
+          csr_processing <= 1'b1;
+          csr_read_out <= csr_read_data;
+        end else if (csr_processing) begin
+          csr_processing <= 1'b0;
+          csr_read_out <= csr_read_data;
+        end
+
+즉 읽기 수행시에만 csr_read_out 나가게 했었던걸 발견했고, 이를 바꾸려고 csr_access를 바꾸려다가 마땅한 조건이 떠오르질 않았다. 
+(쓰기까지 csr_access에 포함하거나 별도의 선언을 하게 되면 쓰기까지 2사이클로 아예 타이밍이 틀어진다.) 
+그래서 저 아래에 그냥 else if (csr_write_enable) begin 해서 csr_processing과 상관 없이 csr_read_out <= csr_read_data;를 넣었다. (물론 조건을 위에서부터 확인하기 때문에 관련이 아예 없는게 아니겠지만.)
+그러자 csr_read_out이 제대로 읽히기 시작해서 다음 문제로 넘어가기로 했다.
+x22에 사이클 두 번동안 쓰기되어야하는 것은 옳다. 헌데 데이터가 한 차례 밀렸고 없어야하는 데이터가 있는 상황.
+0000_0000, 0000_1000 모두 x22에 쓰여야하는데 첫 쓰기 사이클에는 0000_0074가 와있고, 두번째는 0000_0000. 세번째는 다음인 x23에 0000_1000이 쓰인다. 원래 x23에는 0000_1007이 쓰여야하는데.
+0000_1007은 심지어 ALU에서도 잘 계산되어 나왔다. 흠,,
+
+0000_0074가 어디서 나왔을까? 찾아보자. 
+
+그리고 그 전에 ECALL이 ID 페이즈에서 감지된 뒤 전체 파이프라인 stall이 걸려서 기존에 있던 명령어들이 retire하지만 내부에 변경사항을 주지 못한 것을 해결하기 위해서 새로운 로직을 짰다.
+ID단계의 ECALL 앞의 EX, MEM, WB의 명령어들이 retire하기 위해 Trap Controller 내부에 standby_mode 라는 출력을 만들었고, ECALL시 STANDBY와 그 이후 ECALL 전용 MEPC 값 쓰기 FSM 단계를 추가 구성하였다.
+Hazard Unit에서도 standby_mode 신호를 받아 IF_ID, ID_EX만 stall하고 standby_mode가 아닐때는 PTH를 위한 전체 파이프라인 stall이 되도록 아래와 같이 구성했다. 
+ if (standby_mode) begin
+            IF_ID_stall = 1'b1;
+            ID_EX_stall = 1'b1;
+            EX_MEM_stall = 1'b0;
+            MEM_WB_stall = 1'b0;
+        end else if (!trap_done || !csr_ready) begin
+            IF_ID_stall = 1'b1;
+            ID_EX_stall = 1'b1;
+            EX_MEM_stall = 1'b1;
+            MEM_WB_stall = 1'b1;
+        end
+그리고 탑 모듈에서도 standby_mode가 아니고 trapped 일 경우에만 csr_trap_address와 같은 trap_controller의 신호들을 받아올 수 있도록 했다.
+standby_mode에서는 평시처럼 WB단계의 retire하는 명령어들의 값을 그대로 받도록 한다는 뜻. 
+로직을 떠올리고 시뮬레이션 두 번 정도로 해결했다. 대기로직을 처음에 바로 완성했는데, 탑 모듈에서 해당 MUX 선택 로직을 수정안한 것 때문에 두 번 걸렸다 ㅎㅎ..
+
+40, 41, 42 CSR상수 명령어들이 CSR에 쓰는 값들이 원래는 안쓰여지고 넘어갔었는데, 이젠 다 쓰여지고 PTH로 넘어가서 수행이 된다. 이제 남은 문제는 레지스터..
+레지스터 x22에 의도하지 않은 0000_0074값이 쓰여지는 문제... 그리고 그 의도치 않은 값 때문에 들어가야할 값들이 주솟값과 한 사이클 미뤄진 문제...
+추적해보자..
+
+일단 해당 값은 CSR에서 나온 것이다.
+Zicsr 명령어이므로, RF_WD_src(Register File Write Data source)는 011; WB_csr_read_data로 잘 설정되어있고,
+csr_data_out과 동일한 클럭에 동일한 값이 쓰여지는 것을 확인했다. 
+허허.. 롤백했다. standby_mode는 유지했는데, retire값을 끌고오는 것이 CSR의 쓰기가 없을 때에만 csr_ready를 0으로 내리는 방법이었고, 사실상 CSR에서는 쓰기가 동시에 수행되니 아예 모든 CSR 접근에서 두 사이클을 잡는 것이 맞아 해당 로직을 지웠다. 이제 이 상태를 기반으로 다시 시작해야한다...
+
+그래. 결국 WB단계에서 한 사이클씩 밀리는거고, ID단계에서 CSR 접근을 하지 않고서야 WB에서 한 사이클 딜레이가 없으니까..
+WB단계에서 Zicsr 명령어임을 감지해서.. pc랑 pipeline stall을 한 번 걸어두는 방식은 어떨까?
+WB단계에 Zicsr 확인되면, stall = 1
+WB_stall 카운터 +1하고
+만약, Zicsr인데 WB_stall 카운터 1이면 0으로 내리면서 stall도 0으로하고. 흠. 괜찮은데? 이건 어디서 처리해야할까? Hazard Unit이랑 CU에 넣어야겠다.
+pc_stall은 CU관할이고, 파이프라인 stall은 해저드 유닛 관할이니까.
+Zicsr 명령어의 식별자는,, OPCODE_ENVIRONMENT(1110011), funct3 != 0. 
+둘 다 MEM/WB 레지스터에 있는 신호들이다. 한번 해보자. 아 애초에 opcode랑 funct3로 할 필요 없이 csr_write_enable로 확인하면되겠구나 csr 명령어는 이게 무조건 1이니까.
+
+하하. 잠정 중단. 이건 어떻게 할 수가 없다.
+CSR., 연속적인 같은 CSR주소의 접근은 아직 완전히 지원하지 않는다....
+이건 지금 아무리 궁리를 해도 지적한계에 도달해서 진척이 없다. 포워딩 로직은 미완성이니 빼고, 동기식 CSR 토대로 Synthesis를 다시 해보자.
+타이밍이 13ns 정도로 늘었다. Implementation까지 한번 돌려봤는데, 얘는 26ns. 음.
+
+일단 다음 Combinational Loop부터 찾아서 해결해보자. 
+Debug mode 관련해서 Loop이 있었다. 
+
+19 LUT cells form a combinatorial loop. This can create a race condition. Timing analysis may not be accurate. The preferred resolution is to modify the design to remove combinatorial logic loops. If the loop is known and understood, this DRC can be bypassed by acknowledging the condition and setting the following XDC constraint on any one of the nets in the loop: 'set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets <myHier/myNet>]'. One net in the loop is branch_predictor/branch_estimation. Please evaluate your design. The cells in the loop are: branch_predictor/branch_estimation_INST_0,
+branch_predictor/branch_target[0]_INST_0,
+branch_predictor/branch_target[1]_INST_0,
+exception_detector/trap_status[0]_INST_0,
+exception_detector/trap_status[0]_INST_0_i_3,
+exception_detector/trap_status[0]_INST_0_i_4,
+exception_detector/trap_status[1]_INST_0, if_id_register_i_25,
+if_id_register_i_26, if_id_register_i_27, if_id_register_i_28,
+if_id_register_i_29, trap_controller/debug_mode_INST_0,
+trap_controller/debug_mode_INST_0_i_2,
+trap_controller/debug_mode_INST_0_i_3 (the first 15 of 19 listed).
+
+330개의 LUT에 Loop이 있었는데, CSR_File의 Loop에서 소요가 컸던 것 같다. 이제 19밖에 안남았고, 해당 루프 경로를 유추해보니,
+debug_mode가 IF의 opcode와 imm에 영향을 미치는데 (instruction 변화)
+이러면 Branch Predictor에서 branch target, 그리고 Excpetion Detector에서 이걸 이용해 trap을 또 감지하고 하면 루프가 생길 것 같았다.
+그래서 일단 debug_mode를 레지스터화 했고, Loop을 없애는데 성공했다. 아예 0개다.
+그리고 Synthesis의 flatten 값을 none, full, rebuilt로 모두 해봤는데, 성능은 rebuilt나 full이 잘 나왔고 none은 계층구조가 무너지지 않아 디버깅에 용이했다.
+덤으로 PSFS에서 rebuilt나 full로 하면 x,나 z값이 떴는데, none으로 하니까 딱히 뜨는 것들 없이 더 수행이 용이했다.
+PSFS에서 의도한대로 잘 작동하는 것을 확인했고, PSTS에서는 역시 특정 시점부터 값들이 X로 도배되는 것을 보아 타이밍 관련 이슈가 뜨는 것 같다.
+이는 이제 분석하면서, 본격적인 Timing Closure 작업을 시작하게 된다. 이렇게 해도 실제 implement 디자인으로 가니까 타이밍이 20ns까지 늘어지던데...
+왜 이렇게 느릴까... 하긴 첫 작인데 완벽을 바라는 것 보다도 기능을 수행하게 하는 것이 중요하다.
+Dhrystone 벤치마크랑, Doom 돌리기.. 화면 및 I/O 입출력 구현하기..
+할게 산더미다. 이걸 이번 달 안에 다 한다니 할 수 있을까...
+아니지. 해내는 수 밖에 없다. 잘 해보자.
+
+# [2025.06.09.]
+하루종일 밀려있던 Dirty 개발 파일들을 모두 commit 했고, PR열어 merge까지 마쳤다.
+
+# [2025.06.10.]
+어제 마지막으로 PR한 것에 대해 추가적으로 파형에서 x값이 발견되어 레지스터 파일의 초기 0값을 부여하는 로직을 commit 하고 최종 탑 모듈에서의 테스트벤치와 검증 파형까지 첨부해서 CSR File을 동기식으로 만든 시점에 대한
+Revision을 PR했다. 그리고 시작된 Timing Closure 작업.
+그리고 Timing Closure 작업의 시작인데, 파형을 확인해보니 Instruction들이 단순히 파이프라인레지스터들을 통과할 뿐인데 변조되는 것을 확인했다.
+파형을 보면, 파이프라인 레지스터에 들어간 명령어가 레지스터끼리 옮겨가면서 값이 변하고 있는데, 왜 다음 클럭으로 넘어가면서 값이 변조될까?
+원래도 2bc00093이어야하는데 처음엔 23c00093에서 2bc00080 이었다가 EX단계에 가서야 2bc00093이 되고,, 그 다음명령어도 01809113이 원래 맞는데 ID단계에서는 값이 01809100으로 변했다가 EX에서 다시 원래대로 변하고... 파이프라인에서 서로 값 넘길 때 별도의 로직이 없는 이상 값이 안변하는게 맞을텐데...
+Post Synthesis Functional Simulation이랑 Behavior Simulation에서는 잘 됐었는데... 원인이 뭘까? 
+
+디버깅하며 같은 클럭 1 인 상태 안에서도 값이 여럿 변하는 것을 목격하면서 글리치 문제도 물론 있겠지만 구조적인 조합식 로직의 취약점을 체감하였다.
+그래서 Instruction Memory를 동기식으로 바꾸려고 한다. 적어도 한번 PC값이 들어가면 다음 사이클까지 바뀌지 않는다는 확정적인 조건을 부여하고, 
+그리고도 값이 변하면 글리치로 특정지어 다른 조치 사항을 취할 수 있기 때문이다. Instruction Memory를 동기식으로 바꾸면서 PTH라던가 첫 실행시에만 Instruction Memory ready신호를 0 그리고 1로 바꾼다던가
+(어차피 다음 사이클부터는 계속 유효한 값이 나가는게 맞으니까. 처음 값만 이상한게 나가지.) 여러가지 사항들을 접목하고 있는데, CSR명령어에서도 뭔가 이상한 경우를 발견했다.
+분명 42번째 명령어 (data[41])에서 mtvec의 값이 이전 명령어에서 1007로 바뀌고 이번에 1000으로 바뀌어서 다시 제대로 trap handler 분기가 되어야하는데 1000값이 쓰여질 때 CSR write enable이 0으로 되어있는 것을 발견했다. 아마 CSR_WE 신호의 파이프라인 값을 트래킹하면서 봐야할 것 같다.
+오늘은 컨디션이 많이 안좋아서 하루 종일 편두통에 시달려 거의 19시 30분부터 작업을 시작할 수 있었다.
+내일은 더 나아지길 (이래놓고 연등하느라 수면 부족이지만).
+오늘은 여기까지.
+
+# [2025.06.11.]
+시간이 너무 빨리 지나간다. 하루에 할 수 있는 것은 정해져 있고, 사력; 최선을 다하여도 될지 안될지 모르는 무모한 가능성에 난 한 발자국씩 도전하고 있다.
+오늘도 시작해보자. (18:51)
+위에 CSR_WE 신호가 WB파이프라인에선 제대로 나오고 있음을 확인하고 탑 모듈에서 CSR Write Enable source에 standby mode가 따로 조건문으로 적용이 되어있지 않아 이걸 적용하여 해결했다.
+
+그러나, ecall trap PTH 수행 완료, 분기 후 수행 지점에서 그 이전에 있던 ecall 다음 명령어로 fetch된 명령어가 IF_ID_register에 그대로 남아있었고, 
+(이건 flush를 해도 pc값에 대해 instruction memory가 데이터를 인출하는 것이기에 멈출 수 없다. ) 00001000 pc 주소 명령어가 수행되어야하는데 해당 misaligned sh 명령어 TRAP이 중도에 발현되어
+mepc값이 또 Trap Handler로 들어가 무한 루프에 갖혀버렸다. 다음 클럭에 flush 되어 IF_ID_Register의 인출 값이 0과 NOP로 비워져있으니 입력되고 있는 00001000의 명령어가 기존엔 바로 나와줘서
+IF단계에 pc_stall로 갖혀있는 sh값을 없앴는데, 지금은 동기식이라 0000_1000이 instruction Memory에 입력된 뒤 한 사이클 뒤에 해당 현상을 기대할 수 있기에 IF_ID_Register를 PTH 이후 한 사이클만 더 flush해야한다.
+stall도 되겠지만, 일단 flush로 해보자. 흠, Trap Controller에서 추가 FSM 단계를 넣었는데 flush가 되질 않길래 확인해보니 이미 앞에서 flush를 해서 해당 명령어에 대한 context가 없는 상황임을 확인할 수 있었다.
+아니다. 지금 이것 때문에 pc_stall이나 여러 로직들을 상황에 맞게 하나하나 추가하는 것이 소요를 더 크게 만들고 복잡한 것일 수록 약하기 마련이다.
+단순하게, Instruction이 이제 한 사이클 뒤에 나오게 되니 pc도 변경에 따라 한 사이클 지연되어 나오도록 하면 되지 않을까? 레지스터화 하는 것이다.
+아마 비슷한 아이디어가 논문 
+장선경, 박상우, 권구윤 and 서태원. "FPGA를 이용한 32-Bit RISC-V 프로세서 설계 및 평가" 정보처리학회논문지. 컴퓨터 및 통신시스템 11, no.1 (2022) : 1-8.
+에서 봤던 것 같다. 뭔가 기억났었는데, 한번 해보자.
+아무런 성과가 없었다.
+정확히는 Instruction Memory를 동기식으로 바꾸는데 엄청나게 많은 소요가 든 다는 것.
+
+허허 참. 원상복귀다. 
+내일은 그냥 이걸 무시하고, I/O 구현해 FPGA에 올리고 되나 안되나 볼 것이다.
+온르은 여기까지. 하아.,
+
+#[2025.06.12.]
+일과시간 동안 이 Timing Closure 작업에 대해서 생각해보았다. 
+정확히는 아직 Timing Simulation에서 기대하는 동작대로 수행이 되질 않았으니 디버깅에 가까울 것이다. 
+
+아무래도 Implementation Functional Simulation에서도 Z값으로 IF단계의 instruction이 뜬 것으로 보아 Post Synthesis Timing Simulation에서 명령어가 이상하게 전달된 것의 원인을 내포하고 있는 것 같다는 생각.
+기억으로나마 비교해보았지만, 파형에서 Z값이 뜬 비트 위치가 정확히 다른 숫자가 표시된 위치였다. 즉 그 Z값의 위치에 임의의 값이 PSTS에서 보여지게 된 것.
+파이프라인 레지스터의 로직은 너무나도 단순하고 직관적이다. 때문에 파이프라인 레지스터의 문제라고는 생각하지 않는다.
+Instruction Memory의 로직도 너무나도 단순하고 직관적이다. 비동기식이라는 단점은 해당 메모리 유닛에 복잡한 로직에 따라 그 기댓값이 변할 수 있을 때 드러나는 것이지,
+단순히 입력받은 pc값을 내보내는 조합논리 회로는 그러한 요소로서 불안정성이 유의미하게 증대되지는 않는다고 생각한다.
+다만, 문제라면 파이프라인에 전달되는 그 중간단계에서 있을 가능성을 염두한다.
+파이프라인 레지스터는 동작을 잘 한다. Instruction Memory에서도 동작을 잘 한다. 그렇다면 문제는 그 사이의 로직.
+우리의 RTL 설계에선, debug_mode 신호에 따라서 IF_ID_Register에 입력되는 명령어가 상이해진다. 그리고, 이 debug_mode로 인해서 입력되는 명령어는 고정 상수값 변수로, top module에서 dbg_instruction이라는 변수 명의
+32'b00000001011110110000110000110011 값이 할당되어있다. 0x017b0c33. 
+add x24, x22, x23 인데, 이를 Trap Controller에서 debug_mode를 활성화하는 순간 조합로직의 MUX 조건문을 통해서 해당 명령어가 IF_ID_Register로 입력되도록 하였다. 
+차라리 이 과정에서 불안정성이 생겨 debug_mode에 대한 항시값이 Trap Controller에서 계속 부여되고 있다고 한들 Trap Controller의 복잡도를 생각하면 이전보단 타당한 가설이라고 생각했다.
+때문에 이 debug_mode로 들어가는 것을 (이미 Trap Controller에서는 Combinatorial Loop을 끊기 위해서 레지스터화를 거쳤지만) 탑 모듈에서 동기식으로 신호를 받아 작동하도록 수정해볼 심산이다.
+하지만 이건 주된 문제가 아니다. Z값이 파형에 존재하는 것은 물론 심각한 문제이지만, 어찌되었던 PSTS와 PITS에서 의도된 동작을 수행하는 것을 확인했기 때문이다.
+진짜 문제는 중간에서부터 모든 값들이 X로 도배되는 시점이다.
+
+이에 대한 내용을 담은 두 번째 생각이다. 
+파형을 보면, 어찌저찌 중간까지는 EX단계에서 제대로 작동되고 WB단계에서도 레지스터에 값이 쓰여지지만 특정 시점에서부터 instruction과 다른 값들이 X로 도배되는 시점이 생긴다.
+이는 사실 앞에서 instruction이 불안정하게 IF_ID_Register에 입력된 것과는 거리가 먼 문제점이라고 볼 수 있다고 생각했다.
+그리고 해당 시점의 파형에서는 한 클럭안에 유지되어야할 하나의 next_pc값이 여러번 바뀌는 것을 확인할 수 있었는데, 무언가의 race-condition, 그리고 그게 정의되지 않은 상태에서 다음 Clock Cycle로 넘어가서 생기는
+UNDEFINED (X) 오류가 생긴 것이라 추측했다. 이는 이제 파형을 보면서 해결해야할 부분이다.
+시작해보자. (19:23)
+
+흠,, 자세히 보니까.. Trap Control 관련 문제인 것 같다. 파형이 X로 도배되는 시점이 SH, Instruction Memory에서 trap관련 로직이 구동될 때인데,,
+![Trap_Controller's_Combinational_Logic_Signal_Uncertainty](Devlog_images/Unstable_Trap_Status.png)
+trap_status가 CC가 활성화 되어있을 때 원인신호를 추적할 수 없는 단위로 변경되어 제대로된 값을 도출해내지 못하여 이렇게 되는 것 같은데,
+Exception Detector도 조합로직이 아니라, 동기식으로 바꿔야하나? 흠,,
+하긴 명령어의 수행 자체에서 디코딩된 정보들을 조합하여 Exception을 찾아내는 모듈이니까 해당 문제의 명령어가 탐지되어 다음 사이클에 Trap을 발생시킨다 한들, 현재 구조에선 WB에서 발생하는 Exception은 없으니까
+문제 없을 것 같다. 독립적으로 동작하는 모델이다보니 추가적으로 수정할 소요도 적어질 것 같고. 한 번 수정해봐야겠다. 
+음. Exception Detector를 동기식으로 전환하면서 Detection 타이밍이 다음 사이클로 밀린 관계로 PTH의 MTVEC 진입을 두 FSM에 거쳐서 진행하도록 해야했고 (trapped신호가 1사이클 늦게 풀리므로) 
+mepc에 적는 pc값의 타이밍을 기존 EX단계에서 MEM 단계로 전환해야 했다. 이렇게 해서 어느정도 로직이 되었는데, (여태까지 만든 변경사항 중 가장 순조롭다) ecall시 타이밍이 조금 다르다보니
+trapped로 전환되면서 WB단계의 csr_write_enable이 끊겨 제대로 retire되어야하는 데이터가 retire되지 않는 상황이 발생해 이 것만 해결하면 된다. 이미 abadbabe 출력은 확인했으니..
+저녁점호하고 와야겠다.
+
+시작하자 (21:47)
+Exception Detector에서 trapped신호를 보내면, 그걸 즉시 Top module의 CSR Write Enable source MUX 신호로 쓰지 말고,
+해당 신호를 trap_controller에서 받아서 IDLE에서 실제로 아무 동작을 수행하지 않고 다음 단계로 넘어가게 하도록 하는 대신 IDLE 단계에서 csr_trap_enable 신호를 출력하도록 해서 해당 신호를 기반으로 
+CSR write enable source를 조정하면 될 것 같다. 아, 아니지. 애초에 Trap Controller에 별도의 csr_write_enable신호가 출력으로 나가고 있었구나. 이럼 차라리 TC의 csr_write_enable신호를
+MUX의 제어신호로 하면 될 것 같은데.. 타이밍이 좀 우려되긴 하지만 해보긴 하자. 
+기존에 탑 모듈에서 csr_write_enable_source를 trapped를 제어신호로 하여 MUX로 처리하고 있었는데
+assign csr_write_enable_source = tc_csr_write_enable ? tc_csr_write_enable : WB_csr_write_enable; 로 변경하여 해결했다. (설마 Combinatorial Loop는 안생기겠지..)
+나머지 진행도 CSR RAW 문제 제외하고 모두 예상값대로 수행되는 것을 확인했다. 수정된 코드를 기반으로 PSTS를 해보자.
+일단 Behavior Simulation은 iverilog 시뮬값과 동일해 보인다.
+Synthesis 해보고 PSFS, PSTS 바로 들어가보자.
+다행히 Synthesis에서 Loop이 보고되진 않았다. 
+
+아... 거의 그대로인데.. 이제는 아예 파형에서 trap_status가 잡히질 않는다.
+출력을 동기식으로 하는 것이 아니라 exception 판단 자체를 동기식으로 해야하나?
+흠,,, 수정해보자.
+
+미치겠다. 수정할게 너무 많다.
+벌써 6월 중순인데. 과감하게 46F 아키텍처를 포기하고 43F로 돌아가보도록 한다
+결국 Trap Handler 분기 시점에서 이상하게 되는거니까, Trap 관련을 비활성화 하고, I/O를 만들고 나면 이후 추가하면서 문제를 해결하는 것으로 로드라인을 변경한다.
+근데... 아니 그냥 Instruction Memory 내용 자체를 Trap 없게 만들었는데도 왜 같은 시점에서 이러는거지????
+돌겠네. 
+
+# [2025.06.13.]
+잘 되던 프로젝트가 갑자기 Synthesis에서 timing constraints를 met하지 못하더니 object가 없다고 뜨고 모든 파일에 syntax error가 뜨고 진행이 안되기 시작했다.
+하아.,
+허탈하게도, 새 프로젝트를 만들어서 지금까지 한 Exception Detector의 출력을 동기식으로 만든 변경 사항까지를 적용해서 Synthesis 후 Timing Simulation을 돌렸더니..
+이게 웬걸, abadbabe까지 정상 진행됐다...
+곧바로 Implementation까지 직행.. Timing Simulation을 돌려보니... csr 쓰기 신호가 timing 문제로 한 사이클 더 필요한데 닿지 않아 값이 쓰이지 않아 mtvec이 이상한 값으로 들어가 무한 루프가 걸리는걸 발견했는데,
+어차피 Dhrystone과 같은 벤치마크에서 시스템명령어는 사용하지 않을 것 같아 일단 해결을 시도해보고 문제가 그대로이기에 일단 FPGA 구현으로 넘어가도 상관 없게 되었으니 Dhrystone을 ROM에 넣고 있다.
+내일은 이걸 구현하고, FPGA에 download해서 디버깅을 진행하면 좋을 것 같다.
+단번에 되리라고는 기대하지 않는다. 그래도.. 될 가능성이 보이니까 진행한다.
+잘 해보자..
+
+# [2025.06.14.]
+동기식 Exception Detector 변경 사항과 탑 모듈 리비전 내용을 PR하는 것을 완료했다. 
+이제 어제 하던 Dhrystone 구현을 마저 해볼 차례.
+하루종일 툴체인과 Dhrystone 컴파일과 싸웠다.
+결국엔 sifive에서 배포한 툴체인 프리셋은 rv32i-ilp32를 지원하지 않았기에, 다시 처음부터 툴체인을 risc-v gnu gcc로 다운받아야했고
+./configure하고 make로 만드는데에 시간이 꽤 걸리는데 인터넷이 중간에 자꾸 끊겨서 (군대라서) 진척을 영 못냈다.
+그래도 msys2 mingw64 쓰는 법이나 툴체인 설치 등등 관련해서 꽤나 잘 알게 된 것 같다
+linker가 필요하고, gcc 툴체인이 필요하고, 그걸 위한 기초파일들 설치하고 등등..
+
+# [2025.06.15.]
+23:39. 진짜 하루종일 툴체인과 싸웠다.
+그 중간중간에 CPU를 검증할 SoC 설계를 해서 OLED에 버튼을 통해 현재 명령어와 수행모드를 전환하여 수행하고, 그걸 디버깅할 수 있도록 인터페이스를 설계했다.
+risc-v 툴체인을 처음부터 빌드를 해야하는데 어제 언급한 인터넷 때문에.. 친구에게 연락해서 친구 컴퓨터에 대신 툴체인을 빠르게 설치하고
+(그마저도 3시간이 걸렸다.) dhrystone을 컴파일하는데 21:30분에 겨우 마쳤다.
+rv32i로 컴파일된 dhrystone을 찾지 못했을 뿐더러 dhrystone 자체가 구버전 코드라 Sifive 배포판이랑 riscv-tests 배포판이랑 또 다 해보고
+컴파일 에러들 디버깅하고 하느라 진짜 하루종일 다 썼다.
+이제는 그 hex파일들을 받았고, 그리고 위에서 설계한 FPGA 검증 SoC를 Vivado에 올리고 있다.
+해당 탑 모듈 tb 돌릴때 너무 타임을 크게 잡아서 vcd가 45GB나 되어버리는 대참사 때문에 그 당시엔 이유를 몰라서 Vivado를 D드라이브로 옮기느라 작업을 못했다.
+일단.. 내일 할거
+외부 인터페이스는 100MHz 로 동작하고, CPU는 50MHz로 동작할 예정인데, generated clock constraints가 XDC에 선언되어있지 않아서 추가했다
+추가했더니 Timing Violation이 바로 나왔다. cpu_core에서 led로 가는데 11.102ns가 걸린다는 것. 
+단순한 토글 클럭 분주기로 되어있는걸 Clock Enable로 바꿔서 다시 진행해봐야한다. 
+그렇게 현재 있던 Instruction Memory 시나리오를 FPGA에서 구현하면서 CPU의 작동을 검증하고
+Dhrystone 컴파일된걸 Instruction memory에 readmemh로 올려서 성능을 측정 해봐야한다. 
+그리고 남은 시간동안은, DMIPS를 올리는데에 집중한다. 지금 50MHz니까 Critical Path를 정비해서 100MHz 이상으로 올리는 것을 목표로 한다.
+Doom은.. 이거 다 하고도 시간이 남으면 구현해보자..
+오늘은 여기까지.
+
+# [2025.06.16.]
+Clock Enable 적용 시작(18:58)
+Clock Enable 모두 적용 했고, Vivado에서 기존 프로젝트에 파일들이 탑 모듈의 탑모듈이 생기며 손을 쓰기 힘들 정도로 틀어져 새 프로젝트를 만들고 클린하게 정리했다
+버튼, OLED 인터페이스 100MHz, CPU 50MHz였고, Timing Violation 처음에 CPU의 50MHz 클럭을 토글식으로 구현한 데에 있어 발생했던 것을 카운터 식으로 바꿔서 해결했고
+OLED도 Timing Violation 뜨길래 50MHz로 낮췄고, Button도 마찬가지로 50MHz로 낮췄다. Behavior Simulation을 돌려보려고 하였으나, 뭔가 느낌이 많이 달라서 클럭 연결의 문제라고 생각하고 어차피 
+CPU도 제대로 tb 돌아갔던 것 그대로 코드 썼고, SoC도 마찬가지로 iverilog에서 원하는 값이 나왔기 때문에 Synthesis로 바로 넘어갔다.
+Timing Contraints관련인가, timing not met 나와서 XDC에서 constraints를 추가했고 Implementation에서는 결과가 더 좋게 나올까 싶어 Implementation을 돌렸다.
+create_generated_clock -name clk_50mhz -source [get_ports clk] -divide_by 2 [get_pins clk_50mhz_reg/Q]
+set_multicycle_path -setup 2 -from [get_clocks clk_50mhz] -to [get_pins */*clk_enable*]
+clk50mhz로 인한 의도치 않은 timing 계산에 대한 violation 알림을 끄기 위해 set_false_path도 썼다.
+그리고 SoC TOP 모듈에서 출력에 debug pc랑 instruction을 모두 내보내는 것 때문에 IO 핀이 부족해져서 어차피 OLED로 확인 가능할 것이기 때문에 코드에서 과감히 output을 제외했다.
+결과를 봐야하는데.. 시간이 다 되어서 여기까지.
+
+# [2025.06.17.]
+결과를 보니까 여전히 포트 문제가 나서 xdc 파일에 set_property ... [get_ports debug_*] 이런 와일드카드 때문에 의도치 않은 수 많은 신호들이 연관되어 버린 것을 확인했다
+이를 없애서 해결했고, Implementation 성공.
+Timing도 괜찮지만 이번엔 또 다음 목록과 같은 곳에서 not reached by a timing clock Critical Warning이 떴다.
+TIMING #1 The clock pin FSM_onehot_display_update_state_reg[0]/C is not reached by a timing clock 
+TIMING #4 The clock pin FSM_onehot_step_state_reg[0]/C is not reached by a timing clock 
+TIMING #7 The clock pin button_controller/button_prev_reg[0]/C is not reached by a timing clock 
+TIMING #12 The clock pin button_controller/button_rising_edge_reg[0]/C is not reached by a timing clock 
+TIMING #17 The clock pin button_controller/button_stable_reg[0]/C is not reached by a timing clock 
+TIMING #22 The clock pin button_controller/button_sync_reg[0][0]/C is not reached by a timing clock 
+TIMING #37 The clock pin button_controller/continuous_counter_reg[0]/C is not reached by a timing clock 
+TIMING #62 The clock pin button_controller/continuous_mode_reg_reg/C is not reached by a timing clock 
+TIMING #63 The clock pin button_controller/continuous_pulse_reg/C is not reached by a timing clock 
+TIMING #64 The clock pin button_controller/debounce_counter_reg[0][0]/C is not reached by a timing clock 
+TIMING #159 The clock pin button_controller/display_mode_reg_reg[0]/C is not reached by a timing clock 
+TIMING #161 The clock pin button_controller/mode_changed_reg_reg/C is not reached by a timing clock 
+TIMING #162 The clock pin button_controller/reg_changed_reg_reg/C is not reached by a timing clock 
+TIMING #163 The clock pin button_controller/selected_register_reg_reg[0]/C is not reached by a timing clock 
+TIMING #168 The clock pin button_controller/step_pulse_reg_reg/C is not reached by a timing clock 
+TIMING #169 The clock pin button_controller/step_pulse_reg_reg_lopt_replica/C is not reached by a timing clock 
+TIMING #170 The clock pin cpu_clk_enable_reg/C is not reached by a timing clock 
+TIMING #171 The clock pin oled_interface/FSM_onehot_spi_state_reg[0]/C is not reached by a timing clock 
+TIMING #174 The clock pin oled_interface/FSM_onehot_state_reg[0]/C is not reached by a timing clock 
+TIMING #181 The clock pin oled_interface/delay_counter_reg[0]/C is not reached by a timing clock 
+TIMING #201 The clock pin oled_interface/frame_buffer_reg[0][1]/C is not reached by a timing clock 
+종류별로 발췌했고 201부터 1000까지 프레임 버퍼의 not reached by a timing clock 이다. 그래서 이를 해결하기 위해서 create_generated_clock을 xdc에 추가했다.
+기존에 지웠었는데 다시 만든 것.
+그랬더니 이제 CDC; Clock Domain Crossing 발생해서 clk to clk_50mhz를 false path로 해서 없앴다.
+그랬더니 CKLD #1 Clock net clk_50mhz is not driven by a Clock Buffer and has more than 512 loads. Driver(s): FSM_onehot_display_update_state_reg[0]/C,
+FSM_onehot_display_update_state_reg[1]/C,
+FSM_onehot_display_update_state_reg[2]/C, FSM_onehot_step_state_reg[0]/C,
+FSM_onehot_step_state_reg[1]/C, FSM_onehot_step_state_reg[2]/C,
+clk_50mhz_i_1/I1, clk_50mhz_reg/Q, cpu_clk_enable_reg/C,
+reset_sync_reg[0]/C, reset_sync_reg[1]/C, reset_sync_reg[2]/C,
+rv32i46f_5sp_debug/clk, update_display_reg_reg/C, update_pending_reg/C
+(the first 15 of 17 listed) 가 떠서 자세히 보니까 Clock Buffer가 없으면 위험하다는 것 같아 buffer를 넣어뒀고.. 이제 에러가 없다.
+Implementation 시작.
+
+# [2025.06.18.]
+OLED를 구현하려고 애써보았으나, 시간과 기간의 문제로 일단 잠정보류 후, 가장 빠르게 현재 상태를 확인해보기 위해 8개의 LED를 instruction 하위 7:0 비트를 할당하여 
+가운데 버튼을 통해 순차 실행하므로서 명령어의 처리 흐름을 간이로 검증했다. 그 결과, trap handler 분기까지 정상적으로 의도된 대로 작동하는 것을 확인할 수 있었고,
+비슷한 방식으로 레지스터의 값을 볼 수 있도록 LED 인터페이스를 통해서 검증하기로 했다. 이걸 내일까지 마칠 것이고, 바로 UART 로 넘어가서 Dhrystone 구동을 통해 성능을 측정해서 종지부를 찍을 예정이다.
+정말 험난하고도 먼 모험이었다. ChoiCube84에게 우선 감사의 말을 전하고, 남은 마무리까지 잘 이행하도록 해야겠다.
+2025.06.18. 
+23:43.
+RV32I46F_5SP
+FPGA Implementation.
+
+KHWL && ChoiCube84
+
+# [2025.06.19.]
+LED와 버튼, 스위치를 이용해서 OLED Interface에서 보려고 했던 레지스터 선택, 레지스터의 값, 현재 명령어, 현재 PC값을 추가적으로 검증해보려 하였지만
+일단 UART를 구현하고 나면 해당 검증까지 다시 해봐야하기도 하고 그 즈음가서 하는 것이 더 빠르고 편할 것이기 때문에 바로 UART 인터페이스 구현에 착수했다.
+
+# [2025.06.20.]
+UART 구현했고, 테스트 시나리오 잘 돌아간다. 이제 이걸 develop에 PR 올리고 그걸 다운받아 다시 시험해봐야겠다.
+
+# [2025.06.21.]
+MISALIGNED STORE, LOAD를 이원화한 Trap Handler Instruction Memory에서 정상적인 수행이 되지 않는 다는 것을 발견했다. 왜일까? 일단 issue로 남겨두고 dhrystone 구현에 집중하도록 한다.
+
+# [2025.06.22.]
+dhrystone 구현을 하는데, 루프가 발생해서 관련한 디버그 로그를 남기려고 한다.
+원래 여태 계속 남겼어야 했는데 하나 고치고 하나 문제 생기고 하는걸 시간이 없어서 기록하지 못했다.
+정말 한시가 급해서 끼니도 거르고 계속 몰두하고 있다.
+
+x0  – zero  
+x1  – ra  
+x2  – sp  
+x3  – gp  
+x4  – tp  
+x5  – t0  
+x6  – t1  
+x7  – t2  
+x8  – s0/fp  
+x9  – s1  
+x10 – a0  
+x11 – a1  
+x12 – a2  
+x13 – a3  
+x14 – a4  
+x15 – a5  
+x16 – a6  
+x17 – a7  
+x18 – s2  
+x19 – s3  
+x20 – s4  
+x21 – s5  
+x22 – s6  
+x23 – s7  
+x24 – s8  
+x25 – s9  
+x26 – s10  
+x27 – s11  
+x28 – t3  
+x29 – t4  
+x30 – t5  
+x31 – t6  
+
+
+
+addi a1, s2, 0
+x11 = x18 + 0; x11 = 1000_7fa0
+addi a0, s1, 0
+x10 = x9 + 0; x10 = 1000_7f80
+
+루프 이전 : a0(x10) = 0000_0001
+s3(x19) = 0000_0001
+a1(x11) = 0
+s2(x18) = 1000_7fa0
+s1(x9) = 1000_7f80
+
+addi s0, a0, 0
+x8 = x10 + 0; x8 = 0000_0001
+
+beq a0, s3, -16
+if x10 = x19, PC = PC + (-16) 
+같다! PC = 0000_097C -> 0000_096C
+
+lbu a1, 3(s2)
+x11 = 1000_7fa0
+EA = R[s1] + 3 = 1000_7fa3
+
+CPU에는 Dhrystone을 올렸ek. 
+문제는 지금 loop. 자꾸 jal ra, -80으로 되돌아가게 되고, 이걸 마주치지 않으려면 그 이전에 있는 beq a0, s3, -16이 not taken 되어야하는데 taken이 되고있다. 
+그럼 어디서부터 이 둘이 같게되었는지를 찾아보고 그러다보니까 메모리 영역 문제를 찾게되었다. 
+0x1000은 datamem, 0000은 ROM으로 한다면 그냥 명령어에서 data memory의 0000_1664를 load하면 1000_5990에 저장한 값이 나오게 될 수도 있다.
+
+우리 Instruction Memory는 ROM으로 pc값에 대한 명령어만 나오게 하고 있는데, 그럼 이 주소 필드 0x0000nnnn 들에 대해 읽는 요청이 당연히 있을 수 있으니까 그에 대한 처리를 해야할 것 같다. 
+명령어를 수행하면서 load나 store는 모두 data memory에서 처리되는데 막상 data memory에서 쓰이는건 0x1000nnnn 영역이니까 0x0000nnnn에 대한 처리가 data memory로 들어오게 되면 
+그건 instruction memory의 값을 출력해주는게 올바른 것 같고... 
+이래서 통합 메모리 위에 분리된 instruction cache와 data cache를 갖는구나. instruction 만 담아두는 메모리는 IF단계에 위치해서 MEM단계에서 그 값을 불러오기에는 구조적으로 골치아파지니까 
+이 경우 cache miss를 내고 RAM에 잡힌 통합 메모리에 있는 0x0000nnnn에 대한 데이터를 그냥 갖고오면 되니까... 
+메모리 계층구조가 단순히 속도 때문만이 아니라 구조적 최적화에 대한 내용도 품고 있는 거라고 봐도 되겠지? 
+일단은, 임시적으로 data memory 안에 instruction memory 안에 있는 데이터를 모두 넣고, 그걸 rom처럼 읽기만 가능하게끔 수정하면 좋을 것 같다.
+아니면 그냥 Data memory 안에서 주소 영역이 그에 겹치면 Instruction Memory에서 인출된 값을 그대로 출력하도록 해도 괜찮을 것 같다.
+Instruction Memory의 내용을 Data Memory에서 출력할 수 있도록 변경.
+조치했는데도 여전히 loop는 같다. 어떡하면 좋지?
+지금 디버깅은 iverilog simulation vcd로 파형 보면서 진행하고 있다. 
+더티파일로 진행하다가, 오히려 로직의 보장을 할 수가 없어져서 commit 31344d Synchronous Exception Detector 구현 시점 기준 소스파일을 다운받아 다시 하고 있다.
+
+Loop의 흐름은 이렇다..
+PC 380: addi a0, sp, 64
+a0 = 1000_7fa0
+s3 = 0000_0000
+
+PC 384: jal ra, 2232
+
+PC = c3c
+... 프로그램 진행중. a0, s3는 변경 없음.
+둘다 그대로 
+a0 = 1000_7fa0
+s3 = 0000_0000
+
+...
+PC c54: jalr zero, 0(ra)
+
+PC = 388
+...
+PC 38c: addi a0, sp, 32
+a0 = 1000_7f80
+s3 = 0000_0000
+
+PC 394: jal ra, 1460
+
+PC = 948
+...
+PC 968: addi s3, zero, 1
+a0 = 1000_7f80
+s1 = 0000_0001
+...
+PC 970: lbu a0, 2(s1)
+a0 = 0000_0000
+s1 = 0000_0001
+...
+PC 974: jal ra, -80
+
+PC = 924
+...
+PC 940: addi a0, zero, 1
+a0 = 0000_0001
+s1 = 0000_0001
+
+PC 944 : jalr zero, 0(ra)
+
+PC = 978 (ra가 이 때 0000_0978 이었음.)
+...
+PC 97c: beq a0, s3, -16
+a0 = s3, Taken.
+
+PC = 96c
+...
+PC 974: jal ra -80
+
+PC = 924
+...
+PC 940: addi a0, zero, 1
+a0 = 0000_0001
+s1 = 0000_0001
+
+PC 944 : jalr zero, 0(ra)
+
+PC = 978
+...
+PC 97c: beq a0, s3, -16
+a0 = s3, Taken.
+
+PC = 96c 무한반복...
+
+38c : addi a0, sp, 32로 a0이 1000_7f80이었는데,
+960: addi s1, a0, 0 으로 s1은 이 때 1000_7f80이었고. 
+970: lbu a0, 2(s1)으로 a0이 0000_0000이 된다.
+
+그 이후, 974: jal ra, -80으로 PC는 924.
+그리고 940: addi a0, zero, 1로 a0이 0000_0001이 됐다.
+그러다가 또 970에서 0000_0000이 되고. 
+루프.
+
+이 문제는.. 다음과 같은 결과로 해결되었다.
+FPGA에서 계속 loop 돌길래 뭐지 하고 5 시간 동안의 디버깅에 거쳐 jump, branch est의 조건 우선순위 문제인것을 발견하고 PCC를 수정.
+branch estimation은 jump가 EX도달 하여 분기하기 이전에 IF단계에 생길 수 있지만 jump가 앞에 있는 이상 무시되어야하기에 jump가 branch est보다 우선순위가 높아야한다.
+branch_prediction_miss 또한 마찬가지. 틀렸다면 IF단계의 est가 의미 없기에 branch Prediction miss는 branch est보다 높아야 한다.
+branch miss랑 jump는 서로 같다.(둘이 똑같이 EX단계에서 알 수 있으므로) 그리고 이 둘은 충돌할 수 없으므로 상관 없음. jump를 1순위, 그 아래로 2-3순위로 배치했다.
+
+그런데도 루프가 생긴다..
+애초부터 컴파일이 잘못되었나? linker의 문제인가..
+여러가지 보니까 아무래도 data가 원래 초기화되면서 값들이 올라가야하는데 관련한 내용을 boot.s에서 빼먹은 것 같다. 그래서 이를 수동으로 올렸다.
+dhrystone.mem 에서 1424(1부터 하면 1425)부터 data들인데, 이걸 별도로 data_init.mem으로 바꿔서 data memory initial begin에 올렸다.
+
+BE Logic에서 주소의 하위 2비트 address[1:0]가 사용되질 않아 항상 워드의 첫 바이트만 가져나올 수 있다는 우려가 보였다.
+어차피 Data Memory에서 마스크로 어찌저찌할거니까 상관 없나.
+
+놀랍게도 08시부터 지금(19:50) 까지 계속 하고 있다.
+
+일단 data_init을 따로 빼니까 loop는 없어진 것 같아서 그대로 시뮬기반 파일에서 변경사항 있는 RTL만 빼서 적용하고, (Data Memory, Instruction Memory, core 모듈 인스턴스 수정)
+FPGA synth-impl-bitstream 중.
+
+이런. 다른 이상한 Loop이 나왔다. 
+생각해보니 예전에 미뤄둔 부분인 Load 부분의 lb, lh에 대한 미흡한 구현이 있던 것 같아 이를 보완해서 다시 돌렸다. (위에서 언급한 BE Logic)
+그렇게 20:50. 0x0000_006F jal x0 0 명령어를 끝으로 dhrystone이 모두 돌아갔다!!!!
+
+이제 그 성능 측정을 위해 mcycle값이랑 minstret 값을 받아서 계산을 해봐야한다.
+원래대로라면 그렇게 끝나자마자 자동으로 final cycles, final intructions 가 나와야하는데 안나오네.
+관련해서 수정을 해야겠따.
+차라리 기존에 있는 버튼 로직에서 alu result가 나오던 우측 버튼을 final cycles랑 final instructions가 나오게 바꿔야겠다.
+이게 훨씬 구현 자체는 빠를 듯.
+
+Instruction Memory에 rom read address, data 관련 로직을 추가해서 (data memory-instruction memory 통로) 타이밍이 0.02x 정도로 엄청 빡빡해졌다.
+어라. 왜 다른 버튼들 다 작동도 안하고 000000000FE만 나오지? 
+
+DebugUartController에서 alu_result에서 final_Cycles, instructions로 바꾸면서 교체하지 못한 로직이 있길래 마저 교체하고 다시 돌린다.
+Synthesis 옵션도 Performance Opti 로 했고, Implementation도 Performance Explore로 해봤다.
+과연 얼마나 변할까? 
+Dhrystone을 내장시키고 난 뒤엔 합성에 거의 10분이 걸렸는데, 이번엔 어떻게 될까...
+아 그리고, risc-v 툴체인이 로컬 시스템에 없는게 너무 아쉬워서 방법을 찾던 도중, 친구가 구글 colab을 추천해줘서 둘러보고 있다.
+rv32i ilp32 multilib로 해서 make하는 중인데, 확실히 시간이 꽤 걸린다. 그래도 속도는 빠르고 용량도 넉넉해서 한번 사용할 가치는 있는 것 같아서 계속 빌드 켜 놓는 중.
+
+와.
+다른 버튼들 동작은 안하는데, 일단 ㅋㅋㅋ 성능 자료가 나왔다.
+
+## [RV32I46F_5SP @ 50MHz Dhrystone benchmark]
+00000000FEA94
+Instr: 000000000009DDF0
+이렇게 떴다. 위에는 Cycles일거고 (final_cycles)
+아래는 final Instructions.
+
+각각 1,043,092 / 646,640 이다.
+총 사이클이 1,043,092 사이클 걸렸다는 것.
+이걸로 DMIPS와 DMIPS/Hz를 계산해보자.
+우리 클럭 50MHz.
+
+수행 시간은 1043092/50×10^6이다. 0.0208618초.
+Dhrystones/second = 반복횟수 / 수행 시간 = 2000 (DHRY_ITERS) / 0.0208618 = 95875
+
+DMIPS = 초당 1757 Dhrystones
+95875 / 1757 = 54.6DMIPS
+
+54.6DMIPS / 50MHz = 1.09DMIPS/MHz.
+
+이야. 하하. 하하하하하!!!!
+이제 이 파일들을 develop에 push하고, 캬.. ㅋㅋ
+데이터 나온 것들 종합하고, 코드 최적화하면서 최종 블럭 다이어그램을 수정하면 된다..
+길잡이로서 쓰던 다이어그램을 이제 구현 이후 완성된 설계도로서 최종본을 그린다니..
+감회가 색다르다. 23:21에 성능 계산 다했는데, 부모님께 전화하고 싶다. 아.
+지금은 23:59.
+이만 마친다.
+
+# [2025.06.23.]
+계획을 수정했다.
+https://isocc.org/?page_id=180
+2025년 10월 15일부터 18일에 거쳐 이뤄지는 ISOCC; International SoC design Conference의 논문 최초 제출이 2025.06.27일에 마감한다.
+등재가 되던 안되던, 짧은 시간안에 본 개발이력과 코드를 가지고 논문을 완성해서 러프한 느낌이 있더라도 제출하도록 한다.
+Github에 PR은 그 이후 주말에 날 잡고 할 예정.
+Git에서 Release를 나눠서 할 것이다.
+우선 basic_rv32s 레포지토리의 메인 시나리오는 모두 완료되었다. 
+RV32I37F, RV32I43F, RV32I46F, RV32I46F_5SP, 46F5SP_SoC
+이렇게 총 5가지의 배포판을 만들 것이며, RV32I46F까지는 RTL 합성(시뮬레이션)으로만.
+그리고 RV32I46F_5SP와 46F5SP_SoC는 FPGA로 합성 가능하다고 표기할 것이다. 
+
+논문의 내용은...
+
+RV32I46F_5SP에 대한 내용 뿐만 아니라, basic_rv32s를 개발한 그 내용을 다룰 것이다.
+basic_rv32s 레포지토리의 본 목적은 RV32I ISA기반 CPU를 설계하며 학술적인 탐구와 이해도를 높이는 데 있기도 하지만,
+그 개발 기록과 디버그 로그, 그리고 각 리비전별로 바뀐 내역을 공개하여 CPU를 만들지 않은 입문자들부터 관심이 있는 모든이에게 이를 만들고 응용할 수 있는 가이드라인을 제시하는데 있다.
+명확한 설계법이 있는 것은 아니지만, 그 흐름을 제시하고자 하고, 그리고 그렇게 설계한 CPU의 성능평가와 발생했던 문제점들, 그걸 해결하기 위한 내용들을 적을 것이다.
+코어 다이어그램과 SoC 다이어그램. 실제 FPGA에 구현하여 UART를 통해 디버깅과 성능 측정한 사진. 다른 RISC-V RV32I 기반 프로세서들과 성능을 정량적으로 비교한 표.
+LUT랑 뭐 그런게 얼마나 사용되었고, 전력은 얼마나 소비하는지.. 이 성능이 x86 CPU
+RISC-V에 대한 이론적 배경과 본 설계에서는 어떻게 접목하였고, 기반이 된 헤네시 설계 기법에서 달라진 모듈들과 기능들이 뭔지.
+CPU 코어를 구성하는 각 모듈들에 대한 세부적인 로직 설명들. 향후 연구 계획, 개발 로그와 이를 코어로서 다른 곳에 사용할 수 있도록 하는 가이드라인과 개발 이력들을 GitHub에 MIT 라이센스로 제공하여
+RISC-V 생태계에 기여하고 본 학문에 대한 진입 장벽을 조금이라도 낮게 만들기 위함. 사람들이 흥미를 가져서 입문할 수 있게 하도록. 나도 해볼 수 있겠다 같은.
+
+세부적인 목차를 만들어보자. 
+논문 연구의 목적과 본 논문에서 뭘 다루는지에 대한 한눈 파악 초록 (ABSTRACT)
+- 연구에서 제시하는 것 : 
+헤네시 설계 법에 따라 설계한 베이스 CPU 모델 RV32I37F, 37F 아키텍처와 이를 기반하여 명령어 지원 수를 늘린 43F아키텍처, 46F 아키텍처 소개.
+그리고 46F 아키텍처의 5단계 파이프라이닝과 이를 FPGA로 검증한 것. (사용한 보드 Digilent社 Nexys Video Artix-7 FPGA; XC7A200T-1SBG484C Xilinx Artix-7 칩 기반)
+그리고 검증하면서 만든 46F5SP_SoC 의 설계와 이를 통해 측정한 RV32I46F_5SP CPU 코어의 성능, 타 RV32I 프로세서와 실제 데스크탑용 CPU와의 벤치마크 성능 비교
+해당 CPU 코어들과 SoC를 만들면서 적용한 설계법들과 모듈들의 구성 설명.
+진행하며 당면했던 문제들과 그를 해결한 방법. 
+디버깅을 위해 고안한 방안과 그 구현 방법들. (직접 만든 테스트 시나리오 기반 명령어 하나씩 결과를 UART로 받아볼 수 있는 디버그 인터페이스, Dhrystone을 위한 벤치마크 실행 인터페이스)
+본 연구에 대해 개발기록과 소스코드를 포함한 모든 내용을 Github에 MIT라이센스로 배포하였고 RISC-V 생태계 기여했다는 것.
+
+- 연구 목적 : CPU설계에 대한 학술적 탐구, RISC-V 생태계 기여, 
+CPU 설계에 대한 기초 수준(싱글사이클 RV32I 헤네시 설계법 기반)으로부터 해저드 처리 및 분기예측, 예외처리기가 포함된 5단계 파이프라인 수퍼스칼라 프로세서 설계까지의 체계화된 설계 가이드라인 제공.
+
+위 가이드라인은 개발 로그와 각 아키텍처의 명확한 구분, 그리고 각 아키텍처별 '신호 단위'수준의 세세한 블럭 다이어그램 설계도와 각 모듈별 로직의 설명이 포함됨.
+주석이 없는 clean code와 주석처리된 가이드 코드 두개 다 제공.
+Github의 특성을 이용해서 자유로운 issue 처리와 관심이 있는 모든 사람들과 소통하며 본 구조를 더 개선시킬 여지 도모.
+그리고 논문으로서 본 연구에 대한 이론적인 내용과 목적을 기록하여 알리고, 남겨 마이크로아키텍처 설계에 있어 도움이 되기 위함.
+
+초록에서 위 내용을 언급하도록 잘 조율해보면 된다.
+
+본문..
+
+RISC-V의 기초 설명
+(유래, 특성, 이론적 배경, 우리가 여기서 뭘 썼는지)
+본문
+아키텍처 만든 것들 뭐 있는지
+37F 아키텍처 다이어그램 (RV32I37F)
+각 모듈별 설명과 설계법 소개
+43F 아키텍처 다이어그램 (RV32I43F)
+추가된 모듈과 해당 의도, 설계법
+46F 아키텍처 다이어그램 (RV32I46F)
+추가된 모듈과 해당 의도, 설계법
+46F5SP 아키텍처 다이어그램 (RV32I46F_5SP)
+
+46F5SP의 FPGA 구현 내용
+- 아키텍처의 실제 물성 합성을 위한 변경 내용 
+(Combinatorial Loop 해결, 동기식 CSR 및 Exception Detector, 그리고 그 것 때문에 로직이 어떻게 달라지는지, 어떻게 구현했는지 등등.)
+- 합성 툴 Vivado 2024.2, Synthesis, Implementation 전략 flatten hierarchy rebuilt, Flow PerfOptimized_high, Performance_Explore 합성 및 구현.
+
+46F5SP_SoC의 FPGA 구현 내용
+- UART TX 기반 버튼, LED를 이용한 초경량 디버그 인터페이스
+- Dhrystone을 Instruction Memory에 담는 과정, 컴파일 툴체인 RISC-V GNU GCC march rv32i, ilp32. -o2, 반복횟수 1000회.
+- Dhrystone 담으면서 생긴 문제들과 그걸 해결한 방안. (아키텍처 특성상 메모리 매핑이 메모리 모듈별로 독립적이지 않음. )
+(원래 의도는 Instruction Memory에 수행할 명령어들이 모두 담겨져 있고, Data Memory를 접근 할 때 알아서 되는 것이었는데, 프로그램에서는 ROM과 RAM의 영역이 나누어져 있고 그 주소에 대한 매핑이 추가로 필요했음.)
+(Instruction Memory에서 순차적으로 실행되는 것을 기대하고 만든 설계지만, 프로그램 수행 중 ROM을 접근하여 load하는 것도 있다는 것을 알게됨.) 
+(Data Memory에서 Instruction Memory의 내용을 bypassing 해주는 로직을 추가하므로서 해결함.)
+- 나온 성능 1.09DMIPS/MHz. (RV32I46F_5SP @ 50MHz) 
+
+사용된 FPGA 리소스 LUT들, 예상 소비 전력 리포트, Device 면적 사진.
+도출된 46F5SP 아키텍처의 성능과 타 RV32I 기반 프로세서들, 실제 데스크탑용 프로세서와의 비교.
+현재 아키텍처의 한계: 
+- CSR RAW Hazard 
+- Short CSR_WE Hazard
+- MISALIGNED LOAD, STORE를 분리해서 처리하지 않고 하나의 Exception으로 취급하였다는 점.
+- Exception Detector가 동기식으로 바뀌면서 원래대로면 EX단계에서 store할 대상지가 misaligned인지 판단하고 exception해서 해당 메모리 주소에 쓰기가 되지 않아야하는데 
+  MEM단계에서 exception이 처리되기 시작하면서 쓰기와 동시에 TH가 진행이 됨. 
+- 분기예측기가 단순 2-bit FSM기반. 
+- 캐시가 없음. 
+- Exception, Trap Handler는 있지만 아직 Interrupt를 처리하지 못함. 
+타이밍 개선의 여지가 있음. Critical Path를 조사해서 단축시킬 아키텍처적인 개선이 이뤄질 여지 충분.
+클럭도 더 높이 나아갈 여지가 있음. 
+
+향후 연구 계획:
+위에 언급된 RV32I 표준 지원을 위한 이슈를 해결
+(CSR RAW Hazard, Short CSR_WE Hazard, RISC-V Privileged Architecture Manual을 기반으로 한 Exception, Trap 처리)
+FPGA로 오면서 생긴 구조적 문제 해결
+분기예측기 성능 개선
+설계안에는 포함되었지만, 구현하지 못한 캐시와 통합 메모리 구조의 구현
+RISC-V Linux Kernel 구동을 위한 아키텍처의 전반적인 확장. (RV64IMAFDC; RV64G)
+IDEC MPW 프로그램을 통한 프로세서 실제 프로토타입 생산 후 검증
+듀얼 코어 구조와 외부장치 Interrupt 구현을 통해 RV32I 명령어 완전지원 아키텍처 제시(50F 아키텍처 제시; FENCE류 명령어의 지원 추가)
+
+제일 먼저 이슈 해결부터 할 듯.
+
+참고 문헌 : 
+- 메모리 효율성을 높이기 위한 압축 명령어를 지원하는 32-비트 파이프라인 RISC-V프로세서 설계 및 구현
+
+- RISC-V 아키텍처 기반 6단계 파이프라인 RV32I프로세서의 설계 및 구현
+
+- FPGA를 이용한 32-bit RISC-V 5단계 파이프라인 프로세서 설계 및 구현
+
+- 임베디드 환경에서의32-bit RISC-V RV32IM 파이프라인 프로세서 설계 및 구현
+
+- Dynamic Branch Prediction 기반의 32-Bit RISC-V RV32IM 프로세서 설계 및 구현
+
+- VexRiscv - SpinalHDL RV32G Processor
+
+- An Analysis of Correlation and Predictability: What Makes Two-Level Branch Predictors Work
+
+- Towards Developing High Performance RISC-V Processors Using Agile Methodology
+
+- Scott McFarling, “Combining Branch Predictors,”
+McFarling, Scott. Combining branch predictors. Vol. 49. Technical Report TN-36, Digital Western Research Laboratory, 1993.
+
+00
+FPGA를 이용한 32-bit RISC-V RV32I 기반 최적화된 캐시 구조 설계 및 분석 연구
+
+Dynamic Branch Prediction 기반의 32-Bit RISC-V RV32IM 프로세서 설계 및 구현
+
+RISC-V 아키텍처 기반 6단계 파이프라인 RV32I프로세서의 설계 및 구현
+
+고성능 임베디드 디바이스를 위한 RV32IMC명령어 확장을 지원하는 RISC-V 파이프라인 프로세서 설계 및 구현
+
+메모리 효율성을 높이기 위한 압축 명령어를 지원하는 32-비트 파이프라인 RISC-V프로세서 설계 및 구현
+
+RISC-V RV32I 파이프라인 프로세서 및 주변장치 FPGA 검증
+
+임베디드 환경에서의 32-bit RISC-V RV32IM 파이프라인 프로세서 설계 및 구현
+
+FPGA를 이용한 32-bit RISC-V 5단계 파이프라인 프로세서 설계 및 구현
+
+
+RISC-V32I칩 구현 및 RV-32IM설계
+
+16-비트 압축 명령과 32-비트 정수 명령을 지원하는 RISC-V 마이크로프로세서의 하드웨어 설계
+
+FPGA 합성을 통한 RISC-V R-타입 ISA 동작 검증 및 리소스 분석
+
+FPGA를 이용한 32-bit RISC-V 프로세서 설계 및 평가
+
+RISC-V multicore performance enhancing architecture based on temporary caching
+
+비순차실행을 지원하는 고성능 RISC-V CPU 코어를 위한 검증 플랫폼
+
+RISC-V 프로세서의 모의실행 및 합성
+
+이정도. 햐... 논문의 시간이다... ㅋㅋㅋㅋ 그토록 바라왔던..
+
+오늘은 여기까지. 
+내일은 블럭 다이어그램 완성을 하고, 논문의 초록을 적는 것 부터 시작해봐야겠다.!!
