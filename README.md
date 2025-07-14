@@ -153,7 +153,11 @@ It utilizes **FPGA** on-board GPIOs such as LEDs, buttons and UART.
 
 - **ISA**: RISC-V RV32I v2.1  
   (except fence, fence.tso, pause, ecall, ebreak = total 37 instructions)  
-- Modules and Signals table
+- Total 14 Modules, 74 Signals.
+
+  <details>
+  <summary>Click to view Modules and Signals table</summary> 
+
   |Module name|Acronyms|Inputs|Outputs|Signals|
   |:---|:---:|:---|:---|:---:|
   |**Program Control**|
@@ -177,9 +181,10 @@ It utilizes **FPGA** on-board GPIOs such as LEDs, buttons and UART.
   |**MUXs**|
   |ALUsrcMUX_A|-|read_data1, pc, alu_src_A_select|srcA|  
   |ALUsrcMUX_B|-|read_data2, imm, alu_src_B_select|srcB|
-  |Reg_WD_MUX|-|byte_enable_logic_register_write_data, alu_result, imm, pc_plus_4|register_file_write_data|
+  |Reg_WD_MUX|-|byte_enable_logic_register_write_data, alu_result, imm, pc_plus_4|register_file_write_data|  
+  </details>
+  
 
-- Total 14 Modules, 74 Signals.
 
 ⚠️ Note: Misaligned address access is handled as zero-ing the low 2-bits from address. 
 
@@ -190,7 +195,11 @@ For each module's logic description, go to `docs/modules_and_signals/` for more 
 
 - **ISA**: RISC-V RV32I v2.1  + **Zicsr** v2.0
   (except fence, fence.tso, pause, ecall, ebreak = total 43 instructions)  
-- Modules and Signals table
+- Total 15 Modules, 81 Signals.
+
+  <details>
+  <summary>Click to view Modules and Signals table</summary> 
+  
   |Module name|Acronyms|Inputs|Outputs|Signals|
   |:---|:---:|:---|:---|:---:|
   |**Program Control**|
@@ -216,9 +225,9 @@ For each module's logic description, go to `docs/modules_and_signals/` for more 
   |**ALUsrcMUX_A**|-|read_data1, pc, **rs1**, alu_src_A_select|srcA|  
   |**ALUsrcMUX_B**|-|read_data2, imm, **csr_read_data**, alu_src_B_select|srcB|
   |**Reg_WD_MUX**|-|byte_enable_logic_register_write_data, alu_result, imm, pc_plus_4, **csr_read_data**|register_file_write_data|
-
-- Total 15 Modules, 81 Signals.
-
+  
+  </details>
+  
 Supported CSRs:
 |CSR|address<sub>16</sub>|Read-Only|WLRL, WARL|
 |:---|:---|:---:|:---:|
@@ -247,8 +256,13 @@ For each module's logic description, go to `docs/modules_and_signals/` for more 
 
 - **ISA**: RISC-V RV32I v2.1  + **Zicsr** v2.0 + mret*  
   (except fence, fence.tso, pause, = total 46 instructions)  
-  <sup>*privileged architecture version 20240411, 3.3.2. Trap-Return Instructions, page 51 </sup>
-  
+  <sup>*privileged architecture version 20240411, 3.3.2. Trap-Return Instructions, page 51 </sup>  
+- Total 16 Modules, 102 Signals.  
+ 
+ <details>
+ <summary>Modules and Signals table</summary>
+
+
 - Modules and Signals table
   |Module name|Acronyms|Inputs|Outputs|Signals|
   |:---|:---:|:---|:---|:---:|
@@ -279,12 +293,12 @@ For each module's logic description, go to `docs/modules_and_signals/` for more 
   |**CSR_addr_MUX|-|trapped, raw_imm, csr_trap_address|csr_address**|
   |**CSR_addr_MUX|-|trapped, csr_trap_write_data, alu_result|csr_write_data**|
   |**DBG_RD_MUX|-|debug_mode, im_instruction, dbg_instruction|instruction**|
-
-- Total 16 Modules, 102 Signals.
+</details>
 
 ⚠️ Notes
 - Misaligned address access is now handled with **Exception Handling**
-- Operations that should be done before branch to the *Trap Handler*, such as writing `mcause, mepc` CSRs and reading `mtvec` is done in **Trap Controller** module. This consume about 5 Clock cycles.
+- Operations that should be done before branch to the *Trap Handler*, such as writing `mcause, mepc` CSRs and reading `mtvec` is done in **Trap Controller** module. (Pre-Trap Handling; PTH)  
+This **PTH** consumes about 5 Clock cycles. 
 - CSR configurations are same as 43F architecture.
 
 For each module's logic description, go to `docs/modules_and_signals/` for more imformation.
@@ -292,7 +306,67 @@ For each module's logic description, go to `docs/modules_and_signals/` for more 
 
 ### RV32I46F_5SP
 
-Work In Progress
+- **ISA**: RISC-V RV32I v2.1  + **Zicsr** v2.0 + mret*  
+  (except fence, fence.tso, pause, = total 46 instructions)  
+  <sup>*privileged architecture version 20240411, 3.3.2. Trap-Return Instructions, page 51 </sup>  
+- Total n Modules, m Signals.  
+ 
+ <details>
+ <summary>Modules and Signals table</summary>
+
+
+- Modules and Signals table
+  |Module name|Acronyms|Inputs|Outputs|Signals|
+  |:---|:---:|:---|:---|:---:|
+  |**Program Control**|
+  |Program Counter|PC|clk, reset, next_pc|pc|3+1=4|  
+  |**PC Controller**|PCC|jump, branch_estimation, branch_prediction_miss, trapped, pc, jump_target, branch_target, branch_target_actual, trap_target, pc_stall|next_pc|10+1=11|
+  |**Exception Detector**|ED|clk, reset, **ID_opcode, EX_opcode, MEM_opcode, ID_funct3, EX_funct3, MEM_funct3**, alu_result, **MEM_alu_result**, raw_imm, **EX_raw_imm**, csr_write_enable, branch_target_lsbs, **branch_estimation**|trapped, trap_status|15+2=17|
+  |Trap Controller|TC|clk, reset, pc, trap_status, csr_read_data|trap_target, debug_mode, csr_write_enable, csr_trap_address, csr_trap_write_data, trap_done|5+6=11|
+  |**Memory Units**|
+  |Instruction Memory|IM|pc|im_instruction|1+1=2|
+  |Instruction Decoder|ID|instruction|opcode, funct3, funct7, rs1, rs2, rd, raw_imm|1+7=8|
+  |Register File|Reg|clk, read_reg1, read_reg2, write_reg, write_data, write_enable|read_data1, read_data2|6+2=8|
+  |Data Memory|DM|clk, write_enable, address, write_data, write_mask|read_data|5+1=6|
+  |**CSR File**|-|clk, reset, **trapped**, csr_write_enable, **csr_read_address, csr_write_address**, csr_write_data|csr_read_out, **csr_ready**|7+2=9|
+  |**Controls**|
+  |**Control Unit**|CU|opcode, funct3, trap_done, **csr_ready**|**jump, branch**, alu_src_A_select, alu_src_B_select, register_file_write, register_file_write_data_select, memory_read, memory_write, csr_write_enable, **pc_stall**|4+10=14|
+  |ALU Controller|-|opcode, funct3, funct7_5, imm_10|alu_op|4+1=5|
+  |**Executions**|
+  |Arithmetic Logic Unit|ALU|srcA, srcB, alu_op|alu_result, alu_zero|3+2=5|
+  |**Branch Logic**|-|branch, **branch_estimation**, alu_zero, funct3, pc, imm|branch_taken, **branch_target_actual**, **branch_prediction_miss**|6+3=9|
+  |Byte Enable Logic|BE_Logic|memory_read, memory_write, funct3, register_file_read_data, data_memory_read_data, address|register_file_write_data, data_memory_write_data, write_mask|6+3=9|
+  |Immediate Generator|imm_gen|opcode, raw_imm|imm|2+1=3|
+  |PC plus 4|-|pc|pc_plus_4|1+1=2|
+  |**Pipelines**|
+  |**IF ID Register**|**IF/ID**|clk, reset, flush, IF_ID_stall, IF_pc, IF_pc_plus_4, IF_instruction, IF_branch_estimation|ID_pc, ID_pc_plus_4, ID_instruction, ID_branch_estimation|9+4=13|
+  |**ID EX Register**|**ID/EX**|clk, reset, flush, ID_EX_stall, ID_pc, ID_pc_plus_4, ID_branch_estimation, ID_instruction, ID_jump, ID_branch, ID_alu_src_A_select, ID_alu_src_B_select, ID_memory_read, ID_memory_write, ID_register_file_write_data_select, ID_register_write_enable, ID_csr_write_enable, ID_opcode, ID_funct3, ID_funct7, ID_rd, ID_raw_imm, ID_read_data1, ID_read_data2, ID_rs1, ID_rs2, ID_imm, ID_csr_read_data|EX_pc, EX_pc_plus_4, EX_branch_estimation, EX_instruction, EX_jump, EX_memory_read, EX_memory_write, EX_register_file_write_data_select, EX_register_write_enable, EX_branch, EX_alu_src_A_select, EX_alu_src_B_select, EX_opcode, EX_funct3, EX_funct7, EX_rd, EX_raw_imm, EX_read_data1, EX_read_data2, EX_rs1, EX_rs2, EX_imm, EX_csr_read_data|28+24=52|
+  |**EX MEM Register**|**EX/MEM**|clk, reset, flush, EX_MEM_stall, EX_pc, EX_pc_plus_4, EX_instruction, EX_memory_read, EX_memory_write, EX_register_file_write_data_select, EX_register_write_enable, EX_opcode, EX_funct3, EX_rs1, EX_rd, EX_read_data2, EX_imm, EX_raw_imm, EX_csr_read_data, EX_alu_result|MEM_pc, MEM_pc_plus_4, MEM_instruction, MEM_memory_read, MEM_memory_write, MEM_register_file_write_data_select, MEM_register_write_enable, MEM_csr_write_enable, MEM_opcode, MEM_funct3, MEM_rs1, MEM_rd, MEM_read_data2, MEM_imm, MEM_raw_imm, MEM_csr_read_data, MEM_alu_result|21+17=38|
+  |**MEM WB Register**|**MEM/WB**|clk, reset, MEM_WB_stall, flush, MEM_pc, MEM_pc_plus_4, MEM_instruction, MEM_register_file_write_data_select, MEM_imm, MEM_raw_imm, MEM_csr_read_data, MEM_alu_result, MEM_register_write_enable, MEM_csr_write_enable, MEM_rs1, MEM_rd, MEM_opcode, MEM_byte_enable_logic_register_file_write_data|WB_pc, WB_pc_plus_4, WB_instruction, WB_register_file_write_data_select, WB_imm, WB_raw_imm, WB_csr_read_data, WB_alu_result, WB_register_write_enable, WB_csr_write_enable, WB_rs1, WB_rd, WB_opcode, WB_byte_enable_logic_register_file_write_data|18+14=32|
+  |**Hazard Unit**|-|clk, reset, trap_done, csr_ready, standby_mode, trap_status, misaligned_instruction_flush, misaligned_memory_flush, pth_done_flush, ID_rs1, ID_rs2, ID_raw_imm, MEM_rd, MEM_register_write_enable, MEM_csr_write_enable, MEM_csr_write_address, WB_rd, WB_register_write_enable, WB_csr_write_enable, WB_csr_write_address, EX_rd, EX_opcode, EX_rs1, EX_rs2, EX_imm, EX_csr_write_enable, EX_jump, branch_prediction_miss|hazard_mem, hazard_wb, csr_hazard_mem, csr_hazard_wb, IF_ID_flush, ID_EX_flush, EX_MEM_flush, MEM_WB_flush, IF_ID_stall, ID_EX_stall, EX_MEM_stall, MEM_WB_stall|28+12=40|
+  |**Forward Unit**|-|hazard_mem, MEM_imm, MEM_alu_result, MEM_csr_read_data, MEM_pc_plus_4, MEM_opcode, byte_enable_logic_register_file_write_data, hazard_wb, WB_imm, WB_alu_result, WB_csr_read_data, WB_byte_enable_logic_register_file_write_data, WB_pc_plus_4, WB_opcode, csr_hazard_mem, csr_hazard_wb, MEM_csr_write_data, WB_csr_write_data, csr_read_data|alu_forward_source_data_a, alu_forward_source_data_b, alu_forward_source_select_a, alu_forward_source_select_b, csr_forward_data|19+5=24|
+  |**Branch Predictor**|**BP**|**clk, reset, IF_opcode, IF_pc, IF_imm, EX_branch, EX_branch_taken|branch_estimation, branch_target**|7+2=9|
+  |**MUXs**|
+  |**ALUsrcMUX_A|-|EX_read_data1, EX_pc, EX_rs1, EX_alu_src_A_select**|srcA|
+  |**ALUsrcMUX_B|-|EX_read_data2, EX_imm, EX_csr_read_data, EX_alu_src_B_select**|srcB|
+  |**ALUsrc_forward_MUX_A|-|alu_forward_source_select_a, alu_forward_source_data_a, srcA|ALUsrcA**|
+  |**ALUsrc_forward_MUX_B|-|alu_forward_source_select_b, alu_forward_source_data_b, srcB|ALUsrcB**|
+  |**Reg_WD_MUX**|-|**WB_byte_enable_logic_register_write_data, WB_alu_result, WB_imm, WB_pc_plus_4, WB_csr_read_data|WB_register_file_write_data**|
+  |**CSR_read_addr_MUX**|-|**trapped, standby_mode, raw_imm, csr_trap_address|csr_read_address**|
+  |**CSR_write_addr_MUX**|-|**trapped, standby_mode, WB_raw_imm, csr_trap_address|csr_write_address**|
+  |**CSR_data_MUX**|-|trapped, **standby_mode**, csr_trap_write_data, **WB_alu_result**|csr_write_data|
+  |DBG_RD_MUX|-|debug_mode, im_instruction, dbg_instruction|instruction|
+</details>
+
+⚠️ Notes
+- 46F_5SP architecture was designed to be implemented on FPGA. So some modules have turned to Syncrhonous modules.  
+This made some hazards. Please be aware of these which is written in issues. 
+- Since the Exception Detector logic and CSR File has been changed to Synchronous, **PTH now consumes about 10 Clock cycles.**
+- CSR configurations are same as 43F architecture.
+- To run C program, the bypass logic between Instruction Memory and Data Memory is required (since the toolchain linker devide the ROM and RAM address map.). Please check the core design in `fpga/` for running C program on our SoC.
+
+For each module's logic description, go to `docs/modules_and_signals/` for more imformation.
+**Each module has its own logic behavior documentations which includes I/O signals, Logics and Note.**
 
 ---
 
