@@ -12,6 +12,9 @@ Of course, the manual doesn't describe '*exactly how to*' design the processor f
 
 ## Setup Environments
 
+For Block Diagram (Blueprint of the Processor) Design : 
+- [draw.io](https://draw.io/) (It also has [PC client version](https://www.drawio.com/blog/diagrams-offline); Visit their [GitHub](https://github.com/jgraph/drawio-desktop)!)
+
 For RTL simulation only :
 - [Icarus Verilog](https://bleyer.org/icarus/)
 - [Surfer-Project](https://surfer-project.org/) (or [GTKwave](https://gtkwave.sourceforge.net/))
@@ -19,7 +22,8 @@ For RTL simulation only :
 With FPGA Implementation and synthesis :
 - Vivado 2024.2 (or other IDE)  
 
-We've used cmd in Visual Studio Code terminal.  Upper suggested environments are same as our development environment.  
+We've used cmd in Visual Studio Code terminal.  
+Upper suggested environments are same as our development environment.  
 You can use any other programs but note that the conversion tutorial to other environment is not provided.  
 
 # Learn Architecture Design
@@ -42,7 +46,9 @@ Find each module's logic description document named `[Architecture Name]modulena
 To additionally design the function that you want processor to perform, specify the **logics you need**, and **abstractly design the module and signals** that you need for function.  
 As you can find it in `development_log.md`, each module has been designed through these type of thoughts. Let's give an example with 37F architecture. 
 
-## 37F Architecture Module Design Progress
+## 37F Architecture Module Design Process
+
+## Front-end
 
 1. **Specify the function**  
 Let's design core to **execute the ADD instruction in RISC-V RV32I**!  
@@ -67,7 +73,7 @@ ADD is an arithmetic calculation.
 ----> There should be an decoder unit for ALU opcode generation which should receiving the opcode and funct3, funct7 sinals for recognition. = **ALU Controller** module design  
 
 ---
-### This is where our design philosophy comes in.
+#### This is where our design philosophy comes in.
 Why ALU Controller module is separately needed? Can't it be integrated in **Control Unit**?  
 Sure. It's possible, and we've considered about it. Since one of our philosophy to core design is that 
 > Define clear module roles with focused logic to enhance modularity.  
@@ -80,11 +86,18 @@ we've decided to separte the **ALU Controller** from **Control Unit**. The main 
 ---> We need Register File, Register File should get two register address value and return it together.  = 2 read address input port for **Register File** module. 
 
 The instruction fetch and Control Unit's conceptual approach is well explained on Computer Architecture textbooks and courses. 
-(We recommend [Computer Organization and Design by David. A. Patterson](https://www.amazon.com/Computer-Organization-Design-RISC-V-Architecture/dp/0128203315). This repository's processor design methodology is highly affected by this book.)
+(We recommend [Computer Organization and Design by David. A. Patterson](https://www.amazon.com/Computer-Organization-Design-RISC-V-Architecture/dp/0128203315). This repository's processor design methodology is heavily affected by this book.)
 
 --> The result of ALU should be written at Register which is addressed in `rd` bit field of instruction.  
 ---> Register File should get write address not just read address. = 1 write address input port for **Register File**  
 <sup>Why not re-use the address input port for reading? The logic becomes too complicated and lowers intuitiveness of core design.  </sup>  
 ----> ALU's result signal is not the only signal of Register File's Write Data source. = **Reg_WD_MUX**
 
+With same methodology, CSR File in 43F arch, Trap Controller, Exception Detector in 46F architecture is designed and implemented. 
+
+## Back-end
+
+Based on **Front-end** design
+
 # Run Simulation with Designed Architecture
+
