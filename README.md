@@ -63,17 +63,18 @@ Documentations of baisc_rv32s.
 Processor design's signal-level block diagrams, Including archived legacies.  
 PDF, PNG, drawio files.  
 
+- **/guidelines/**  
+Annotated RTL sources, tutorials, organized devlogs, debug logs.  
+
 - **/project_devlog/**  
 The raw development logs of main contributors.  
+
+- **/references/**  
+References that helped.  
 
 - **/theories_and_logics/**  
 Description of each designed architecture down to logic block's signal and logics. 
 
-- **/guidelines/**  
-Annotated RTL sources, tutorials, organized devlogs, debug logs.  
-
-- **/references/**  
-References that helped.  
 
 ### modules/
 
@@ -112,7 +113,7 @@ In directory `documents/guidelines/`, we provide comprehensive resources for lea
   providing UART-based debugging and **Dhrystone** benchmark setup on **FPGA**.  
 
 The Development logs might possibily not match with the current design, if there's some certain missing logs which is needed, you may request for it.  
-<sub>Un-organized raw devlog in `documents/project_devlog` contains more imformations than the organized logs in `/guidelines`/ but even non-relative words are included. Also, project's developers are from **Republic of Korea**. All the raw devlogs are written originally in **Korean**. Please be aware of these. </sub>
+<sub>Un-organized raw devlog in `documents/project_devlog` contains more informations than the organized logs in `/guidelines`/ but even non-relative words are included. Also, project's developers are from **Republic of Korea**. All the raw devlogs are written originally in **Korean**. Please be aware of these. </sub>
 
 In architecture documentations, we've included the **specifications of all modules** with **Signal-level Block Diagram**.
 The I/O signals of each module, the purpose of the modules, logic behavior.
@@ -188,7 +189,7 @@ It utilizes **FPGA** on-board GPIOs such as LEDs, buttons and UART.
 
 ⚠️ Note: Misaligned address access is handled as zero-ing the low 2-bits from address. 
 
-For each module's logic description, go to `docs/modules_and_signals/` for more imformation.
+For each module's logic description, go to `documents/theories_and_logics/modules_and_signals/` for more information.
 **Each module has its own logic behavior documentations which includes I/O signals, Logics and Note.**
 
 ### RV32I43F
@@ -249,7 +250,7 @@ Supported CSRs:
 - In RV32I46F_5SP, the CSR logics are changed. For executing the trap and exceptions during the pipeline, the address signal separated to read address and write address input.
 - `mhartid` is some dummy value for read-only CSR design test. No multi-hart architecture is available now.
 
-For each module's logic description, go to `docs/modules_and_signals/` for more imformation.
+For each module's logic description, go to `documents/theories_and_logics/modules_and_signals/` for more information.
 **Each module has its own logic behavior documentations which includes I/O signals, Logics and Note.**
 
 ### RV32I46F
@@ -301,7 +302,7 @@ For each module's logic description, go to `docs/modules_and_signals/` for more 
 This **PTH** consumes about 5 Clock cycles. 
 - CSR configurations are same as 43F architecture.
 
-For each module's logic description, go to `docs/modules_and_signals/` for more imformation.
+For each module's logic description, go to `documents/theories_and_logics/modules_and_signals/` for more information.
 **Each module has its own logic behavior documentations which includes I/O signals, Logics and Note.**
 
 ### RV32I46F_5SP
@@ -365,7 +366,7 @@ This made some hazards. Please be aware of these which is written in issues.
 - CSR configurations are same as 43F architecture.
 - To run C program, the bypass logic between Instruction Memory and Data Memory is required (since the toolchain linker devide the ROM and RAM address map.). Please check the core design in `fpga/` for running C program on our SoC.
 
-For each module's logic description, go to `docs/modules_and_signals/` for more imformation.
+For each module's logic description, go to `documents/theories_and_logics/modules_and_signals/` for more information.
 **Each module has its own logic behavior documentations which includes I/O signals, Logics and Note.**
 
 ---
