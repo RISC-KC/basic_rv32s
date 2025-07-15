@@ -97,7 +97,24 @@ With same methodology, CSR File in 43F arch, Trap Controller, Exception Detector
 
 ## Back-end
 
-Based on **Front-end** design
+1. **HDL code writing**  
+Based on **Front-end** design, next step is to **make those block designs to actual RTL code with HDL**(Hardware Description Language; *VerilogHDL*, *VHDL*)  
+
+2. **Debugging with testbenches**  
+After the first HDL code is written, the testbench simulation results can be debugged with waveform viewer programs such as **GTKwave** and **Surfer-project** . 
+
+3. **Waveform Debugging**  
+Debug the signals by comparing the intended behaviors and values with logic modules and checking if it's correct of not.  
+Through the Back-end debugging process, we can find the **additional logics that is needed** but coudldn't think of it at the start, or the **mis-designed logics** that should be revised.  
+
+4. **Commit the changes to Block Diagram**  
+The changes of the architecture should be committed on block diagram either. When the processor's logic and scale is getting bigger, there's certain limit to remember all the architecture just in mind.
+
+**basic_RV32s**' arhictectures were deisgned by these processes.  
+> A processor design methodology that abstracts the conceptual design and implementing to synthesizable RTL code.  
+
+This methodology is our basic pathway to design the processor.
 
 # Run Simulation with Designed Architecture
 
+WIP
