@@ -63,9 +63,6 @@ Documentations of baisc_rv32s.
 Processor design's signal-level block diagrams, Including archived legacies.  
 PDF, PNG, drawio files.  
 
-- **/guidelines/**  
-Annotated RTL sources, tutorials, organized devlogs, debug logs.  
-
 - **/project_devlog/**  
 The raw development logs of main contributors.  
 
@@ -73,8 +70,11 @@ The raw development logs of main contributors.
 References that helped.  
 
 - **/theories_and_logics/**  
-Description of each designed architecture down to logic block's signal and logics. 
+Description of each designed architecture down to logic block's signal and logics.
 
+### guidelines/
+
+Annotated RTL sources, tutorials, processor design methodologies, organized devlogs, debug logs.  
 
 ### modules/
 
@@ -100,7 +100,7 @@ Also, the project file includes clean RTL code without annotations.
 2. Define clear module roles with focused logic to enhance modularity.
 3. Priortize performance improvements even when conflicting with the above principles, with effectiveness validated through testing.  
 
-In directory `documents/guidelines/`, we provide comprehensive resources for learning and understanding the design of processors in **basic_RV32s**.  
+In directory `guidelines/`, we provide comprehensive resources for learning and understanding the design of processors in **basic_RV32s**.  
 - 🗃 **Incremental architecture documentation**  
   presenting each evolution with design decisions.
 - 📑 **Dual-format verilog RTL source code**  
@@ -113,7 +113,7 @@ In directory `documents/guidelines/`, we provide comprehensive resources for lea
   providing UART-based debugging and **Dhrystone** benchmark setup on **FPGA**.  
 
 The Development logs might possibily not match with the current design, if there's some certain missing logs which is needed, you may request for it.  
-<sub>Un-organized raw devlog in `documents/project_devlog` contains more informations than the organized logs in `/guidelines`/ but even non-relative words are included. Also, project's developers are from **Republic of Korea**. All the raw devlogs are written originally in **Korean**. Please be aware of these. </sub>
+<sub>Un-organized raw devlog in `documents/project_devlog` contains more informations than the organized logs in `guidelines`/ but even non-relative words are included. Also, project's developers are from **Republic of Korea**. All the raw devlogs are written originally in **Korean**. Please be aware of these. </sub>
 
 In architecture documentations, we've included the **specifications of all modules** with **Signal-level Block Diagram**.
 The I/O signals of each module, the purpose of the modules, logic behavior.
