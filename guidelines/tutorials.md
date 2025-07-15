@@ -1,8 +1,8 @@
-# Tutorials
+# 📝 Tutorials
 
 The most efficient pathway to learn the processor design from scratch, we suggest following steps before the Development Log.
 
-## Before getting started
+## 📚 Before getting started
 
 This Processor design learning framework is based on **RISC-V RV32 ISA.**  
 **We strongly recommend to check and read the** [Ratified specifications manual of RISC-V ISA](https://riscv.org/specifications/ratified/).  
@@ -10,7 +10,10 @@ Especially in Unprivileged Architecture manual, all of required information for 
  
 Of course, the manual doesn't describe '*exactly how to*' design the processor from scratch, but even not knowing the methodology to start, this gives massive clues to infer the architecture to design. 
 
-## Setup Environments
+Most of our base architecture design's conceptual approach is well explained on Computer Architecture textbooks and courses. 
+(We recommend [Computer Organization and Design by David. A. Patterson](https://www.amazon.com/Computer-Organization-Design-RISC-V-Architecture/dp/0128203315). This repository's processor design methodology is **heavily affected by this book**.)
+
+## 💻 Setup Environments
 
 For Block Diagram (Blueprint of the Processor) Design : 
 - [draw.io](https://draw.io/) (It also has [PC client version](https://www.drawio.com/blog/diagrams-offline); Visit their [GitHub](https://github.com/jgraph/drawio-desktop)!)
@@ -26,7 +29,7 @@ We've used cmd in Visual Studio Code terminal.
 Upper suggested environments are same as our development environment.  
 You can use any other programs but note that the conversion tutorial to other environment is not provided.  
 
-# Learn Architecture Design
+# 📐 Learn Architecture Design
 
 0. Select which architecture you want to learn (We recommend to start with 37F base architecture. )
 1. **Open Architecture Block Diagram**  
