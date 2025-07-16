@@ -41,13 +41,13 @@ _"A guideline for processor designing from scratch for begginer that has made by
 
 ### Table of Contents
 
-- [Introduction](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#introduction)  
-- [Branches & Directories](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#branches--directories)  
-- [About Guidelines](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#about-guidelines)  
-- [Architectures and Specifications](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#architectures-and-specifications)  
-- [FPGA Implementation Results](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#fpga-implementation-results)  
-- [Getting Started](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#getting-started)  
-- [Future Works](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#future-works)  
+- [Introduction](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#introduction)  
+- [Branches & Directories](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#branches--directories)  
+- [About Guidelines](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#about-guidelines)  
+- [Architectures and Specifications](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#architectures-and-specifications)  
+- [FPGA Implementation Results](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#fpga-implementation-results)  
+- [Getting Started](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#getting-started)  
+- [Future Works](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#future-works)  
 
 -----
 
