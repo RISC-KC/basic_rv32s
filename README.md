@@ -9,16 +9,18 @@ It provides step-by-step guideline for designing processor **from single-cycle p
 
 KHWL
 > I've always wondered how to make CPU and I wanted to make my own.  
-> Although it was a far dream for me, I've gave it a try when I was serving the Korean Military duty. And made the result pretty legitimatley.  
+> Although it was a far dream for me, I gave it a try when I was serving the Korean Military duty. And made the result pretty legitimately.  
 <img width="6984" height="4968" alt="250714 RV32I46F_5SP_Final_R9 (1)" src="https://github.com/user-attachments/assets/6da12c7b-438f-422a-aab7-6d54af781a91" />
 <sup> Signal-Level Block Diagram of RV32I46F_5SP Core </sup>
 <br>
 <br>
 While designing the Architecture of processor, I've felt the gap between the theories and actual implementations at certain point and it took a long way to discover the problem and resolve it.  
 
-So I decided to make this **project for academic / instructional purpose for anyone who wants to make & design the processor from scratch** can easily dive into it.  
-I've documented all the **development progresses, train of thoughts, debug logs**. I assume this would work as a **mistake notebook or a guideline for beginners of RISC-V**, Processor design field.  
-Since most of lectures I've heard were using Verilog, all of RTL codes we provide are written in pure **Verilog**. 
+So I decided to make this **project for academic/instructional purposes so that anyone who wants to make & design processors from scratch** can easily dive into it.  
+I've documented all the **development progresses, train of thoughts, debug logs**. I assume this would work as a **mistake notebook or a guideline for RISC-V beginners**, Processor design field.  
+Since most of lectures I've heard were using Verilog, all of RTL codes we provide are written in pure **Verilog**.  
+
+_"A guideline for processor designing from scratch for begginer that has made by an actual beginner."_  
 
 ### Key Features
 
@@ -42,7 +44,7 @@ Since most of lectures I've heard were using Verilog, all of RTL codes we provid
 - [Introduction](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#introduction)  
 - [Branches & Directories](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#branches--directories)  
 - [About Guidelines](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#about-guidelines)  
-- [Arhictectures and Specifications](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#architectures-and-specifications)  
+- [Architectures and Specifications](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#architectures-and-specifications)  
 - [FPGA Implementation Results](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#fpga-implementation-results)  
 - [Getting Started](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#getting-started)  
 - [Future Works](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#future-works)  
@@ -65,7 +67,7 @@ Since most of lectures I've heard were using Verilog, all of RTL codes we provid
 
 ### documents/  
 
-Documentations of baisc_rv32s.  
+Documentations of basic_RV32s.  
 
 - **/diagrams/**  
 Processor design's signal-level block diagrams, Including archived legacies.  
@@ -106,7 +108,7 @@ Also, the project file includes clean RTL code without annotations.
 **basic_RV32s** follows three design principles to guide an intuitive and efficient hardware architecture design.
 1. Streamline I/O signals to reduce complextiy.
 2. Define clear module roles with focused logic to enhance modularity.
-3. Priortize performance improvements even when conflicting with the above principles, with effectiveness validated through testing.  
+3. Prioritize performance improvements even when conflicting with the above principles, with effectiveness validated through testing.  
 
 In directory `guidelines/`, we provide comprehensive resources for learning and understanding the design of processors in **basic_RV32s**.  
 - 🗃 **Incremental architecture documentation**  
@@ -120,8 +122,8 @@ In directory `guidelines/`, we provide comprehensive resources for learning and 
 - 🔬 **Verification methodologies**
   providing UART-based debugging and **Dhrystone** benchmark setup on **FPGA**.  
 
-The Development logs might possibily not match with the current design, if there's some certain missing logs which is needed, you may request for it.  
-<sub>Un-organized raw devlog in `documents/project_devlog` contains more informations than the organized logs in `guidelines`/ but even non-relative words are included. Also, project's developers are from **Republic of Korea**. All the raw devlogs are written originally in **Korean**. Please be aware of these. </sub>
+The Development logs might possibly not match with the current design, if there's some certain missing logs which is needed, you may request for it.  
+<sub>Un-organized raw devlog in `documents/project_devlog` contains more information than the organized logs in `guidelines`/ but even non-relative words are included. Also, project's developers are from **Republic of Korea**. All the raw devlogs are written originally in **Korean**. Please be aware of these. </sub>
 
 In architecture documentations, we've included the **specifications of all modules** with **Signal-level Block Diagram**.
 The I/O signals of each module, the purpose of the modules, logic behavior.
@@ -195,7 +197,7 @@ It utilizes **FPGA** on-board GPIOs such as LEDs, buttons and UART.
   
 
 
-⚠️ Note: Misaligned address access is handled as zero-ing the low 2-bits from address. 
+⚠️ Note: Misaligned address access is handled as zeroing the low 2-bits from address. 
 
 For each module's logic description, go to `documents/theories_and_logics/modules_and_signals/` for more information.
 **Each module has its own logic behavior documentations which includes I/O signals, Logics and Note.**
@@ -254,9 +256,9 @@ Supported CSRs:
 
 
 ⚠️ Notes
-- Misaligned address access is handled as zero-ing the low 2-bits from address.
+- Misaligned address access is handled as zeroing the low 2-bits from address.
 - In RV32I46F_5SP, the CSR logics are changed. For executing the trap and exceptions during the pipeline, the address signal separated to read address and write address input.
-- `mhartid` is some dummy value for read-only CSR design test. No multi-hart architecture is available now.
+- `mhartid` is a dummy value for read-only CSR design test. No multi-hart architecture is available now.
 
 For each module's logic description, go to `documents/theories_and_logics/modules_and_signals/` for more information.
 **Each module has its own logic behavior documentations which includes I/O signals, Logics and Note.**
@@ -306,7 +308,7 @@ For each module's logic description, go to `documents/theories_and_logics/module
 
 ⚠️ Notes
 - Misaligned address access is now handled with **Exception Handling**
-- Operations that should be done before branch to the *Trap Handler*, such as writing `mcause, mepc` CSRs and reading `mtvec` is done in **Trap Controller** module. (Pre-Trap Handling; PTH)  
+- Operations that should be done before branching to the *Trap Handler*, such as writing `mcause, mepc` CSRs and reading `mtvec` is done in **Trap Controller** module. (Pre-Trap Handling; PTH)  
 This **PTH** consumes about 5 Clock cycles. 
 - CSR configurations are same as 43F architecture.
 
@@ -370,9 +372,9 @@ For each module's logic description, go to `documents/theories_and_logics/module
 ⚠️ Notes
 - 46F_5SP architecture was designed to be implemented on FPGA. So some modules have turned to Syncrhonous modules.  
 This made some hazards. Please be aware of these which is written in issues. 
-- Since the Exception Detector logic and CSR File has been changed to Synchronous, **PTH now consumes about 10 Clock cycles.**
+- Since the Exception Detector logic and CSR File have been changed to Synchronous, **PTH now consumes about 10 Clock cycles.**
 - CSR configurations are same as 43F architecture.
-- To run C program, the bypass logic between Instruction Memory and Data Memory is required (since the toolchain linker devide the ROM and RAM address map.). Please check the core design in `fpga/` for running C program on our SoC.
+- To run C program, the bypass logic between Instruction Memory and Data Memory is required (since the toolchain linker divides the ROM and RAM address map.). Please check the core design in `fpga/` for running C program on our SoC.
 
 For each module's logic description, go to `documents/theories_and_logics/modules_and_signals/` for more information.
 **Each module has its own logic behavior documentations which includes I/O signals, Logics and Note.**
@@ -399,10 +401,10 @@ Table below is FPGA implementation results.
 |RV32I37F|-|-|-|-|-|-|
 
 <sup>* **Dhrystone** benchmark and **Trap Handler** hard coded using readmemh. Resource varies depends on the program in memories. This will soon be standardized.</sup>  
-<sup>** All memories are inffered as **LUT-based distributed RAM**.</sup>  
+<sup>** All memories are inferred as **LUT-based distributed RAM**.</sup>  
 
 Various performance benchmark (such as coremark) will be added soon.  
-We assume that the processor can reach higher clock speed and performance, but at the moment we couldn't keep the development in touch due to personal schedule (military duty, school admission).  
+We assume that the processor can reach higher clock speed and performance, but at the moment we couldn't continue development in touch due to personal schedule (military duty, school admission).  
 This will be worked soon also.
 
 ---
@@ -426,7 +428,7 @@ This would run testbench as coded in `testbenches/`.
 The result of the simulation `.vvp` is generated in `testbenches/results/`.  
 `.vcd` waveform result is generated in `testbenches/results/waveforms/`.  
 
-Waveform can be viewed **GTKwave** or [Surfer-project](https://surfer-project.org/).  
+Waveform can be viewed using **GTKwave** or [Surfer-project](https://surfer-project.org/).  
 
 ### 🎛 FPGA implementation  
 
@@ -471,16 +473,16 @@ MEMORY
 ...
 ```
 
-If you are not beginner as I am, you can just modify this memory settings.  
+If you are not a beginner like I was, you can just modify this memory settings.  
 Since the actual FPGA implementation is only done in **RV32I46F_5SP**, we suggest to use 46F_5SP architecture for C compiled program simulation.  
 
-We'll going to work about easy C program import on SoC soon.  
+We're going to work on easy C program import on SoC soon.  
 
 ---
 
 ## Future Works
 
-1. issue resolvations
+1. issue resolutions
 2. Single-Cycle core FPGA implementation and Evaluation
 3. Additional benchmarks (Coremark, RISC-V ISA tests)
 4. Standardized FPGA synthesis resource measurement
@@ -489,9 +491,23 @@ We'll going to work about easy C program import on SoC soon.
 
 ---
 
+## Contributions
+### This repository is not Frozen or Completed ❄️!
+
+Most of repository structure has been designed, but still some documents are on-going.  
+Since the project is being done in limited environment (military duty), this could take some time.  
+We are currently looking about October(2025) to end the whole documentations.  
+
+Since it's still an open-source RISC-V core implementation and instructional framework, the changes can be done as needed.  
+Please feel free to generate an issue for improving this project to make it possible to newcommers and beginners can easily dive in to RISC-V and Processor Design.  
+
+Thanks! 📡
+
+---
+
 ## Acknowledgment
 
-Hartfelt thanks to [@ChoiCube84](https://github.com/ChoiCube84) for being an incredible project companion throughout this processor design journey. Even in the challenging environment of military service, your consistent support and dedication made this project possible. 
+Heartfelt thanks to [@ChoiCube84](https://github.com/ChoiCube84) for being an incredible project companion throughout this processor design journey. Even in the challenging environment of military service, your consistent support and dedication made this project possible. 
 
 **Contributors:**
 - [@T410N](https://github.com/t410n) (KHWL) - Project Lead & Architecture Design
