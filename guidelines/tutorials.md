@@ -23,9 +23,19 @@ For RTL simulation only :
 - [Surfer-Project](https://surfer-project.org/) (or [GTKwave](https://gtkwave.sourceforge.net/))
 
 With FPGA Implementation and synthesis :
-- Vivado 2024.2 (or other IDE)  
+- Vivado 2024.2 (or other IDE)
 
-We've used cmd in Visual Studio Code terminal.  
+If simulating the C program : 
+- [RISC-V GNU GCC Toolchain](https://github.com/riscv-collab/riscv-gnu-toolchain)  
+  Make sure to configure the toolchain build with one of the following commands.
+  ```
+  ./configure --with-multilib-generator="rv32i-ilp32--"
+  or
+  ./configure --prefix=/opt/riscv --with-arch=rv32i --with-abi=ilp32
+  make linux
+  ```
+
+We've used cmd in **Visual Studio Code** terminal.  
 Upper suggested environments are same as our development environment.  
 You can use any other programs but note that the conversion tutorial to other environment is not provided.  
 
@@ -49,9 +59,9 @@ Find each module's logic description document named `[Architecture Name]modulena
 To additionally design the function that you want processor to perform, specify the **logics you need**, and **abstractly design the module and signals** that you need for function.  
 As you can find it in `development_log.md`, each module has been designed through these type of thoughts. Let's give an example with 37F architecture. 
 
-## 37F Architecture Module Design Process
+## 📖 37F Architecture Module Design Process
 
-## Front-end
+## ✏️ Front-end
 
 1. **Specify the function**  
 Let's design core to **execute the ADD instruction in RISC-V RV32I**!  
@@ -76,7 +86,7 @@ ADD is an arithmetic calculation.
 ----> There should be an decoder unit for ALU opcode generation which should receiving the opcode and funct3, funct7 sinals for recognition. = **ALU Controller** module design  
 
 ---
-#### This is where our design philosophy comes in.
+#### 🔖 This is where our design philosophy comes in.
 Why ALU Controller module is separately needed? Can't it be integrated in **Control Unit**?  
 Sure. It's possible, and we've considered about it. Since one of our philosophy to core design is that 
 > Define clear module roles with focused logic to enhance modularity.  
@@ -98,7 +108,7 @@ The instruction fetch and Control Unit's conceptual approach is well explained o
 
 With same methodology, CSR File in 43F arch, Trap Controller, Exception Detector in 46F architecture is designed and implemented. 
 
-## Back-end
+## ⌨️ Back-end
 
 1. **HDL code writing**  
 Based on **Front-end** design, next step is to **make those block designs to actual RTL code with HDL**(Hardware Description Language; *VerilogHDL*, *VHDL*)  
@@ -118,6 +128,32 @@ The changes of the architecture should be committed on block diagram either. Whe
 
 This methodology is our basic pathway to design the processor.
 
-# Run Simulation with Designed Architecture
+# 📊 Run Simulation with Designed Architecture
 
-WIP
+To run the simulation with designed architecture, there are two ways to make core run.  
+
+1. 📑 **Modify the instructions in Instruction Memory**
+   Implement written instructions in Instruction Memory module with _hexadecimal_ or _binary_ encoded RISC-V RV32I assembly instruction.
+   Default core design includes one of each instructions of RISC-V RV32I ISA. You can simply modify those as you want, and run the simulation to check the waveform.
+   
+2. 🖨 **Modify the $readmemh target file**
+   Change the $readmemh target hex/binary file which has compiled with RISC-V GNU GCC toolchain.  
+   You can run any C program by compiling the C code with RISC-V GCC toolchain. But there is several settings that you should do before implementing it.  
+   - Linker script.  
+     Our processor uses 0x0000_0000 as ROM address, 0x1000_0000 as RAM address.  
+     Make sure the linker script of the compile's memory map is same as following.  
+     ```
+     ...
+     MEMORY
+     {
+         ROM (rx) : ORIGIN = 0x00000000, LENGTH = 64K
+         RAM (rw) : ORIGIN = 0x10000000, LENGTH = 32K
+     }
+     ...
+     ```
+
+If you are not beginner as I am, you can just modify this memory settings.  
+We'll going to work about easy C program import on SoC soon.  
+
+---
+Tutorials will continue to be updated or expanded as necessary.
