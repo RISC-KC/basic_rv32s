@@ -30,22 +30,22 @@ Since most of lectures I've heard were using Verilog, all of RTL codes we provid
   (develop logs, debug traces, train of thoughts, rationales, module logic explainations, signal-level diagrams... etc.)
 
 ### Quick Start
-- 📕 [Tutorials]()  
+- 📕 [Tutorials](https://github.com/RISC-KC/basic_rv32s/blob/main/guidelines/tutorials.md)  
   Architecture Design? How to use this repository? Let's get started.
-- 📊 [Diagrams]()  
+- 📊 [Diagrams](https://github.com/RISC-KC/basic_rv32s/blob/main/documents/diagrams)  
   Processor architecture design block diagrams including the draft files.
-- 📜 [Devlogs]()  
+- 📜 [Devlogs](https://github.com/RISC-KC/basic_rv32s/blob/main/guidelines/development_log.md)  
   Want to find out how did we made this processor? Here's the footprints of it.
 
 ### Table of Contents
 
-- [Introduction](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#introduction)  
-- [Branches & Directories](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#branches--directories)  
-- [About Guidelines](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#about-guidelines)  
-- [Arhictectures and Specifications](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#architectures-and-specifications)  
-- [FPGA Implementation Results](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#fpga-implementation-results)  
-- [Getting Started](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#getting-started)  
-- [Future Works](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#future-works)  
+- [Introduction](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#introduction)  
+- [Branches & Directories](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#branches--directories)  
+- [About Guidelines](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#about-guidelines)  
+- [Arhictectures and Specifications](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#architectures-and-specifications)  
+- [FPGA Implementation Results](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#fpga-implementation-results)  
+- [Getting Started](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#getting-started)  
+- [Future Works](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#future-works)  
 
 -----
 
