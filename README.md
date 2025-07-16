@@ -29,6 +29,14 @@ Since most of lectures I've heard were using Verilog, all of RTL codes we provid
 - 📚 **Fully documentized** for **easy hand-on learning** for beginners. ( Repository's purpose )  
   (develop logs, debug traces, train of thoughts, rationales, module logic explainations, signal-level diagrams... etc.)
 
+### Quick Start
+- 📕 [Tutorials]()  
+  Architecture Design? How to use this repository? Let's get started.
+- 📊 [Diagrams]()  
+  Processor architecture design block diagrams including the draft files.
+- 📜 [Devlogs]()  
+  Want to find out how did we made this processor? Here's the footprints of it.
+
 ### Table of Contents
 
 - [Introduction](https://github.com/RISC-KC/basic_rv32s/blob/docs/README.md#introduction)  
@@ -102,13 +110,13 @@ Also, the project file includes clean RTL code without annotations.
 
 In directory `guidelines/`, we provide comprehensive resources for learning and understanding the design of processors in **basic_RV32s**.  
 - 🗃 **Incremental architecture documentation**  
+  & 📜 **Design iteration histories**  
   presenting each evolution with design decisions.
 - 📑 **Dual-format verilog RTL source code**  
   offering annotated version from clean source code.
 - 📖 **Development logs**  
   organized version based on raw devlogs located in `documents/project_devlog/`.
 - 🔍 **Debug traces**, problem-solving approaches.
-- 📜 **Design iteration histories**
 - 🔬 **Verification methodologies**
   providing UART-based debugging and **Dhrystone** benchmark setup on **FPGA**.  
 
