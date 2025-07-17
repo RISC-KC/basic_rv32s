@@ -53,7 +53,7 @@ _"A guideline for processor designing from scratch for begginer that has made by
 
 ## Branches & Directories
 
-### 📌Branches
+### 📌 Branches
 
 - `main`  
   Latest released version of the repository.
@@ -63,40 +63,37 @@ _"A guideline for processor designing from scratch for begginer that has made by
 - `docs`  
   Revises the **documents/** directory.
   
-### 📌Directories
+### 📌 Directories
 
-### documents/  
+- 🗂 **Documents**
+  - **/architecture_logics**  
+Description of each designed architecture down to logic block's signal and logics.  
 
-Documentations of basic_RV32s.  
-
-- **/diagrams/**  
+  - **/diagrams**  
 Processor design's signal-level block diagrams, Including archived legacies.  
 PDF, PNG, drawio files.  
 
-- **/project_devlog/**  
-The raw development logs of main contributors.  
-
-- **/references/**  
-References that helped.  
-
-- **/modules_and_signals/**  
-Description of each designed architecture down to logic block's signal and logics.
-
-### guidelines/
-
+  - **/guidelines**  
 Annotated RTL sources, tutorials, processor design methodologies, organized devlogs, debug logs.  
 
-### modules/
+  - /archives  
+archived architecture designs, documents... etc.  
 
-Clean RTL source code of actual synthesized core.
+  - /project_devlog  
+The raw development logs of main contributors.  
 
-### testbenches/
+  - /references  
+References that helped.  
 
+- 💾 **Sources**
+  - **/modules**  
+Clean RTL source code of actual synthesized core.  
+
+  - **/testbenches**  
 Testbench RTL code of each module ( top module, module instances )  
-result with `.vvp` and waveform `.vcd` files included.
+result with `.vvp` and waveform `.vcd` files included.  
 
-### fpga/
-
+  - **/fpga**  
 Vivado project files for FPGA synthesis and implementation.  
 Contains such as `.xpr` `.xdc` files to import the whole project easily.  
 Also, the project file includes clean RTL code without annotations. 
