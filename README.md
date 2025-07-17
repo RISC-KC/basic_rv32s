@@ -41,19 +41,19 @@ _"A guideline for processor designing from scratch for begginer that has made by
 
 ### Table of Contents
 
-- [Introduction](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#introduction)  
-- [Branches & Directories](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#branches--directories)  
-- [About Guidelines](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#about-guidelines)  
-- [Architectures and Specifications](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#architectures-and-specifications)  
-- [FPGA Implementation Results](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#fpga-implementation-results)  
-- [Getting Started](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#getting-started)  
-- [Future Works](https://github.com/RISC-KC/basic_rv32s/blob/main/README.md#future-works)  
+- [Introduction](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#introduction)  
+- [Branches & Directories](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#branches--directories)  
+- [About Guidelines](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#about-guidelines)  
+- [Architectures and Specifications](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#architectures-and-specifications)  
+- [FPGA Implementation Results](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#fpga-implementation-results)  
+- [Getting Started](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#getting-started)  
+- [Future Works](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#future-works)  
 
 -----
 
 ## Branches & Directories
 
-### 📌Branches
+### 📌 Branches
 
 - `main`  
   Latest released version of the repository.
@@ -63,40 +63,37 @@ _"A guideline for processor designing from scratch for begginer that has made by
 - `docs`  
   Revises the **documents/** directory.
   
-### 📌Directories
+### 📌 Directories
 
-### documents/  
+- 🗂 **Documents**
+  - **/architecture_logics**  
+Description of each designed architecture down to logic block's signal and logics.  
 
-Documentations of basic_RV32s.  
-
-- **/diagrams/**  
+  - **/diagrams**  
 Processor design's signal-level block diagrams, Including archived legacies.  
 PDF, PNG, drawio files.  
 
-- **/project_devlog/**  
-The raw development logs of main contributors.  
-
-- **/references/**  
-References that helped.  
-
-- **/theories_and_logics/**  
-Description of each designed architecture down to logic block's signal and logics.
-
-### guidelines/
-
+  - **/guidelines**  
 Annotated RTL sources, tutorials, processor design methodologies, organized devlogs, debug logs.  
 
-### modules/
+  - /archives  
+archived architecture designs, documents... etc.  
 
-Clean RTL source code of actual synthesized core.
+  - /project_devlog  
+The raw development logs of main contributors.  
 
-### testbenches/
+  - /references  
+References that helped.  
 
+- 💾 **Sources**
+  - **/modules**  
+Clean RTL source code of actual synthesized core.  
+
+  - **/testbenches**  
 Testbench RTL code of each module ( top module, module instances )  
-result with `.vvp` and waveform `.vcd` files included.
+result with `.vvp` and waveform `.vcd` files included.  
 
-### fpga/
-
+  - **/fpga**  
 Vivado project files for FPGA synthesis and implementation.  
 Contains such as `.xpr` `.xdc` files to import the whole project easily.  
 Also, the project file includes clean RTL code without annotations. 
@@ -199,7 +196,7 @@ It utilizes **FPGA** on-board GPIOs such as LEDs, buttons and UART.
 
 ⚠️ Note: Misaligned address access is handled as zeroing the low 2-bits from address. 
 
-For each module's logic description, go to `documents/theories_and_logics/modules_and_signals/` for more information.
+For each module's logic description, go to `documents/modules_and_signals/` for more information.
 **Each module has its own logic behavior documentations which includes I/O signals, Logics and Note.**
 
 ### RV32I43F
@@ -260,7 +257,7 @@ Supported CSRs:
 - In RV32I46F_5SP, the CSR logics are changed. For executing the trap and exceptions during the pipeline, the address signal separated to read address and write address input.
 - `mhartid` is a dummy value for read-only CSR design test. No multi-hart architecture is available now.
 
-For each module's logic description, go to `documents/theories_and_logics/modules_and_signals/` for more information.
+For each module's logic description, go to `documents/modules_and_signals/` for more information.
 **Each module has its own logic behavior documentations which includes I/O signals, Logics and Note.**
 
 ### RV32I46F
@@ -312,7 +309,7 @@ For each module's logic description, go to `documents/theories_and_logics/module
 This **PTH** consumes about 5 Clock cycles. 
 - CSR configurations are same as 43F architecture.
 
-For each module's logic description, go to `documents/theories_and_logics/modules_and_signals/` for more information.
+For each module's logic description, go to `documents/modules_and_signals/` for more information.
 **Each module has its own logic behavior documentations which includes I/O signals, Logics and Note.**
 
 ### RV32I46F_5SP
@@ -376,7 +373,7 @@ This made some hazards. Please be aware of these which is written in issues.
 - CSR configurations are same as 43F architecture.
 - To run C program, the bypass logic between Instruction Memory and Data Memory is required (since the toolchain linker divides the ROM and RAM address map.). Please check the core design in `fpga/` for running C program on our SoC.
 
-For each module's logic description, go to `documents/theories_and_logics/modules_and_signals/` for more information.
+For each module's logic description, go to `documents/modules_and_signals/` for more information.
 **Each module has its own logic behavior documentations which includes I/O signals, Logics and Note.**
 
 ---
@@ -496,7 +493,7 @@ We're going to work on easy C program import on SoC soon.
 
 Most of repository structure has been designed, but still some documents are on-going.  
 Since the project is being done in limited environment (military duty), this could take some time.  
-We are currently looking about October(2025) to end the whole documentations.  
+We are currently targeting October 2025 to complete the entire documentation plan as described in the README.  
 
 Since it's still an open-source RISC-V core implementation and instructional framework, the changes can be done as needed.  
 Please feel free to generate an issue for improving this project to make it possible to newcommers and beginners can easily dive in to RISC-V and Processor Design.  
