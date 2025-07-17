@@ -79,7 +79,7 @@ The raw development logs of main contributors.
 - **/references/**  
 References that helped.  
 
-- **/theories_and_logics/**  
+- **/modules_and_signals/**  
 Description of each designed architecture down to logic block's signal and logics.
 
 ### guidelines/
@@ -199,7 +199,7 @@ It utilizes **FPGA** on-board GPIOs such as LEDs, buttons and UART.
 
 ⚠️ Note: Misaligned address access is handled as zeroing the low 2-bits from address. 
 
-For each module's logic description, go to `documents/theories_and_logics/modules_and_signals/` for more information.
+For each module's logic description, go to `documents/modules_and_signals/` for more information.
 **Each module has its own logic behavior documentations which includes I/O signals, Logics and Note.**
 
 ### RV32I43F
@@ -260,7 +260,7 @@ Supported CSRs:
 - In RV32I46F_5SP, the CSR logics are changed. For executing the trap and exceptions during the pipeline, the address signal separated to read address and write address input.
 - `mhartid` is a dummy value for read-only CSR design test. No multi-hart architecture is available now.
 
-For each module's logic description, go to `documents/theories_and_logics/modules_and_signals/` for more information.
+For each module's logic description, go to `documents/modules_and_signals/` for more information.
 **Each module has its own logic behavior documentations which includes I/O signals, Logics and Note.**
 
 ### RV32I46F
@@ -312,7 +312,7 @@ For each module's logic description, go to `documents/theories_and_logics/module
 This **PTH** consumes about 5 Clock cycles. 
 - CSR configurations are same as 43F architecture.
 
-For each module's logic description, go to `documents/theories_and_logics/modules_and_signals/` for more information.
+For each module's logic description, go to `documents/modules_and_signals/` for more information.
 **Each module has its own logic behavior documentations which includes I/O signals, Logics and Note.**
 
 ### RV32I46F_5SP
@@ -376,7 +376,7 @@ This made some hazards. Please be aware of these which is written in issues.
 - CSR configurations are same as 43F architecture.
 - To run C program, the bypass logic between Instruction Memory and Data Memory is required (since the toolchain linker divides the ROM and RAM address map.). Please check the core design in `fpga/` for running C program on our SoC.
 
-For each module's logic description, go to `documents/theories_and_logics/modules_and_signals/` for more information.
+For each module's logic description, go to `documents/modules_and_signals/` for more information.
 **Each module has its own logic behavior documentations which includes I/O signals, Logics and Note.**
 
 ---
@@ -496,7 +496,7 @@ We're going to work on easy C program import on SoC soon.
 
 Most of repository structure has been designed, but still some documents are on-going.  
 Since the project is being done in limited environment (military duty), this could take some time.  
-We are currently looking about October(2025) to end the whole documentations.  
+We are currently targeting October 2025 to complete the entire documentation plan as described in the README.  
 
 Since it's still an open-source RISC-V core implementation and instructional framework, the changes can be done as needed.  
 Please feel free to generate an issue for improving this project to make it possible to newcommers and beginners can easily dive in to RISC-V and Processor Design.  
