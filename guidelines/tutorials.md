@@ -4,7 +4,7 @@ This document describes how to utilize the resources in basic_RV32s repository, 
 
 ## 📚 Before getting started
 
-This Processor design learning framework is based on **RISC-V RV32 ISA.**  
+This Processor design learning framework is based on **RISC-V RV32I ISA.**  
 **We strongly recommend to check and read the** [Ratified specifications manual of RISC-V ISA](https://riscv.org/specifications/ratified/).  
 Especially in Unprivileged Architecture manual, all of required information for designing the processor that meets the RISC-V ISA standard is fully described. 
  
