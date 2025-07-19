@@ -1,0 +1,145 @@
+$date
+	Fri Mar 14 14:20:22 2025
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module InstructionCache_tb $end
+$scope module instruction_cache $end
+$var wire 10 ! address [9:0] $end
+$var wire 1 " clk $end
+$var wire 1 # hit1 $end
+$var wire 1 $ hit2 $end
+$var wire 32 % im_data [31:0] $end
+$var wire 1 & reset $end
+$var wire 1 ' update_enable $end
+$var wire 5 ( tag [4:0] $end
+$var wire 5 ) index [4:0] $end
+$var reg 32 * data [31:0] $end
+$var reg 1 + hit $end
+$var integer 32 , i [31:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+$end
+#0
+$dumpvars
+bx ,
+x+
+bx *
+b10101 )
+b0 (
+0'
+0&
+b0 %
+x$
+x#
+0"
+b10101 !
+$end
+#5000
+b0 *
+1"
+#10000
+0+
+0$
+0#
+b100000 ,
+0"
+1&
+#15000
+b100000 ,
+1"
+#20000
+0"
+#25000
+b100000 ,
+1"
+#30000
+0"
+0&
+#35000
+1"
+#40000
+0"
+#45000
+1"
+#50000
+0"
+b11011110101011011011111011101111 %
+1'
+#55000
+1+
+1#
+1"
+#60000
+0"
+0'
+#65000
+b11011110101011011011111011101111 *
+1"
+#70000
+0+
+0#
+b1 (
+0"
+b11001010111111101011101010111110 %
+b110101 !
+1'
+#75000
+1+
+1$
+b0 *
+1"
+#80000
+0"
+0'
+#85000
+b11001010111111101011101010111110 *
+1"
+#90000
+0+
+0$
+b10 (
+0"
+b10010001101000101011001111000 %
+b1010101 !
+1'
+#95000
+1+
+1#
+b0 *
+1"
+#100000
+0+
+0#
+b0 (
+0"
+b10101 !
+0'
+#105000
+1"
+#110000
+1+
+1$
+b1 (
+0"
+b110101 !
+#115000
+b11001010111111101011101010111110 *
+1"
+#120000
+1#
+0$
+b10 (
+0"
+b1010101 !
+#125000
+b10010001101000101011001111000 *
+1"
+#130000

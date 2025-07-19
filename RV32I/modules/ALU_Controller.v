@@ -45,6 +45,9 @@ module ALUController (
 					`BRANCH_BGEU: begin
 						alu_op = `ALU_OP_SLTU; // If SLTU result is zero, greater or equal (unsigned)
 					end
+					default: begin
+					   alu_op = `ALU_OP_NOP;
+					end
 				endcase
 			end
 			`OPCODE_LOAD: begin
@@ -84,6 +87,9 @@ module ALUController (
 					`ITYPE_ANDI: begin
 						alu_op = `ALU_OP_AND; // andi : 111 ; -
 					end
+					default: begin
+					   alu_op = `ALU_OP_NOP;
+					end
 				endcase
 			end
 			`OPCODE_RTYPE: begin
@@ -122,6 +128,9 @@ module ALUController (
 					`RTYPE_AND: begin
 						alu_op = `ALU_OP_AND;
 					end
+					default: begin
+					   alu_op = `ALU_OP_NOP;
+                    end
 				endcase
             end
 			`OPCODE_ENVIRONMENT: begin

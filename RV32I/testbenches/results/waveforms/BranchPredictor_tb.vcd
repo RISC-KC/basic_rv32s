@@ -1,0 +1,178 @@
+$date
+	Sun Jun 01 12:31:24 2025
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module BranchPredictor_tb $end
+$scope module branch_predictor $end
+$var wire 1 ! EX_branch $end
+$var wire 1 " EX_branch_taken $end
+$var wire 32 # IF_imm [31:0] $end
+$var wire 7 $ IF_opcode [6:0] $end
+$var wire 32 % IF_pc [31:0] $end
+$var wire 1 & clk $end
+$var wire 1 ' reset $end
+$var wire 32 ( prediction_target [31:0] $end
+$var parameter 32 ) XLEN $end
+$var reg 1 * branch_estimation $end
+$var reg 1 + branch_prediction $end
+$var reg 32 , branch_target [31:0] $end
+$var reg 2 - prediction_counter [1:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+b100000 )
+$end
+#0
+$dumpvars
+b0 -
+b0 ,
+0+
+0*
+bx (
+1'
+0&
+bx %
+bx $
+bx #
+x"
+x!
+$end
+#5000
+1&
+#10000
+0&
+#15000
+1&
+#20000
+0&
+#25000
+1&
+#30000
+b100 ,
+b100 (
+0&
+0!
+b1000 #
+b0 %
+b1100011 $
+0'
+#35000
+1&
+#40000
+0&
+#45000
+1&
+#50000
+1!
+1"
+0&
+#55000
+b1 -
+1&
+#60000
+b1100 ,
+b1100 (
+0!
+b1100 #
+b1000 %
+0&
+#65000
+1&
+#70000
+0&
+#75000
+1&
+#80000
+0"
+1!
+0&
+#85000
+b0 -
+1&
+#90000
+b10000 ,
+b10000 (
+0!
+b1000 #
+b1100 %
+0&
+#95000
+1&
+#100000
+0&
+#105000
+1&
+#110000
+1"
+1!
+0&
+#115000
+b1 -
+1&
+#120000
+b11000 ,
+b11000 (
+0!
+b1100 #
+b10100 %
+0&
+#125000
+1&
+#130000
+0&
+#135000
+1&
+#140000
+1!
+0&
+#145000
+b100000 ,
+b100000 (
+1*
+b10 -
+1&
+#150000
+b101000 ,
+b101000 (
+0!
+b1000 #
+b100000 %
+0&
+#155000
+1+
+1&
+#160000
+0&
+#165000
+1&
+#170000
+1!
+0&
+#175000
+b11 -
+1&
+#180000
+0&
+#185000
+1&
+#190000
+0&
+#195000
+1&
+#200000
+0&
+#205000
+1&
+#210000
+0&
+#215000
+1&
+#220000
+0&

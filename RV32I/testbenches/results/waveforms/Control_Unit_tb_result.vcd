@@ -1,5 +1,5 @@
 $date
-	Mon Mar  3 04:59:49 2025
+	Sun May 25 19:31:53 2025
 $end
 $version
 	Icarus Verilog
@@ -11,7 +11,7 @@ $scope module ControlUnit_tb $end
 $scope module control_unit $end
 $var wire 3 ! funct3 [2:0] $end
 $var wire 7 " opcode [6:0] $end
-$var wire 1 # read_done $end
+$var wire 1 # trap_done $end
 $var wire 1 $ write_done $end
 $var reg 2 % alu_src_A_select [1:0] $end
 $var reg 3 & alu_src_B_select [2:0] $end
@@ -31,56 +31,61 @@ $dumpall
 $end
 #0
 $dumpvars
-b0 .
-0-
-0,
+b10 .
+1-
+1,
 0+
 0*
 0)
 b0 (
 0'
-b0 &
-b0 %
+b1 &
+b1 %
 0$
 1#
 b110011 "
 b0 !
 $end
 #1000
-b100 .
-1-
-b110111 "
+0#
 1$
 #2000
+b100 .
+b0 &
+b0 %
+0,
+b110111 "
+1#
+#3000
 b10 .
 b10 &
 b10 %
 b10111 "
-#3000
+#4000
 b101 .
 1)
 b1101111 "
-#4000
+#5000
 b1 %
 b1100111 "
-#5000
+#6000
 b0 .
 0-
 b1 &
 1'
 0)
 b1100011 "
-#6000
-b1 !
 #7000
-b100 !
+b1 !
 #8000
-b101 !
+b100 !
 #9000
-b110 !
+b101 !
 #10000
-b111 !
+b110 !
 #11000
+b111 !
+#12000
 1*
 b1 .
 1-
@@ -88,26 +93,21 @@ b10 &
 0'
 b0 !
 b11 "
-#12000
-b1 !
 #13000
-b10 !
+b1 !
 #14000
-b100 !
+b10 !
 #15000
-b101 !
+b100 !
 #16000
-1,
-0#
+b101 !
 #17000
-0,
 1+
 0*
 b0 .
 0-
 b0 !
 b100011 "
-1#
 #18000
 b1 !
 #19000

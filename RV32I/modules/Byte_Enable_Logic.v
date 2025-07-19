@@ -7,19 +7,17 @@ module ByteEnableLogic (
     input [2:0] funct3,							// funct3
 	input [31:0] register_file_read_data,		// data read from register file
 	input [31:0] data_memory_read_data,			// data read from data memory
-	input [31:0] address,						// address for checking alignment
+	input [1:0] address,						// address for checking alignment
 	
 	output reg [31:0] register_file_write_data,	// data to write at register file
 	output reg [31:0] data_memory_write_data,	// data to write at data memory
-    output reg [3:0] write_mask,				// bitmask for writing data
-	output reg misaligned						// signal indicating if address is misaligned
+    output reg [3:0] write_mask				// bitmask for writing data
 );
 
     always @(*) begin
         if (memory_read) begin
 			data_memory_write_data = 32'b0;
 			write_mask = 4'b0;
-			misaligned = 0;
 			
 			case (funct3)
 				`LOAD_LB: begin
@@ -63,7 +61,6 @@ module ByteEnableLogic (
 							write_mask = 4'b1000;
 						end
 					endcase
-					misaligned = 0;
 				end
 				`STORE_SH: begin
 					data_memory_write_data = {2{register_file_read_data[15:0]}};
@@ -71,15 +68,12 @@ module ByteEnableLogic (
 					case (address[1:0])
 						2'b00: begin
 							write_mask = 4'b0011;
-							misaligned = 0;
 						end
 						2'b10: begin
 							write_mask = 4'b1100;
-							misaligned = 0;
 						end
 						default: begin
 							write_mask = 4'b0;
-							misaligned = 1;
 						end
 					endcase
 				end
@@ -88,17 +82,14 @@ module ByteEnableLogic (
 					
 					if (address[1:0] == 2'b00) begin
 						write_mask = 4'b1111;
-						misaligned = 0;
 					end
 					else begin
 						write_mask = 4'b0;
-						misaligned = 1;
 					end
 				end
 				default: begin
 					data_memory_write_data = 32'b0;
 					write_mask = 4'b0;
-					misaligned = 0;
 				end
 			endcase
 		end
@@ -106,7 +97,6 @@ module ByteEnableLogic (
 			register_file_write_data = 32'b0;
 			data_memory_write_data = 32'b0;
 			write_mask = 4'b0;
-			misaligned = 0;
 		end
     end
 
