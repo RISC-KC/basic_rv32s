@@ -66,15 +66,16 @@ _"A guideline for processor designing from scratch for begginer that has made by
 ### 📌 Directories
 
 - 🗂 **Documents**
-  - **/architecture_logics**  
-Description of each designed architecture down to logic block's signal and logics.  
-
   - **/diagrams**  
 Processor design's signal-level block diagrams, Including archived legacies.  
 PDF, PNG, drawio files.  
 
   - **/guidelines**  
-Annotated RTL sources, tutorials, processor design methodologies, organized devlogs, debug logs.  
+Annotated RTL sources, tutorials: processor design methodologies, organized devlogs, debug logs.  
+    - **/architecture_logics**  
+Description of each designed architecture down to logic block's signal and logics.  
+    - **/annotated_rtl**  
+Annotated verilog RTL source code about each module designs for hands-on learning.
 
   - /archives  
 archived architecture designs, documents... etc.  
@@ -113,9 +114,8 @@ In directory `guidelines/`, we provide comprehensive resources for learning and 
   presenting each evolution with design decisions.
 - 📑 **Dual-format verilog RTL source code**  
   offering annotated version from clean source code.
-- 📖 **Development logs**  
-  organized version based on raw devlogs located in `documents/project_devlog/`.
-- 🔍 **Debug traces**, problem-solving approaches.
+- 📖 **Development logs, Debug traces**  
+  organized version based on raw devlogs located in `documents/project_devlog/` with problem-solving approaches.
 - 🔬 **Verification methodologies**
   providing UART-based debugging and **Dhrystone** benchmark setup on **FPGA**.  
 
