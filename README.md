@@ -45,7 +45,7 @@ _"A guideline for processor designing from scratch for begginer that has made by
 - [Branches & Directories](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#branches--directories)  
 - [About Guidelines](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#about-guidelines)  
 - [Architectures and Specifications](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#architectures-and-specifications)  
-- [FPGA Implementation Results](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#fpga-implementation-results)  
+- [FPGA Implementation Results & Performance Evaluation](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#fpga-implementation-results)  
 - [Getting Started](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#getting-started)  
 - [Future Works](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#future-works)  
 
@@ -400,6 +400,50 @@ Table below is FPGA implementation results.
 <sup>* **Dhrystone** benchmark and **Trap Handler** hard coded using readmemh. Resource varies depends on the program in memories. This will soon be standardized.</sup>  
 <sup>** All memories are inferred as **LUT-based distributed RAM**.</sup>  
 
+### 📈 Performance Evaluation
+
+Dhrystone performance can be calculated by **DMIPS** (Dhrystone Million Instructions Per Second).  
+
+Since we've got the total cycles and instructions that needed to benchmark the Dhrystone, we can calculate our core's performance through this information.
+
+The proposed performance of RV32I46F_5SP core's dhrystone benchmark is evaluated with the following conditions:
+- 2000 iterations settings
+- 50MHz of timing constraints (20ns, clock cycle speed)
+
+In our settings on Digilent Nexys Video FPGA, we obtained:
+- final cycles : 00000000FEA94 = 1,043,092 Cycles
+- final instructions : 000000000009DDF0 = 646,640 Instructions
+
+```math
+CPI = \frac{Clock\;Cycles}{Instructions} = \frac{1,043,092}{646,640} = 1.61\;cycles/instr.
+```
+
+- MIPS (Million Instructions Per Second)
+```math
+MIPS = \frac{instructions}{t} / 10^6 = \frac{646,640}{0.0208618} / 10^6 \approx\, 31.0\,MIPS
+```
+
+- Execution Time
+```math
+t = \frac{Clock\;Cycles}{Clock\;Frequency} = \frac{1,043,092}{50\,\times\,10^6}\; \approx\, 0.0208618\,seconds
+```
+
+- Dhrystones per Second
+```math
+Dhrystones/sec = \frac{iterations}{t} = \frac{2,000}{0.0208618} \approx\, 95,875\, DPS
+```
+
+- DMIPS (Dhrystone Million Instructions Per Second)  
+<sup> 1 DMIPS equals to 1757 Dhrystones Per Second. </sup>
+```math
+DMIPS = \frac{Dhrystones/sec}{1757} = \frac{95,875}{1757} \approx\, 54.6\, DMIPS
+```
+
+- DMIPS/MHz
+```math
+\frac{54.6\, DMIPS}{50\, MHz} \approx\; 1.09\, DMIPS/MHz
+```
+
 Various performance benchmark (such as coremark) will be added soon.  
 We assume that the processor can reach higher clock speed and performance, but at the moment we couldn't continue development in touch due to personal schedule (military duty, school admission).  
 This will be worked soon also.
@@ -412,6 +456,16 @@ This will be worked soon also.
 ```git
 $ git clone https://github.com/RISC-KC/basic_rv32s.git
 ```
+
+### ⚠️ Setup Project file path
+
+Some files contain absolute paths in include statements:
+Such as : 
+```verilog
+`include "source_locations/a/b/c/source_name.v"
+```
+
+Please update these paths to match your project structure.  
 
 ### 🔎 Core behavior Simulations  
 
