@@ -98,7 +98,7 @@ SUB is an arithmetic calculation.
 ----> There should be an decoder unit for ALU opcode generation which should receive the opcode and funct3, funct7 signals to recognize. = **ALU Controller** module design  
 
 ---
-#### 🔖 This is where our design philosophy comes in.
+### 🔖 This is where our design philosophy comes in.
 Why ALU Controller module is separately needed? Can't it be integrated in **Control Unit**?  
 Sure. It's possible, and we've considered about it. Since one of our philosophy to core design is that 
 > Define clear module roles with focused logic to enhance modularity.  
@@ -166,6 +166,16 @@ To run the simulation with designed architecture, there are two ways to make cor
 
 If you are not a beginner like I was, you can just modify these memory settings.  
 We're going to work about easy C program import on SoC soon.  
+
+## ⚠️ Setup Project file path
+
+Some files contain absolute paths in include statements:
+Such as : 
+```verilog
+`include "source_locations/a/b/c/source_name.v"
+```
+
+Please update these paths to match your project structure.
 
 ---
 Tutorials will continue to be updated or expanded as necessary.
