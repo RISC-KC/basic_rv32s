@@ -1,0 +1,35 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2024.2 (win64) Build 5239630 Fri Nov 08 22:35:27 MST 2024
+| Date         : Sat Jun 28 13:51:13 2025
+| Host         : DESKTOP-OVHT03F running 64-bit major release  (build 9200)
+| Command      : report_drc -file RV32I46F5SPSoCTOP_drc_opted.rpt -pb RV32I46F5SPSoCTOP_drc_opted.pb -rpx RV32I46F5SPSoCTOP_drc_opted.rpx
+| Design       : RV32I46F5SPSoCTOP
+| Device       : xc7a200tsbg484-3
+| Speed File   : -3
+| Design State : Synthesized
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+Report DRC
+
+Table of Contents
+-----------------
+1. REPORT SUMMARY
+2. REPORT DETAILS
+
+1. REPORT SUMMARY
+-----------------
+            Netlist: netlist
+          Floorplan: design_1
+      Design limits: <entire design considered>
+           Ruledeck: default
+             Max checks: <unlimited>
+             Checks found: 0
++------+----------+-------------+--------+
+| Rule | Severity | Description | Checks |
++------+----------+-------------+--------+
++------+----------+-------------+--------+
+
+2. REPORT DETAILS
+-----------------
+
