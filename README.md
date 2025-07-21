@@ -380,6 +380,9 @@ For each module's logic description, go to `documents/modules_and_signals/` for 
 
 ## FPGA Implementation Results
 
+<img width="3785" height="2701" alt="fpga_verifications_bscrv32s_compressed" src="https://github.com/user-attachments/assets/47b0c98e-5fc2-4176-8e4c-a2eef39fa5b4" />
+<sup> 46F5SP_SoC with RV32I46F_5SP core implemented on Digilent Nexys Video FPGA board </sup>  
+
 **RV32I46F_5SP** core implemented **46F5SP_SoC** was implemented on **Digilent Nexys Video** board (**AMD Xilinx Artix-7 XC7A200T FPGA**).  
 FPGA Synthesis and Implementations were done in **Vivado 2024.2**.  
 - 20ns (50 MHz) timing constraints
