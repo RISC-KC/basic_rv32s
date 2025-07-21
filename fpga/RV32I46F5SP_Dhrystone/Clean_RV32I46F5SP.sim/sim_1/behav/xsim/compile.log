@@ -1,0 +1,134 @@
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/ALU.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module ALU
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/ALU_Controller.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module ALUController
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Branch_Logic.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module BranchLogic
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Branch_Predictor.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module BranchPredictor
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Button_Controller.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module ButtonController
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Byte_Enable_Logic.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module ByteEnableLogic
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/CSR_File.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module CSRFile
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Control_Unit.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module ControlUnit
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Data_Memory.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module DataMemory
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/EX_MEM_Register.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module EX_MEM_Register
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Exception_Detector.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module ExceptionDetector
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Forward_Unit.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module ForwardUnit
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Hazard_Unit.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module HazardUnit
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/ID_EX_Register.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module ID_EX_Register
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/IF_ID_Register.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module IF_ID_Register
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Immediate_Generator.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module ImmediateGenerator
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Instruction_Decoder.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module InstructionDecoder
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Instruction_Memory.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module InstructionMemory
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/MEM_WB_Register.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module MEM_WB_Register
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/OLED_Interface.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module OLEDInterface
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/PC_Controller.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module PCController
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/PC_Plus_4.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module PCPlus4
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Program_Counter.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module ProgramCounter
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/RV32I46F_5SP_Debug.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module ProgramCounter
+WARNING: [VRFC 10-3609] overwriting previous definition of module 'ProgramCounter' [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Program_Counter.v:1]
+INFO: [VRFC 10-311] analyzing module PCController
+WARNING: [VRFC 10-3609] overwriting previous definition of module 'PCController' [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/PC_Controller.v:1]
+INFO: [VRFC 10-311] analyzing module PCPlus4
+WARNING: [VRFC 10-3609] overwriting previous definition of module 'PCPlus4' [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/PC_Plus_4.v:1]
+INFO: [VRFC 10-311] analyzing module InstructionMemory
+WARNING: [VRFC 10-3609] overwriting previous definition of module 'InstructionMemory' [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Instruction_Memory.v:9]
+INFO: [VRFC 10-311] analyzing module InstructionDecoder
+WARNING: [VRFC 10-3609] overwriting previous definition of module 'InstructionDecoder' [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Instruction_Decoder.v:3]
+INFO: [VRFC 10-311] analyzing module ImmediateGenerator
+WARNING: [VRFC 10-3609] overwriting previous definition of module 'ImmediateGenerator' [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Immediate_Generator.v:3]
+INFO: [VRFC 10-311] analyzing module ControlUnit
+WARNING: [VRFC 10-3609] overwriting previous definition of module 'ControlUnit' [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Control_Unit.v:7]
+INFO: [VRFC 10-311] analyzing module RegisterFileDebug
+INFO: [VRFC 10-311] analyzing module DataMemory
+WARNING: [VRFC 10-3609] overwriting previous definition of module 'DataMemory' [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Data_Memory.v:1]
+INFO: [VRFC 10-311] analyzing module ALUController
+WARNING: [VRFC 10-3609] overwriting previous definition of module 'ALUController' [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/ALU_Controller.v:8]
+INFO: [VRFC 10-311] analyzing module ALU
+WARNING: [VRFC 10-3609] overwriting previous definition of module 'ALU' [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/ALU.v:3]
+INFO: [VRFC 10-311] analyzing module BranchLogic
+WARNING: [VRFC 10-3609] overwriting previous definition of module 'BranchLogic' [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Branch_Logic.v:3]
+INFO: [VRFC 10-311] analyzing module ByteEnableLogic
+WARNING: [VRFC 10-3609] overwriting previous definition of module 'ByteEnableLogic' [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Byte_Enable_Logic.v:4]
+INFO: [VRFC 10-311] analyzing module CSRFile
+WARNING: [VRFC 10-3609] overwriting previous definition of module 'CSRFile' [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/CSR_File.v:3]
+INFO: [VRFC 10-311] analyzing module ExceptionDetector
+WARNING: [VRFC 10-3609] overwriting previous definition of module 'ExceptionDetector' [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Exception_Detector.v:6]
+INFO: [VRFC 10-311] analyzing module TrapController
+INFO: [VRFC 10-311] analyzing module IF_ID_Register
+WARNING: [VRFC 10-3609] overwriting previous definition of module 'IF_ID_Register' [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/IF_ID_Register.v:1]
+INFO: [VRFC 10-311] analyzing module ID_EX_Register
+WARNING: [VRFC 10-3609] overwriting previous definition of module 'ID_EX_Register' [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/ID_EX_Register.v:1]
+INFO: [VRFC 10-311] analyzing module EX_MEM_Register
+WARNING: [VRFC 10-3609] overwriting previous definition of module 'EX_MEM_Register' [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/EX_MEM_Register.v:1]
+INFO: [VRFC 10-311] analyzing module MEM_WB_Register
+WARNING: [VRFC 10-3609] overwriting previous definition of module 'MEM_WB_Register' [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/MEM_WB_Register.v:1]
+INFO: [VRFC 10-311] analyzing module HazardUnit
+WARNING: [VRFC 10-3609] overwriting previous definition of module 'HazardUnit' [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Hazard_Unit.v:4]
+INFO: [VRFC 10-311] analyzing module ForwardUnit
+WARNING: [VRFC 10-3609] overwriting previous definition of module 'ForwardUnit' [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Forward_Unit.v:3]
+INFO: [VRFC 10-311] analyzing module BranchPredictor
+WARNING: [VRFC 10-3609] overwriting previous definition of module 'BranchPredictor' [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Branch_Predictor.v:3]
+INFO: [VRFC 10-311] analyzing module RV32I46F5SPDebug
+WARNING: [VRFC 10-3248] data object 'MEM_WB_flush' is already declared [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/RV32I46F_5SP_Debug.v:250]
+WARNING: [VRFC 10-9364] second declaration of 'MEM_WB_flush' is ignored [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/RV32I46F_5SP_Debug.v:250]
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Register_File_Debug.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module RegisterFileDebug
+WARNING: [VRFC 10-3609] overwriting previous definition of module 'RegisterFileDebug' [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Register_File_Debug.v:1]
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Trap_Controller.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module TrapController
+WARNING: [VRFC 10-3609] overwriting previous definition of module 'TrapController' [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Trap_Controller.v:3]
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/46F5SP_SoC_TOP.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module ProgramCounter
+INFO: [VRFC 10-311] analyzing module PCController
+INFO: [VRFC 10-311] analyzing module PCPlus4
+INFO: [VRFC 10-311] analyzing module InstructionMemory
+INFO: [VRFC 10-311] analyzing module InstructionDecoder
+INFO: [VRFC 10-311] analyzing module ImmediateGenerator
+INFO: [VRFC 10-311] analyzing module ControlUnit
+INFO: [VRFC 10-311] analyzing module RegisterFileDebug
+INFO: [VRFC 10-311] analyzing module DataMemory
+INFO: [VRFC 10-311] analyzing module ALUController
+INFO: [VRFC 10-311] analyzing module ALU
+INFO: [VRFC 10-311] analyzing module BranchLogic
+INFO: [VRFC 10-311] analyzing module ByteEnableLogic
+INFO: [VRFC 10-311] analyzing module CSRFile
+INFO: [VRFC 10-311] analyzing module ExceptionDetector
+INFO: [VRFC 10-311] analyzing module TrapController
+INFO: [VRFC 10-311] analyzing module IF_ID_Register
+INFO: [VRFC 10-311] analyzing module ID_EX_Register
+INFO: [VRFC 10-311] analyzing module EX_MEM_Register
+INFO: [VRFC 10-311] analyzing module MEM_WB_Register
+INFO: [VRFC 10-311] analyzing module HazardUnit
+INFO: [VRFC 10-311] analyzing module ForwardUnit
+INFO: [VRFC 10-311] analyzing module BranchPredictor
+INFO: [VRFC 10-311] analyzing module RV32I46F5SPDebug
+WARNING: [VRFC 10-3609] overwriting previous definition of module 'RV32I46F5SPDebug' [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/RV32I46F_5SP_Debug.v:30]
+INFO: [VRFC 10-311] analyzing module ButtonController
+WARNING: [VRFC 10-3609] overwriting previous definition of module 'ButtonController' [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Button_Controller.v:1]
+INFO: [VRFC 10-311] analyzing module OLEDInterface
+WARNING: [VRFC 10-3609] overwriting previous definition of module 'OLEDInterface' [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/OLED_Interface.v:2]
+INFO: [VRFC 10-311] analyzing module RV32I46F5SPSoCTOP
+WARNING: [VRFC 10-3380] identifier 'continuous_mode' is used before its declaration [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/46F5SP_SoC_TOP.v:55]
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.sim/sim_1/behav/xsim/glbl.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module glbl

@@ -1,0 +1,51 @@
+Vivado Simulator v2024.2.0
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
+Running: D:/Xilinx/Vivado/2024.2/bin/unwrapped/win64.o/xelab.exe --incr --debug typical --relax --mt 2 -L xil_defaultlib -L unisims_ver -L secureip --snapshot RV32I46F5SP_tb_func_impl xil_defaultlib.RV32I46F5SP_tb xil_defaultlib.glbl -log elaborate.log 
+Using 2 slave threads.
+Starting static elaboration
+Pass Through NonSizing Optimizer
+WARNING: [VRFC 10-3705] select index 7000 into 'data' is out of bounds [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Instruction_Memory.v:23]
+WARNING: [VRFC 10-3705] select index 7001 into 'data' is out of bounds [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Instruction_Memory.v:24]
+WARNING: [VRFC 10-3705] select index 7002 into 'data' is out of bounds [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Instruction_Memory.v:25]
+WARNING: [VRFC 10-3705] select index 7003 into 'data' is out of bounds [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Instruction_Memory.v:28]
+WARNING: [VRFC 10-3705] select index 7004 into 'data' is out of bounds [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Instruction_Memory.v:29]
+WARNING: [VRFC 10-3705] select index 7005 into 'data' is out of bounds [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Instruction_Memory.v:30]
+WARNING: [VRFC 10-3705] select index 7006 into 'data' is out of bounds [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Instruction_Memory.v:31]
+WARNING: [VRFC 10-3705] select index 7007 into 'data' is out of bounds [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Instruction_Memory.v:34]
+WARNING: [VRFC 10-3705] select index 7008 into 'data' is out of bounds [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Instruction_Memory.v:35]
+WARNING: [VRFC 10-3705] select index 7009 into 'data' is out of bounds [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Instruction_Memory.v:38]
+WARNING: [VRFC 10-3705] select index 7010 into 'data' is out of bounds [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Instruction_Memory.v:41]
+WARNING: [VRFC 10-3705] select index 7011 into 'data' is out of bounds [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Instruction_Memory.v:44]
+WARNING: [VRFC 10-3705] select index 7012 into 'data' is out of bounds [C:/Users/KHWL2025/Desktop/RISC-KC/FPGA_Verification/Clean_RV32I46F5SP/Clean_RV32I46F5SP.srcs/sources_1/new/Instruction_Memory.v:45]
+Completed static elaboration
+Starting simulation data flow analysis
+Completed simulation data flow analysis
+Time Resolution for simulation is 1ps
+Compiling module xil_defaultlib.ProgramCounter
+Compiling module xil_defaultlib.PCController
+Compiling module xil_defaultlib.PCPlus4
+Compiling module xil_defaultlib.InstructionMemory
+Compiling module xil_defaultlib.InstructionDecoder
+Compiling module xil_defaultlib.ImmediateGenerator
+Compiling module xil_defaultlib.ControlUnit
+Compiling module xil_defaultlib.RegisterFileDebug
+Compiling module xil_defaultlib.DataMemory
+Compiling module xil_defaultlib.ALUController
+Compiling module xil_defaultlib.ALU
+Compiling module xil_defaultlib.BranchLogic
+Compiling module xil_defaultlib.ByteEnableLogic
+Compiling module xil_defaultlib.CSRFile_default
+Compiling module xil_defaultlib.ExceptionDetector
+Compiling module xil_defaultlib.TrapController
+Compiling module xil_defaultlib.IF_ID_Register
+Compiling module xil_defaultlib.ID_EX_Register
+Compiling module xil_defaultlib.EX_MEM_Register
+Compiling module xil_defaultlib.MEM_WB_Register
+Compiling module xil_defaultlib.HazardUnit
+Compiling module xil_defaultlib.ForwardUnit
+Compiling module xil_defaultlib.BranchPredictor
+Compiling module xil_defaultlib.RV32I46F5SPDebug
+Compiling module xil_defaultlib.RV32I46F5SP_tb
+Compiling module xil_defaultlib.glbl
+Built simulation snapshot RV32I46F5SP_tb_func_impl

@@ -1,0 +1,1 @@
+--incr --debug "typical" --relax --mt "2" -L "xil_defaultlib" -L "unisims_ver" -L "secureip" --snapshot "RV32I46F5SP_tb_func_impl" "xil_defaultlib.RV32I46F5SP_tb" "xil_defaultlib.glbl" -log "elaborate.log" 

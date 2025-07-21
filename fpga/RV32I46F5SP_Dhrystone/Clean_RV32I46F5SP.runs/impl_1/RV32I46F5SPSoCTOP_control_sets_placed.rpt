@@ -1,0 +1,133 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2024.2 (win64) Build 5239630 Fri Nov 08 22:35:27 MST 2024
+| Date         : Thu Jun 26 20:29:41 2025
+| Host         : DESKTOP-OVHT03F running 64-bit major release  (build 9200)
+| Command      : report_control_sets -verbose -file RV32I46F5SPSoCTOP_control_sets_placed.rpt
+| Design       : RV32I46F5SPSoCTOP
+| Device       : xc7a200t
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+Control Set Information
+
+Table of Contents
+-----------------
+1. Summary
+2. Histogram
+3. Flip-Flop Distribution
+4. Detailed Control Set Information
+
+1. Summary
+----------
+
++----------------------------------------------------------+-------+
+|                          Status                          | Count |
++----------------------------------------------------------+-------+
+| Total control sets                                       |    55 |
+|    Minimum number of control sets                        |    55 |
+|    Addition due to synthesis replication                 |     0 |
+|    Addition due to physical synthesis replication        |     0 |
+| Unused register locations in slices containing registers |    72 |
++----------------------------------------------------------+-------+
+* Control sets can be merged at opt_design using control_set_merge or merge_equivalent_drivers
+** Run report_qor_suggestions for automated merging and remapping suggestions
+
+
+2. Histogram
+------------
+
++--------------------+-------+
+|       Fanout       | Count |
++--------------------+-------+
+| Total control sets |    55 |
+| >= 0 to < 4        |     3 |
+| >= 4 to < 6        |     1 |
+| >= 6 to < 8        |     2 |
+| >= 8 to < 10       |     2 |
+| >= 10 to < 12      |     0 |
+| >= 12 to < 14      |     0 |
+| >= 14 to < 16      |     0 |
+| >= 16              |    47 |
++--------------------+-------+
+* Control sets can be remapped at either synth_design or opt_design
+
+
+3. Flip-Flop Distribution
+-------------------------
+
++--------------+-----------------------+------------------------+-----------------+--------------+
+| Clock Enable | Synchronous Set/Reset | Asynchronous Set/Reset | Total Registers | Total Slices |
++--------------+-----------------------+------------------------+-----------------+--------------+
+| No           | No                    | No                     |               0 |            0 |
+| No           | No                    | Yes                    |             156 |           59 |
+| No           | Yes                   | No                     |               0 |            0 |
+| Yes          | No                    | No                     |             522 |          170 |
+| Yes          | No                    | Yes                    |            1624 |          782 |
+| Yes          | Yes                   | No                     |              26 |            9 |
++--------------+-----------------------+------------------------+-----------------+--------------+
+
+
+4. Detailed Control Set Information
+-----------------------------------
+
++----------------+---------------------------------------------------------------------+--------------------------------------------------+------------------+----------------+--------------+
+|  Clock Signal  |                            Enable Signal                            |                 Set/Reset Signal                 | Slice Load Count | Bel Load Count | Bels / Slice |
++----------------+---------------------------------------------------------------------+--------------------------------------------------+------------------+----------------+--------------+
+|  clk_IBUF_BUFG |                                                                     | reset                                            |                1 |              1 |         1.00 |
+|  clk_50mhz     | uart_tx/tx_i_1_n_0                                                  | reset_sync_reg_n_0_[2]                           |                1 |              1 |         1.00 |
+|  clk_50mhz     |                                                                     | reset                                            |                2 |              3 |         1.50 |
+|  clk_50mhz     | uart_tx/bit_counter[3]_i_1_n_0                                      | reset_sync_reg_n_0_[2]                           |                2 |              4 |         2.00 |
+|  clk_50mhz     | debug_uart_controller/byte_cnt                                      | reset_sync_reg_n_0_[2]                           |                3 |              6 |         2.00 |
+|  clk_50mhz     | uart_tx/E[0]                                                        |                                                  |                1 |              7 |         7.00 |
+|  clk_50mhz     | uart_tx/baud_counter[8]_i_1_n_0                                     | reset_sync_reg_n_0_[2]                           |                4 |              9 |         2.25 |
+|  clk_50mhz     | uart_tx/shift_reg[8]_i_1_n_0                                        | reset_sync_reg_n_0_[2]                           |                3 |              9 |         3.00 |
+|  clk_50mhz     | button_controller/FSM_onehot_state_reg[0]_4                         | button_controller/FSM_onehot_state_reg[1]_rep__0 |                9 |             26 |         2.89 |
+|  clk_50mhz     | rv32i46f_5sp_debug/mem_wb_register/WB_csr_write_enable_reg_0[0]     | reset_sync_reg_n_0_[2]                           |               12 |             32 |         2.67 |
+|  clk_50mhz     | rv32i46f_5sp_debug/mem_wb_register/csr_write_enable_buffer_reg[0]   | reset_sync_reg_n_0_[2]                           |               13 |             32 |         2.46 |
+|  clk_50mhz     | rv32i46f_5sp_debug/mem_wb_register/WB_raw_imm_reg[5]_0[0]           | reset_sync_reg_n_0_[2]                           |               11 |             32 |         2.91 |
+|  clk_50mhz     | rv32i46f_5sp_debug/exception_detector/csr_processing_reg[0]         | reset_sync_reg_n_0_[2]                           |               20 |             32 |         1.60 |
+|  clk_50mhz     | rv32i46f_5sp_debug/csr_file/minstret                                | reset_sync_reg_n_0_[2]                           |               17 |             64 |         3.76 |
+|  clk_50mhz     | rv32i46f_5sp_debug/exception_detector/E[0]                          | reset_sync_reg_n_0_[2]                           |               36 |             97 |         2.69 |
+|  clk_50mhz     | benchmark_controller/start_cycles[51]_i_1_n_0                       |                                                  |               24 |            116 |         4.83 |
+|  clk_50mhz     | rv32i46f_5sp_debug/mem_wb_register/E[0]                             |                                                  |               29 |            116 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/mem_wb_register/debug_reg_addr_q0                |                                                  |               22 |            125 |         5.68 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[11]_rep__13_2 |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[10]_rep__13_3 |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[11]_rep__13_1 |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[11]_rep__13_6 |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[10]_rep__13_1 |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[12]_rep__10_5 |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[11]_rep__13_7 |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[10]_rep__13_5 |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[11]_rep__13_3 |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[11]_rep__13_4 |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[10]_rep__13_2 |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[10]_rep__13_6 |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[13]_2         |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[12]_rep__10_2 |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[12]_rep__10_3 |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[12]_rep__10_6 |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[13]_4         |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[14]_rep__3_1  |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[12]_rep__10_7 |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[12]_rep__10_4 |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[13]_5         |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[13]_0         |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[12]_rep__10_8 |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[13]_1         |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[10]_rep__13_4 |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[14]_rep__3_0  |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[14]_rep__3_2  |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[14]_rep__3_3  |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[13]_3         |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[12]_rep__10_1 |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[11]_rep__13_5 |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     | rv32i46f_5sp_debug/ex_mem_register/MEM_alu_result_reg[11]_rep__13_8 |                                                  |               32 |            128 |         4.00 |
+|  clk_50mhz     |                                                                     | reset_sync_reg_n_0_[2]                           |               56 |            152 |         2.71 |
+|  clk_50mhz     | led_OBUF[0]                                                         | reset_sync_reg_n_0_[2]                           |              101 |            198 |         1.96 |
+|  clk_50mhz     | button_controller/FSM_onehot_state_reg[0]_4                         |                                                  |              105 |            246 |         2.34 |
+|  clk_50mhz     | rv32i46f_5sp_debug/exception_detector/cpu_clk_enable_reg[0]         | reset_sync_reg_n_0_[2]                           |              112 |            277 |         2.47 |
+|  clk_50mhz     | rv32i46f_5sp_debug/exception_detector/cpu_clk_enable_reg_0          | reset_sync_reg_n_0_[2]                           |              447 |            831 |         1.86 |
++----------------+---------------------------------------------------------------------+--------------------------------------------------+------------------+----------------+--------------+
+
+

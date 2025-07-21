@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GenRun Id="synth_1" LaunchPart="xc7a200tsbg484-3" LaunchTime="1751086114" LaunchIncrCheckpoint="$PSRCDIR/utils_1/imports/synth_1/RV32I46F5SPSoCTOP.dcp">
+  <File Type="PA-TCL" Name="RV32I46F5SPSoCTOP.tcl"/>
+  <File Type="REPORTS-TCL" Name="RV32I46F5SPSoCTOP_reports.tcl"/>
+  <File Type="RDS-RDS" Name="RV32I46F5SPSoCTOP.vds"/>
+  <File Type="RDS-PROPCONSTRS" Name="RV32I46F5SPSoCTOP_drc_synth.rpt"/>
+  <File Type="RDS-UTIL" Name="RV32I46F5SPSoCTOP_utilization_synth.rpt"/>
+  <File Type="RDS-UTIL-PB" Name="RV32I46F5SPSoCTOP_utilization_synth.pb"/>
+  <File Type="RDS-DCP" Name="RV32I46F5SPSoCTOP.dcp"/>
+  <File Type="VDS-TIMINGSUMMARY" Name="RV32I46F5SPSoCTOP_timing_summary_synth.rpt"/>
+  <File Type="VDS-TIMING-PB" Name="RV32I46F5SPSoCTOP_timing_summary_synth.pb"/>
+  <FileSet Name="sources" Type="DesignSrcs" RelSrcDir="$PSRCDIR/sources_1" RelGenDir="$PGENDIR/sources_1">
+    <Filter Type="Srcs"/>
+    <File Path="$PSRCDIR/sources_1/imports/modules/headers/alu_op.vh">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/headers/alu_op.vh"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+        <Attr Name="IsVisible" Val="1"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/ALU.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/ALU.v"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/headers/rtype.vh">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/headers/rtype.vh"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+        <Attr Name="IsVisible" Val="1"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/headers/csr.vh">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/headers/csr.vh"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+        <Attr Name="IsVisible" Val="1"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/headers/branch.vh">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/headers/branch.vh"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+        <Attr Name="IsVisible" Val="1"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/headers/itype.vh">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/headers/itype.vh"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+        <Attr Name="IsVisible" Val="1"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/headers/opcode.vh">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/headers/opcode.vh"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+        <Attr Name="IsVisible" Val="1"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/ALU_Controller.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/ALU_Controller.v"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/Branch_Logic.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/Branch_Logic.v"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/Branch_Predictor.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/Branch_Predictor.v"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/Button_Controller.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/Button_Controller.v"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/headers/load.vh">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/headers/load.vh"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+        <Attr Name="IsVisible" Val="1"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/headers/store.vh">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/headers/store.vh"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+        <Attr Name="IsVisible" Val="1"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/Byte_Enable_Logic.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/Byte_Enable_Logic.v"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/CSR_File.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/CSR_File.v"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/headers/alu_src_select.vh">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/headers/alu_src_select.vh"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+        <Attr Name="IsVisible" Val="1"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/headers/rf_wd_select.vh">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/headers/rf_wd_select.vh"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+        <Attr Name="IsVisible" Val="1"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/Control_Unit.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/Control_Unit.v"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/Data_Memory.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/Data_Memory.v"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/Debug_UART_Controller.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/Debug_UART_Controller.v"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/EX_MEM_Register.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/EX_MEM_Register.v"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/headers/trap.vh">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/headers/trap.vh"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+        <Attr Name="IsVisible" Val="1"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/Exception_Detector.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/Exception_Detector.v"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/Forward_Unit.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/Forward_Unit.v"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/Hazard_Unit.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/Hazard_Unit.v"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/ID_EX_Register.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/ID_EX_Register.v"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/IF_ID_Register.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/IF_ID_Register.v"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/Immediate_Generator.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/Immediate_Generator.v"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/Instruction_Decoder.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/Instruction_Decoder.v"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/Instruction_Memory.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/Instruction_Memory.v"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/MEM_WB_Register.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/MEM_WB_Register.v"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/PC_Controller.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/PC_Controller.v"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/PC_Plus_4.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/PC_Plus_4.v"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/Program_Counter.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/Program_Counter.v"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/Register_File_Debug.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/Register_File_Debug.v"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/Trap_Controller.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/Trap_Controller.v"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/RV32I46F_5SP_Debug.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/RV32I46F_5SP_Debug.v"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/UART_TX.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/UART_TX.v"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/modules/46F5SP_SoC_TOP.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/basic_rv32s-37842bf30e15f558246576d3b9a74f06e90732b1/RV32I/modules/46F5SP_SoC_TOP.v"/>
+        <Attr Name="ImportTime" Val="1750512406"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <Config>
+      <Option Name="DesignMode" Val="RTL"/>
+      <Option Name="TopModule" Val="RV32I46F5SPSoCTOP"/>
+    </Config>
+  </FileSet>
+  <FileSet Name="constrs_in" Type="Constrs" RelSrcDir="$PSRCDIR/constrs_1" RelGenDir="$PGENDIR/constrs_1">
+    <Filter Type="Constrs"/>
+    <File Path="$PSRCDIR/constrs_1/imports/new/RV32I46F_5SP_Debug_XDC.xdc">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Clean_RV32I46F5SP_BAK/Clean_RV32I46F5SP.srcs/constrs_1/new/RV32I46F_5SP_Debug_XDC.xdc"/>
+        <Attr Name="ImportTime" Val="1750415521"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+      </FileInfo>
+    </File>
+    <Config>
+      <Option Name="ConstrsType" Val="XDC"/>
+    </Config>
+  </FileSet>
+  <FileSet Name="utils" Type="Utils" RelSrcDir="$PSRCDIR/utils_1" RelGenDir="$PGENDIR/utils_1">
+    <Filter Type="Utils"/>
+    <File Path="$PSRCDIR/utils_1/imports/synth_1/RV32I46F5SPSoCTOP.dcp">
+      <FileInfo>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedInSteps" Val="synth_1"/>
+        <Attr Name="AutoDcp" Val="1"/>
+      </FileInfo>
+    </File>
+    <Config>
+      <Option Name="TopAutoSet" Val="TRUE"/>
+    </Config>
+  </FileSet>
+  <Strategy Version="1" Minor="2">
+    <StratHandle Name="Flow_PerfOptimized_high" Flow="Vivado Synthesis 2024">
+      <Desc>Higher performance designs, resource sharing is turned off, the global fanout guide is set to a lower number, FSM extraction forced to one-hot, LUT combining is disabled, equivalent registers are preserved, SRL are inferred  with a larger threshold</Desc>
+    </StratHandle>
+    <Step Id="synth_design">
+      <Option Id="Directive">7</Option>
+      <Option Id="FsmExtraction">1</Option>
+      <Option Id="KeepEquivalentRegisters">1</Option>
+      <Option Id="NoCombineLuts">1</Option>
+      <Option Id="ResourceSharing">2</Option>
+      <Option Id="ShregMinSize">5</Option>
+    </Step>
+  </Strategy>
+</GenRun>
