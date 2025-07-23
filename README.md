@@ -154,7 +154,7 @@ RV32I46F_5SP = **RV32I** that supports **46** instructions. **Final**(latest) ve
 <sup>*</sup> 46F5SP_SoC is made for debugging and running **Dhrystone** benchmark the core design.  
 It utilizes **FPGA** on-board GPIOs such as LEDs, buttons and UART.  
   
-  <img width="1755" height="1240" alt="basic_rv32s drawio (2)" src="https://github.com/user-attachments/assets/5f0c7fea-dfc0-4212-ac4b-5125d8859ae6" />
+  <img width="7016" height="4956" alt="250723_basic_rv32s_simplified" src="https://github.com/user-attachments/assets/bd08682a-5a99-41d9-8d54-94d5360e9e80" />
 <sub> Architectures of basic_RV32s' processors </sub>
 
 ### RV32I37F
