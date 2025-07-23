@@ -10,7 +10,7 @@ It provides step-by-step guideline for designing processor **from single-cycle p
 KHWL
 > I've always wondered how to make CPU and I wanted to make my own.  
 > Although it was a far dream for me, I gave it a try when I was serving the Korean Military duty. And made the result pretty legitimately.  
-<img width="6984" height="4968" alt="250714 RV32I46F_5SP_Final_R9 (1)" src="https://github.com/user-attachments/assets/6da12c7b-438f-422a-aab7-6d54af781a91" />
+<img width="6984" height="4952" alt="250723 RV32I46F_5SP_Final_R10" src="https://github.com/user-attachments/assets/d9556432-da64-4af3-8c5e-97f013c5cc0d" />
 <sup> Signal-Level Block Diagram of RV32I46F_5SP Core </sup>
 <br>
 <br>
