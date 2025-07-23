@@ -10,7 +10,7 @@ It provides step-by-step guideline for designing processor **from single-cycle p
 KHWL
 > I've always wondered how to make CPU and I wanted to make my own.  
 > Although it was a far dream for me, I gave it a try when I was serving the Korean Military duty. And made the result pretty legitimately.  
-<img width="6984" height="4968" alt="250714 RV32I46F_5SP_Final_R9 (1)" src="https://github.com/user-attachments/assets/6da12c7b-438f-422a-aab7-6d54af781a91" />
+<img width="6984" height="4952" alt="250723 RV32I46F_5SP_Final_R10" src="https://github.com/user-attachments/assets/d9556432-da64-4af3-8c5e-97f013c5cc0d" />
 <sup> Signal-Level Block Diagram of RV32I46F_5SP Core </sup>
 <br>
 <br>
@@ -154,7 +154,7 @@ RV32I46F_5SP = **RV32I** that supports **46** instructions. **Final**(latest) ve
 <sup>*</sup> 46F5SP_SoC is made for debugging and running **Dhrystone** benchmark the core design.  
 It utilizes **FPGA** on-board GPIOs such as LEDs, buttons and UART.  
   
-  <img width="1755" height="1240" alt="basic_rv32s drawio (2)" src="https://github.com/user-attachments/assets/5f0c7fea-dfc0-4212-ac4b-5125d8859ae6" />
+  <img width="7016" height="4956" alt="250723_basic_rv32s_simplified" src="https://github.com/user-attachments/assets/bd08682a-5a99-41d9-8d54-94d5360e9e80" />
 <sub> Architectures of basic_RV32s' processors </sub>
 
 ### RV32I37F
