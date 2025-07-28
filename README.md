@@ -534,14 +534,19 @@ We're going to work on easy C program import on SoC soon.
 
 ---
 
-## Future Works
+## 🗺️ Repository Roadmap
 
-1. issue resolutions
-2. Single-Cycle core FPGA implementation and Evaluation
-3. Additional benchmarks (Coremark, RISC-V ISA tests)
-4. Standardized FPGA synthesis resource measurement
-5. Optimize critical paths and reach higher clock speed and performance
-6. Easy method for running C program on SoC
+✅ Complete basic_RV32s repository structure  
+✅ Contribute riscv/learn as tutorial resource  
+🔄 Writing Paper about this repository  
+🔄 Translate Korean resources to English  
+
+📋 Run Coremark and RISC-V ISA test on 46F5SP_SoC  
+📋 Synthesize single-cycle processors in FPGA and Evaluate  
+📋 Resolve issues of 46F5SP architecture  
+📋 Performance Enhancement by Optimize critical paths, advanced core architecture  
+📋 Optimize FPGA resource utilization
+📋 Easy method for running C program on SoC (makefile... etc.)
 
 ---
 
