@@ -189,7 +189,7 @@ It utilizes **FPGA** on-board GPIOs such as LEDs, buttons and UART.
   |**MUXs**|
   |ALUsrcMUX_A|-|read_data1, pc, alu_src_A_select|srcA|  
   |ALUsrcMUX_B|-|read_data2, imm, alu_src_B_select|srcB|
-  |Reg_WD_MUX|-|byte_enable_logic_register_write_data, alu_result, imm, pc_plus_4|register_file_write_data|  
+  |Reg_WD_MUX|-|byte_enable_logic_register_write_data, alu_result, imm, pc_plus_4, register_file_write_data_select|register_file_write_data|  
   </details>
   
 
@@ -232,7 +232,7 @@ For each module's logic description, go to `documents/modules_and_signals/` for 
   |**MUXs**|
   |**ALUsrcMUX_A**|-|read_data1, pc, **rs1**, alu_src_A_select|srcA|  
   |**ALUsrcMUX_B**|-|read_data2, imm, **csr_read_data**, alu_src_B_select|srcB|
-  |**Reg_WD_MUX**|-|byte_enable_logic_register_write_data, alu_result, imm, pc_plus_4, **csr_read_data**|register_file_write_data|
+  |**Reg_WD_MUX**|-|byte_enable_logic_register_write_data, alu_result, imm, pc_plus_4, **csr_read_data**, register_file_write_data_select|register_file_write_data|
   
   </details>
   
@@ -297,7 +297,7 @@ For each module's logic description, go to `documents/modules_and_signals/` for 
   |**MUXs**|
   |ALUsrcMUX_A|-|read_data1, pc, **rs1**, alu_src_A_select|srcA|  
   |ALUsrcMUX_B|-|read_data2, imm, **csr_read_data**, alu_src_B_select|srcB|
-  |Reg_WD_MUX|-|byte_enable_logic_register_write_data, alu_result, imm, pc_plus_4, csr_read_data|register_file_write_data|
+  |Reg_WD_MUX|-|byte_enable_logic_register_write_data, alu_result, imm, pc_plus_4, csr_read_data, register_file_write_data_select|register_file_write_data|
   |**CSR_addr_MUX|-|trapped, raw_imm, csr_trap_address|csr_address**|
   |**CSR_addr_MUX|-|trapped, csr_trap_write_data, alu_result|csr_write_data**|
   |**DBG_RD_MUX|-|debug_mode, im_instruction, dbg_instruction|instruction**|
@@ -359,7 +359,7 @@ For each module's logic description, go to `documents/modules_and_signals/` for 
   |**ALUsrcMUX_B|-|EX_read_data2, EX_imm, EX_csr_read_data, EX_alu_src_B_select**|srcB|
   |**ALUsrc_forward_MUX_A|-|alu_forward_source_select_a, alu_forward_source_data_a, srcA|ALUsrcA**|
   |**ALUsrc_forward_MUX_B|-|alu_forward_source_select_b, alu_forward_source_data_b, srcB|ALUsrcB**|
-  |**Reg_WD_MUX**|-|**WB_byte_enable_logic_register_write_data, WB_alu_result, WB_imm, WB_pc_plus_4, WB_csr_read_data|WB_register_file_write_data**|
+  |**Reg_WD_MUX**|-|**WB_byte_enable_logic_register_write_data, WB_alu_result, WB_imm, WB_pc_plus_4, WB_csr_read_data, WB_register_file_write_data_select|WB_register_file_write_data**|
   |**CSR_read_addr_MUX**|-|**trapped, standby_mode, raw_imm, csr_trap_address|csr_read_address**|
   |**CSR_write_addr_MUX**|-|**trapped, standby_mode, WB_raw_imm, csr_trap_address|csr_write_address**|
   |**CSR_data_MUX**|-|trapped, **standby_mode**, csr_trap_write_data, **WB_alu_result**|csr_write_data|
