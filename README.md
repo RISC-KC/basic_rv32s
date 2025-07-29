@@ -5,6 +5,13 @@
 basic_RV32s is a **framework for learning Processor design with RISC-V RV32I** ISA (Instruction Set Architecture).  
 It provides step-by-step guideline for designing processor **from single-cycle processor to 5 Stage Pipelined with Exception Handling**.  
 
+2025.07.25. 16:07 GMT (2025.07.26. 01:06 KST),  
+❇️ Contributed, and Listed on **RISC-V Learn GitHub Repository** !!❇️   
+- 📙 **Learning Resources**, as [Intermediate-Level Resource](https://github.com/riscv/learn?tab=readme-ov-file#-intermediate-level-resources).
+
+🌟Check [riscv/learn](https://github.com/riscv/learn) for **extensive RISC-V Learning Resources**!🌟
+
+
 ## Introduction
 
 KHWL
@@ -34,7 +41,7 @@ _"A guideline for processor designing from scratch for begginer that has made by
 ### Quick Start
 - 📕 [Tutorials](https://github.com/RISC-KC/basic_rv32s/blob/main/guidelines/tutorials.md)  
   Architecture Design? How to use this repository? Let's get started.
-- 📊 [Diagrams](https://github.com/RISC-KC/basic_rv32s/blob/main/documents/diagrams)  
+- 📊 [Diagrams](https://github.com/RISC-KC/basic_rv32s/tree/main/diagrams)
   Processor architecture design block diagrams including the draft files.
 - 📜 [Devlogs](https://github.com/RISC-KC/basic_rv32s/blob/main/guidelines/development_log.md)  
   Want to find out how did we made this processor? Here's the footprints of it.
@@ -47,7 +54,9 @@ _"A guideline for processor designing from scratch for begginer that has made by
 - [Architectures and Specifications](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#architectures-and-specifications)  
 - [FPGA Implementation Results & Performance Evaluation](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#fpga-implementation-results)  
 - [Getting Started](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#getting-started)  
-- [Future Works](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#future-works)  
+- [Repository Roadmap](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#repository-roadmap)
+- [Contributions](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#contributions)
+- [Acknowledgment](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#acknowledgment)
 
 -----
 
@@ -189,7 +198,7 @@ It utilizes **FPGA** on-board GPIOs such as LEDs, buttons and UART.
   |**MUXs**|
   |ALUsrcMUX_A|-|read_data1, pc, alu_src_A_select|srcA|  
   |ALUsrcMUX_B|-|read_data2, imm, alu_src_B_select|srcB|
-  |Reg_WD_MUX|-|byte_enable_logic_register_write_data, alu_result, imm, pc_plus_4|register_file_write_data|  
+  |Reg_WD_MUX|-|byte_enable_logic_register_write_data, alu_result, imm, pc_plus_4, register_file_write_data_select|register_file_write_data|  
   </details>
   
 
@@ -232,7 +241,7 @@ For each module's logic description, go to `documents/modules_and_signals/` for 
   |**MUXs**|
   |**ALUsrcMUX_A**|-|read_data1, pc, **rs1**, alu_src_A_select|srcA|  
   |**ALUsrcMUX_B**|-|read_data2, imm, **csr_read_data**, alu_src_B_select|srcB|
-  |**Reg_WD_MUX**|-|byte_enable_logic_register_write_data, alu_result, imm, pc_plus_4, **csr_read_data**|register_file_write_data|
+  |**Reg_WD_MUX**|-|byte_enable_logic_register_write_data, alu_result, imm, pc_plus_4, **csr_read_data**, register_file_write_data_select|register_file_write_data|
   
   </details>
   
@@ -297,7 +306,7 @@ For each module's logic description, go to `documents/modules_and_signals/` for 
   |**MUXs**|
   |ALUsrcMUX_A|-|read_data1, pc, **rs1**, alu_src_A_select|srcA|  
   |ALUsrcMUX_B|-|read_data2, imm, **csr_read_data**, alu_src_B_select|srcB|
-  |Reg_WD_MUX|-|byte_enable_logic_register_write_data, alu_result, imm, pc_plus_4, csr_read_data|register_file_write_data|
+  |Reg_WD_MUX|-|byte_enable_logic_register_write_data, alu_result, imm, pc_plus_4, csr_read_data, register_file_write_data_select|register_file_write_data|
   |**CSR_addr_MUX|-|trapped, raw_imm, csr_trap_address|csr_address**|
   |**CSR_addr_MUX|-|trapped, csr_trap_write_data, alu_result|csr_write_data**|
   |**DBG_RD_MUX|-|debug_mode, im_instruction, dbg_instruction|instruction**|
@@ -359,7 +368,7 @@ For each module's logic description, go to `documents/modules_and_signals/` for 
   |**ALUsrcMUX_B|-|EX_read_data2, EX_imm, EX_csr_read_data, EX_alu_src_B_select**|srcB|
   |**ALUsrc_forward_MUX_A|-|alu_forward_source_select_a, alu_forward_source_data_a, srcA|ALUsrcA**|
   |**ALUsrc_forward_MUX_B|-|alu_forward_source_select_b, alu_forward_source_data_b, srcB|ALUsrcB**|
-  |**Reg_WD_MUX**|-|**WB_byte_enable_logic_register_write_data, WB_alu_result, WB_imm, WB_pc_plus_4, WB_csr_read_data|WB_register_file_write_data**|
+  |**Reg_WD_MUX**|-|**WB_byte_enable_logic_register_write_data, WB_alu_result, WB_imm, WB_pc_plus_4, WB_csr_read_data, WB_register_file_write_data_select|WB_register_file_write_data**|
   |**CSR_read_addr_MUX**|-|**trapped, standby_mode, raw_imm, csr_trap_address|csr_read_address**|
   |**CSR_write_addr_MUX**|-|**trapped, standby_mode, WB_raw_imm, csr_trap_address|csr_write_address**|
   |**CSR_data_MUX**|-|trapped, **standby_mode**, csr_trap_write_data, **WB_alu_result**|csr_write_data|
@@ -534,14 +543,19 @@ We're going to work on easy C program import on SoC soon.
 
 ---
 
-## Future Works
+## 🗺️ Repository Roadmap
 
-1. issue resolutions
-2. Single-Cycle core FPGA implementation and Evaluation
-3. Additional benchmarks (Coremark, RISC-V ISA tests)
-4. Standardized FPGA synthesis resource measurement
-5. Optimize critical paths and reach higher clock speed and performance
-6. Easy method for running C program on SoC
+✅ Complete basic_RV32s repository structure  
+✅ Contribute riscv/learn as tutorial resource  
+🔄 Writing Paper about this repository  
+🔄 Translate Korean resources to English  
+
+📋 Run Coremark and RISC-V ISA test on 46F5SP_SoC  
+📋 Synthesize single-cycle processors in FPGA and Evaluate  
+📋 Resolve issues of 46F5SP architecture  
+📋 Performance Enhancement by Optimize critical paths, advanced core architecture  
+📋 Optimize FPGA resource utilization
+📋 Easy method for running C program on SoC (makefile... etc.)
 
 ---
 
@@ -563,6 +577,8 @@ Thanks! 📡
 
 Heartfelt thanks to [@ChoiCube84](https://github.com/ChoiCube84) for being an incredible project companion throughout this processor design journey. Even in the challenging environment of military service, your consistent support and dedication made this project possible. 
 
+2025.07.25. 16:07 GMT, basic_RV32s has been listed on **RISC-V Learn GitHub Repository** as an intermediate learning resource. Huge thanks for recognizing our work.
+
 **Contributors:**
-- [@T410N](https://github.com/t410n) (KHWL) - Project Lead & Architecture Design
+- [@T410N](https://github.com/t410n) (Hyun Woo Kang) - Project Lead & Architecture Design
 - [@ChoiCube84](https://github.com/ChoiCube84) - Development & Project support
