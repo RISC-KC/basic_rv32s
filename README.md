@@ -5,6 +5,13 @@
 basic_RV32s is a **framework for learning Processor design with RISC-V RV32I** ISA (Instruction Set Architecture).  
 It provides step-by-step guideline for designing processor **from single-cycle processor to 5 Stage Pipelined with Exception Handling**.  
 
+2025.07.25. 16:07 GMT (2025.07.26. 01:06 KST),  
+❇️ Contributed, and Listed on **RISC-V Learn GitHub Repository** !!❇️   
+- 📙 **Learning Resources**, as [Intermediate-Level Resource](https://github.com/riscv/learn?tab=readme-ov-file#-intermediate-level-resources).
+
+🌟Check [riscv/learn](https://github.com/riscv/learn) for **extensive RISC-V Learning Resources**!🌟
+
+
 ## Introduction
 
 KHWL
@@ -34,7 +41,7 @@ _"A guideline for processor designing from scratch for begginer that has made by
 ### Quick Start
 - 📕 [Tutorials](https://github.com/RISC-KC/basic_rv32s/blob/main/guidelines/tutorials.md)  
   Architecture Design? How to use this repository? Let's get started.
-- 📊 [Diagrams](https://github.com/RISC-KC/basic_rv32s/blob/main/documents/diagrams)  
+- 📊 [Diagrams](https://github.com/RISC-KC/basic_rv32s/tree/main/diagrams)
   Processor architecture design block diagrams including the draft files.
 - 📜 [Devlogs](https://github.com/RISC-KC/basic_rv32s/blob/main/guidelines/development_log.md)  
   Want to find out how did we made this processor? Here's the footprints of it.
@@ -47,7 +54,9 @@ _"A guideline for processor designing from scratch for begginer that has made by
 - [Architectures and Specifications](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#architectures-and-specifications)  
 - [FPGA Implementation Results & Performance Evaluation](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#fpga-implementation-results)  
 - [Getting Started](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#getting-started)  
-- [Future Works](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#future-works)  
+- [Repository Roadmap](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#repository-roadmap)
+- [Contributions](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#contributions)
+- [Acknowledgment](https://github.com/RISC-KC/basic_rv32s?tab=readme-ov-file#acknowledgment)
 
 -----
 
@@ -568,6 +577,8 @@ Thanks! 📡
 
 Heartfelt thanks to [@ChoiCube84](https://github.com/ChoiCube84) for being an incredible project companion throughout this processor design journey. Even in the challenging environment of military service, your consistent support and dedication made this project possible. 
 
+2025.07.25. 16:07 GMT, basic_RV32s has been listed on **RISC-V Learn GitHub Repository** as an intermediate learning resource. Huge thanks for recognizing our work.
+
 **Contributors:**
-- [@T410N](https://github.com/t410n) (KHWL) - Project Lead & Architecture Design
+- [@T410N](https://github.com/t410n) (Hyun Woo Kang) - Project Lead & Architecture Design
 - [@ChoiCube84](https://github.com/ChoiCube84) - Development & Project support
