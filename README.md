@@ -41,7 +41,7 @@ _"A guideline for processor designing from scratch for begginer that has made by
 ### Quick Start
 - 📕 [Tutorials](https://github.com/RISC-KC/basic_rv32s/blob/main/guidelines/tutorials.md)  
   Architecture Design? How to use this repository? Let's get started.
-- 📊 [Diagrams](https://github.com/RISC-KC/basic_rv32s/tree/main/diagrams)
+- 📊 [Diagrams](https://github.com/RISC-KC/basic_rv32s/tree/main/diagrams)  
   Processor architecture design block diagrams including the draft files.
 - 📜 [Devlogs](https://github.com/RISC-KC/basic_rv32s/blob/main/guidelines/development_log.md)  
   Want to find out how did we made this processor? Here's the footprints of it.
@@ -543,7 +543,7 @@ We're going to work on easy C program import on SoC soon.
 
 ---
 
-## 🗺️ Repository Roadmap
+## Repository Roadmap
 
 ✅ Complete basic_RV32s repository structure  
 ✅ Contribute riscv/learn as tutorial resource  
