@@ -17,6 +17,7 @@ It provides step-by-step guideline for designing processor **from single-cycle p
 KHWL
 > I've always wondered how to make CPU and I wanted to make my own.  
 > Although it was a far dream for me, I gave it a try when I was serving the Korean Military duty. And made the result pretty legitimately.  
+> It's _"a guideline for processor designing from scratch for begginer that has made by an actual beginner."_  
 <img width="6984" height="4952" alt="250723 RV32I46F_5SP_Final_R10" src="https://github.com/user-attachments/assets/d9556432-da64-4af3-8c5e-97f013c5cc0d" />
 <sup> Signal-Level Block Diagram of RV32I46F_5SP Core </sup>
 <br>
@@ -26,8 +27,6 @@ While designing the Architecture of processor, I've felt the gap between the the
 So I decided to make this **project for academic/instructional purposes so that anyone who wants to make & design processors from scratch** can easily dive into it.  
 I've documented all the **development progresses, train of thoughts, debug logs**. I assume this would work as a **mistake notebook or a guideline for RISC-V beginners**, Processor design field.  
 Since most of lectures I've heard were using Verilog, all of RTL codes we provide are written in pure **Verilog**.  
-
-_"A guideline for processor designing from scratch for begginer that has made by an actual beginner."_  
 
 ### Key Features
 
@@ -41,7 +40,7 @@ _"A guideline for processor designing from scratch for begginer that has made by
 ### Quick Start
 - 📕 [Tutorials](https://github.com/RISC-KC/basic_rv32s/blob/main/guidelines/tutorials.md)  
   Architecture Design? How to use this repository? Let's get started.
-- 📊 [Diagrams](https://github.com/RISC-KC/basic_rv32s/tree/main/diagrams)
+- 📊 [Diagrams](https://github.com/RISC-KC/basic_rv32s/tree/main/diagrams)  
   Processor architecture design block diagrams including the draft files.
 - 📜 [Devlogs](https://github.com/RISC-KC/basic_rv32s/blob/main/guidelines/development_log.md)  
   Want to find out how did we made this processor? Here's the footprints of it.
@@ -543,7 +542,7 @@ We're going to work on easy C program import on SoC soon.
 
 ---
 
-## 🗺️ Repository Roadmap
+## Repository Roadmap
 
 ✅ Complete basic_RV32s repository structure  
 ✅ Contribute riscv/learn as tutorial resource  
