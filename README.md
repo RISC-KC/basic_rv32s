@@ -546,7 +546,7 @@ We're going to work on easy C program import on SoC soon.
 
 ✅ Complete basic_RV32s repository structure  
 ✅ Contribute riscv/learn as tutorial resource  
-🔄 Writing Paper about this repository  
+✅ Writing Paper about this repository  ✨ISOCC 2025 Accepted (Oral)
 🔄 Translate Korean resources to English  
 
 📋 Run Coremark and RISC-V ISA test on 46F5SP_SoC  
