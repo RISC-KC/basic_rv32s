@@ -29,14 +29,14 @@ The operation decision should be separated from the main ALU since we do not act
 - Added **Instruction Decoder**, **ALU Controller**, **Control Unit**, **Register File Write Data Source MUX** module block diagram.  
 
 - Revised **Register File** block's I/O signals. (Read Address1, Read Address2, Write Address, Write Data, clk, Write Enable, Read Data1, Read Data2)
-![ID_CU_RF_ACU_ALU](/diagrams/design_archive/Pre-CPU/RV32I_id_CU_RF_ACU_ALU.drawio)
+![ID_CU_RF_ACU_ALU](/diagrams/design_archive/Pre-CPU/RV32I_id_CU_RF_ACU_ALU.drawio.png)
 
 - We can just divide the signals from instruction, but for intuitive design and easy understanding, we've made **Instruction Decoder** module block indepedently.  
 
 ### [2024.12.21.]
 - Added **Data Memory** module block
 - **Register File Write Data MUX(Reg_WD_MUX)** gets ALU result, Data Memory Read Data, Next PC address.
-`diagrams/design_archive/Pre-CPU/RV32I_Signals.drawio`  
+![Signal_Connected_RV32I](/diagrams/design_archive/Pre-CPU/RV32I_Signals.drawio.png)
 
 
 ### [2024.12.22.]
@@ -45,19 +45,19 @@ Making the block diagram down to signal-level.
 
 - Added **Branch Logic** module block for checking if ALUresult is zero for recognizing if branch instruction's condition is true.  
 
-`diagrams/design_archive/Pre-CPU/RV32I_Branch.drawio`  
+![added_imm_gen_branch_logic](/diagrams/design_archive/Pre-CPU/RV32I_Branch.drawio.png)
 
 ### [2024.12.23.]
 - Added **pc_plus_4** module block for intuitiveness. It goes to **Reg_WD_MUX**. in RISC-V RV32I, some (un)conditional branch instructions and U-Type instructions requires to write pc+4 value to register with the instruction main behavior.
 
 <sup> I think this should be merged to **Reg_WD_MUX** in FPGA RTL codes. The intuitiveness should only be in block diagram and learning design. Not in actual core synthesis.</sup>
 
-`diagrams/design_archive/Pre-CPU/RV32I_Branch_PC4.drawio`  
+![added_pc_plus_4_reg_mux](/diagrams/design_archive/Pre-CPU/RV32I_Branch_PC4.drawio.png)
 
 - Added draft **PC Controller** module block in core diagram.  
 To execute the (un)conditional branch instructions, such as J-Type, B-Type instruction, KHWL thought there should be an separate control logic unit for PC value control. **Program Counter** should only perform as the register that holds current instruction's instruction memory address. 
 
-`diagrams/design_archive/Pre-CPU/RV32I_Branch_PCCon.drawio`  
+![added_PCC](/diagrams/design_archive/Pre-CPU/RV32I_Branch_PCCon.drawio.png)
 
 ### [2024.12.24.]
 - The logic idea of **PC Controller**  
@@ -68,12 +68,12 @@ If it's jump, branch; `next_pc` is `jump_target`, `branch_target` respectively, 
 
 Considered about designing the `next_pc` selection logic MUX outside of **PC Controller**.
 
-`diagrams/design_archive/Pre-CPU/RV32I_PCCon_nextpcMUX.drawio`  
+![reviesed_PCC](/diagrams/design_archive/Pre-CPU/RV32I_PCcon_nextpcMUX.drawio.png)
 
 ### [2024.12.25.]
 - Confirmization of initial **PC Controller** module block design  
-`diagrams/design_archive/Pre-CPU/RV32I_PCcon_nextpcMUX(1).drawio`  
-![PC_Controller](/diagrams/design_archive/Pre-CPU/RV32I_PCcon_nextpcMUX.drawio.png)
+![revised2_PCC](/diagrams/design_archive/Pre-CPU/RV32I_PCcon_nextpcMUX(1).drawio.png)
+![revised3_PCC](/diagrams/design_archive/Pre-CPU/RV32I_PCcon_nextpcMUX.drawio.png)
 
 Decided to integrated the `next_pc` selection logic MUX in **PC Controller**.
 
@@ -84,7 +84,7 @@ Decided to integrated the `next_pc` selection logic MUX in **PC Controller**.
 
 ### [2024.01.02.]
 - Organized PC Controller signal input
-`diagrams/design_archive/Pre-CPU/RV32I_PCcon_Branch2.drawio`
+![Organize_PCC_signal](/diagrams/design_archive/Pre-CPU/RV32I_PCcon_Branch2.drawio/)
 
 ## 37F Architecture Development
 
