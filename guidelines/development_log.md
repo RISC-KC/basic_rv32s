@@ -84,7 +84,7 @@ Decided to integrated the `next_pc` selection logic MUX in **PC Controller**.
 
 ### [2024.01.02.]
 - Organized PC Controller signal input
-![Organize_PCC_signal](/diagrams/design_archive/Pre-CPU/RV32I_PCcon_Branch2.drawio/)
+![Organize_PCC_signal](/diagrams/design_archive/Pre-CPU/RV32I_PCcon_Branch2.drawio.png/)
 
 ## 37F Architecture Development
 
@@ -103,3 +103,4 @@ Decided to integrated the `next_pc` selection logic MUX in **PC Controller**.
 - Added **Byte Enable Logic** module for partial load and store instruction. Such as lh, lhu, lb, lbu, sb, sh.
 
 ![RV32I37F_BE_Logic](/diagrams/design_archive/RV32I37F/RV32I37_BE_Logic.drawio%20(1).png)
+
