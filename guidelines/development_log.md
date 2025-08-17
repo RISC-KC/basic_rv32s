@@ -68,12 +68,10 @@ If it's jump, branch; `next_pc` is `jump_target`, `branch_target` respectively, 
 
 Considered about designing the `next_pc` selection logic MUX outside of **PC Controller**.
 
-![reviesed_PCC](/diagrams/design_archive/Pre-CPU/RV32I_PCcon_nextpcMUX.drawio.png)
+![reviesed_PCC](/diagrams/design_archive/Pre-CPU/RV32I_PCcon_nextpcMUX(1).drawio.png)
 
 ### [2024.12.25.]
 - Confirmization of initial **PC Controller** module block design  
-![revised2_PCC](/diagrams/design_archive/Pre-CPU/RV32I_PCcon_nextpcMUX(1).drawio.png)
-
 Decided to integrated the `next_pc` selection logic MUX in **PC Controller**.
 
 - Misunderstood about jump target address. In diagram `RV32I_PCcon_Branch.drawio`, jump target is from alu_result and ex-imm (extended immediate value from Immediate Generator module) 
@@ -102,5 +100,6 @@ Decided to integrated the `next_pc` selection logic MUX in **PC Controller**.
 - Added **Byte Enable Logic** module for partial load and store instruction. Such as lh, lhu, lb, lbu, sb, sh.
 
 ![RV32I37F_BE_Logic](/diagrams/design_archive/RV32I37F/RV32I37_BE_Logic.drawio%20(1).png)
+
 
 
