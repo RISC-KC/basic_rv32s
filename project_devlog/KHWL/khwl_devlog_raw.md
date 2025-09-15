@@ -6536,4 +6536,45 @@ configure 이후 직접 make하면서 ERROR로 이게 없어서 진행 안된다
 그걸 수동으로 하나하나 설치하는 중인데, gdb도 설치 안되어있어 최신버전 설치중이다..
 일단 GDB 설치까지도 시간이 꽤 걸리니까 그동안 MMIO 설계를 해봐야겠다.
 
+갑자기 MMIO가 나온 이유? Dhrystone이 기존에는 원래 printf 같은 표준 출력 함수들이 있는데, 구현의 속도와 편의성을 극대화하기 위해서 이를 모두 제외하고 CSR의 값을 읽어오는 것으로 진행했었다.
+이를 없애고 학회 발표에서는 정식 값을 말하기 위해 정식 수행을 하려고 printf 출력의 구현을 위해 MMIO를 이용한 UART를 만드려고 하는 것.
+
 Data Memory를 봤을 때, MMIO를 위해 수정할 사항들이 있다.
+
+Data Memory에서 MMIO UART 데이터 영역을 0x2000_0000부터로 설정하고,
+현재 busy인지의 값을 CPU에서 담아둘 수 있도록 2000_0004를 status 주소로 지정한다. (0x004)
+그리고 tx로 보낼 데이터의 주소를 0x000으로 해뒀다.
+
+로직은 다음과 같다.
+0x2000임을 확인하면 uart_tx_access를 참으로 만들어 tx접근인지, status check인지, else인지 확인한다
+만약 posedge clk에 write하는데 그 주소 영역이 UART BASE (0x2000_0000), tx data 영역인 경우, 그리고 tx_busy가 아닐 때
+write_data를 mmio_tx_data로 출력해서 UART로 송신한다. 
+나머지 동일.
+
+탑 모듈에도 인스턴스 적용하는데..
+
+어라. 생각해보니까 Instruction Memory rom_address에 MEM_alu_result를 입력시키고 있었다.
+물론 이렇게 해도 수행에는 문제 없지만 Data Memory에 처음 로직이 해당 주소 영역을 체크하고 해당될 때 IM쪽으로 bypass해서 데이터가 나오도록 하는 것이었다.
+그래서 Data Memory에 rom_address output 신호를 넣었었는데 이걸 깜빡했었네.
+
+rom_address(rom_address)하니까 LUT가 기존 11,660 LUT에서 (46F5SP_SoC with Dhrystone) 9,872 LUT로 거의 3,000개의 LUT가 줄었다.
+허허..
+
+툴체인 갈아엎기를 8번. 22시 정도에 빌드가 완료되었다. 
+이걸로 Dhrystone을 컴파일해서 다시 올리기엔 시간이 너무 촉박하다 생각해서 PPT를 모두 다 마치고, 기존 vivado project file에서 데이터들을 산출해 PPT에 적용했다. 
+원래는 맘같았으면 다른 RISC-V 코어 디자인들 FPGA에 직접 올려서 벤치마킹까지 해보는건데..
+
+PPT 제출 완료 (23:58)
+괜찮다. 어차피 학회 발표 때 직접 PPT를 갖고 가는 것이고, 어차피 지금 제출하는 것은 ISOCC에서 한번 보고 고칠점이나 그런거 알려주는 단계니까.
+PPT is not mandatory 라고 못박아놨겠다, short biography 에 profile만 제출만 필수.
+
+발표 전까지 
+Dhrystone, Coremark 벤치마킹 해보기..
+다른 RISC-V 코어들 구현하고 벤치마킹 해보기...
+**basic_RV32s 레포지토리 완성하기**
+
+어우 마지막게 너무 세다. 할 수 있겠지? 지금으로부터 딱 1달 남았다.
+
+아이러니하게도 KAIST 반도체시스템인재전형 I의 합격자 발표가 10월 17일, ISOCC에서 내 발표 일자와 겹친다.
+드가자~
+오늘은 여기까지.
