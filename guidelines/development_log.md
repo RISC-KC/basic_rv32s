@@ -93,13 +93,110 @@ Decided to integrated the `next_pc` selection logic MUX in **PC Controller**.
 (Removed since RISC-V doesn't require NZCV unlike ARM.)
 (Main idea was from IDEC lecture about RISC-V CPU introduction and FPGA implementation by Y. W. Kim.)
 
+|Name|Inputs|Outputs|Signals|
+|:---|:---|:---|:---:|
+|**Modules**|
+|Program Counter| CLK, NextPC, reset|PC|3+1=4|
+|PC Controller|PC, jump, branch_taken, jump_target, branch_target|NextPC|5+1=6|
+|Instruction Memory|PC|IM_RD|1+1=2|
+|Instruction Decoder|IM_RD|opcode, funct3, funct7, rs1, rs2, rd, imm|1+7=8|
+|Register File|CLK, RA1, RA2, RW, WA, RF_WD|RD1, RD2|6+2=8|
+|Data Memory|CLK, reset, MemWrite, MemRead, DM_WD, ALUresult|DM_RD|6+1=7|
+|Control Unit|opcode|ALUsrcA, ALUsrcB, ALUop, Branch, Jump, MemWrite, MemRead, Memory2Reg, RegWrite|1+9=10|
+|ALU Controller|ALUop, funct3, funct7|ALUcontrol|3+1=4|
+|ALU|ALUcontrol, srcA, srcB|NZCV, ALUresult|3+2=5|
+|Branch Logic|Branch, NZCV, funct3|branch_Taken|3+1=4|
+|PCplus4|PC, 4|pc_plus_4|2+1=3|
+|Immediate Generator|imm|ex_imm|1+1=2|
+|**MUXs**|
+|ALUsrcMUX_A|ALUsrcA, RD1, PC|srcA|3+1=4|
+|ALUsrcMUX_B|ALUsrcB, RD2, ex_imm|srcB|3+1=4|
+|RegF_WD_MUX|Mem2Reg, ALUresult, DM_RD, PC+4|RF_WD|4+1=5|
+
+Total 15 Modules, 40 Signals.
+
 ### [2024.01.05.]
 - Organized signal routing of Block Diagram.
 ![signal_organized_Pre-CPU](/diagrams/design_archive/Pre-CPU/RV32I_OrganizedSignals_A4_Signed_B.drawio.png)
 
+Each signal's explainations
+각 신호에 대한 설명
+(CLK, rst
+PC, NextPC, PC+4
+Jump, Branch, BTaken, J_Target, B_Target, 
+IM_RD, 
+opcode, funct3, funct7, rs1, rs2, rd, imm, 
+RA1, RA2, RW, WA, RF_WD, RD1, RD2, 
+MW, MR, DM_WD, ALUresult, DM_RD, 
+ALUsrcA, ALUsrcB, ALUop, M2R, 
+ALUcontrol, srcA, srcB, NZCV, ALUresult
+ex_imm)
+
+- CLK = CLocK
+- PC = Program Counter address (32-bit)
+- NextPC = Next PC address (32-bit)
+- PC+4 = PC address + 4 (32-bit)
+- Jump = 	Whether Jump(J-Type) Instruction is operating or not. Decides PCC to select which signal should be NextPC.   
+If true, NextPC = J_Target
+- Branch = Whether Branch(B-Type) Instruction is operating or not. Enables Branch Logic's calculation.
+- BTaken = Whether Branch(B-Type) Instruction's condition is satisfied or not. Decides PCC to select which signal should be NextPC.   
+If true, NextPC = B_Target
+- J_Target = If Jump is true, NextPC Address. NextPC = PC + imm(32-bit)
+- B_Target = If Branch is true, NextPC Address NextPC = PC + imm(32-bit)
+- IM_RD = Instruction Memory_Read Data.
+		32-bit Instruction read from Instruction Memory, recognized with PC.
+- opcode = opcode from IM_RD
+- funct3 = additional opcode domain. specifies calculation variation.   
+(If I-Type, add, sub..etc is decided by funct3 domain.)
+- funct7 = additional opcode domain. If funct3 are same, funct7 does the distinction.
+- rs1 = register source 1. The data that came from 32-bit instruction.
+- rs2 = register source 2. same as rs1.
+- rd = register destination. The destination address of register. 
+- imm = immediate value. Varies by the type of Instruction. Usually used after extension by Immediate Generator Module.
+- ex_imm = 32-bit sign-extended immediate value.
+- RA1 = Read Address to Register File. 
+- RA2 = same as RA1.
+- RW = Register Write;RegWrite. Enables Register's write operation.
+- WA = Write Address. Destination address of Register's write operation.
+- RF_WD = Register File_Write Data. A data to write in Register File.   
+Usually selected between ALUresult, DM_RD, PC+4. By RegF_WD_MUX.
+- RD1 = Data that has read from Register File. 
+- RD2 = Same as RD1.
+- MemWrite = Memory Write. Enables Memory's write operation.
+- MemRead = Memory Read. Enables Memory's Read operation.   
+Unlike Register File, Data Memory's Read operation should be conditioned. Due to Load store operation. They should not crash each other.
+- DM_WD = Data Memory_Write Data. The data that's going to write in Data Memory. Usually from the Register File.
+- ALUresult = ALU's calculation result data. Usually goes to PCC for the Branch/Jump operation, or DataMemory or Register File to store data.
+- DM_RD = Data Memory_Read Data. The data that has read from Data Memory.
+- ALUop = ALU's base operation code from Control Unit. Inputs ALU controller Module.
+- ALUcontrol = ALU's actual operation signal. From the ALU Control Module, decides which operation should ALU do.
+- ALUsrcA = ALU's calculation source A. Decided by the ALUsrcMUX_A between RD1 and PC.
+- ALUsrcB = Same as ALUsrcA. Decided by the ALUsrcMUX_B between RD2 and ex-imm.
+- srcA = Decided ALUsrcMUX_A's data.
+- srcB = Decided ALUsrcMUX_B's data.
+- Mem2Reg = Memory to Register. A signal that decides which data should be written in Register File by RegF_WD_MUX. 
+- NZCV = Negative, Zero, Carry, oVerflow. Flag signal.  
+Usually outputs zero signal to Branch Logic to check if the branch condition is satisfied.
+
+#### Things to revise
+1. RV32I doesn't need NZCV flags according to the ISA Manual.   
+→ **Revise NZCV in ALU to ALUzero signal**
+2. We need module for aligning 2-bit of LSB for `jalr` instruction's J_Target calculation.  
+→ Design idea for **PC Aligner**
+3. We must specify which module should use CLK, reset signal
+4. For `Register File`and `Data Memory`'s write operations, data stores not only 4bytes but also 2-1bytes by `lw`, `lh`, `lb`, `sw`, `sh`, `sb` instructions. Since typical data's length is 32-bit, there's possibility that 2 or 1 byte operations could be done in the middle of those bits. such as 0000_AA00, AA00_0000 (A is the source data to write).  
+→ Design idea for **Byte Enable Logic**  
+Using a `write_mask` signal for encoding the location of the data to be stored. e.g.) mask: 0011 = 0000_AAAA, 0100 = 00AA_0000
+
+- Added **J_Aligner** module for forcefully aligning `J_Target` jump target address' 2-bit LSB to 00, preventing misalignment in jump instruction.
+![RV32I37_J_Aligner](/diagrams/design_archive/RV32I37F/RV32I37_J_Aligned.drawio.png)
+
 - Added **Byte Enable Logic** module for partial load and store instruction. Such as lh, lhu, lb, lbu, sb, sh.
-
-![RV32I37F_BE_Logic](/diagrams/design_archive/RV32I37F/RV32I37_BE_Logic.drawio%20(1).png)
-
+![RV32I37_BE_Logic](/diagrams/design_archive/RV32I37F/RV32I37_BE_Logic.drawio%20(1).png)
 
 
+###[2025.01.06.]
+- Designed **CSR File** module's draft
+The first purpose of adapting CSR was for implementing OS, but sooner, the main reason became for supporting the full RV32I ISA. ECALL, EBREAK instructions are handled with exception or trap, which requires Control & Status Register for handling. Also following the basics of Computer Architecture, just like other ISAs, CSR is required.
+
+![RV32I37_CSR_Draft](/diagrams/design_archive/RV32I37F/RV32I37_CSR.drawio.png)
