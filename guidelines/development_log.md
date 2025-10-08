@@ -194,7 +194,7 @@ Using a `write_mask` signal for encoding the location of the data to be stored. 
 - Added **Byte Enable Logic** module for partial load and store instruction. Such as lh, lhu, lb, lbu, sb, sh.
 ![RV32I37_BE_Logic](/diagrams/design_archive/RV32I37F/RV32I37_BE_Logic.drawio%20(1).png)
 
-
+## 43F Architecture Development
 ### [2025.01.06.]
 - Designed **CSR File** module's draft
 The first purpose of adapting CSR was for implementing OS, but sooner, the main reason became for supporting the full RV32I ISA. ECALL, EBREAK instructions are handled with exception or trap, which requires Control & Status Register for handling. Also following the basics of Computer Architecture, just like other ISAs, CSR is required.
@@ -215,15 +215,23 @@ The first purpose of adapting CSR was for implementing OS, but sooner, the main 
 Designing the **CSR File** for CSR instructions. 
 - Added CLK and reset signal since the register flie's behavior should be synchronous for data signal stability (such as Read after Write)
 - Designed **CSR File**'s write data signal `CSR_WD`'s datapath.   
-	- For register-CSR instructions (CSRRW, CSRRS, CSRRC), it receives **ALU**'s `alu_result` signal.   
+	- For CSR-Register instructions (CSRRW, CSRRS, CSRRC), it receives **ALU**'s `alu_result` signal.   
 	Which means, it bypasses `RD1` signal from `ALUsrcA` to `alu_result`, forwarding to **CSR File**'s `CSR_WD`.
-	Register-CSR instruction - CSRRW: R[rd] = CSR, CSR = R[rs1]
+	CSR-immediate instruction - CSRRW: R[rd] = CSR, CSR = R[rs1]
 	- For immediate-CSR instructions (CSRRWI, CSRRSI, CSRRCI), it receives **Immediate Generator**'s `ex-imm`.   
 	Immediate-CSR instructoin - CSRRWI: R[rd] = CSR, CSR = imm
 	- These two data for CSR File's input is selected from CSR_WD_MUX.
 
 ![RV32I37_CSR_Ongoing](/diagrams/design_archive/RV32I37F/RV32I37_CSRongoing.drawio.png)
 
+- To implement CSR Instruction's `R[rd] = CSR`, connection between **CSR File** - **RegF_WD_MUX** has been designed.
+- To implement CSR-Register, CSR-immediate calculation (CSRRS, CSRRC, CSRRSI, CSRRCI)
+Added `CSR_RD` signal to ALUsrcA, ALUsrcB MUXs. ALUsrcA CSR for CSR-imm calculation, ALUsrcB for CSR-Register calculation
+
+![RV32I37_CSR_Ongoing](/diagrams/design_archive/RV32I37F/RV32I37_EBREAKnFENCE.drawio.png)
+
+- Optimized signal for legibility
+![RV32I37_CSR_Optimized](/diagrams/design_archive/RV32I37F/RV32I37O_debugs.drawio.png)
 
 ### [2025.01.12.]
 
@@ -237,23 +245,17 @@ Since we have not RTL implement and verificated the design, expanding to those s
 - For this reason, we choose to exclude 4 instructions(FENCE, FENCE.i, EBREAK, ECALL) and design 43 instruction supported arhitecture. 
 - Which is RV32I43O, 43 architecture. 
 <sub>O stands for Optimized signals.</sub>
+![RV32I43O](/diagrams/design_archive/RV32I43F/RV32I43O_Final.drawio.png)
 
-![RV32I37_CSR_Draft](/diagrams/design_archive/RV32I37F/RV32I37_CSR.drawio.png)
+For RTL implementation, the Back-end, ChoiCube84 should be fully aware of the modules and signals purposes, there should be documents about modules and signal logics. 
+This also reviews the progress.
 
+After making the specification document, ChoiCube will follow up implementing the RTL. 
+I will try to make Top Module view about block diagram for Core-Memory Units, and interfaces when some time lefts.
 
+Our final destination is making RV32G for Operating System support, it seems like FENCE instructions and Environment instructions(ECALL, EBREAK) are mandatory. 
+Once the verification with the core's RTL simulation is done, I'll try to design those instructions, and if it's expected to take so long, we'll jump to 5-stage pipelining. 
 
-현재 난관은 이 상황.
-완전한 RV32I를 구현하는 것이 초기 목표였으나, 거의 완성 단계에 다다라서 FENCE, FENCE.i, EBREAK, ECALL 이 4가지 명령어가
-시스템 명령어라는 것을 알게 됨. 별도의 메모리 및 캐시의 구현이 필요하며 이는 곧 시스템 개발로 노선이 확장된다..
-아직 프로그래밍 구현과 검증을 해보지 않은 상황에서 이 것 까지 범위를 확장하기엔 마일스톤이 너무나 커진다. 
-때문에, 47가지 명령어중 4가지 명령어를 제외한 43가지 명령어로 1차 개발을 마친다. 신호 최적화까지 마친 이 설계도의 이름은
-RV32I43O 로 명명한다. RV32I 중 43개의 명령어, Optimized signals.
-구현을 위하여 ChoiCube84가 모듈과 신호의 역할에 대해 충분한 이해를 하고 있어야 하므로 
-ISA의 각 명령어별 의미와 작동 방식을 문서화하고, 모듈에 대한 내용 문서화, 신호에 대한 내용 문서화를 해야한다.
-나에게도 복습이 되며 이걸 알아야 Verilog로 구현하는 의미가 있으니까. 
+Making the specifications document is done. Now working on Top module block diagram.
 
-이대로 검증을 마치고,, 아마 내가 설명 자료를 먼저 만들고 CC84가 마저 구현하고 있을 것인데, 남는 시간동안엔 
-Core Unit과 Memory Units, Interface의 Top Module 시점에서의 설계도를 구상하는 것을 시도해보아야 겠다.
-결국 RV32G를 만드는 것이 목표인데, FENCE, FENCE.i, EBREAK, ECALL 명령어의 구현은 필수이다. 
-얼추 검증이 끝나면 그 설계도를 기반하여 구현 시도를 해보고, 안되면 그 상태 그대로 5단계 파이프라이닝으로 넘어간다. 
-Modules문서를 만들고 모듈들에 대한 전반적인 설명을 모두 마쳤다.
+### [2025.01.17.]
