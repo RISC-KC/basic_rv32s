@@ -1260,7 +1260,7 @@ It may be a method used in simple or embedded systems, but from the perspective 
 In the end it’s Exception handling, and we must compose the TrapHandler ourselves so it behaves that way.  
 Since we aim for general purpose, we decided that in such Exceptions we will either enter debug mode, force-terminate, or handle it somehow, and J_Aligner is gone for now.  
 I spent the entire evening study period exploring standards and examples for handling misaligned addresses, as well as implementation methods and their validity.  
-## RV32I50F devleopment (47F + FENCE + FENCE.TSO + PAUSE)
+## RV32I50F Devleopment (47F + FENCE + FENCE.TSO + PAUSE)
 ### [2025.02.07.]
 To do: Adding B_Target(NextPC) address input to `Exception Detector`  
 ->Revision on RV32I50F.R1
@@ -1914,6 +1914,8 @@ In the RV32I37F testbench, after passing through the three Store (S-type) instru
 That’s the situation, and by changing the default value to DEADBEEF, CC84 verified that was indeed the case.   
 In that case, we either have to devise a method of placing the memory read signal over two cycles, or devise a way to make it work within a single cycle.
 
+## RV32I50F.5SP Development (50F + 5-Stage Pipeline)
+
 ### [2025.03.01.]
 I went out on weekend leave today and came back feeling refreshed.
 What I did after returning was signal verification for the modules.
@@ -1942,3 +1944,199 @@ Still, I do feel we’re making progress as new problems arise and we tackle the
 - As for the cycle issue in DM, we set the direction to remove Memory_Read—that is, the read enable signal.  
   We plan to switch to logic that always reads in step with the clock without a read enable. However, removing Read Enable can introduce problems, so we’ll look into that and apply countermeasures.  
   For now, we’ll do it this way to get data output in a single cycle, and we’ll aim to mitigate the resource cost in a later optimization pass.
+
+### [2025.03.02.]
+
+Continued verification.
+Data Memory can be verified outside the problematic cycle window, so I began verification excluding the Load portion that triggers that cycle issue.   
+While verifying BE_Logic and Data Memory, I found that only LW needs to be ignored; other loads such as LH and LB all work correctly.   
+With LW excluded, verification of those two modules is complete, leaving only Immediate_generator and Register File.  
+
+Immediate_generator remains queued because the raw_imm signal refactor is in progress; values could change again after verification. Register File also remains queued, since it only makes sense to verify once Data Memory is fully settled.
+
+On removing the Read Enable signal: after looking into it, most real systems—including the FPGA used for validation—employ synchronous memories like SDRAM that do use a Read Enable.   
+Considering stability and what the standards imply, I decided to keep Read Enable. The question is how to handle it.  
+
+Five-stage flow (Fetch, Decode, Execution, Memory, Write Back): until valid output is ready, the current PC must be held, and Fetch/Decode must be paused. In Data Memory, when a read returns Memory[address], it will simultaneously raise a read_done signal to 1; otherwise, it stays 0. That lets the FSM know whether the read completed.  
+
+Following the earlier Write Done idea, I’ll feed read_done into the PC Controller; when read_done is 0, set NextPC = PC. One open question: if there is no memory access, should read_done be treated as 1 by default? I’ll discuss this with CC84.  
+
+CC84 finished the raw_imm refactor and typo fixes and handed me rv32i37f testbench v2. Based on that, I’ll re-verify the signals, think through related issues, and work on the five-stage pipeline design.  
+
+RV32I37F Top-Module testbench; Module Verification Listings.
+
+- = 25.03.01 =
+   - ALU
+   - ALUcon
+   - Branch Logic
+   - Control Unit
+   - Instruction Decoder
+   - Instruction Memory
+   - PC Controller
+   - PC + 4
+   - Program Counter
+
+- = 25.03.02 =
+   - Data Memory (excluding LW)
+   - BE_Logic (excluding LW)
+
+- Queued  
+   - Immediate_generator
+   - Register File
+
+Discussion with CC84 about Data Memory reads.  
+Adopting a read_done signal seems best, but first we checked whether modern memories like SDRAM have such a signal.   
+They do not. I pointed out that up to RV32I50F we’re effectively building a memory-embedded SoC, and in such cases the architecture often uses special-purpose designs. Our Instruction Memory is currently a ROM, I/O isn’t implemented yet, and adopting standard I/O and memory structures beyond RV32I can reasonably wait until we’ve built enough hardware background and before OS bring-up.
+
+Conclusion: add read_done and feed it to the PCC so we only proceed to the next instruction after a Data Memory read completes. (Isn’t this what FENCE was for? Not sure.)   
+Also, once we pipeline or go dual-core and bring in SDRAM/DDR4-class hierarchy, retrofitting will be costly; we need to pick the right timing for that transition. 
+
+For now, I revised RV32I37F to R2.v2, adding read_done to Data Memory and PC Controller.   
+![RV32I37F.R2v2](/diagrams/design_archive/RV32I37F/RV32I37F.R2v2.drawio.png)
+
+Next step: re-verify with the updated testbench.
+
+raw_imm verification complete.
+- Cross-checked across three modules:
+   - Instruction Decoder
+   - Immediate Generator
+   - ALU Controller  
+
+Aside from a few expected-value typos in Instruction Memory today (LHU, LBU, LUI), raw_imm and imm both work correctly across all modules.
+
+Final decision on Data Memory read logic.  
+After thinking through it during evening formation and discussing with CC84, we settled on this:
+
+Keep the current Data Memory logic, but add a read_done output.  
+Goal: produce the read value in response to a read signal without inserting duplicate instructions.  
+
+Load instruction handling
+- The Control Unit detects a load.
+- If read_done is 0, assert a PC_Stall from the CU to the PCC to hold PC = PC.
+- On the next cycle, read data appears and read_done goes to 1 simultaneously.
+- PC_Stall deasserts and PC advances to NextPC.
+
+If the next instruction is also a load
+- Memory read remains 1.
+- read_done is already 1, so we advance immediately.
+
+If the next instruction is not a load
+- Memory read drops to 0.
+- read_done is also 0, but since this isn’t a load, it’s ignored.
+- PC_Stall remains deasserted and we continue to the next instruction.
+
+PC Stall datapath
+- Data Memory asserts read_done to the Control Unit.
+- The Control Unit drives PC_Stall to the PC Controller based on read_done.
+- When PC_Stall is asserted, the PC Controller holds NextPC at the current PC, blocking further instruction issue.
+- When read_done is 1, the Control Unit deasserts PC_Stall and execution resumes.  
+
+With read_done and PC_Stall added for Data Memory reads, RV32I37F verification should be ready to wrap up. Hopefully the testbench shows no issues.  
+
+While Data Memory read revisions and Register File verification are finishing, I’ll draft the five-stage pipeline:  
+
+- Stages
+   - Fetch, Decode, Execution, Memory, Write-back
+
+- Interstage registers (4 total)  
+   - IF/ID register (between IC and ID)  
+   - ID/EX register (likely between ALUcontroller and ALU; needs more study)
+   - EX/MEM register
+   - MEM/WB register
+
+A new module will be the Hazard Unit (for hazard handling).
+
+That’s it for today. CC84 has already finished verifying PC_Stall in the PC Controller.  
+We’re making tangible daily progress. Let’s keep going.
+
+### [2025.03.03.]
+Designing the 5-stage pipeline and drawing the diagram.  
+
+The pipeline has five stages:  
+- Instruction Fetch (IF) – instruction fetch
+- Instruction Decode (ID) – instruction decode
+- Execution (EX) – execute
+- Memory access (MEM) – memory access
+- Write Back (WB) – write-back
+
+The point of a pipeline is not to restrict work to a single instruction, but to parallelize by treating each stage of instruction processing as its own unit in sequence.   
+To execute multiple instructions per overall cycle, we need somewhere to hold the data each stage requires; that place is the pipeline registers.
+
+These pipeline registers are D flip-flops driven by the clock. On each clock, they output the value stored in the previous cycle and capture the next value—just simple registers.   
+They are not addressable like a memory. Each pipeline register holds the state and data (the “context”) required between stages.
+
+In a 5-stage pipeline we need four pipeline registers:  
+IF/ID register, ID/EX register, EX/MEM register, MEM/WB register.
+
+From here, I’ll place each register in the block diagram and learn the signal discipline and structure of the pipeline as I go.
+
+First, the IF/ID register goes between the Instruction Memory side and the Instruction Decoder.   
+Inputs are PC and I_RD. Other signals that must act globally and immediately, regardless of the pipeline, stay outside the pipeline.   
+For example, IC_Status and NextPC (from the Exception Detector) are globally controlled and must take effect immediately at any stage, so they are not needed in the IF/ID pipeline register.
+
+Next, the ID/EX register.  
+The Instruction Decoder already splits out signals like opcode, funct3, funct7, and imm and wires them to each module. Now those signals should pass through the ID/EX register before reaching the modules.   
+Be careful not to disturb independently operating paths—e.g., don’t interfere with signals like J_Target that share similar routes. While drafting the pipeline I wondered whether the presence of ID/EX would make the Instruction Decoder unnecessary, but the conclusion is no: we still need a separate module to do decoding.  
+
+“CPU fits on a single A4 page” they say… It’s starting to feel hard to keep it all on one sheet. The limit comes from labeling each signal with explicit source and destination to keep datapaths clear. I’ll try to keep this 5-stage pipeline on a single A4 for now, then consider increasing the layout size afterward.   
+
+These are draft designs of RV32I50F's 5-Stage Pipelining : RV32I50F_5SP
+![RV32I50F_5SP-draft0](/diagrams/design_archive/RV32I50F.5SP/RV32I50F_5SP.drawio.png)
+![RV32I50F_5SP-draft1](/diagrams/design_archive/RV32I50F.5SP/RV32I50F_5SP(1).drawio.png)
+![RV32I50F_5SP-draft2](/diagrams/design_archive/RV32I50F.5SP/RV32I50F_5SP(1)(1).drawio.png)
+![RV32I50F_5SP-draft3](/diagrams/design_archive/RV32I50F.5SP/RV32I50F_5SP(1)(3).drawio.png)
+![RV32I50F_5SP-draft4](/diagrams/design_archive/RV32I50F.5SP/RV32I50F_5SP(1)(6).drawio.png)
+
+-----
+
+CC84 uploaded a waveform for the RV32I37F Data Memory read-timing fix; I haven’t looked yet, but CC84 says it seems fine. Good—if it hadn’t worked, it would have taken longer, which might have been painful but also fun. There will be equal or worse problems ahead anyway. For now I’ll take a quick PX break and then start signal verification. If things go well, we might finish RV32I37F verification today.
+
+During verification… (waveform via GTKwave / Surfer project)
+
+Both Read Done and PC_Stall behave correctly. Only on the first read does the logic stall until the read finishes; after that initial two-cycle read produces the correct value, subsequent loads return in a single cycle as intended. Later, during pipelining, this PC_Stall from the PC Controller should be handy for hazard handling. Good—this worked as designed.
+
+At 16:14 I found the Data Memory WriteMask—and its 32-bit extended mask—lagging by one cycle. Oddly, stores still worked. I fed this back to CC84 and we fixed it. The extended mask had been updated on the clock; declaring extended_mask as a wire solved it.
+
+March 3, 2025, 17:06
+RV32I37F complete. (Almost.)
+With the testbench reflecting the new Data Memory read logic and after Register File verification, all modules and signals are finally verified. Great work. With a solid foundation we can do anything next. Next up is CSR (43F), then the cache structure (47F), then the debugger (50F). Let’s go.  
+
+While CC84 integrates my CSR module into the RV32I43F top module, I’ll keep working on the pipeline. If I can finish a first draft of the pipeline today, that would be fantastic.  
+
+Ah—I noticed RV32I37F’s misalignment checks weren’t in the testbench. I quickly asked CC84 to add them:  
+- misaligned jump target
+- misaligned branch target
+- misaligned register address
+- misaligned data memory address
+
+I requested tests for all four, but CC84 asked to do only one; we settled on two cases:  
+- misaligned PC and misaligned data memory address.   
+
+It’d be best to cover them all, but it seems heavy right now; given the effort already spent, I accepted that for the moment. I could just do it myself…
+
+We discussed improving the repository file structure, and concluded that making separate folders for each of RV32I37F through 50F will lead to too much duplication.   
+
+We then created a PC_Aligner and discussed misaligned data-memory addresses. 
+For reads, there’s no change—our logic forces the lower two address bits to 00 on reads, so misalignment doesn’t arise. 
+The issue is misaligned store addresses: here CC84 and I (KHWL) differed.   
+CC84 wanted to perform the store instruction but suppress the actual write (address accepted, no write).   
+I wanted to force the lower two bits aligned (like an ECC-style correction) so the operation completes. After debate, considering potential security implications raised by CC84, we decided to handle it like a HINT: effectively skip the write.  
+
+#### RV32I37F Waveform RTL Verification Complete
+
+Thus I produced the final RV32I37F diagram, RV32I37F.R3. It looks like PC_Aligner and Data-Memory misalignment handling are in place. Time for verification.  
+![RV32I37F.R3](/diagrams/design_archive/RV32I37F/RV32I37F.R3.drawio.png)
+
+Verification done.  
+CC84 only changed the JAL and LW addresses; they worked in the original bench, so for the extra bench we just updated values. 
+There’s no signal that explicitly shows LW’s auto-aligned address value; we confirmed the mis-entered address (0000_02c1) went in, and since there’s no address output signal, we confirmed the correct data was loaded as expected.
+
+We added a scenario where misaligned operations are skipped, and captured a new VCD.   
+We verified that misaligned cases are simply skipped with no side effects, like a HINT.   
+For stores, we also saw BE_Logic’s misaligned flag assert.
+
+With that, RV32I37F verification is complete—2025-03-03 23:34. RV32I37F is done.  
+
+Nine minutes left in evening study… I’ll sketch more of the pipeline and call it a day. Keep moving forward.  
+
+### [2025.03.04.]
