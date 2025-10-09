@@ -1054,7 +1054,7 @@ Problems: unnecessary extension → extra ALU work; and wider-than-needed datapa
 
 **Context:**  
 J-type bit layout: `imm[20|10:1|11|19:12] | rd[11:7] | opcode[6:0]`.  
-U-type uses `[31:12]`. CC84 pointed out that, based on *Computer Organization and Design, RISC-V Ed.*, Ch.4 Figs. 4.16/4.17, one might try to reduce MUXes by having ID always output a **32-bit zero-extended** `imm` for U/J, then let `imm_gen` do sign extension.   
+U-type uses `[31:12]`. ChoiCube84 pointed out that, based on *Computer Organization and Design, RISC-V Ed.*, Ch.4 Figs. 4.16/4.17, one might try to reduce MUXes by having ID always output a **32-bit zero-extended** `imm` for U/J, then let `imm_gen` do sign extension.   
 (Interpreting “[31:12]” as implying a pre-extended zero-filled representation.)  
 But those figures don’t strongly justify this, and burning bits on uncertainty isn’t great—so we chose an improvement.  
 
@@ -1120,6 +1120,14 @@ For `jal`, **`NextPC = PC + {imm, 1'b0}`** (with `imm` sign-extended before shif
 ![RV32I47F.R6](/diagrams/design_archive/RV32I47F/RV32I47F.R6.drawio.png)
 
 ### [2025.01.31.]
+
+![RV32I47F.R7](/diagrams/design_archive/RV32I47F/RV32I47F.R7.drawio.png)
+
+**-Datapath Verification with Diagram check-**
+![47F_LUI](/diagrams/design_archive/RV32I47F/RV32I47F.R7v2_LUI.drawio.png)
+![47F_AUIPC](/diagrams/design_archive/RV32I47F/RV32I47F.R7v2_AUIPC.drawio.png)
+![47F_JALR](/diagrams/design_archive/RV32I47F/RV32I47F.R7v2_LUI.drawio.png)
+
 -morning work meeting-
 
 Discussed the operating structure of **B-type** instructions.  
@@ -1145,11 +1153,59 @@ Therefore, computing `NextPC` in **PCC** aligns with the design philosophy and w
 * The explicit **`B_Target`** signal is **removed**; `NextPC` is produced directly by PCC based on the condition outcome.
 * The `ALUresult` currently sent to PCC (only used for jump-related PC values) will **remain** as-is—for future **G-extension** work, J-type handling via the ALU path may still be preferable.
 
+![RV32I47F.R7v2](/diagrams/design_archive/RV32I47F/RV32I47F.R7v2.drawio.png)
+![47F_JAL](/diagrams/design_archive/RV32I47F/RV32I47F.R7v2_JAL.drawio.png)
+![47F_B-Type](/diagrams/design_archive/RV32I47F/RV32I47F.R7v2_B-Type.drawio.png)
+![47F_LB](/diagrams/design_archive/RV32I47F/RV32I47F.R7v2_LB.drawio.png)
+
 **To-do**
 
-* Explain to **CC84** why **PCC needs a `CLK`** input.
+* Explain to **ChoiCube84** why **PCC needs a `CLK`** input.
 * Revisit why **`BE_Logic`** has an **address** signal. For loads (DM → RF), the destination register address is already `rd` in the instruction, and the source address is `rs1 + imm`. The extra address line in BE_Logic looks unnecessary.
 
-![RV32I47F.R7](/diagrams/design_archive/RV32I47F/RV32I47F.R7.drawio.png)
-
 Wrapped for today. Finished datapath verification **up to `lb`**! (23:57)
+
+### [2025.02.01.]
+
+- Started design of Memory Aligner which is for partial byte load-store operation's address alignment. 
+
+Reviewing ChoiCube84's suggestion, there's always a possiblity of getting misaligned address to BE_Logic and Data Memory's address input.   
+Since this is same for Jump-Jalr instruction, decided to design integrated address alignment logic module.  
+
+Named RV32I47F.R8_temp.
+![RV32I47F.R8_temp](/diagrams/design_archive/RV32I47F/RV32I47F.R8_temp.drawio.png)
+
+### [2025.02.02.]
+
+Memory Aligner module designed named RV32I47F.R8_dump.(Dumped design due to following reasons)
+![RV32I47F.R8_dump](/diagrams/design_archive/RV32I47F/RV32I47F.R8_dump.drawio.png)
+
+Found the rationale for WriteMask and the Address into BE_Logic.  
+
+- Block access granularity is based on address bits [11:2].
+- We must support word / halfword / byte reads/writes.   
+So we accept the raw (potentially unaligned) address as-is, but if an address violates the instruction’s alignment rule, we raise an exception (e.g., SW needs word-aligned, SH halfword-aligned, SB any).
+
+- WriteMask is literally a bit/byte mask for selective writes.
+
+- Therefore the Mem_Aligner module is removed; we keep the existing signal scheme (use Address + WriteMask + exception on misalignment).
+
+### [2025.02.03.]
+
+#### Final meeting on Byte Enable Logic module
+
+Most of the time was spent on handling the Write Mask and understanding the module–logic related to it.  
+The guiding philosophy is to minimize operations in memory. BE_Logic is for that.  
+
+The data required for WriteMask are target data, original data, and mask.  
+Using the mask, apply masking to the original data; if there is DEADBEEF, make it 00ADBEEF.  
+
+For the target data as well, using the mask, if there is CAFEBEBE, make it CA000000.  
+And the mask used for this operates with FF000000, but sending this as a 32-bit value from BE_Logic to DataMemory as-is violates a hardware design philosophy—minimization and simplification of I/O signals—so we decided to encode and send it as 4 bits, which is close to a de facto technical standard.  
+
+And at this time, the BEDM_WD sent from BE_Logic is CACACACA.  
+Since the WriteMask is effectively sent, and an &(bitwise AND) operation and decoding have to be done, have DM generate the value CA000000 as-is and perform the data store in one step with it.  
+
+Although we are using an unofficial standard at the suggestion of ChoiCube84, the computation has been greatly reduced.
+
+![RV32I47F.R8_temp_250203](/diagrams/design_archive/RV32I47F/[250203]RV32I47F.R8_temp.drawio.png)
