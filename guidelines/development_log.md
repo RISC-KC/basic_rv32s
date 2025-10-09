@@ -84,7 +84,7 @@ Decided to integrated the `next_pc` selection logic MUX in **PC Controller**.
 - Organized PC Controller signal input
 ![Organize_PCC_signal](/diagrams/design_archive/Pre-CPU/RV32I_PCcon_Branch2.drawio.png/)
 
-## 37F Architecture Development
+## 37F Architecture Development (Partial RV32I Except SYSTEM instructions)
 
 ### [2024.01.04.]
 - The first draft version of RV32I37F Architecture designed
@@ -195,7 +195,7 @@ Using a `write_mask` signal for encoding the location of the data to be stored. 
 - Added **Byte Enable Logic** module for partial load and store instruction. Such as lh, lhu, lb, lbu, sb, sh.
 ![RV32I37_BE_Logic](/diagrams/design_archive/RV32I37F/RV32I37_BE_Logic.drawio%20(1).png)
 
-## 43F Architecture Development
+## 43F Architecture Development (37F + Zicsr extension)
 ### [2025.01.06.]
 - Designed **CSR File** module's draft
 The first purpose of adapting CSR was for implementing OS, but sooner, the main reason became for supporting the full RV32I ISA. ECALL, EBREAK instructions are handled with exception or trap, which requires Control & Status Register for handling. Also following the basics of Computer Architecture, just like other ISAs, CSR is required.
@@ -259,7 +259,7 @@ Once the verification with the core's RTL simulation is done, I'll try to design
 
 Making the specifications document is done. Now working on Top module block diagram.
 
-## 47F Architecture Development
+## 47F Architecture Development (43F + Zifencei + ECALL + EBREAK + mret)
 
 ### [2025.01.17.]
 Worked on Top module block diagram draft. 
@@ -293,7 +293,7 @@ Question 1 can be handled by MemCon.
 
 - Address mapping between memory and cache has three styles: Direct-Mapped, Fully-Associative, and Set-Associative. ChoiCube84 must also consider this carefully—this is logic work.
 
-1. On a cache miss, MemCon converts the address for Memory, forwards it, receives the returned data, and passes it to ID (Instruction Decoder). (Possibly could bypass MemCon, but…)
+1. On a cache miss, MemCon converts the address for Memory, forwards it, receives the returned data, and passes it to ID (Instruction Decoder). (Possibly could bypass MemCon, but...)
 
 2. Because we must also update the cache with (1), MemCon supplies the computed cache address and the data to store. Do we assert write-enable here as well? How exactly does MemCon compute that address?
 
@@ -481,7 +481,7 @@ At the same time, I cleaned up and optimized the signal scheme of Basic_RV32_S1.
 With this, a design “draft” of a processor supporting all 47 RV32I instructions is complete.  
 Next: implement based on this and verify each instruction—then it’s done.  
 
-Next steps likely include implementing cache and branch prediction…  
+Next steps likely include implementing cache and branch prediction...  
 
 Today I’ll summarize the processor features and write basic validation + module notes for the Cache structure.  
 
@@ -617,8 +617,7 @@ Maybe we can compress to 2 bits? If we fold to four instruction-type buckets and
 #### Development logs
 RV32I47TH → RV32I47Fenced.
 ![RV32I47Fenced](/diagrams/design_archive/RV32I47F/RV32I47Fenced.drawio.png)
-Changes
----
+**-[Changes]-**
 1. TrapHandler ↔ Instruction Cache  
 Added a signal for FENCE.i (IC invalidation).  
 └ Named IC_Clean.
@@ -747,14 +746,14 @@ After debugging ends, execute **mret** to output **mepc** as **NextPC** in the P
 [Exit debug]
 
 * Debugger finishes and executes **mret**.
-* Trap Handler …
-  just when I thought I was almost done—what is **mtvec** again…
+* Trap Handler ...
+  just when I thought I was almost done—what is **mtvec** again...
 
 ##### —Emergency meeting—
 
 `mtvec` is a CSR holding the **start address** of the Trap Handler.
 “Start address”??? So the Trap Handler isn’t a *module*?
-Right… when an exception occurs, you need a **routine** to handle it. I had treated “Trap Handler” as a hardware module, and didn’t realize the handler itself is **software**.
+Right... when an exception occurs, you need a **routine** to handle it. I had treated “Trap Handler” as a hardware module, and didn’t realize the handler itself is **software**.
 From ChoiCube84’s software-debugging input I learned we can **program** the Trap Handler to change the initial actions on a trap.
 Mental stabilized. Reflecting that info below.
 —End of emergency meeting—
@@ -820,7 +819,7 @@ Using `mtvec` read from CSR, TC computes the Trap Handler start address and driv
 PCC, having received `Trapped`, accepts `T_Target` and outputs `NextPC` = Trap Handler start address.  
 IC–IM path then fetches and executes the Trap Handler.  
 
-Now the debugger injects instructions directly…  
+Now the debugger injects instructions directly...  
 Strictly speaking, during debugging can we access/modify I-Cache or Instruction Memory?  
 Is execution-only allowed? Memory visible via reads and writes through executed instructions? In practice it’s all via instructions.  
 Therefore insert one more MUX **before** `I_RD` to select between `I_RD` and `Dbg.Instr`.  
@@ -909,7 +908,7 @@ Later, synchronize buffer→cache and simultaneously cache→memory. In other wo
 In this case, Data Memory must also enable writes; upon detecting `FENCE`, the Control Unit should assert **`Memory_Write`** as well.  
 RISC-V ISA has no dedicated instruction for flushing a cache buffer to cache and memory.  
 Typically cache synchronization is handled by **FENCE**, hence enabling `MemWrite` in CU on FENCE.  
-But behaviorally, buffering-then-flush vs. writing into the cache itself and later flushing to memory seem equivalent… I need to study this more.  
+But behaviorally, buffering-then-flush vs. writing into the cache itself and later flushing to memory seem equivalent... I need to study this more.  
 
 ![RV32I47F_draft](/diagrams/design_archive/RV32I47F/RV32I47F.drawio.png)
 
@@ -947,8 +946,8 @@ Clock/reset ingress modules finalized. Updated to **RV32I47F.R3**. (17:18)
   The **Imm_gen** could not know which bit is the MSB for the given instruction’s immediate.
   Example failure:
 
-  * `0000111010` → treats bit 5 as MSB and extends…
-  * `0001111001010` → again treats bit 5 as MSB… → broken data for 20-bit U-type.
+  * `0000111010` → treats bit 5 as MSB and extends...
+  * `0001111001010` → again treats bit 5 as MSB... → broken data for 20-bit U-type.
 
 **Decision / Fix (in ID):**
 
@@ -1081,7 +1080,7 @@ But those figures don’t strongly justify this, and burning bits on uncertainty
 **J-type (2 instr: `jal`, `jalr`)**
 
 * `jal`: `R[rd] = PC + 4;  PC = PC + {imm, 1'b0}`.
-  The manual: *“The offset is sign-extended and added to the address of the jump instruction …”* → **sign-extend**, then **<<1**.
+  The manual: *“The offset is sign-extended and added to the address of the jump instruction ...”* → **sign-extend**, then **<<1**.
 * `jalr`: `R[rd] = PC + 4;  PC = R[rs1] + imm`.
   Requires **sign-extended** `imm` (ALU datapath is 32-bit).
 
@@ -1209,3 +1208,708 @@ Since the WriteMask is effectively sent, and an &(bitwise AND) operation and dec
 Although we are using an unofficial standard at the suggestion of ChoiCube84, the computation has been greatly reduced.
 
 ![RV32I47F.R8_temp_250203](/diagrams/design_archive/RV32I47F/[250203]RV32I47F.R8_temp.drawio.png)
+
+### [2025.02.04.]
+
+I spent four hours creating the RV32I Essentials Cheat Sheet.  
+I put the instructions, their descriptions, mnemonics, and bit layouts all on a single page.  
+Since proper materials were scarce or paywalled, I made it myself.  
+
+And I also discussed J_Align with CC84.  
+
+> ChoiCube84:  
+> Unless a programmer codes incorrectly, I don’t think misalignment will occur on a jump.
+
+KHWL.  
+No. Since the address is computed based on a constant and a referenced register value, we cannot rule it out. This is mentioned in the manual as well.  
+
+> ChoiCube84:  
+Then let’s look at the relevant content.  
+"will generate instruction-address-misalinged exception."  
+Since it’s an exception, instead of handling it in J_Aligner, how about handling it separately in the Trap_Handler for hardware simplification?  
+
+KHWL.  
+Hmm. That makes sense. But we also have to keep performance differences in mind.  
+It might be better to pass through a simple logic module and run without raising an exception.  
+
+Still, if the ALU result for J_Target always goes through the J_Aligner module logic, there could be delay from unnecessary operations even when the condition doesn’t occur.  
+Handling it as an exception does seem clearly reasonable.  
+
+### [2025.02.05.]
+
+In fact, the if-statement to determine whether a misalign occurred is logic that has to be passed somewhere at least once even without a J_Aligner, and even if it’s implemented elsewhere, it doesn’t seem likely to bring significant performance benefits.  
+Rather, invoking a separate handling routine via an Exception could end up hampering timing when we later extend to a pipeline, and if we’re going to keep monitoring misaligns anyway, and the handling itself is an alignment logic that drops the lower 2 bits, then I think just having J_Aligner is better now and in the future.  
+Still, to see whether Exception handling components like the Trap Controller and Exception Detector operate correctly, let’s implement it as an Exception for now.  
+This seems better off eventually residing as separate logic in the PCC. An Exception assigns too much resource.  
+
+Quoting the manual verbatim:  
+> “The JAL and JALR instructions will generate an instruction-address-misaligned exception if the target address is not aligned to a four byte boundary.”  
+
+In the end, if the target address—i.e., the J_Target signal—is already aligned when it is fed into the PCC, no Exception occurs, and if we perform alignment before Exception Detect when the situation arises, prior to an Exception occurring, then generating an exception is not mandatory.  
+
+For now, this won’t be a standalone module in the implementation. When ALUresult goes to the PCC as J_Target, we will also feed a signal to the Exception Detector so that a separate Trap_Handler is invoked on misalign.  
+I can already feel the timing getting tangled, but thinking ahead now about issues for later isn’t a bad thing.  
+Name this diagram RV32I47F.R8v1. There have been several attempts to revise to R8 so far, but many were dismissed through debate.  
+For now, the officially adopted R8 is the diagram with v1 appended.
+(20:44)
+
+![RV32I47F.R8v1](/diagrams/design_archive/RV32I47F/RV32I47F.R8v1.drawio.png)
+
+Indeed, forcibly aligning with 00 can cause the program to proceed in unintended ways. This is a misconception.  
+It may be a method used in simple or embedded systems, but from the perspective of a general-purpose processor, it isn’t appropriate.  
+In the end it’s Exception handling, and we must compose the TrapHandler ourselves so it behaves that way.  
+Since we aim for general purpose, we decided that in such Exceptions we will either enter debug mode, force-terminate, or handle it somehow, and J_Aligner is gone for now.  
+I spent the entire evening study period exploring standards and examples for handling misaligned addresses, as well as implementation methods and their validity.  
+## RV32I50F devleopment (47F + FENCE + FENCE.TSO + PAUSE)
+### [2025.02.07.]
+To do: Adding B_Target(NextPC) address input to `Exception Detector`  
+->Revision on RV32I50F.R1
+![RV32I50F.R1](/diagrams/design_archive/RV32I50F/RV32I50F.R1.drawio.png)
+
+> ChoiCube84’s proposal during CSR implementation.   
+If the behavior is determined by CSRop, why are separate Read and Write signals needed? In any case, a CSR instruction causes both of those to happen simultaneously.  
+
+KHWL:  
+Right. Delete the two and use CSRop.
+
+> ChoiCube84: Then couldn’t CSRop actually just take funct3 and operate?  
+
+KHWL:  
+No, no. We still need the purpose of a non-operating Enable. For datapath management we need a non-operating opcode, so it’s better to manage it with CSRop.
+
+To modify: change that module’s input signals to match the Exception Detector code.
+Move the DC_Write signal to the Memory Controller.  
+(Write operations to the cache occur only on a cache miss, and in that case the Control Unit, under the original design, cannot know that a cache miss occurred. So this signal must go into MemCon.)  
+The Control Unit’s opcode output is actually meaningless. We should just wire the opcode signal coming out of the Instruction Decoder directly.  
+Accordingly, modified the ALU controller’s signals.  
+- Rename the mem2reg signal to reg_wd-src.
+
+### [2025.02.09.]
+The Exception Detector should be modified according to the approved merged code on the development branch.  
+For ECALL and EBREAK, the discriminator depends on whether bit 0 of the imm field (funct12) is 0 or 1, and if it is for distinguishing that, it seems fine to feed in the raw_imm value, so I did that.  
+
+The Branch Target value needs to go in, but since this is a value computed in the PCC, I decided to use the value of NextPC directly as the input signal.  
+
+Misalign exceptions occur only in Jump and Branch.  
+For Jump, you can just plug the ALUresult, which is the Jump Target address, directly and judge it.  
+For Branch, the B_Target address is computed in the PCC when B_Taken and output as NextPC,
+so in that case, wouldn’t it be enough to feed only the NextPC value to the Exception Detector, without needing the B_Taken signal?  
+
+Even if it’s not specifically a Branch, this way we can trigger an exception when the address destined for PC is not aligned to 4 bytes according to its purpose.  
+If so, J_Target has no advantage other than earlier arrival latency compared to NextPC...  
+In fact, it seems we only need to receive NextPC. I should propose this to ChoiCube84.  
+
+Yeah. In truth, this Misaligned Address exception is for when the address that NextPC points PC to is misaligned and interferes with instruction execution.  
+Therefore, rather than separately singling out B_Taken or Jump (and Jump wasn’t even there originally), it is optimal for the Exception Detector module to simply monitor the NextPC value and handle the situation when it occurs.   
+This also allows handling even when misalignment arises for some reason other than those two.   
+ChoiCube84 agreed, so we decided to modify it that way.   
+As for funct3, I wondered what that was about, and since CSR and Environment instructions share an opcode and only when f3 is 000 is it environment, I’ll take it together to distinguish.  
+It’s just a CSR instruction, and an exception shouldn’t occur.  
+
+Today’s tasks.
+
+1. Revise the Exception Detector input signals to match the GitHub code.  
+   Done. (22:54)
+
+2. DC_Write is in CU; move this to the Memory Controller.  
+   Done. (23:04)  
+
+3. Write the module description Manual.
+
+4. Verify each instruction datapath.
+
+5. The signal RF2DM_RD should be R[rs2], but right now it’s the rs1 value. Needs fixing.
+   Done. (23:07)
+
+6. Establish the FENCE datapath.   
+e.g.) Before the Write_Done signal arrives, we need to hold the update of PC;   
+how will this be implemented?
+
+7. Document the RV32I; Essentials Cheat Sheet.  
+   Revise to v3 and correct 12b'0 to 12'b0.  
+   – Only the format has been created.
+
+8. Paper documentation.  
+   Write in the manual there as well, and based on that, also write the IDE files.  
+   It might be good to combine modules, signals, and module purpose into a single Excel file (table).  
+   – Only the format has been created.  
+
+9. Push Docs after finishing the related work.  
+
+**—Evening meeting—**
+
+During Control Unit implementation, a problem was found.   
+It seems ChoiCube84 pondered whether CSR.Addr.src and CSR.Data.src should be in the Control Unit.  
+
+A. The meaning of CSR.Addr.src is as follows.  
+In normal situations, it distinguishes whether it is the 12-bit address value in the csr field within CSR instructions, or the CSR address value designated by the Trap Controller in the event of TrapHandler execution, i.e., an Exception situation.  
+Therefore this should not be done in the Control Unit; set the Trapped signal from the Exception Detector as the control signal of the MUX, so that when the Trap occurs and the flag goes to 1, at the same time the MUX value switches to CSR_T.Addr.  
+Accordingly, the CSR.Addr.src_Select signal is removed from the Control Unit (CU), and instead it is changed to consume the Trapped signal from the Exception Detector (ED).  
+
+B. In the case of CSR.Data.src.
+
+Done. (23:48)
+
+![RV32I50F.R1v2](/diagrams/design_archive/RV32I50F/RV32I50F.R1v2.drawio.png)
+
+### [2025.02.10.]
+Our goal is to build an RV32I CPU now.  
+And in that process, to make all RV32I instructions meaningful, we integrated a cache–memory structure and the CSR extension.  
+
+The Zicsr extension was an extension to make environment-call instructions like ECALL and EBREAK meaningful, and through this we did a simple implementation of Debug Mode.  
+The Zifencei extension started from the mistake of reading an older RISC-V manual and thinking the fence.i instruction was included in the RV32I Base Instruction Set.  
+As a result, we ended up making a cache structure for the fence.i instruction.  
+It’s not clear whether fence and fence.tso, pause (fence variations) are thanks to that, but we at least got to see whether these instructions operate.  
+
+In the diagrams, Verilog HDL implementations of almost all modules are each nearing completion.  
+CC84 is implementing the Control Unit as the final chapter, and what remains is: after the Control Unit, the top-module DUT testbench of RV32I37F, and then cache and CSR implementations based on additional extensions to support the remaining 4 instructions.  
+
+CC84 requested research on this CSR. Exactly how should CSR be implemented? There seem to be machine-level registers that hardware must update automatically, which makes it hard to treat them as ordinary registers, and whether we need to implement the list of those CSR registers all now.  
+
+Also, with cache-structure integration ahead, deeper research on the logic needs to be done. Our current cache policy is write-through, strictly speaking with read/write buffers in the cache, and only flushing the backlogged memories on the FENCE instruction.  
+But with that, there is a problem that data loss can occur in the cache memory sharing the same line when writes pile up, and according to computer architecture, I relearned that there are cases where you need to pause work until the writes are all done.  
+
+The nature of the problem is similar to pipelining, and based on that, citing computer architecture, as a solution we explored performing things like Flush concurrently when executing R-type or other instructions—that is, when the Data Cache–Memory side is not used.   
+Of course the idea is simple, but its implementation will soon face the big delayed wave called timing, so it’s just a conceptual idea for now. And we plan to derive matching control signals using the Write Done signal.  
+This line of exploration was prompted by CC84’s Control Unit implementation—specifically the need for the Write Done signal and whether this signal could be used beyond the simple FENCE-instruction scenario.   
+As expected, there is a clear gap between conceptual implementation and actual implementation, and it seems we are completing it by bridging the two appropriately.  
+
+After those 5 years, I also feel that the insights gained through times of renewal are being completed as lessons.
+Division of labor shines not when the domains of work are clear, but when the points where they interlock are clear.
+Not the boundary line between two sets, but when you focus on the clarity of the intersection, only then can you proceed freely and infinitely productively.
+
+Anyway, from personal maintenance time 17:30 I ate, ran back, and conducted CSR-related research. In Korean, there are almost no materials. Just one Tistory post and a paper that is one of our references, **“Design and Evaluation of 32-Bit RISC-V Processor Using FPGA.”**  
+Even in that paper, they partially implemented the privileged ISA as needed using CSR.  
+> “Implemented the privileged instruction set and CSRs for trap handling in M mode.”
+
+Back to the point, CSR itself has registers that the hardware must handle automatically, regardless of instruction execution.  
+But we don’t have to implement all registers at once.   
+
+> Quoting The RISC-V Instruction Set Manual: Volume II, Privileged Architecture,  
+there are a total of 3 stages of Privilege Mode.  
+Stage 1 / M (Machine level). For simple embedded systems.  
+Stage 2 / M, U (User level). For secure embedded systems.  
+Stage 3 / M, S (Supervisor mode), u. For systems running Unix-like operating systems.  
+
+In the end, to implement stage 3, the CSR and the current processor’s operating scheme may need to be improved to match each Privileged Hierarchy structure.  
+For now, we don’t need to implement all CSR registers;   
+we should implement the registers needed within our current desired spec, and if there is Machine Level logic needed, we need to add it.  
+
+22:15 evening study time.
+While reading the Privileged Architecture, ISA manual, the main emphasis before CSR, in the introduction, is almost on “secure.”  
+Operational-stage security. A basic design that supports only machine mode cannot provide security against faulty or malicious application code, and that seems to be one of the starting points for CSR.  
+(It says the optional PMP facility’s lock function can support partial security even if only M-mode is implemented, but... I don’t know what PMP is..)  
+
+Since we have to implement up to the G extension anyway, we need a proper understanding of the Privileged Architecture.  
+At this point, I’ll translate the RISC-V Privileged Architecture ISA Manual into Korean. What’s the big deal about 172 pages.  
+
+From now on, the content continues in the file Privileged_ISA.Korean.md.  
+From the register descriptions in the CSR Listings, I was able to find the meaning of PMP.
+It stands for Physical Memory Protection.   
+
+**[Supervisor Trap Setup]**  
+Unless otherwise noted, it follows the privilege level of the first word of the classification, and RW; Read/Write; are read–write registers.
+I’ll write only the important Names separately.
+- sstatus
+- sie
+- stvec
+- scounteren   
+
+No, we need them all. It’s right to implement these one by one in order.
+
+For now, the Hypervisor stage is unnecessary since we’re only going to run a simple OS at this point, so exclude it.  
+Let’s count the total number of CSRs, and among them, estimate only those needed for implementation in RV32I50F.  
+The total number of CSRs follows “Currently allocated RISC-V CSR addresses” in the Manual.  
+
+fflages, frm, fcsr, cycle, time, instret, hpmcounter3 ~ hpmcounter31 (29), starting from h instructions cycle, 32 in total
+- Total 64 + 3 (FP CSRs) = 67 Unprivileged CSRs.
+
+sstatus, sie, stvec, scounteren, senvcfg, scountinhibit, sscratch, sepc, scause, stval, sip, scountovf, satp
+scontext, sstateen0, sstateen1, sstateen2, sstateen3
+- 18 Supervisor CSRs
+
+mvendorid, marchid, mimpid, mhartid, mconfigptr, mstatus, misa, medeleg, mideleg, mie, mtvec, mcounteren,
+mstatush, medelegh, mscratch, mepc, mcause, mtval, mip, mtinst, mtval2, menvcfg, menvcfgh, mseccfg, mseccfgh,
+pmpcfg0,   
+pmpcfg goes up to 15.. pmpaddr from 0 to 63. mstateen0 to 3, including h values.  
+- Then total 25 + 16 + 64 + 8 = 113  
+
+mnscratch, mnepc, mncause, mnstatus, mcycle, minstret, mhpmcounter3~31, including h ×2.
+mcounthibit, phpmevent3~31, including h. tselect, tdata1~3, mcontext, dcsr, dpc, dscratch0, 1.
+- 4+62+59+5+4 = 134..
+
+- Hypervisor..  
+7+5+2+1+1+2+8+9 = 35..
+
+Total 367 allocated CSRs.. Of those, let’s estimate what we need to implement..
+
+- RISC-V Unprivileged CSRs (64) [URO]
+  cycle, time, instret, hpmcounter3~31, cycleh~hpmcounter31h. Total 64
+
+- Supervisor-level CSRs (18)
+  sstatus, sie, stvec, scounteren,
+  senvcfg, scountinhibit,
+  sscratch, sepc, scause, stval, sip, scountovf (SRO),
+  satp, scontext, sstateen0, sstateen1, sstateen2, sstateen3
+
+- Machine-level CSRs ( 163 out of 134)
+  mvendorid, marchid, mimpid, mhartid, mconfigptr (Machine Information Registers) 5
+  mstatus, misa, medeleg, mideleg, mie, mtvec, mcounteren, mstatush, medelegh (Machine Trap Setup) 9
+  mscratch, mcpc, mcause, mtval, mip, mtinst, mtval2 (Machine Trap Handling) 7
+  menvcfg, menvcfgh, mseccfg, mseccfgh (Machine Configuration) 4
+
+pmp needs to be considered.. 80..
+
+mstateen0~3, mstateen0h~3h (Machine State Enable Registers) 8.
+
+What is NMI..
+
+Machine Counter/Timers (62)
+Machine Counter Setup (59)
+Debug/Trace Registers (shared with Debug Mode) (5)
+Debug Mode Registers (4)
+
+Total 245.. Out of roughly 400, we have to implement 245.
+
+### [2025.02.11.]
+Today’s tasks.  
+(Diagram)
+
+1. Add Write_Done signal to PCC  
+   (When FENCE occurs, instruction updates must be halted; this signal is needed for that.)  
+   Done. 20:39. RV32I50F.R1v3_temp.draw.io
+
+![RV32I50F.R1v3_temp](/diagrams/design_archive/RV32I50F/RV32I50F.R1v3_temp.drawio.png)
+
+2. Create Simplified Core Diagram.  
+   Is the baseline RV32I37? Diagram excluding CSR and cache structure.  
+   Also a simplified diagram based on current RV32I50F. Need to make two in total.  
+
+3. Organize the CSRs to implement in the CSR File, and modify the matching logic modules and CSR File module.  
+
+—Evening study time—
+
+4. Verify Control Unit behavior  
+
+5. Check whether, in the future instruction extensions RV32G (IMAFD, Zicsr, Zifencei), there are any additional PC-calculating and jumping instructions beyond the RV32I Base Instruction Set.  
+
+While working on 5, I found a chapter that defines the order of sources and destinations per instruction.  
+Page 108, Source and Destination Register Listings.  
+
+Item 5 actually arose while verifying item 4, when a thought about JAL’s datapath suddenly came up.  
+JAL ultimately does PC = PC + {imm, 1'b0}, and PC + {imm, 1'b0} is computed the same way in Branch as well.  
+For this, the Branch comparison is processed in the ALU, and to avoid consuming two cycles for a branch instruction and do it within one cycle, I had implemented PC + {imm, 1'b0} in the PCC.  
+So I wondered if we could achieve optimization by reusing the PCC’s logic rather than sending JAL’s PC operation all the way to the ALU.  
+
+Then a problem: the PCC would need to distinguish between JAL and JALR and act accordingly (for JALR, ALUresult = NextPC; for JAL, PC + {imm, 1'b0}).  
+To do that, the Jump signal output from the Control Unit to the PCC would need to be made 2-bit so it can identify them.  
+Thus I considered the usefulness of reusing that logic in the PCC without going through the ALU.  
+
+After comparing datapaths, it came down to a single MUX difference, and we’re not going to implement a large, high-performance adder for the PCC (though later we could justify it for performance).  
+Since the ALU already has a high-performance adder, merely saving a MUX doesn’t promise a big performance gain, so I decided to keep the existing system.  
+As before, the ALU computes PC = PC + {imm, 1'b0} and feeds it as J_Target.  
+
+Control Unit verification is complete.  
+**Results.**
+
+A. In csrrw and csrrwi. For csrrw where CSR = R[rs1], RD1 should be bypassed into the ALU, but why is ALUsrcB set to 11 selecting CSR?  
+In csrrwi as well, CSR = imm, so ALUsrcB should be imm and this should be bypassed, but why is ALUsrcA 11?  
+
+-> For bypass, any unused src will be selected as 00. Keep consistent design, just like unused MUX control signals are 0.  
+
+B. FENCE instruction.  
+FENCE is currently implemented by forcing all Control Unit output signals to 0, but this won’t do.  
+The point of FENCE is, to prevent resource races and ordering violations, to pause execution of other instructions for any reason (stop updating the value of NextPC...? shouldn’t instructions of the same nature continue to execute?)
+and wait until the in-progress instruction completes.   
+
+That is, if a Memwrite operation is in progress, the control signals for that Memwrite should remain asserted.  
+Also, depending on what is included in “the in-progress instruction,” the types of FENCE vary.  
+The premise of FENCE is resource race and ordering violation, i.e., another hart is assumed. So predecessor and successor executions are defined, and the kinds of operations are Input, Output, Read, Write.  
+This still needs research... not easy.  
+
+Anyway. The basic fence is an instruction that includes all of IORW. If operations corresponding to any of these four are in progress, those in-progress operations must continue.  
+For example, keep input signal handling going until it finishes, keep writes going likewise.  
+FENCE.TSO applies to Read and Write only. For reference, the fm bitfield denotes the meaning of that fence instruction.   
+Since it’s a fence type, you can think of it like an opcode for fence.  
+PAUSE applies only to the predecessor’s Write.  
+Refer to the manual for details. I’ll research more and raise it to a level where I can say it with certainty. (by tomorrow)  
+
+The improvement direction I propose is this.  
+When executing a FENCE instruction, we need to know whether the fence-relevant instruction immediately preceding it has fully completed...  
+This is complicated... If we zero the CU, then yes, we satisfy the fence that waits for completion of all instruction executions, but fence.tso and pause become inaccurately implemented...  
+I need to think of an approach to this...  
+
+### [2025.02.12.]
+**Simpilfied Diagram of RV32I50F.R1v3 - draft**
+![250212_RV32I50F.R1v3_temp.s](/diagrams/design_archive/RV32I50F/[250212]RV32I50F.R1v3_temp.s.drawio.png)
+
+After evening study yesterday, we held a meeting until 01:20.  
+As a result, we were able to obtain clues and ideas for handling FENCE, and decided to implement FENCE handling with zero control signals as we are doing now.  
+
+The precise implementation method for FENCE is to control the PCC’s instruction updates via the cache’s Write Done signal using a buffer.  
+When there is no real-time access to that memory, the hardware continuously performs Buffer to Cache writes by flushing the buffer.  
+We define this method as the **Simultanious Buffer Flush** Model. **SBF Model**.  
+
+There are about two kinds of problems that can occur related to Load or Store.   
+One is when the write instruction is called excessively and the buffer becomes full; the other is when, in the course of using concurrent programming, the user creates a race condition.  
+
+We can solve the first by using the write_done signal, but in the second case we cannot assume all cases and solve it purely in hardware.  
+So we intend to let programmers use FENCE instructions so they can resolve such situations themselves.  
+
+Anyway, the buffer structure is the core.  
+
+Things to do today  
+- Create the Simplified Core diagram  
+- Create the improved CSR diagram. = RV32I50F.R2  
+
+Create RV32I37F (No cache, no CSR, no Debug)
+Done. 23:45.
+![RV32I37F](/diagrams/design_archive/RV32I37F/RV32I37F.drawio.png)
+
+Create RV32I43F (Yes CSR, No cache, no debug)
+
+Create RV32I47F (Yes CSR, Yes Cache, no debug)
+
+Create RV32I50F (Yes CSR, Cache, Debug)
+
+
+### [2025.02.13.]
+Creation of RV32I43F done. 20:50
+![RV32I43F](/diagrams/design_archive/RV32I43F/RV32I43F.drawio.png)
+
+Creation of RV32I47F done. 23:59
+![RV32I47F.R9](/diagrams/design_archive/RV32I47F/RV32I47F.R9.drawio.png)
+
+### [2025.02.14.]
+During working hours I read the manual on RVWMO.   
+Unlike the colloquial, mostly literary books I used to read, reading technical literature—hundreds of pages—was a very different experience.  
+
+Tomorrow, Saturday, I have duty, and it was recently changed to full-time duty where I cannot use my phone from 08:30 in the morning to 08:30 the next morning, so I decided to read through the entire RISC-V manual during that time.  
+So… I printed a document of about 651 pages… and by skimming it I roughly identified a study route.  
+The current time is 23:24. From now on I will identify the CSR instructions to use, review the current CSR structure of RV32I50F, and then try implementing the CSR module using Verilog HDL.  
+And while reading the manual I learned a great many things. I often made guesses and experienced my head ringing, and of course there were valuable products of thought gained from that, but the basic guide manuals and standards to follow for that were “already” covered in the manual.   
+The cache structure we implemented follows a rather primitive structure and has a structure somewhat different from modern high-performance computing.  
+If you look at the manual, you can see that the table of contents is organized as one big flow where implementing the RISC-V “G” Extension goes up to the “Q” Extension (G = IMAFD + Zicsr + Zifencei Extensions), and accordingly, understanding the cache-management ISA, which is organized as one of the sections before the floating-point extension, will be necessary for our core structure to have a cache structure that follows modern computing.  
+
+“CMO” Extensions for Base Cache Management Operation ISA, Version 1.0.0  
+And in any case, for the semantically complete implementation of the FENCE instruction, there must be multiple harts, that is, a multithreading environment. Since predecessor and successor are assumed, we have to do hyperthreading or a dual-core structure somehow…  
+Therefore, unfortunately for now, the implementation of the FENCE instruction is likely to be replaced with NOP.   
+I will try to make it with the intention of a fully implementable level in actual hardware, but the result will not be able to affect actual output values.  
+It looks like we will end up following as-is the NOP handling of the FENCE instruction due to designing a single-core processor, as in the paper we used as a reference, **"A Design and Implementation of 32-bit Five-Stage RISC-V Processor Using FPGA."**(Sangun Jo, Lee, Jong Hwan and Yongwoo Kim. (2022). A Design and Implementation of 32-bit Five-Stage RISC-V Processor Using FPGA. Journal of the Semiconductor & Display Technology, 21(4), 27-32.)  
+As a result there was no real progress, but through the process it was a good opportunity to form our own structure for the cache and to contemplate the related memory structure while also making some mistaken misunderstandings (SBF Model, etc.).  
+
+Now. Time to explore the manual. I had already done some indexing work previously, so progress will be quite fast.  
+23:36. Start.
+
+The total six instructions performed in Zicsr are atomic instructions.  
+It is correct that uimm is the zero-extension of the 5-bit rs1 value of the instruction. (pages 46–47)  
+When uimm in CSRRSI, CSRRCI is 0 and the instruction is given, the following must be followed.  
+
+1. The CSR is not written.  
+2. It does not cause any side effects that may occur when writing the CSR.  
+3. It does not raise an illegal-instruction exception for a read-only (RO) CSR.  
+
+In the CSRRWI instruction when rd = x0:  
+
+1. The instruction must not read the CSR.  
+2. It must not cause any side effects that may occur when reading the CSR.  
+
+CSRRSI and CSRRCI always read the CSR and may cause any of the side effects of reading, regardless of rd or rs1.  
+
+I read most of the RISC-V Unprivileged Architecture manual’s section on the Zicsr extension.   
+I will read it closely tomorrow, but for now the content is mainly about supporting the instructions rather than implementing the CSR itself.  
+Basically CSR is composed of instructions where reading and writing happen simultaneously, and those pseudo-instructions, i.e., CSRW, CSRR, are decoded into formal CSR instructions by processing the write or read value as 0 according to the logic that operates when uimm | rd is 0 as specified above.  
+
+I should print the Privileged Manual as well. That’s it for today. 23:57.  
+I never feel quite refreshed when ending in the middle of some research. I would feel good if I at least made a firm diagram…
+
+And since the semantically complete implementation of FENCE requires a multithreading environment, the process after pipelining will be the implementation of a dual-core processor after the G extension.  
+Just thinking about designing a shared cache and implementing the timing coordination and logic between the two harts already makes my head spin…
+
+### [2025.02.15.]
+
+I was on duty, read Chapter 1 and 2 of "The RISC-V Instruction Set Manual: Volume I; Unprivileged Architecture" What I need to read in Unprilviled is about 123 pages. I read 37 of them.  
+
+### [2025.02.16.]
+
+I slept after finishing duty and woke up. Around 16:00. After setting up the development environment, CC84 showed me the Vivado synthesized RTL schematic of the ALU.  
+I saw wiring that looked quite complex and densely packed to the point I wondered if it was really this big. So I looked for other Verilog HDL–based schematic tools and found a pretty decent one.  
+It isn’t an industry-standard RTL schematic style, but it’s called DigitalJS; if you upload a Verilog file, it shows the circuit at the RTL level and lets you test it by entering values in real time.  
+I haven’t yet found a way to run a testbench, but it seems like a pretty good tool. I don’t know at what synthesis level Vivado generated the schematic, but the rough form looked similar enough that it seemed fine.  
+While testing the ALU in DigitalJS, I discovered that the SUB instruction wasn’t working properly. For some reason, when it was SUB, the MUX signal did select the SUB calculation circuit, but the SUB output was shown as xxxx.  
+I raised this with CC84, and he said he’d take another look if he had time when he got back from off-base leave today.  
+Come to think of it, I was a bit flustered because there was no explicit code specifying how to handle negative results from subtraction, but in the first place the ALU input data are 32-bit “sign-extended”…  
+Oh, no—right. When the subtraction result is negative, a two’s-complement sign-extended value should come out, and it seems there’s no related logic.  
+When calculating negative minus negative, since it’s arithmetic on signed values, the result will be signed anyway, so that’s fine, but if a positive and a negative, or a positive and a positive yield a negative result, it seems necessary to review the logic of the ALUresult output.  
+
+Once again, my to-dos:
+
+1. Establish the set of CSRs to implement
+2. Review the CSR module design and revise the diagram based on 1
+3. If necessary in 2, modify the logic of other modules
+4. Based on 2, write the Verilog HDL code for the CSR_File
+
+The biggest roadmap at the moment  
+Build the Top-Module Verilog HDL for RV32I37F. Verify with a testbench.  
+- RV32I43F CSR  
+- RV32I47F Cache  
+- RV32I50F Debug  
+
+- 5-stage pipeline extension
+- G extension
+- OS installation, run DOOM.
+
+It seems implementing expansion interfaces will inevitably be necessary.  
+
+Regarding installing an OS on RISC-V, I checked the Linux kernel’s RISC-V documentation and looked through various projects and materials.  
+I also looked into high-performance RISC-V processors, and the XiangShan NH processor developed in China in 2022 stood out.  
+SiFive, the industry frontrunner in actual design and sale of RISC-V processors, clearly has limitations on several business fronts and in technology/price, and hasn’t fully handled RISC-V’s potential, but the NH processor has a fairly advanced dual-core structure and seems to achieve at least Haswell-era x86-Intel-level performance.  
+What’s notable in that paper is that, instead of being bound by traditional processor design/verification methods, they built an efficient chip production procedure and taped out the base processor in about 10 months, then improved performance in the second generation (the NH processor).  
+There are 37 authors, so it’s clearly not an outcome a mere handful of people can achieve.  
+
+In the end, the purpose of making the G extension stems from OS installation, but for fast project progress, it seems better to focus on OS installation rather than making the G extension the main goal.  
+
+**—Evening study period—**  
+Establishing the list of CSR implementations.  
+Current RV32I50F, at a level close to bare metal without an OS, list of CSRs to implement
+
+—Unprivileged CSRs.—  
+- • Counter / Timers
+   - cycle (h)
+   - time (h)
+   - instret (h)
+   - hpmcounter 3~31 (h)
+
+—Machine-level CSRs.—
+- • Machine Information Registers
+   - mvendorid
+   - marchid
+   - mhartid
+- • Machine Trap Setup
+   - mstatus
+   - misa
+   - mie
+   - mtvec
+- • Machine Trap Handling
+   - mscratch
+   - mepc
+   - mcause
+   - mtval
+   - mip
+- • Machine Counter/Timers
+   - mcycle (h)
+   - minstret (h)
+   - mhpmcounter3~31 (h)
+   - mhpmevent3~31 (h)
+   - mcountinhibit
+
+### [2025.02.17]
+It’s combat leave…  
+Results as of 14:36.  
+First, I finalized the move to 64-bit. For CSRs as well, the advantages of shifting to 64-bit are very strong.  
+(CSR implementation becomes easier. Installing Linux becomes easier. There’s no need to consider memory misalign exceptions.)  
+Therefore, after RV32I, I’ll do a bit-width expansion to RV64 and then build the 5-stage pipeline.  
+And to raise project progress as much as possible, instead of focusing on the “G” extension, I’ll focus on OS installation and make a “5-stage pipeline RV64IMA_Zicsr_Zifencei + virtual-memory processor.”  
+And as milestones, the RV32I project will yield a total of four core structures.  
+Single-cycle, at the machine-level baseline.  
+
+- RV32I37F – supports the basic RV32I instructions. Instructions like FENCE are treated as NOP.
+- RV32I43F – RV32I + CSR
+- RV32I47F – RV32I + CSR + Cache
+- RV32I50F – RV32I + CSR + Debug
+
+I will define the CSR files based on the current RV32I50F.  
+Among the CSRs decided yesterday, things like mcycle that, on an RV32 basis, would require h-split [63:32], [31:0] logic partitioning/mapping won’t be needed after a 64-bit expansion, so all register files related to those will be zero'd.  
+Therefore, the re-established list of CSR files for RV32I50F is as follows.  
+Counters and cycle / instruction counters will be additionally implemented upon 64-bit expansion.  
+
+—Machine-level CSRs.—
+- • Machine Information Registers
+   - mvendorid
+   - marchid
+   - mhartid
+   - mimpid
+- • Machine Trap Setup
+   - mstatus
+   - misa
+   - mie
+   - mtvec
+- • Machine Trap Handling
+   - mscratch
+   - mepc
+   - mcause
+   - mtval
+   - mip
+
+Let’s design the logic for the above 13 CSR files and implement the CSR File.
+
+CSR was a huge door… Each register has fields assigned that can represent interrupts, traps, and status, which means we must implement separate conditional logic so we can write the values those fields signify.  
+Also, there are cases where two or more CSRs interact to perform an operation, and those must be implemented together as well.  
+Registers whose understanding and logic design I’ve completed so far: Machine Information Registers, Machine Trap Setup.  
+
+### [2025.02.18.]
+Research and study on the 13 CSRs to be implemented.
+
+### [2025.02.19.]
+23:42. While researching approaches to implement the CSR, I heard news about the RV32I37F testbench and immediately went over.  
+It looked like it had failed, and I thought it might be a tool issue, and while I was looking through the waveform file, around 23:42, on a whim I just went to ChoiCube84 and he was furiously typing something.  
+Then the waveform popped up, and we witnessed certain success.  
+**RV32I37F. Complete.**
+The starting program was simple. Put the value of x0 + 10 into A, the value of x0 + 20 into B. A + B into C. A complete success. Everything worked correctly.  
+This is where it begins. From now on we have to create a testbench to test each of the 37 instructions one by one.  
+We originally tried to use the EECS fa22 skeleton benchmark code from UC Berkeley, but since the core design differs, we decided to create a separate testbench that cites that benchmark.  
+
+### [2025.02.20.]
+CSR establishment is complete. The contents organized in an xlsx file can be found in RV32I50F_CSR_Listings.  
+The final list to be implemented is as follows.  
+
+Spent 30 minutes on whether mtvec should be writable or read-only.  
+Since it’s machine-level CSR behavior, it makes no sense for a mere user to control it, and even if we implement it, I can’t think of any benefit at all, and even if there were an instruction that changes the BASE address, we’ll implement vectored mode, so such a large bit cost becomes unnecessary—that’s how I explained it.  
+We said the same two things for 30 minutes.
+
+Anyway, that’s it for today. Most of the content is in the cells. Please refer to it.
+
+### [2025.02.22.]
+While on duty on 02.21, I defined all initial values for the CSRs and recorded both the cache memory structure and the CSR’s logic structure in the RV32I50F Core Architecture Manual document.  
+And the implementation of the CSR file has begun.   
+Up until now in this project, I took charge of the logic, diagrams, and operational design, and ChoiCube84 handled the implementation using Verilog.  
+But I thought proceeding without touching Verilog in this learning-oriented project wouldn’t fit the purpose, so I said I’d implement at least the CSR file from scratch myself.  
+Of course, there’s quite a bit to study and ponder within the CSR logic itself, so CC84 probably would have requested a separate meeting anyway… Once this implementation is done, we can immediately create the TB for RV32I43F and verify it.  
+
+Currently, CC84 is generating the waveform for RV32I37F and setting up the testbench environment (defining intended output signals per module for each instruction).  
+Our goal is to finish the first round of implementation and verification of the RV32I50F core within February.  
+After that comes the 64-bit expansion and 5-stage pipelining, the IMA extension, and OS installation.  
+- Mid-March to mid-April: 64-bit expansion and 5-stage pipeline
+- Mid-April to mid-May: IMA extension
+- Mid-May to July: kernel programming to install RISC-V Linux
+- July–: paper writing (CC84 discharge…), mid-August: submit to arXiv.
+- After August: write KAIST self-introduction
+- September: admissions…
+
+Phew… I can do it. Let’s do it well.
+
+![RV32I50F.R1v4](/diagrams/design_archive/RV32I50F/RV32I50F.R1v4.drawio.png)
+
+### [2025.02.23.]
+Today I implemented the CSR logic in practice.  
+What I spent nearly half a day on turned out to be a wild-goose chase, but the feeling of having learned about Verilog syntax during the process was stronger, so I wasn’t particularly disheartened.  
+I had been implementing under the assumption that arithmetic/logic operations (Set, Clear) on CSRs would be performed within CSR as well.  
+But if it works like that, I figured the CSR_File would no longer be a CSR_File and would be closer to a CSR_Unit, so I wondered whether I should hand those operations over to the ALU.  
+
+I told CC84, who was surprised and came over asking me to explain. As I explained and stared at the diagram, I realized that my past self, when I was in good condition, had already designed it so CSR operations are carried out through the ALU, and the CSR_File is indeed designed to be a simple File that only stores and returns data.  
+So I had been spinning off separate modules per CSR to implement, but I retired all of them and reorganized it into a single module called CSR_File that, based on address, CSRop, and clock, performs simple read/write operations.   
+Then CC84 pointed out that CSR is needed not only for CSR instructions but also when values are required during TRAP, and I looked at the diagram again.  
+Come to think of it, in TC we can just request the address with T.Addr, and the CSRFile simply receives that and returns it as RD.  
+> Then CC84 said,   
+if csr_op is 0 that implies the CSR is entirely inactive, so shouldn’t it not be 0? 
+
+> KHWL explained  
+that since reads themselves are asynchronous I’ll just use always *, and since the important instruction implementations involve writes anyway, the reads themselves can be returned at all times like a general register file regardless of CSR_NONE.
+
+And if it’s like that, the output RDs won’t cause operational problems unless the CU selects them anyway.  
+After thinking, CC84 said then we can just write with a CSR_Write signal. Thus the 3-bit CSRop signal was retired and replaced/optimized with a 1-bit CSR_Write signal.  
+I then produced the CSR file in 15 minutes… (as always, research time is longer than implementation time…)   
+Tomorrow I’ll make a TB and verify it.  
+Tomorrow Monday I get combat leave as compensation for Friday duty, and although CC84 has a normal workday and it’ll be a bit inconvenient, let’s do our best.
+Let’s go let’s go!!!
+
+### [2025.02.24]
+
+![RV32I50F.R2](/diagrams/design_archive/RV32I50F/RV32I50F.R2.drawio.png)
+
+CSRFile implementation complete.  
+I used combat leave for Friday duty and spent almost half a day touching only Verilog.  
+While reviewing I learned a lot of syntax and various things, and although it’s a bit cumbersome, I found a way to partially lift the restrictions on the PC room computers.  
+Installing drivers in Safe Mode and such… then I can run GTKWave too. Haha.  
+
+Anyway, verification was the problem while implementing CSR, and in the TB the original value and the value after write should come out separately, but the original value, i.e., the value right after RESET, was not the designed 0 but the output signal value I had written just before.  
+So after adding delays and flailing about, it behaved correctly and I made that the final.  
+After dinner, I adjusted the format of my CSR Verilog file to match CC84’s existing Verilog design.  
+With the remaining time, I manually rewrote the RV32I50F Core Architecture Manual that I had written on the duty PC and revised its contents.  
+Then came evening study time.  
+
+While I was adjusting the format of the CSR file and almost finished, CC84 found a critical problem in the top-module bench.  
+The true value of the top-module bench is beginning to show!
+The problem is: since ALUop does not have an instruction-type identifier, there’s no way to distinguish I-type SRAI from R-type SRA.  
+For I-type instructions, only for shift instructions, I had separated them with funct7 and shamt in the imm field, and the key is slicing this.  
+If we just slice the input source data, the ALU wouldn’t know whether it’s R-type SRA or I-type SRAI, so following the ALUop code for SRA, it could end up slicing f7 and shamt from RD2.  
+I remembered the original intent that ALUop should include the instruction type, and when I looked up the meeting notes I found relevant content.  
+
+#### From 2025.01.23. Meeting notes.
+> CC84: What is the role of the ALUop signal? Is it merely ALU enable and Bypass?  
+— The ALUop signal is an identifying code for performing type-specific operations, receiving the instruction type according to the opcode.  
+
+
+The original purpose was to embed the Type in ALUop…  
+It seems during development it felt more important to define the kinds of ALU operations themselves, so the direction changed.  
+So I felt we should either add the instruction type to ALUop… or give a separate signal to notify the ALU of the type, but CC84 is thinking differently.  
+
+He suggested slicing imm[4:0] and putting it into ALUsrcB. Doing so gives shamt → imm[24:20] → SRA operator. Shift by imm[24:20].  
+But here’s the thought… yes, that works, but later there will be more instructions regardless of I-type and so on…
+Thinking of generality for the future, wouldn’t adding a type-identifying signal be the right decision? This feels too limited to the SRA issue at hand…  
+In the sense of including the meaning of a general solution, I think it’d be better to add a type identification signal.
+Evening study time is over. We’ll need a separate meeting on this. That’s it for today.
+
+### [2025.02.25.]
+
+Weekday off-post… In the end, yesterday’s issue was decided by separately extracting imm and adding one more selection to ALUsrcB with a 4:1 MUX.  
+Even if we consider future instruction extensions, merely identifying types doesn’t seem to yield a clearly suitable signal utility that justifies changing the current design.  
+
+When I came back for evening study, I tried to systematize the memory–cache operation logic structure in earnest and document and concretize it, but a bit-related conflict over MUX arose with CC84.  
+I, taking the most conservative stance in design, think that when not selected we must send an inactive signal.   
+The complexity of the designed hardware will only increase over time, and even though it’s hard at our current scale to fully guarantee all operations, I think it’s better to guarantee as much as possible within the feasible range.   
+Therefore, for all MUXes—only by the early RV32I43O standard—I had included 00 among MUX select bits, but when moving to 47F we decided not to use 00 at all and to use signals starting from 01. The 00 signal is for inactive, explicitly indicating that no value is selected by the MUX and that no value is output.   
+This way it can be clearly seen in debugging and signal handling.  
+
+But CC84’s design philosophy was different: maximum optimization and simplification.   Simplify circuits as much as possible, and if it’s fine to stream 0 or other default values into unused modules, then keep the select to just 1 bit (or the minimal bits absolutely needed), and remove “inactive” signals since they’re irrelevant to operation—he wants to do it that way in the name of ‘optimization.’  
+
+It truly was a conflict arising from a difference in design philosophy.   
+Even after I showed results of unnecessary operations caused by unnecessary signal streaming, he said he didn’t know what the problem was.   
+It seems that was a reply considering that since it ultimately doesn’t affect the outcome, it doesn’t look like a problem. (See RV32I50F.R2_B-Type)  
+
+![RV32I50F.R2_B-Type](/diagrams/design_archive/RV32I50F/RV32I50F.R2_B-Type.drawio.png)
+
+After much thought, since the inactive signal was kept with the possibility it could become a problem later in mind, I said we’ll add the inactive signal if and when it becomes a problem.  
+CC84 said he already proceeded with 3 bits as discussed, so let’s revisit it in a later optimization session. 
+Thus I again got nothing done during evening study, with only about 5 minutes left…  
+Originally, the deadline was to finish design and verification up to RV32I50F within February and move to 64-bit expansion in March, but it feels even further away.
+Still, shouldn’t we do what we can.
+
+### [2025.02.26.]
+
+Revision on 37F and 50F
+![RV32I37F.R2](/diagrams/design_archive/RV32I37F/RV32I37F.R2.drawio.png)
+![RV32I50F.R2v2](/diagrams/design_archive/RV32I50F/RV32I50F.R2v2.drawio.png)
+
+Today I did meal support and spent the morning recovering from fatigue with CC84, and in the afternoon I studied cache structures.  
+I finally understood how Tag, Index, and Offset are operated and learned various cache mapping methods. Naturally we will adopt the Set-Associative method.  
+If the base were firmly established and we had the developed base processor and the wherewithal, I’d like to consider other cache mapping methods or storage logic, but we don’t have that leeway now.  
+The cache data array is composed of Sets and Ways.   
+There are Ways, which are collections of Sets, and the more columns a Way has, the larger it gets.   
+The Tag, a component of the cache, is stored along with the data. First, through the Index, we determine which Set the data is in.  
+
+Then, through the Tag, we determine which Way it is in. And the data tagged in that Way. In other words, a cache’s data does not store only one memory’s data, but, depending on design, stores multiple pieces of data.  
+Among those multiple pieces of data, to find the currently needed memory data, we use the Offset. This is the basic operation of the cache. (Set Associative)  
+
+We plan to equip the cache update logic with LRU, and need to look into the practical implementation related to this.
+That’s it for today.
+
+### [2025.02.27.]
+
+Duty shift. Writing the RISC-KC Processor Design Manual. Systematized future roadmaps, current development status, and the formats. 
+
+### [2025.02.28.]
+
+Already the last day of February.   
+Originally the deadline was to finish verification up to RV32I50F, but it looks like it’ll only be RV32I37F. In fact, even so, it more or less matches the original timeline, so it’s not a big problem, but it’s still a shame.   
+Originally I was going to push the manual as far as possible, but today we decided to finish verification together for RV32I37F.  
+Because at this rate it felt like we’d still be verifying RV32I50F come March and even by the time of discharge.  
+
+As we verified together and evening study time was ending, I, while verifying BE_Logic, noticed something odd in Data Memory’s read. CC84, at the same time, was verifying Data Memory, and each of us confirmed in an LW operation that the data read from Data Memory is output in the next clock cycle.   
+After investigating, we found that a synchronous Data Memory with a Read Enable signal outputs data in the cycle after a read signal is sent.  
+
+The mechanism by which this happens was a bit different in our logic structure.   
+In the RV32I37F testbench, after passing through the three Store (S-type) instructions, it is designed to immediately perform the six I-type Load instructions, so the falling edge of the Memory_Write signal coincides with the rising edge of the Memory_Read signal, and with the clock’s rising edge rising in between, some state occurs such that the default clause of a case with no activation signal received is executed.  
+
+That’s the situation, and by changing the default value to DEADBEEF, CC84 verified that was indeed the case.   
+In that case, we either have to devise a method of placing the memory read signal over two cycles, or devise a way to make it work within a single cycle.
