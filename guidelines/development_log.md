@@ -2140,3 +2140,74 @@ With that, RV32I37F verification is complete—2025-03-03 23:34. RV32I37F is don
 Nine minutes left in evening study… I’ll sketch more of the pipeline and call it a day. Keep moving forward.  
 
 ### [2025.03.04.]
+Today I planned to continue the 2-stage pipeline design and place the EX/MEM register.  
+During duty hours I reread the pipelining chapter of “Computer Organization and Design,” 5th ed.; as expected of a textbook, there was a lot worth referencing.  
+
+I couldn’t develop during personal maintenance time, so I was going to start during evening study.
+Right then CC84 said he had to take an e-learning course and asked if I wanted to implement RV32I43F myself.  
+At first I thought the pipeline should come first, but since I also implemented the CSR file, I decided it might actually be good for me to implement RV32I43F, too.
+
+So I began the RV32I43F top-module design.  
+Based on the RV32I37F code, I newly declared the CSR module signals and instantiated the CSR File.  
+While doing so I noticed that after csr_op had been retired (replaced by csr_write_enable), that change wasn’t reflected in the Control Unit.  
+I requested permission from CC84 to modify the Control Unit’s csr_op handling and, once approved, made the change.  
+
+Plan for tomorrow:
+- Testbench for the Control Unit’s csr_write_enable signal
+- Review RV32I43F CSR derivations and datapath clauses
+- Add CSR-related instructions to Instruction Memory and run the RV32I43F DUT
+- Analyze waveforms and verify
+
+That’s it for today.
+
+### [2025.03.05.]
+Duty day. I only worked on writing “RISC-KC Processor Design Manual I.”
+Aside from about 30 minutes dozing and handling tasks, I spent nearly the entire time on this document.
+I drafted all of Section 3.2 (Main Modules), and for Extension Modules I only have three left to write: Memory Controller, Exception Detector, and Trap Controller.  
+At this pace, two or three more duty shifts should finish the whole thing.  
+Somehow it’s already at 18 pages, and it’s still a draft with lots left out—so it’ll grow even more.  
+
+### [2025.03.06.]
+After lights-out for duty personnel I woke up around 16:00. I tried to get a haircut but the line was too long, so after dinner I went straight back to development.
+
+**Tasks**
+
+1. Apply upper-architecture changes on top of the 37F architecture.
+   - Diagram first:   
+   I carried over the Read Done signal and PC_Stall added in the 37F implementation, and for the 43F diagram I also included PC_Aligner so that 37F is fully inherited. Named it RV32I43F.R2.
+
+2. Build RV32I43F
+   - Control Unit TB (CSRop → CSR_Write Enable).  
+   - Top-module integration + TB.  
+   I replaced csr_op with csr_write_enable and ran the Control Unit testbench; it works. 
+   When OPCODE_ENVIRONMENT is selected and funct3 ≠ 0 (i.e., CSR instruction), the old csr_op assigned per-funct3 behaviors; now that we’ve optimized to a simple write-enable, that logic is unnecessary, so when funct3 ≠ 0 I assert csr_write_enable = 1.  
+
+I also began wiring the RV32I43F top module: declared/derived signals and instantiated the CSR File. 
+I’d previously split out a separate csr_write_data wire in the top, but architecturally the CSR write data is just ALUresult, so I removed csr_write_data and feed ALUresult directly into the CSR File’s write data.  
+
+![RV32I43F.R2](/diagrams/design_archive/RV32I43F/RV32I43F.R2.drawio.png)
+
+That’s it for today. Let’s go!
+
+### [2025.03.07.]
+*I had a “combat leave” day but got almost no development done.   
+In the morning the duty officer suddenly tightened restrictions on the PC room; by afternoon I was dragged to the mobilization training site for handover despite being on leave, and it turned into manual labor rather than real knowledge transfer. I swallowed the frustration, got back right before personal maintenance time, opened the lab, and started.
+I was supposed to push RV32I43F code, but to cool my head I switched to pipeline design.*  
+
+The essence of pipelining is to split a single-cycle instruction into five cycles (or however many stages you define), and then decide which signals live in which stage, which are global (not pipelined) vs. local (stage-scoped), and which are used/unused per stage.  
+Before, I could think up the logic, design a module, and drop it into the block diagram; now I also have to reason about timing and locality so the right signals arrive at the right stage—this raises the difficulty.
+
+I’m drafting the RV32I50F 5-stage pipeline diagram.   
+IF, ID, and EX are pipelined now; EX/MEM register placement is the sticking point. 
+EX comprises ALU Controller, ALU, and Branch Logic; fitting all of that on one A4 page is tough.   
+I could omit I/O labels to shrink blocks, but this is a learning-oriented project and I’d hate to lose explicit signal names. I’ll compress signals and pack modules tightly—boosting our “integration density,” ha. Time’s up for today; tomorrow’s goal is a first draft of the 5-stage pipeline.
+
+![RV32I50F.R3_temp](/diagrams/design_archive/RV32I50F/RV32I50F.R3_temp.drawio.png)
+![250307-RV32I50F.5SP_temp](/diagrams/design_archive/RV32I50F.5SP/250307RV32I50F.5SP_temp.drawio.png)
+
+### [2025.03.08.]
+
+![250308-RV32I50F.5SP_temp](/diagrams/design_archive/RV32I50F.5SP/250308RV32I50F.5SP_temp.drawio.png)
+
+I designed the RV32I43F top module and loaded Zicsr instructions into Instruction Memory.
+Uh-oh: writes are landing one cycle late. That’s a problem.
