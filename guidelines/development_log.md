@@ -2211,3 +2211,535 @@ I could omit I/O labels to shrink blocks, but this is a learning-oriented projec
 
 I designed the RV32I43F top module and loaded Zicsr instructions into Instruction Memory.
 Uh-oh: writes are landing one cycle late. That’s a problem.
+
+### [2025.03.09.]
+
+I suspected it might just be a waveform handling issue, so I verified whether the expected values were coming out correctly.   
+In consecutive writes, reads, and references, despite the waveform seemingly indicating that values were written in the next cycle, the values were in fact read smoothly and the expected results matched, so I marked verification complete.  
+
+To be honest, there were quite a few issues getting through verification up to this point: the CSR write-enable signal wouldn’t assert, CSR instructions weren’t displayed correctly on the waveform, I appended a HINT instruction at the end to check the final-cycle result of a preceding instruction but the new instruction wouldn’t enter, the Register’s write source wouldn’t get selected to CSR properly, etc.  
+
+Most of these were issues with deriving MUXes, modules, and signals that needed expansion or modification to graft RV32I43F onto the RV32I37F architecture; there were no fatal logic errors or module-level rework required.  
+I should have recorded things right away, but two days slipped by without the chance, so this is pretty condensed.  
+We’re getting to the point where an FPGA board is needed to proceed with implementation verification. *I spent a fair bit of time choosing a board, and along the way I came across ADChips’ EISC-architecture “ARK core,” a general-purpose CPU from a domestic Korean company. Might be worth looking up later.*  
+
+DE0-115 and Z7-20 were in the initial candidate set as mainstream FPGA boards, and I figured time having passed, there’d be better boards for similar prices—but no. 
+The Z7-20 seems the most suitable. It has a graphics output interface, it’s Xilinx-family so we can rely on AMD’s FPGA courses and support, and the licensing… is quite permissive!
+
+### [2025.03.10.]
+*One year since enlistment. I got dragged out early as a mobilization-reservist TA and accomplished nothing notable, then came back, rested, and realized personal maintenance time ends at 20:30—so I rushed over to write the overdue dev logs.* 
+
+I just finished the logs for the 8th and 9th. It’s 20:26 now.   
+I have to go… I wanted to buy a Z7-20, but as a personal purchase it runs close to 600–700k KRW, and running it on base would incur nontrivial additional costs… Tomorrow I’ll bring the computer architecture textbook and a print of the current architecture diagram, and whenever there’s spare time I’ll continue the pipeline design and study dual-core architecture.  
+
+It is what it is. Let’s handle it. *(ChoiCube84 started leave(vacation) today… and there’s no evening study because of training tomorrow…)*
+
+### [2025.03.13.]
+*Three days of mobilization training are over. I’ll go back tomorrow to wrap up, but tonight I got personal maintenance time. Whether from fatigue or from frustration at not being able to develop, I felt pretty drained.*
+
+Looking over the diagram pipelined up through stage 3 (EX/MEM), I kept thinking about how to implement dual-core and multithread scenarios.   
+In multi-hart, multithreaded, multi-core environments, it’s less about structural differences between cores and more about how to share a common memory space, distribute resources, and implement distributed scheduling. 
+We need to control the instruction execution flow in hardware—how can that be implemented?
+
+Hoping for leads, I excerpted Chapter 17 (RVWMO) and the Rtso section from the RISC-V Volume I manual and brought them to training. 
+I read them when I could, but I can’t claim full understanding yet.  
+
+In pipelining, the EX/MEM stage needed some thought about memory control signals. 
+In the 50F architecture, signals that must bypass the pipeline and be handled immediately—like exceptions—are already managed by the Exception Detector and Trap Controller, so excluding those that directly connect there, the remaining memory control signals should pass through the pipeline registers so that instructions execute at the correct time. 
+That’s the conclusion I reached.
+
+So my goal for this evening study block is to finish a first-draft diagram of RV32I50F_5SP.
+
+The Memory Controller’s IC_Status and IC.IM_MUX signals control cache behavior in the fetch stage, so they are not connected to pipeline registers.  
+Also, while planning the pipeline, I recalled that in the current 47F cache-structure definition we assumed cache and memory share the same address inputs. 
+Previously, based on the (now-dropped) premise that their address schemes differed, I had implemented logic in the Memory Controller to convert the address upon an instruction cache miss and feed that to the cache; I’m rolling that back and deleting the Memory Controller’s PC and I.Up_Addr signals. 
+In the instruction area, instead of having the Instruction Cache output PC to Memory per the old diagram, I’ll just take the PC signal straight from the Program Counter register module and keep the STAA structure as-is. 
+In the current architecture, I don’t see a reason the Instruction Cache needs to output a separate PC like before.  
+
+But I still don’t know what to do with the Read Done signal. 
+I’ll have to verify this later hands-on. 
+Trying to find a theoretical basis here and design a perfect architecture from the start would take too long.
+
+In progress. I almost finished the MEM/WB register, but due to space limits I have to move it to the side.
+
+![250313-RV32I50F.5SP_temp](/diagrams/design_archive/RV32I50F.5SP/250313RV32I50F.5SP_temp.drawio.png)
+
+### [2025.03.14.]
+
+ChoiCube84 implemented the Instruction Cache. I verified the logic.  
+I found the module design differed from the diagram and started discussing it.  
+We had included an IC_Clean signal in the diagram for the FENCE.i instruction, but it wasn’t in the code. When he suggested we could just handle it with reset, I agreed.  
+He had structured the current code with an FSM concept, separating Update Mode from normal operation. I said there was probably no need to go that far.  
+On a cache miss, an update is just a simple write, and I quoted what we had organized during the 47F cache-structure planning.  
+
+![250314-RV32I50F.5SP_temp](/diagrams/design_archive/RV32I50F.5SP/250314RV32I50F.5SP_temp.drawio.png)
+
+1. Since the cache itself detects a miss, keep an internal register and, with a conditional, when satisfied, write the data being fetched from memory into the cache immediately.
+
+2. Following clear separation of roles and design philosophy, send the Hit/Miss signal to the Memory Controller, and have the MC send the corresponding control signal back to the cache.  
+That becomes the cache’s write-enable signal; when asserted, the cache writes the memory’s incoming data to the designated address.
+
+Those were the two approaches I had in mind, and the one reflected in the current diagram is (2).  
+We send the Hit/Miss to the Memory Controller; the MC recognizes it and sends a Write Enable to the cache, which writes the fetched memory data and updates.  
+Looking closely now, I noticed that Write Enable signal is actually missing from the diagram. To-do item added.  
+
+I also finished thinking through where, in the 5-stage pipeline, to connect the Read Done, Write Done, and BTaken signals to their respective modules.  
+Pipelining turns a single-cycle instruction into five staged cycles to increase throughput, but not every instruction must be split across all stages. You can emit signals to the needed modules in the needed stages, and treat the rest as NOP.  
+So I connected Read Done and Write Done to the Control Unit in the MEM stage, and connected BTaken from the EX stage to the PC Controller.
+
+While firming up Write Done, I realized we held different understandings of the buffer–cache–memory structure.  
+What I had in mind was this: our data cache unit has a buffer space.  
+On a cache write, you first write into the buffer; when there’s no memory access (read/write) in progress, hardware immediately flushes the buffer into the cache.  
+If consecutive writes fill the buffer, the cache detects this and sends a DC_Stats signal to the Memory Controller to indicate a flush is needed.  
+The Memory Controller recognizes this and sends a B2M_Flush to the Data Cache, which flushes the buffered data directly to memory.  
+The data flow is Buffer → Cache → Memory, but when the buffer is full, it flushes Buffer → Memory in one go.  
+
+ChoiCube84, however, was describing cache → buffer → memory rather than buffer → cache → memory.  
+I’d already felt something was off; architecturally, his version makes more sense.  
+So we settled on the more standard, higher-level “write-back” cache structure and left the earlier buffer concept in the dev log as an idea.  
+Write Done remains necessary for write-back and FENCE. The meaning shifts slightly: after a write-back completes and data has been written to data memory, Write Done indicates it’s safe to proceed with the next data-memory-accessing instruction.  
+
+And as we applied the PC_Stall logic—added during 43F design and verification—to the 47F-based architecture, we no longer need to send Write Done to the PC Controller.  
+Write Done will go only to the Control Unit, and the CU will adjust PC_Stall based on it.
+
+
+![250314-RV32I50F.5SP.R1](/diagrams/design_archive/RV32I50F.5SP/250314RV32I50F.5SP.R1.drawio.png)
+
+### [2025.03.15.]
+
+Thinking it through, we obviously need a discriminator to notify the Instruction Cache of FENCE.i and trigger invalidation. 
+The IC_Clean signal should exist. The Trap Controller should receive the FENCE.i identifier and cause the Instruction Cache to invalidate.   
+However, instead of handling the Trap Controller’s signal as a separate IC_Clean input in the Instruction Cache, we can simply treat it as the RST (reset) signal.
+
+![250315-RV32I50F.5SP.R1](/diagrams/design_archive/RV32I50F.5SP/250315RV32I50F.5SP.R1.drawio.png)
+
+- After switching the cache write policy to Write-Back, ChoiCube84 asked about the cache–memory interface signals: 
+
+> when writing back from the cache to memory, is it enough to send only the new data value, or must we also send the address? 
+
+- My answer:  
+Write-Back is triggered in the following situations:  
+When we need to bring in a memory block with a different tag into a cache line that already contains modified data, we must write the old line back to data memory.  
+This can occur on both reads and writes in the data area:  
+   - On a read miss, we may have to evict a modified line to make room for the miss line we load into the cache.
+   - On a write, if the targeted line is occupied and dirty, its modifications must be reflected back to memory.  
+
+   Because of STAA, the same value ends up being used on the read path anyway. 
+   The key with Write-Back is that the address to be written to memory is not the address of the currently executed access, but the address of the line that must be written back. 
+   Therefore, a separate address must be provided.   
+   Since the address format and values on the data side are the same, the cache can drive memory directly. 
+   I updated the leftover buffer-era B2M_Data and B2M_Addr signals to WB_Data and WB_Addr.
+
+With this updated cache design integrated, the pipelined architecture has been completed. 
+But this is not the end of pipeline processor design—the placement of pipeline registers is really just the prelude. The real work begins with the Hazard Unit, which handles hazards introduced by pipelining.
+
+For now, I need to push the updated 47F architecture diagram to ChoiCube84, reflecting the pipeline register placement and the latest cache design. Let’s go.  
+
+18:56 — RV32I47F.R10 completed. I applied the changes introduced in the 43F architecture and updated the diagram to incorporate the revised cache structure from the 50F 5-stage pipeline work. I also simplified the Mybox file layout.
+
+![RV32I47F.R10](/diagrams/design_archive/RV32I47F/RV32I47F.R10.drawio.png)
+
+Next up: design the Hazard Unit.
+
+According to “Computer Organization and Design” (David A. Patterson, 2015), hazards that can occur in a pipeline are:
+
+Definition of a hazard: situations in which the next instruction cannot execute in the next clock cycle. There are three kinds:
+
+1. Structural hazards
+   Hardware cannot support a particular combination of operations in the same cycle.
+
+2. Data hazards
+   The pipeline must be delayed when one stage has to wait for another to finish. In CPU pipelines, a later instruction depends on a result still in flight from an earlier instruction.
+
+3. Control hazards
+
+I spent the evening session studying pipelining. 
+The key insight was to treat data signals and control signals separately, and to deliver each to the appropriate module within its designated stage; this was my biggest concern, and the textbook provided a clear guideline that matches what I had already reasoned out. 
+Good—validation.
+
+There is a problem, though. This isn’t about pipelining per se, but about our rv32s: beginning with the implementation of lw, it is no longer a single-cycle processor, and the cache makes it even harder to fit everything into one cycle. 
+Extending the clock period to cram all actions into a single cycle is not a fundamental solution, since most logic is posedge-driven anyway.
+
+![HazardDesign-RV32I50F.5SPH.R1](/diagrams/design_archive/RV32I50F.5SP/RV32I50F.5SPH.R1.drawio.png)
+
+### [2025.03.16.]
+
+This morning, I optimized the signal routing in the RV32I50F.5SP.R1 diagram. While reading the Computer Organization & Design book yesterday, I noticed a tendency to bundle signal paths into single routes, and I’d already been thinking that would look cleaner, so I took the chance to optimize it that way.
+
+![SignalOpt-RV32I50F.5SPH.R1](/diagrams/design_archive/RV32I50F.5SP/RV32I50F.5SPH.R1.drawio.png)
+
+After that, I continued studying the one-cycle latency in Data Memory. 
+During last night’s meeting after the evening session, we floated the idea of making the read enable signal posedge-based and I tried it—merciless syntax error…  
+Right now, at the rising edge of the clock (when it goes to 1), read enable is seen as 0, and by design it only becomes 1 after passing through multiple conditionals, so it looks like we can’t start a read immediately.  
+
+Is there no way around this? 
+If the issue is that timing is missed because we only key off the clock’s edge, I wondered if we could write the Data Memory read behavior as “posedge clk or clk,” letting it also act while clk is high, so the read would still happen.   
+But that would violate synchronous design principles and would likely cause all kinds of unforeseen problems, so I scrapped it.  
+
+I reviewed training materials from IDEC, and their Data Memory code looked quite different from what we’re using now. 
+I’ve asked ChoiCube84 to do additional research on this; if their code improves our issue under the same testbench conditions, we’ll revise the Data Memory structure starting from 37F. 
+If the same one-cycle slip still appears, we’ll stick with the current Data Memory design. 
+After RV32I50F is implemented and verified, we plan to make a new repo for the 64-bit expansion, and from RV64I onward we’ll also use the FPGA’s DDR3 SDRAM, so we can overhaul the Data Memory structure then.
+
+-----
+
+While implementing the 47F architecture, ChoiCube84 raised an issue about the implementation of fence.i.   
+In 50F, fence.i is handled in the Exception Detector and Trap Controller, but in 47F there’s no module or signal to assert rst to the Instruction Cache. 
+Originally 47F supported 47 instructions, and compared to 43F the additions were FENCE, FENCE.tso, PAUSE, and FENCE.i.  
+
+However, to implement fence.i now, we’d need to add signals to the Memory Controller and Control Unit. 
+That would introduce a structure unique to 47F, harming interoperability with other architectures and making it non-reusable elsewhere.   
+So we decided to move the Zifencei extension to 50F and **rename the 47F architecture to 46F.**
+
+10+15+3+6+3+6+2+1 = 46  
+47F Architecture supports Total 46 Instructions.  
+
+Thus, the naming of 47F Architecture renamed to 46F Architecture.  
+(Originally 47F Architecture includes fence.i instruction with Memory Controller.
+However considering the module’s Interoperability, we decided to remove zifencei extension to 50F Architecture.)
+
+![250316-RV32I50F.R3_temp(1)](/diagrams/design_archive/RV32I50F/RV32I50F.R3_temp(1).drawio.png)
+
+-----
+
+Running IDEC’s reference Data Memory code in our testbench, we found it operates correctly within a single cycle. 
+We’ll now revise our existing Data Memory code with reference to that.
+
+I’m organizing the instructions that are added or changed in RV64I.  
+
+------
+
+-Evening session-
+
+Finished organizing the RV64I instructions.  
+Under the current Write-Back cache policy, on FENCE we will commit pending writes to Data Memory. 
+Since the cache knows when the flush has finished, Write Done was connected from the Data Cache, and since PC_Stall will likely still be useful in the pipeline, I left it in place. 
+I haven’t yet verified behavior after modifying with the reference code.
+
+Oh—it worked… the issue was Verilog’s “=”… What a relief. It wasn’t that I was missing something bigger; it was a mistake from not being fluent enough with Verilog.  
+With this, the read_done signal goes away. 
+
+And if PC_Stall goes into the PCC, then Write Done is no longer needed by the PCC, but it remained in the diagram—so I removed it. 
+
+I also removed read enable; honestly that seems to be the key. Now I need to revise each final diagram version to reflect these changes.
+
+That’s it for today. I’m taking a 1-night, 2-day pass starting tomorrow, so I’ll need to zip up and upload the entire development environment.
+
+## Architecture and Roadmap Revision
+
+### [2025.03.18.]
+A proposal from ChoiCube84 regarding the cache architecture and the FENCE instructions.  
+
+> Allowing FENCE to trigger cache Write-Back does not have strong justification.   
+There’s no real reason to do it, and it also runs counter to the intent in a multi-hart context.
+
+On reflection, in a single-hart system there’s no need to flush all write-backs, so I accepted the suggestion.  
+Rather than expanding from the 43F architecture to the 46F architecture (supporting FENCE, FENCE.TSO, and PAUSE), we will expand from the 43F architecture to the 44F architecture, excluding the FENCE family and adding support only for the Zifencei instruction.  
+
+To that end, we will add an Instruction Cache, and since the Data Cache has already been designed and implementation has begun, the cache architecture will be present starting with RV32I44F.  
+
+Zifencei is required for the G extension and/or for bringing up the Linux kernel.
+
+I studied the A extension and the CMO.
+
+### [2025.03.19.]
+
+[2025.03.19.]
+I planned the roadmap and architecture, and revised and detailed the plan.
+
+The revised roadmap is as follows.
+
+#### [basic_rv32s]
+
+- RV32I37F : 	Base Architecture that supports 37 Instructions.  
+Which is an amount that excluded EBREAK, ECALL, FENCE, FENCE.TSO, PAUSE instructions.
+   - Partial RV32I (RV32I except FENCE, FENCE.TSO, PAUSE, ECALL, EBREAK)
+- RV32I43F
+   - P.RV32I + Zicsr
+
+- RV32I44F_C
+   - P.RV32I + Zicsr + Zifencei
+   - \+ Cache Structure (Instruction Cache, Data Cache)
+
+- RV32I47F : 	Supports EBREAK, ECALL, mret from RV32I & Privileged Architecture.  
+Final version of basic_rv32s repository
+   - P.RV32I + Zicsr + Zifencei + ECALL + EBREAK + mret
+   - \+ Debug Interface, Debugger
+
+#### [RV64s]
+
+- RV64I59F : RV64I Extension
+   - 47F + RV64I
+
+- RV64I59F_5SP
+   - 59F + 5-Stage Pipeline
+
+- RV64IM72F : M extension supported. Maybe Grapchics Interface from this architecture.
+   - 59F5SP + RV64M
+
+#### [Final]
+- RV32IMA104_CMO_RVWMO : A extension supported.
+   - Full RV64I + RV64M + RV64A + Zicsr + Zifencei + mret + CMO + RVWMO
+
+▶ Fully supports RV32I. Including FENCE, FENCE.TSO, PAUSE after all.  
+▶ Complies RVWMO memory consistancy model.  
+▶ Dual-Core (multi-hart) processing system.  
+▶ Improved Cache structure  
+├ Two separate L1 Cache 	; Instruction Cache, Data Cache respectively.  
+├ One integrated L2 Cache 	; Integrated Cache that contains Instructions and Datas.  
+└ One shared L3 Cache		; A Cache that shared by each core(hart).  
+
+L1$, L2$ for each core respectively, L3$ is shared cache that all the core can access.  
+▶ Supports DDR3 SDRAM integrated on FPGA board.
+
+### [2025.03.20.]
+
+Now that pipeline register placement is done, the next tasks are:   
+- Design the Hazard Unit and plan countermeasures for control, data, and structural hazards 
+- Revise all rv32s final schematics to reflect recent architectural changes.
+
+It turned out our “single-cycle within one cycle” memory read worked because it was implemented as asynchronous read. 
+Looking into it, most introductory single-cycle CPU examples use data memory with asynchronous read and synchronous write. 
+So we decided to keep memory asynchronous until we move to the 5-stage pipeline, and I revised the 37F and 43F architecture diagrams accordingly.  
+
+Since RV32I50F now excludes the FENCE family, it effectively becomes RV32I47F; however, the old diagram names were too similar.   
+
+I archived **RV32I50F as of the 19th(250319) and will call the new one RV32I47NF**. Likewise, the former RV32I47F—also without the FENCE family—becomes RV32I44F. There’s no naming conflict there, so we’ll keep RV32I44F.  
+
+Action items:  
+- Archive RV32I47F at R9 and revise it as RV32I44F.
+- Archive RV32I50F and revise it as RV32I47NF.
+
+That’s all for today. I’ll use tomorrow’s personal time to push progress.
+
+On hardware: per the professor’s recommendation, I purchased a Nexys Video FPGA board. All that’s left is acquiring the local workstation.
+
+Revisions completed up through 43F.
+
+![RV32I37F.R4](/diagrams/design_archive/RV32I37F.R4/RV32I37F.R4.drawio.png)
+![RV32I43F.R3](/diagrams/design_archive/RV32I43F/RV32I43F.R3.drawio.png)
+
+### [2025.03.21.]
+
+Come to think of it, at the 250316 meeting we decided to implement Zifencei when the Trap Controller lands, **so this isn’t 44F—it's a 43F-based architecture with caches. Final name: RV32I43FC (C for Cached).**
+
+![RV32I43FC](/diagrams/design_archive/RV32I43FC/RV32I43FC.drawio.png)
+
+With 37F, 43F, and 43FC set, it’s time to revise the 47F architecture (formerly 50F).
+
+While porting 47F and adapting the old Memory Controller to the current scheme, a thought came up. 
+The Data Cache’s DC_Write (i.e., write-enable) comes from the Memory Controller. 
+That means the MemC must understand the instruction and assert that action. 
+It feels right that the MemC receive instruction context; if the CU did this instead, the MemC would be reduced to a path-selector that only flips MUXes on STAA misses to route memory-return data—basically just a datapath selector.
+
+> ChoiCube:   
+“So rather than CU driving Data Cache directly, route it through the Memory Controller first?”
+
+This isn’t a trivial wiring tweak; it needs rationale. 
+We’ll eventually use the DDR3 SDRAM on the FPGA. Practically, “CPU-controlled memory” (per core) will be L1/L2; shared L3$ and RAM shouldn’t be driven directly by each core’s CU. A Memory Controller should sit in the middle to manage L3$ and RAM.
+
+I should survey modern CPU practice. 
+As far as I recall, CPUs do have on-die memory controllers.
+In AMD’s modular-die (MCM/chiplet) Zen, the controller is on a separate die; in Intel’s monolithic designs it still exists, just not as a separate die.
+
+[https://en.wikichip.org/wiki/File:zen_block_diagram.svg](https://en.wikichip.org/wiki/File:zen_block_diagram.svg)
+
+Zen’s block diagram shows cache-related datapaths that are worth referencing.  
+Also: I need to submit the Defense Startup Competition application today.
+
+Dinner first. (17:52)
+
+I analyzed cache hierarchy, its controller, and the DRAM controller referencing Ryzen Zen. For rv32s we’ll implement memory as on-SoC for now, and bring up FPGA after pipelining, so we’ll integrate it at the core level. Learned the “uncore” concept.  
+(Not sure if async-read/sync-write RAM infers cleanly on the FPGA—but I’d like rv32s validated on FPGA too.)
+
+-----
+
+After optimizing cache structure with ChoiCube, we ended up removing the Memory Controller.  
+The MUX that selects fetched instructions/data per SAA on hit/miss now keys off cache status lines directly (DC_Status, IC_Status). 
+Since writes to Memory only happen on write-back, CU’s MemRead/MemWrite both go to the Cache. Data Memory’s write-enable is driven by NOT(DC_Status). 
+Early on I assumed we “must” have a Memory Controller, influenced by modern systems, so I kept one in the early cache sketches. 
+As we’ve learned, at our current stage we don’t need it.  
+
+When L3$ or DDR3 SDRAM enters the picture—shared across cores—we’ll introduce a Memory Controller to handle coherence policy. 
+Following Zen, I’ll design an uncore top that bundles display/GUI, DDR interface, USB, etc.
+Cache structure is finalized; time to implement. Targets: RV32I43F_C.R1 and RV32I47NF.
+
+![RV32I43FC_temp](/diagrams/design_archive/RV32I43FC/RV32I43FC_temp.drawio.png)
+
+## RV64I59F Development (50F + RV64I)
+
+### [2025.03.22.]
+
+With the finalized cache structure and the revised roadmap, I completed RV32I43FC.R1 and RV32I47NF, the finished architectures for the rv32s project. 
+I finished them at 14:58 and 15:50, respectively.   
+
+![RV32I43FC.R1](/diagrams/design_archive/RV32I43FC.R1/RV32I43FC.R1.drawio.png)
+![RV32I47NF](/diagrams/design_archive/RV32I47NF/RV32I47NF.drawio.png)
+
+I also wrapped up small signal-placement optimizations. 
+Now I need to draft the initial design for RV64I59, which will kick off the RV64I expansion in the next repository, tentatively named rv64s. 
+I don’t think rv32s will need many more changes, but probably not none—although it feels like we’ve brought out everything, the implementation phase has always brought more revisions and learning than expected, so from here it’s really ChoiCube84’s part.  
+
+I organized the filesystem well in mybox, and I need to update the main GitHub repository (basic_rv32s) to match it. I’ll do that after dinner.  
+
+Only in RV64I59F, which starts the RV64 expansion, will I explicitly annotate bit widths at each signal’s input. Actually, to compare against RV32, it would be good to annotate them in RV32I47NF as well.  
+
+![RV64I59F](/diagrams/design_archive/64s/RV64I59F.drawio.png)
+
+### [2025.03.23.]
+
+Sunday duty day. I opened an operating systems book and studied up to Chapter 2. I covered the OS development process and the basic hardware theories that underpin it. I’ve learned much of this while developing the CPU to this point, but I felt we’ve been building in a way that aligns well with modern computer architecture. And based on that experience, I’m understanding the book much faster.
+
+I studied the basics—types of operating systems and their underlying ideas and solutions: 
+time-sharing OS, multiple processes, and so on. 
+I finished updating and printing the RV64 version of the RV32I CheatSheet. 
+
+An officer kindly offered to check if we can export such files—very grateful. 
+Re-checking against the manual as I read, I saw that most operations don’t produce 64-bit results outright; the word itself is 32 bits, and it’s expanded to 64 bits to fit the data format.   
+We could add this expansion logic to the ALU, but there seem to be two ways to implement it:   
+(1) add an ALUop that includes the bit expansion in the operation (in which case both the ALUcontroller and ALU need changes), or   
+(2) create a 64-bit extender that separately takes opcode and funct3/funct7 and handles the operation as appropriate.
+
+### [2025.03.24.]
+
+Around 23:49, ChoiCube84 reported that Data Cache verification was complete.   
+Starting tomorrow, I should be able to run my own verification.   
+I’ll also bundle the RV64I work-in-progress into a zip on mybox and upload it to goormIDE.   
+Filesystem housekeeping—done for today.
+
+### [2025.03.25.]
+
+I studied operating systems and found a pretty solid paper: “BRISC-V: An Open-Source Architecture Design Space Exploration Toolbox.”   
+It covers single-cycle, 5–7 stage pipelines, cache hierarchies, multicore scaling, and more—basically a platform-level hardware stack.   
+A lot of it aligns with our roadmap, so it looks like a valuable reference. I should dig into it.
+
+And… five months until discharge, plus two months for the paper and personal statement—so three months left to finish that entire roadmap? I’m honestly very unsure.   
+I asked GPT o1 what caliber the BRISC-V work is; it sounds like a lab project or PhD-level effort—i.e., not something you wrap in a few semesters.   
+Maybe getting this far is already something. 
+Even if the architecture was quick to sketch, a huge amount of credit goes to ChoiCube84 for making it real.   
+
+Given we’ve only had ~3 hours a day, the outcome is still respectable.   
+Can this contribute to academia? What do I want the paper to show? Why am I doing this?  
+Because I want into KAIST via the special admissions track; because building CPUs was always the dream; because I want to found something like AMD or Intel.   
+I’m scared, it’s a lot, and I worry—but there’s nothing else I want to do.   
+So I’ll keep going.  
+
+### [2025.03.26.]
+I visited the site linked in the BRISC-V paper and looked around the platform. There’s quite a bit of code I could use as a reference.
+
+### [2025.03.27.]
+Today I unexpectedly met up with the deployed ChoiCube84 during an off-site medical visit and we had a brief meeting.  
+- Data Cache masking issue.   
+In a cold-start state, we issue a store to memory, it gets written into the cache. When flushing that value, if we don’t apply masking, the cache’s initial value can leak through.  
+e.g.) Cache: 0000_0000, Mem: DEAD_BEEF. Cache: AAAA_0000, Mem: DEAD_BEEF -> Cache: 1242_AABE, Mem: AAAA_0000 (Expected AAAA_BEEF)  
+
+Huh, but in that case couldn’t we just standardize the initial values of memory and cache to 0? Do we really need a masking signal on cache flush?  
+Is there any case where we invalidate a line on the Data Cache side…? It would be nice if there were…  
+
+For the RV64 implementation, we decided to implement it by modding the ALU, ALUController, and Instruction Decoder.  
+
+Other changes: in the data area and Register File, the data width must be XLEN (64-bit).  
+In the instruction area, even with RV64, instruction data width remains 32-bit, so no change there.  
+However, because the addressable range in the instruction area expands to 64-bit, the width stays the same but the depth increases.  
+
+Changes to the Instruction Decoder are as follows.  
+- Shift instructions with a “W” suffix operate on words, i.e., 32-bit units (even in RV64, each instruction is 32 bits long, so a word is 32 bits).  
+- Un-suffixed instructions like SLL and SRA that existed in RV32I operate over XLEN, i.e., 64 bits in RV64, so shamt (shift amount) expands to 6 bits.  
+But “W”-suffixed instructions, which still operate on 32 bits as in RV32I, must be limited to a 5-bit rs2.
+
+Since these are newly added in RV64I, one could mistake them as 64-bit operations (I did), but we need the legacy 32-bit operations, so those are marked W, and the rest become XLEN-based as part of the 64-bit expansion.  
+
+- The changes when moving to RV64 are as follows.
+
+   - [R-Type]  
+      - SLL, SRL, SRA: shift up to 64 bits.   
+   The rs2 field increases to 6 bits, and funct7 shrinks to 6 bits   
+   (so “funct7” no longer really lives up to its name).
+
+   - [I-Type]  
+      - SLLI, SRLI, SRAI: shift up to 64 bits.   
+   Treat imm[25:20] as shamt and imm[31:26] as a 6-bit funct7.
+      - LW: Load-word.   
+      Since the data width is now 64 bits, we load 32 bits and sign-extend the upper 32 bits.
+
+- New instructions.
+   - [R-Type]
+      - ADDW, SUBW, SLLW, SRLW, SRAW: 32-bit operations (add, subtract, shifts).  
+      Each computes on 32 bits, then sign-extends the upper 32 bits on writeback.
+
+   - [I-Type]  
+      - ADDIW, SLLIW, SRLIW, SRAIW: 32-bit immediate operations (add, shifts).  
+      ADDIW likewise computes on 32 bits then sign-extends on writeback.   
+      Shifts behave as described above.
+
+      - LWU, LD: load instructions.
+      - LWU — Load Word Unsigned.   
+      Zero-extend the upper 32 bits when loading a 32-bit value.
+      - LD — Load Doubleword. Load a 64-bit value.
+
+That’s it.
+
+Summarizing the hardware changes:
+
+1. Instruction Cache/Memory (instruction area) address width becomes 64-bit.
+
+2. Instruction Decoder:   
+expand rs2 to 6 bits; when it’s a “W” instruction, slice the appropriate bit fields accordingly.
+
+3. imm_gen:   
+64-bit sign-extension (and zero-extension where appropriate, e.g., U-Type).
+
+4. Register File:   
+register data width and RD1/RD2 output widths become 64-bit.
+
+5. CSR File:   
+CSR_RD is 64-bit. Other CSR registers follow their spec—some 32-bit, some 64-bit.   
+(Architecturally, the datapath is 64-bit; output 32-bit values with zero-extension.)
+
+6. ALU Controller:   
+add ALUop codes for W-instructions (RV64-only) that compute on 32 bits then extend to 64 bits.
+
+7. ALU:   
+add operations/handling for W-instruction ALUop codes.
+
+8. Data Cache/Memory (data area) address and data widths become 64-bit.
+
+And one question that came up while sketching the cache structure:  
+When memory ultimately moves to external DRAM, instructions and data reside in a unified memory. 
+How do we distinguish what should go into the Instruction Cache vs. the Data Cache?  
+
+The answer: while memory itself holds both code and data, the OS uses page tables to assign attributes to each page—executable vs. data-only.   
+The MMU consults these attributes; instruction fetches pull from executable pages into the I-cache, while data accesses go through the D-cache.  
+
+Concretely, the OS configures page table entries (PTEs) with execute permissions and read/write rights—e.g., the NX (No-eXecute) bit.   
+Software can thus designate certain regions (like the .text section) as executable and others as data.
+
+Even in “unified memory,” the CPU internally routes instruction fetches and data accesses separately to I-cache and D-cache, based on the pipeline access type and MMU page attributes (e.g., executability).  
+
+“Memory Protection and Page Attributes”  
+“NX bit and executable memory”  
+“Unified memory with separate instruction and data cache”  
+“MMU and cache management”  
+“Cache partitioning based on executable attribute”  
+
+The outline of RV64I59F feels sufficiently fleshed out.   
+From here, to implement the 5-stage pipeline, I’ll adapt the existing RV32I50F-based 5SP draft to the RV32I47NF baseline (the RV64I59F module designs are the same) and design the Hazard Unit.  
+I’ve got duty tomorrow; I’ll continue studying OS then.  
+
+I’m re-placing the pipeline registers for RV64I59F. 
+I was going to reuse RV32I50F_5SPH.R1 as is, but the placement didn’t line up well, so I used it as an opportunity to re-review existing signals.  
+
+I found one mistake: Trap_Controller takes CSR_RD as an input—does that really belong in the Instruction Decode stage? I need to think about it.  
+That’s it for today.
+
+![RV32I43F.R3v2](/diagrams/core_architectures/RV32I43F.R3v2/RV32I43F.R3v2.drawio.png)
+![RV64I59F.R1](/diagrams/design_archive/64s/RV64I59F.R1.drawio.png)
+![250327-RV64I59F_5SP_temp](/diagrams/design_archive/64s/RV64I59F_5SP_temp250327.drawio.png)
+
+### [2025.03.31.]
+
+I finished writing the HCWcloud documentation and returned to CPU development. I’ve nearly completed the pipeline placement for RV64I59F. I’ll probably finish placing all pipeline registers tomorrow morning and spend the remaining time sketching the Hazard Unit.
+
+![250331-RV64I59F_5SP_temp](/diagrams/design_archive/64s/RV64I59F_5SP_temp250331.drawio.png)
+
+### [2025.04.01.]
