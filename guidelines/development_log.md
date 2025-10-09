@@ -1913,3 +1913,32 @@ In the RV32I37F testbench, after passing through the three Store (S-type) instru
 
 That’s the situation, and by changing the default value to DEADBEEF, CC84 verified that was indeed the case.   
 In that case, we either have to devise a method of placing the memory read signal over two cycles, or devise a way to make it work within a single cycle.
+
+### [2025.03.01.]
+I went out on weekend leave today and came back feeling refreshed.
+What I did after returning was signal verification for the modules.
+
+- 25.03.01 Verified Module List
+   - ALU
+   - ALUcon
+   - Branch Logic
+   - Control Unit
+   - Instruction Decoder
+   - Instruction Memory
+   - PC Controller
+   - PC + 4
+   - Program Counter
+
+- Queued Module verification list
+   - BE_Logic
+   - Data_Memory
+   - Immediate_generator
+   - Register File
+
+I said we should take this opportunity to separate the raw_imm signals from the imm signals; if we don’t do it now, we probably won’t.  
+In fact, we still haven’t resolved how to handle the issue in Data_Memory where, presumably due to the limits of a synchronous structure, a read doesn’t output the expected value immediately on the read signal but in the next cycle instead.  
+Still, I do feel we’re making progress as new problems arise and we tackle them one by one. I’m relieved. Let’s keep it up. Always grateful, CC84.  
+
+- As for the cycle issue in DM, we set the direction to remove Memory_Read—that is, the read enable signal.  
+  We plan to switch to logic that always reads in step with the clock without a read enable. However, removing Read Enable can introduce problems, so we’ll look into that and apply countermeasures.  
+  For now, we’ll do it this way to get data output in a single cycle, and we’ll aim to mitigate the resource cost in a later optimization pass.
