@@ -2584,7 +2584,7 @@ I organized the filesystem well in mybox, and I need to update the main GitHub r
 
 Only in RV64I59F, which starts the RV64 expansion, will I explicitly annotate bit widths at each signal’s input. Actually, to compare against RV32, it would be good to annotate them in RV32I47NF as well.  
 
-![RV64I59F](/diagrams/design_archive/64s/RV64I59F.drawio.png)
+![RV64I59F](/diagrams/design_archive/ima_make_rv64/RV64I59F/RV64I59F.drawio.png)
 
 ### [2025.03.23.]
 
@@ -2733,19 +2733,19 @@ I found one mistake: Trap_Controller takes CSR_RD as an input—does that really
 That’s it for today.
 
 ![RV32I43F.R3v2](/diagrams/core_architectures/RV32I43F.R3v2/RV32I43F.R3v2.drawio.png)
-![RV64I59F.R1](/diagrams/design_archive/64s/RV64I59F.R1.drawio.png)
-![250327-RV64I59F_5SP_temp](/diagrams/design_archive/64s/RV64I59F_5SP_temp250327.drawio.png)
+![RV64I59F.R1](/diagrams/design_archive/ima_make_rv64/RV64I59F/RV64I59F.R1.drawio.png)
+![250327-RV64I59F_5SP_temp](/diagrams/design_archive/ima_make_rv64/RV64I59F_5SP/RV64I59F_5SP_temp250327.drawio.png)
 
 ### [2025.03.31.]
 
 I finished writing the HCWcloud documentation and returned to CPU development. I’ve nearly completed the pipeline placement for RV64I59F. I’ll probably finish placing all pipeline registers tomorrow morning and spend the remaining time sketching the Hazard Unit.
 
-![250331-RV64I59F_5SP_temp](/diagrams/design_archive/64s/RV64I59F_5SP_temp250331.drawio.png)
+![250331-RV64I59F_5SP_temp](/diagrams/design_archive/ima_make_rv64/RV64I59F_5SP/RV64I59F_5SP_temp250331.drawio.png)
 
 ### [2025.04.01.]
 11:59 I finished placing all pipeline registers and also optimized the signals.  
 
-![RV64I59F_5SP](/diagrams/design_archive/64s/[250401]RV64I59F_5SP.drawio.png)
+![RV64I59F_5SP](/diagrams/design_archive/ima_make_rv64/RV64I59F_5SP/[250401]RV64I59F_5SP.drawio.png)
 
 Now I need to place the hazard unit… time to start the research.  
 Let me finish organizing what I started on 2025.03.14 about pipelining.  
@@ -2835,7 +2835,7 @@ Added signals to the forwarding unit:
 
 With this, the forwarding implementation is “done” for now… 19:49. I’ll rest a bit and then study control hazards.
 
-![RV64I59F_5SP_Forwarding](/diagrams/design_archive/64s/[250401]RV64I59F_5SPH_FW.drawio.png)
+![RV64I59F_5SP_Forwarding](/diagrams/design_archive/ima_make_rv64/RV64I59F_5SP/[250401]RV64I59F_5SPH_FW.drawio.png)
 
 —Evening study—  
 Now, control hazards.
@@ -2885,11 +2885,11 @@ Branch prediction ⊂ speculation
 
 ### [2025.04.03.]
 
-![RV64I59F_5SP_BP-temp](/diagrams/design_archive/64s/[250403]RV64I59F_5SPH_FW_BP_temp.drawio.png)
+![RV64I59F_5SP_BP-temp](/diagrams/design_archive/ima_make_rv64/RV64I59F_5SP/[250403]RV64I59F_5SPH_FW_BP_temp.drawio.png)
 
 ### [2025.04.04.]
 
-![250404-RV64I59F_5SP_BP-temp](/diagrams/design_archive/64s/[250404]RV64I59F_5SPH_FW_BP_temp.drawio.png)
+![250404-RV64I59F_5SP_BP-temp](/diagrams/design_archive/ima_make_rv64/RV64I59F_5SP/[250404]RV64I59F_5SPH_FW_BP_temp.drawio.png)
 
 > ChoiCube84’s cache-implementation question
 
@@ -3064,7 +3064,8 @@ RV32I43FC-based memory hierarchy behavior
    (2) Set the line’s dirty bit.    
    (3) From the write buffer, output the data+address to memory; update memory   (cache–memory synchronization).
 
------
+### [2025.04.06.]
+
 For a 32-bit ISA with a 2-way set-associative cache, we’ll benchmark and study AMD’s K6-III CPU as closely as possible.
 Branch prediction will also be benchmarked on AMD-based systems.
 
@@ -3088,3 +3089,1292 @@ Meta predictor
 It consists of three 2-bit predictors.
 
 On cold start, they’re all set to Weakly Not Taken (correlation predictors) / Weakly Local (meta predictor).
+
+![250406-RV64I59F-5SPH_FW_BP-temp](/diagrams/design_archive/ima_make_rv64/RV64I59F_5SP/[250406r]RV64I59F_5SPH_FW_BP_temp.drawio.png)
+
+Because Not Taken tends to be more common, and the Local predictor generally has higher correlation prediction performance.  
+But due to time constraints, for the first completion of this project we will use a 2-bit BHT predictor.  
+
+The rest will follow what’s in the book for now, but rather than the internal logic, we now have to consider signals for actual placement inside the CPU.  
+
+To-do. Verify what signals are needed
+We need to flush on mispredict—choose where this flush will be handled
+Think about how to handle the writedone signal.  
+
+If Jump calculation can be done in the Branch Predictor, i.e., in IF, the flush penalty would be reduced—decide how to do this. It feels like it’ll go away once we do OoOE anyway, but for now… we need speed, so we’ll keep the existing scheme: in EX, the Jump signal and ALUresult arrive, and PCC updates NextPC to that address.
+
+That’s it for today. Let’s hurry and finish pipelining, then make the RV64IMA cheat sheet while studying each extension, and study dual-core structure, TLB, virtual memory, OS…
+
+### [2025.04.07.]
+
+Changed Hazard Detector to Hazard Unit and added a Flush signal, adding a flush signal to each pipeline register.  
+For signals that need disambiguation by pipeline stage, I distinguished names like EX.D_RD to indicate which stage a signal is derived in.  
+
+Also, in our Branch Predictor it seems better to use a BTB; if development time looks too delayed, we’ll just have the BP compute the target each time instead.
+
+Let’s outline the Branch Predictor logic assuming the worst case.
+
+Assume we are executing a conditional branch.
+
+- [IF stage]  
+   - The Branch Predictor receives the current PC and opcode.  
+Using the opcode, it confirms it’s a branch instruction and stores the current branch-point PC.  
+
+   - Prediction result is Taken.  
+It sends the “taken” prediction to the PC Controller via B.EST.  
+At the same time, it computes the branch target by adding the input IF.PC and IF.imm, and sends it to the PCC.  
+And it stores that IF.PC.  
+
+   - If a BTB is implemented, it stores the branch target as data with the PC as the tag, in a direct-mapped manner.  
+Then it compares the input PC to the BTB and immediately sends the corresponding branch target to the PCC.
+
+The PCC uses this to set the PC to the branch target and outputs it to PC as NextPC.
+
+- [ID stage]  
+Instruction decode stage
+
+- [EX stage]  
+   - The branch’s actual outcome is computed.  
+   Result is Not Taken.  
+   - EX.BTaken is input to the Branch Predictor.
+
+   - Based on this, the BP detects a misprediction and sends BP_Miss to the Hazard Unit.
+   - At the same time, it hands over the saved prior IF PC + 4 to the PCC.
+
+Simultaneously, the Hazard Unit receives BP_Miss and sends Flush to each pipeline register to invalidate them.
+
+---------- Opposite case ----------
+
+   - Prediction result is Not Taken.
+   - It sends the “not taken” prediction to the PC Controller via B.EST.
+   - And it stores the IF.PC and IF.imm.
+   - The PCC receives that signal and outputs current IF.PC + 4 as NextPC.
+
+In this case, the BTB is not used.
+
+- [ID stage]  
+Instruction decode stage
+
+- [EX stage]  
+   - The branch’s actual outcome is computed.
+   - Result is Taken.
+   - EX.BTaken is input to the Branch Predictor.
+
+   - Based on this, the BP detects a misprediction and sends BP_Miss to the Hazard Unit.
+   - At the same time, it computes the target address from the previously stored IF PC and imm.
+   - It delivers the computed branch target to the PCC.
+   - The PCC outputs that B_Target input as NextPC.
+
+This creates an issue.   
+In the PCC, B_Target was selected as NextPC only when BTaken is true; in this case, even when Not Taken (i.e., BTaken is false), the PCC must be able to output B_Target as NextPC.  
+
+Hmm… right, the original BTaken signal comes from the EX-stage Branch Logic, and the PCC’s BTaken input is now changed to B.EST, i.e., the predicted value, so it’s fine.  
+We can make it 2 bits: 00 = no prediction, 01 = Not Taken, 10 = Taken.
+
+If using a BTB, the BTB is updated.
+
+Simultaneously, the Hazard Unit receives BP_Miss and sends Flush to each pipeline register to invalidate them.
+
+And in this structure we can know in EX whether the branch prediction was right, but then we need space to hold the information of 2 + 1 in-flight instructions (since when reflecting the EX-stage branch result, we need that branch’s PC).  
+We’d need to store imm values corresponding to PC for 3 instructions, and a register implementation would be good for that.  
+
+No—since only on misprediction do we need to compute the next address of the mispredicted instruction, we can just pass PC and imm from the EX-stage pipeline register (where misprediction is known) to the Branch Predictor.  
+That way we don’t need internal storage; we take the information only when needed, compute the address, and output B_Target.
+
+Good—that completes the branch predictor design.  
+
+Let’s summarize what signal interfaces are required, then I need to go eat.
+
+- Branch Predictor (BP)  
+   [Inputs]
+   - CLK - clock
+   - IF.opcode - to check whether it’s a conditional branch
+   - IF.PC - to compute the next PC for Not Taken prediction and give it to the PCC  
+   (also used to update the BTB)
+   - IF.imm - to compute the branch target for Taken prediction and give it to the PCC
+   - EX.PC - needed to compute the branch target or fall-through on misprediction
+   - EX.imm - to compute the target on mispredicted conditional branch
+   - EX.BTaken - to get feedback on whether the prediction matched reality
+
+   [Outputs]
+   - B.EST - to pass branch prediction info to the PCC
+   - B_Target - to pass the predicted branch target or next PC computation result to the PCC
+   - BP_Miss - on misprediction, to tell the Hazard Unit to flush pipeline registers
+
+Likewise, since the PCC is indirectly affected,整理 the logic and signals there too.
+
+- PC Controller (PCC)  
+   [Inputs]
+   - CLK - clock
+   - Trapped - to select NextPC for exceptions or traps
+   - PC_Stall - to stall other instructions until a memory access instruction finishes  
+(It’ll be in MEM stage—if another instruction that doesn’t use MEM is running, can’t we just keep executing it?)
+   - EX.Jump - identifies a jump whose target can be computed in EX, to select that target as NextPC
+   - B.EST - branch prediction info from the Branch Predictor, to select B_Target as NextPC
+
+   - B_Target - branch target or next PC computed by the Branch Predictor
+   - IF.PC - current PC, to output PC+4 as NextPC
+   - IF.T_Target - trap target address (trap is decided in Instruction Fetch)
+   - EX.J_Target - jump target computed in EX
+
+   [Output]
+   - NextPC - next PC according to conditions
+
+Change:   
+Although BP_Miss could be handled in the Branch Predictor, the BP’s logic is fairly uniform in IF.  
+We’ll have Branch Logic in EX compare directly with ALUzero and decide BP_Miss there.  
+Branch Logic determines BTaken, passes it to the Branch Predictor, and at the same time receives EX.B.EST (the pipelined B.EST) from the Branch Predictor to compare with BTaken and judge misprediction.  
+Then Branch Logic outputs BP_Miss to the Hazard Unit.
+
+With that… the branch predictor design is finished. Implementation will come after ChoiCube84 finishes the current RV32I43FC cache implementation… I hope.  
+
+*My head already hurts thinking about debugging. I want to document the Forward Unit at the same level of detail as this Branch Predictor, but ugh… I skipped a meal and we have afternoon assembly—do it afterward.*
+*No—let’s accelerate design and fix it later if needed. This is still a pre-implementation draft, so let’s save time and move on.*
+
+Back to cache issues.   
+Strictly speaking, it resurfaced because of pipelining.  
+In the single-cycle structure, Write Done went into the Control Unit; when CU recognized the end of a cache read/write, it updated PC to NextPC and continued.
+But with an improved cache and higher complexity, on memory access we can have both cache→memory writes and memory→cache writes.  
+Data needed to refresh the cache is inserted as memory returns it, and per the sequence above the cache is refreshed on the second clock.  
+
+Therefore we must not change the instruction at that second step; we need a WriteDone signal from the Cache to recognize this (Cache Ready).  
+Likewise, for memory updates (let’s call the dirty-bit clearing sequence “Cache Clean”), the data to be written to memory is handed from the write buffer, and
+since handing from write buffer to memory happens on the second clock, we need another WriteDone (Memory Ready) to keep instructions from changing before then.
+
+The problem is pipelining these signals…  
+We only know whether to stall at MEM stage—how do we keep things from advancing until then…  
+
+Do we need something extra in the pipeline registers?  
+In any case, since the IF-stage PCC must know that the MEM stage needs delay to stop fetching the next instruction temporarily, in the single-cycle design the Control Unit received WriteDone and decided PC_Stall toward the PCC, but the pipelined Control Unit has timing uniformity in ID. 
+Of course we could receive a MEM-stage signal and forward it to IF, but…  
+
+Oh, right. Send Cache Ready and Memory Ready to the Control Unit, and have the CU always decide PC_Stall and send it to the PCC.  
+The CU itself is combinational logic and not restricted to a specific pipeline stage, so this seems correct without forcing timing uniformity.  
+The PCC’s purpose should remain “selection” of the PC address under conditions. So instead of having the PCC monitor all Write Done signals, let the Control Unit handle that role and just accept a simple PC_Stall.
+
+Pipeline registers keep their values unless updated, so that’s fine.
+
+We should at least “briefly” touch unconditional branches too.  
+For a Jump, to compute the target we must reach EX stage.  
+At that time we send Jump and J_Target to the PCC, and we must simultaneously flush the pre-EX IF and ID stage contents (their pipeline registers).  
+(In OoOE you could keep executing to the end and cache out-of-order results… that’s for later.)  
+
+Flushing should be done by the Hazard Unit; just forward the Jump signal, pipelined up to EX, to the Hazard Unit.
+
+Done… At 14:51 I completed the RV64I59F_5SPH_FW_BP architecture.  
+We’ll surely hit many issues in real implementation and debugging and have to revise, but for now this is the best result.
+I’ll summarize the Forward Unit logic, then skip further pipeline work and look at the next steps.
+
+![RV64I59F_5SPH_FW_BP](/diagrams/design_archive/ima_make_rv64/RV64I59F_5SP/[250407b]RV64I59F_5SPH_FW_BP.drawio.png)
+
+Based on what I wrote on April 1, here’s the final version.
+
+Data hazards—cases where the current instruction must pause until the previous one finishes due to dependencies.  
+Then we need to know inter-instruction dependencies in the pipeline.  
+Since a processor fundamentally operates on registers, we check whether the register destination address from a prior instruction that will be updated is referenced by the current instruction.  
+Compare instruction A’s rd (register destination) with instruction B’s rs1 and rs2 (register sources).  
+Note that x0 is a constant zero; no forwarding needed in that case.  
+You only know rd/rs1/rs2 after instruction fetch when decoding, so at least by ID we can know this.
+
+The ALU uses srcA and srcB for computation, with
+
+srcA: RD1, PC, rs1  
+srcB: RD2, imm, imm(shamt), csrRD  
+
+Seven total possible inputs for operations.  
+Register data may change due to a prior instruction, so we sometimes must wait.
+
+To minimize the waiting, we use forwarding.  
+Before instruction 1’s result is written back to the register file, we forward that value to instruction 2’s ALU src as appropriate.  
+Thus the ALU can use the forwarded data in computation.  
+We add a MUX that selects between the ALUsrc MUX output and the forwarded data.
+Forwarded data sources correspond to the five register writeback sources: D_RD, ALUresult, CSR_RD, imm(LUI), PC+4.  
+
+So forwarding selects the appropriate source according to the instruction type that will write the register.  
+The forwarding unit learns a data hazard occurred via hazardop.  
+Based on that, it forwards the result of the leading instruction A (the data that will ultimately be written to the register file—this will be in EX or MEM) to an appropriate EX-stage ALUsrc for instruction B.
+
+I split it into two modules: a hazard detection unit and a forwarding unit.  
+The hazard detection unit stores rs1.A, rs2.A, rd.A from the Instruction Decode stage, and compares them to rs1.B, rs2.B, rd.B of the following instruction.  
+If rd.A matches either rs1.B or rs2.B, it flags a data hazard and signals hazardop to the forwarding unit.  
+
+Signals needed by the forwarding unit are as follows.
+
+[Inputs]  
+- MEM.imm (LUI) - one of the already-executing sources that will be written back
+- MEM.ALUresult - one of the already-executing sources that will be written back
+
+On April 1 I wrote EX, but thinking it through:   
+the leading instruction (A) moves to MEM while the trailing (B) is in EX and needs the data;  
+what A computed in EX ends up in the MEM pipeline register, so categorizing it as MEM is correct.  
+Also, I prefer sourcing from the pipeline register that will definitely output on the next clock edge, rather than directly from a module, so I corrected it to MEM.
+
+- MEM.CSR_RD - one of the already-executing writeback sources
+- MEM.D_RD -    one of the already-executing writeback sources
+- MEM.PC+4 -    one of the already-executing writeback sources (EX.PC+4)
+
+We’ll confirm during debugging, but the premise here is forwarding from the leading instruction (A) in MEM to the trailing instruction (B) in EX;  
+strictly speaking, that suggests PC+4 should also be produced in MEM, same as the ALUresult comment below.
+So I changed it to MEM.PC+4.
+
+- MEM.opcode - to identify what instruction A in MEM is, and select the correct forwarded data source
+
+[Outputs]
+- aluFW.srcA - data output of the selected forwarded source; goes to aluFW_MUX.A
+- aluFW.srcB - data output of the selected forwarded source; goes to aluFW_MUX.B
+
+- aluFW.A - select control for aluFW_MUX.A.   
+When Hazardop indicates forwarding is needed, based on MEM.opcode, if the kind of data corresponds to ALUsrcA, feed the forwarded data to aluFW.A  
+(RD1, PC, rs1)
+- aluFW.B - select control for aluFW_MUX.B.   
+When Hazardop indicates forwarding is needed, based on MEM.opcode, if the kind of data corresponds to ALUsrcB, feed the forwarded data to aluFW.B  
+(RD2, imm, imm(shamt), CSR_RD)
+
+Now, concretizing the Hazard Unit.  
+[Inputs]
+- BP_Miss - on branch prediction miss, receive from EX.Branch Logic and decide to flush
+- EX.JMP  - receive EX-stage Jump and decide to flush
+- ID.rs1  - record trailing instruction (B)’s rs1 from ID
+- ID.rs2  - record trailing instruction (B)’s rs2 from ID
+- ID.rd   - record leading instruction (A)’s rd from ID
+
+[Outputs]
+- IF/ID.flush   - flush (invalidate/clear/reset) IF/ID pipeline register
+- ID/EX.flush   - flush ID/EX pipeline register
+- EX/MEM.flush  - flush EX/MEM pipeline register
+- MEM/WB.flush  - flush MEM/WB pipeline register
+- Hazardop      - compare recorded rd of A with rs1/rs2 of B.  
+If rd.A equals rs1.B or rs2.B, regard it as a dependency and assert Hazardop to the Forward Unit.
+
+Great. That completes the basic design and logic of the pipeline structure.
+
+Next up: understanding M and A extensions, dual-core scaling, checking the requirements to bring up an OS, GUI and I/O implementation.
+
+That’s it for now. During evening study I need to set priorities among the upcoming extensions and refit the project plan accordingly.
+
+Let’s push harder. (20:40)
+
+— Evening study —
+
+We now have a draft up to 64-bit 5-stage pipelining. Let’s review the roadmap.
+
+RV32I (basic_rv32s)  
+RV32I37F, 43F, 43FC, 47NF (basic RV32I instruction support, cache support, debugger environment instruction support, CSR support)
+
+RV64I  
+RV64I59F, RV64I59F_5SPH (64-bit extension based on RV32I, 5-stage pipeline, branch predictor support, forwarding support)
+
+— up to here —  
+Now the remaining extensions.  
+(a) “M” extension  
+(b) “A” extension  
+(c) OS prep  
+├ Implement RISC-V Privileged Architecture up to Supervisor mode (Machine, User, Supervisor)  
+├ Implement GUI  
+├ Understand GPIO, MMIO  
+├ Implement virtual memory  
+└ Understand and port the RISC-V Linux kernel  
+(d) Dual-core structure  
+(e) Multi-level cache  
+(f) DDR3 SDRAM integrated main memory  
+(g) Understand and implement RVWMO  
+(h) Implement CMO  
+(i) FPGA implementation and validation  
+
+The actual goal is a RISC-V processor that can run an OS…  
+Benchmarking AMD K6-III, dual-core isn’t strictly required just to run an OS…  
+
+Let’s order the work by importance for the shortest-path goal.  
+
+Even on a single core, atomic operations are needed for concurrency control such as interrupts and deadlock avoidance, so the A extension is necessary.
+
+1. “A” extension
+2. “M” extension
+3. OS preparation  
+   ├ Implement Supervisor Privileged ISA (Supervisor mode, User mode)  
+   ├ Trap/Exception/Interrupt handling, CSR, timer, interrupt controller (PLIC/CLINT)  
+   ├ Sv39, Sv48; virtual memory, MMU  
+   ├ GPIO, MMIO, basic device access  
+   └ RISC-V Linux kernel study and port (kernel config, Device Tree, boot loader, OpenSBI)  
+4. DDR3 SDRAM integrated main memory  
+5. FPGA implementation and validation  
+6. GUI implementation
+
+The rest—multi-level cache, dual-core, RVWMO, CMO—will be left as later tasks.
+GUI will be tight, too. Possible if time allows…
+
+From here, add the MA extensions and prepare for the OS.  
+We already bought the FPGA board and it arrived, but using it will be later.  
+Maybe in late April we’ll have the MA design and a rough handle on it?  
+Whether to finish on FPGA or bring up the OS and then port to FPGA…  
+
+Either way, let’s do this well.  
+That’s all for today.
+
+![250407c-RV64I59F_5SPH_FW_BP](/diagrams/design_archive/ima_make_rv64/RV64I59F_5SP/[250407c]RV64I59F_5SPH_FW_BP.drawio.png)
+
+### [2025.04.10.]
+
+Came to IDEC for Synopsys VCS/Verdi training. VCS is king.  
+Up to now I had to manually verify each datapath, and whenever a related structure changed, I had to redo everything from the beginning, step by step. Now, instead, I can simply feed a Verilog file that describes the module and its signals, and do both simulation and debugging with Verdi.  
+Wow!
+
+For now, I’m continuing to attend. The first session is over, and I also made separate lecture notes.
+
+### [2025.04.11.]
+
+After the VCS lecture ended, I wanted to load the current CPU source into VCS/Verdi and try porting schematic/debug flows.  
+Honestly, I had no idea how to start, so I asked the Synopsys instructor, and they helped.  
+
+A few things I learned: 
+depending on the compiler/tool in use, the source layout has to change a bit.
+Up to now we used **Icarus Verilog (iverilog)** and ran everything—including tb—at once from the folder via commands, but it seems VCS uses different path specifications for `include`.  
+Because of this, compile errors kept popping up; we looked into it together, and it took a while to realize that was the issue.  
+
+I prepared a combined list of module files and tb files, but the porting work was more involved than expected.   
+With iverilog, the latest version compiled clean (syntax etc.), but after porting to VCS—once the file path problems were fixed—many hard-to-read errors started showing up.  
+
+Of course, iverilog is a fairly used compiler, and we even verified correct operation via a VCD file, so there’s likely no major problem in the code itself; still, the VCS port will probably take considerable time.  
+It’s worth it, though. Tasks I used to do manually can be automated, and verification/debugging can be done in a much more intuitive environment—this is a very powerful tool.  
+
+I think the person was a Synopsys employee; they seemed to look quite favorably on the ongoing project.  
+They said they once designed a CPU based on a separate ISA proposed in an old computer architecture textbook—named something like “MOSA/MOA”?  
+It’s not exactly the same target as our general-purpose RISC-V processor, but they were encouraging.  
+Ideally, I wanted to do more of the porting at the KAIST N26 IDEC lab and even bring up schematic generation there, but due to time pressure, I had to stop there.
+A truly meaningful and beneficial lecture.  
+
+### [2025.04.12.]
+
+Returned from leave… Installed Fedora on the local system for VCS, and set up a dual-OS with Windows.  
+I wanted to do everything—including FPGA—on Fedora alone if possible, but the Xilinx Vivado toolchain is optimized for Windows, so I chose dual OS.  
+One mistake: I didn’t account for how much space the dev tools would consume and configured only 256 GB of local storage.  
+Splitting into two OSes at 128 GB each already felt tight, and I found that Xilinx tool installs hit a lot of space limits.  
+On the plus side, it forced me to check every irrelevant option and install only the dev kits I truly need…  
+
+But a problem emerged: even with a local system, I might not be able to run VCS on base.  
+I asked my professor; the university provides Synopsys licenses, but they can only be used on campus.  
+I tried to sign up for SolvNet just to install VCS, but even that requires a separate ID key tied to licensing; the professor said it would be hard to sort out right now.  
+So for now… VCS usage will be on hold. I’ve heard POSTECH supports VPN for license access, so it might be possible—I'll ask **ChoiCube84**.  
+
+Let’s list what to do starting tomorrow.  
+
+1. Try initial FPGA verification setup
+2. Study the “A” extension
+3. Study virtual memory  
+   (Otherwise same as the 25.04.07 roadmap)
+
+I had finished installing Xilinx before heading back from leave, but the dual-boot got messed up about an hour before departure; I finally finished driver setup around 22:40.  
+The USB modem claims 150 Mbps, but in practice I’m lucky to get 5 MB/s… the internet suddenly tanked and speeds are weird.  
+I’ll just leave the Xilinx install running and come back in the morning.  
+
+That’s it for today.
+
+### [2025.04.13.]
+
+Looked into the “A” extension.
+
+These are Zaamo AMO instructions; contrary to my initial worries, the A extension looks fairly approachable. It feels a bit like SIMD—multiple actions bundled into one instruction.  
+
+Commonly, it performs **R[rd] <- R[rs1]**, and also
+**R[rs1] <- Binary Operated R[rs1] and R[rs2]**.  
+We can find clues to the Binary Operation by looking at Zaamo instructions:  
+
+amo**swap**.W/D  
+amo**add**.W/D  
+amo**and**.W/D  
+amo**or**.W/D  
+amo**xor**.W/D  
+amo**max[u]**.W/D  
+amo**min[u]**.W/D  
+
+In other words, each instruction performs one of nine binary ops depending on the specific mnemonic: **swap, ADD, AND, OR, XOR, MAX, MAX_unsigned, MIN, MIN_unsigned**.
+
+For **AMOADD.W**, used as `AMOADD.W rd, rs2, rs1`, the behavior is:
+
+**R[rd] <- M[rs1]**  
+**M[rs1] <- M[rs1] + R[rs2]**
+
+First, **M[rs1]** is written into **R[rd]**; then **M[rs1]** is updated with (original **M[rs1]** + **R[rs2]**).
+
+On RV64, double-word (64-bit) is supported.  
+Also on RV64, 32-bit AMO instructions (word-size) always sign-extend the value written to **R[rd]** (the original **M[rs1]**), and ignore the upper 32 bits of the **R[rs2]** operand (the value combined with **M[rs1]** by the binary op).
+
+Two things I still don’t understand:
+
+1. Why these AMO operations are important when delegating roles in a multi-core architecture.
+2. What **Load-Reserved / Store-Conditional** precisely mean.
+
+### [2025.04.14.]
+
+Further study on the “A” extension.
+
+The A extension’s instructions are divided into two categories: Zalrsc and Zaamo.
+
+- Zalrsc = Z, Atomic; Load-Reserved, Store-Conditional.
+- Zaamo = Z, Atomic; Atomic Memory Operation.
+
+In the Zalrsc subset, we see the reservation mechanism that underlies the A extension.  
+It is divided into **LR.W** and **SC.W** (RV64 also supports double-word: **LR.D**, **SC.D**).
+
+The execution of Load-Reserved is as follows.
+
+1. Read a word from the specified memory address while marking that address as **reserved**.
+2. **R[rd] <- M[rs1]**
+3. At the same time, record information about the address marked reserved in step 1, and track whether that address is modified by another hart until an **SC.W** appears.
+
+Conclusion: **R[rd] = M[rs1]**, and the address in **rs1** is marked “reserved.”
+
+-----
+
+The execution of Store-Conditional is as follows.
+
+Write a new value to the address previously reserved by **LR.W**.
+
+1. Perform **M[rs1] <- R[rs2]**.  
+   If the reservation since **LR.W** has **not** been broken (i.e., the data at that address has not been modified by another hart), the store **succeeds**.
+   If the reservation **has** been broken (i.e., the data at that address was modified/updated by another hart), the store **fails**.  
+   - 1.1 On success: **R[rd] <- 0**  
+   - 1.2 On failure: **R[rd] <- 1** (in this case, no actual write to memory occurs).
+
+To support reservations, we usually implement a register that holds the reserved address, or we can integrate with the cache and track at the cache-line granularity.
+
+Conclusion:
+
+1. Validate the reservation.
+   - 1.1 If valid: **M[rs1] = R[rs2]**, **R[rd] = 0**
+   - 1.2 If invalid: **R[rd] = 1**
+
+-----
+
+The “A” extension instructions use bits **26:25** as **aq** and **rl**.  
+**aq (acquire)**, **rl (release)**. These two bits are used to control **memory ordering**.
+
+An instruction with **aq** set must ensure the hart waits until that instruction completes before subsequent instructions can proceed.  
+
+An instruction with **rl** set must ensure the hart waits until all prior memory accesses complete **before** executing the **rl**-set instruction.  
+
+Functionally, I already wait two cycles when reading from memory and hold the instruction until the read-done signal arrives; this resembles the behavior required when **aq** is set (continue to hold until the **aq**-marked instruction completes). 
+I can implement **aq** in a similar fashion.  
+
+-----
+
+#### Meeting with ChoiCube84 on data cache–memory structure
+
+1. > shouldn’t memory be larger than the cache? 
+
+   Yes.
+
+On our FPGA board we’ll use 512 MB DDR3 SDRAM, but implementing with 1 MB for now is fine.
+Regardless of capacity, let’s just make memory larger than the cache for now.
+
+2. > What about the address scheme?  
+
+   For now, let’s size it to the current memory capacity only.
+
+We’ll specify this in the architecture specification, and once the Exception Detector is built, we should raise a dedicated exception.  
+I’ll research mechanisms from CPUs like **AMD K6-III** as references—they likely considered this too.  
+
+Conclusion: for now, use only as many address bits as needed for the current memory size.  
+
+3. > Cache–memory block-granularity communication?
+   
+   We should do it.
+
+Memory → Cache: **block** granularity  
+Cache → WriteBuffer → Memory: **word** granularity  
+For now, cache–memory communication should be **block**-based.  
+
+### [2025.04.15.]
+
+#### ChoiChube84 Issue
+
+1. When running vvp in the Data Memory testbench, it freezes and dies.  
+   KHWL: Likely because we set memory to 512 MB. Try reducing to 1 MB and run again.  
+   CC84: More likely because we widened the output from 31:0 to 255:0.  
+   ----For now, I was told to reduce to 1 MB----  
+   CC84: Reducing to 1 MB worked!  
+   KHWL: Nice.  
+
+2. What sequence does our memory need to fetch 32 B of data from SDR?  
+   KHWL: SDRAM can output per word. Currently it’s a 32-bit word; to get 32 B, we need 8 outputs.  
+   CC84: If that’s the case, why not just make one block 32-bit? This seems very inefficient.  
+   KHWL: 32-bit (4 bytes) -> 32 bytes -> 8 cycles is correct, but we load adjacent data per locality of reference, so it’s still meaningful.  
+
+   If the program is fixed (embedded, ASIC), total execution time is the same, so such a structure might be undesirable; but for general-purpose workloads running many different programs, that complaint doesn’t matter much.  
+   Total execution time differs by program, and how much locality each program exploits also differs.  
+
+   Bluntly, if a bank can hold 8 items vs. only 1, the latter must be refreshed every time, whereas the former keeps hitting in the cache after one load.
+
+3. Then shouldn’t we increase ways?  
+   KHWL: Heh… true, but for now we benchmarked AMD K6-III and set L1$ to 2-way. We’ll increase it at L2 with the unified cache.  
+   Of course more ways and capacity are better, but beyond cost/area issues, our purpose here is academic; following a suitable reference is sufficient.
+
+Today my workday ended around 19:30, so I couldn’t study much.  
+Still, we had a meaningful meeting, and writing the logs I hadn’t yet written about the A extension let me review once more.  
+
+To do tomorrow: summarize the A extension’s Zaamo subset and look at additional A-extension instructions.  
+Study virtual memory from the computer architecture text / paging.  
+Look into Sv48 virtual memory.  
+
+Current roadmap: try to execute as much as possible by June.  
+After FPGA porting training at the end of May, start FPGA porting in early June based on the design as of that time.  
+
+Isn’t running an OS more important, really?   
+Yes, but the bigger prerequisite is ensuring the design is actually implementable, not just logical. That’s why I set it up this way. Whatever happens, completing the project matters most—producing results to achieve the goal.
+
+#### Remaining roadmap:
+
+~ RV32I43FC in progress (implementing cache and memory structure)  
+~ RV32I47NF in progress (Exception Detector, Trap Controller, Debug Interface design done, pending implementation)  
+~ RV64 extension (design done, pending implementation)  
+~ 5-stage pipeline extension (design done, pending implementation)  
+① “A” extension (design in progress)  
+② “M” extension (design done, no changes; implementation should not require long delay)  
+
+③ OS preparation  
+├ Implement Supervisor-Privileged ISA (Supervisor mode, User mode)  
+├ Trap/Exception/Interrupt handling, CSR, timer, interrupt controller (PLIC/CLINT)  
+├ Sv39, Sv48; virtual memory, MMU (studying)  
+├ GPIO, MMIO, basic device access  
+└ Understand and port RISC-V Linux Kernel (kernel config, Device Tree, boot loader, OpenSBI, )
+
+④ DDR3 SDRAM integrated main memory implementation  
+⑤ FPGA implementation and verification  
+⑥ GUI implementation  
+
+Plan is to move straight to backend after completing RV64IMA109 plus virtual memory and MMIO. Beyond this, implementation time grows too long, and the next stages require studying several other areas.  
+
+That’s it for today.
+
+### [2025.04.16.]
+In the morning, I looked into the extensions derived from the A extension: Zawrs (Z; Atomic, Wait-on-Reservation-Set instructions) and Zacas (Z; Atomic, Compare And Swap).  
+Zawrs is an extension that provides instructions for entering a low-power (wait-like) mode used in polling loops, and Zacas is an extension that supports conditional swap instructions up to quadword (128-bit).  
+Zawrs is good just to be aware of, and I should carefully read the Zacas manual once.
+
+In the afternoon, our unit went on an outing to Heyri Village.  
+I brought the “Computer Organization and Design” book to read in the car, and since we stayed at a cafe for a long time, I was able to spend some really good time.  
+
+I got a rough sense of virtual memory: it feels like a kind of cache for managing and accessing program memory.  
+The difference is that a cache is a direct physical access optimization for instructions/data, while virtual paging/virtual memory creates something cache-like so that programs can run more simply and smoothly at higher performance under hardware and the OS. 
+And with virtual paging, we also use caches together.
+
+This is a first pass, so I didn’t understand everything precisely, but I feel like I’ll understand more as I go.  
+TLB, etc.—I’ll study that part later; first I’ll focus on implementing the A extension.
+
+Once evening study time starts, I need to check whether the M extension can be implemented in the current RV64I59F design without structural changes and lock it in.  
+And then start implementing the A extension.
+
+Let’s do this. That’s it for now.
+
+--Evening self-study time--
+
+Okay. Let’s check the M extension first.
+
+M instructions..  
+[R-Type]  
+mul, mulh, mulhsu, mulhu, div, divu, dviuw, remw, remuw  
+
+It seems only R-Type exists. Let’s write MNEMONICS for each instruction.  
+
+XLEN-bit × XLEN-bit  
+MUL : R[rd] = (R[rs1] × R[rs2]) [XLEN-1:0]  
+MULH : R[rd] = (R[rs1] × R[rs2]) [2×XLEN-1:XLEN] (Signed × Signed)  
+MULHU : R[rd] = (R[rs1] × R[rs2]) [2×XLEN-1:XLEN] (Unsigned × Unsigned)  
+MULHSU : R[rd] = (R[rs1] × R[rs2]) [2×XLEN-1:XLEN] (Signed × Unsigned)  
+MULW : R, {R × R} [31:0]  
+
+DIV : R[rd] = R[rs1] ÷ R[rs2] (Signed)  
+DIVU : R[rd] = R[rs1] ÷ R[rs2] (Unsigned)  
+DIVW (RV64) : R ÷ R  
+└ Write the 32-bit result to R[rd] sign-extended to 64-bit.  
+DIVUW (RV64) : R ÷ R  
+└ Write the 32-bit result to R[rd] zero-extended to 64-bit.
+
+REM is the modulo operation, A % B = C.  
+It is the remainder C when A is divided by B.  
+
+REM : R[rd] = R[rs1] % R[rs2] (Signed)  
+REMU : R[rd] = R[rs1] % R[rs2] (Unsigned)  
+REMW (RV64) : R, {R % R} [31:0]  
+└ Write the 32-bit result to R[rd] sign-extended to 64-bit.  
+REMUW (RV64) : R % R} [31:0]  
+└ Write the 32-bit result to R[rd] zero-extended to 64-bit.
+
+Overall, it looks like I only need to change the ALU code itself and adjust ALUops in the ALU Controller.  
+The M extension can be added to the RV64I59F design without structural changes.
+
+Good, now let’s design the “A” extension.
+
+------ A Extension MNEMONICS ------
+
+Zalrsc Extension: Z, Atomic; Load-Reserved / Store-Conditional Extension  
+LR.W : R[rd] = M[R[rs1]],  
+Set a reservation on the value in R[rs1] (which is the memory address used in step 1).  
+
+SC.W :  
+if Reservation is valid, M[R[rs1]] = R[rs2], R[rd] = 0  
+if Reservation is invalid, R[rd] = 1  
+
+Zaamo Extension: Z, Atomic; Atomic Memory Operation  
+
+AMOSWAP.W : R[rd] = M[R[rs1]], M[R[rs1]] = R[rs2]  
+(Write the original M[R[rs1]] to R[rd], then write rs2 to memory (swap))  
+
+AMOADD.W : R[rd] = M[R[rs1]], M[R[rs1]] = M[R[rs1]] + R[rs2]  
+(Write the original M[R[rs1]] to R[rd], then write (original + rs2) to memory.)  
+
+AMOXOR.W : R[rd] = M[R[rs1]], M[R[rs1]] = M[R[rs1]] ^ R[rs2]  
+AMOAND.W : R[rd] = M[R[rs1]], M[R[rs1]] = M[R[rs1]] & R[rs2]  
+AMOOR.W : R[rd] = M[R[rs1]], M[R[rs1]] = M[R[rs1]] | R[rs2]  
+
+┌ Comparisons are performed as signed.  
+AMOMIN.W : R[rd] = M[R[rs1]],  
+if (M[R[rs1]] < R[rs2]), M[R[rs1]] = M[R[rs1]].  
+else M[R[rs1]] = R[rs2]  
+
+┌ Comparisons are performed as signed.  
+AMOMAX.W : R[rd] = M[R[rs1]],  
+if (M[R[rs1]] > R[rs2]), M[R[rs1]] = M[R[rs1]].  
+else M[R[rs1]] = R[rs2]  
+
+AMOMINU.W : R[rd] = M[R[rs1]],  
+if ((Unsigned) M[R[rs1]] < (Unsigned) R[rs2]), M[R[rs1]] = M[R[rs1]].  
+else M[R[rs1]] = R[rs2]  
+
+AMOMAXU.W : R[rd] = M[R[rs1]],  
+if ((Unsigned) M[R[rs1]] > (Unsigned) R[rs2]), M[R[rs1]] = M[R[rs1]].  
+else M[R[rs1]] = R[rs2]  
+
+That’s it for today. I need to think about this more. Ah, I’m on duty tomorrow… hmm… I should study virtual paging.
+
+### [2025.04.17.]
+I’ll record what I studied and organized during duty.
+
+**Virtual Memory**
+
+Reasons to use virtual memory
+
+1. Effective memory sharing when running multiple programs simultaneously  
+   -> Removes the constraint of having to program within the limited size of main memory.
+
+Assuming there are VMs that use shared memory.  
+A virtual machine must guarantee protection so that each process is protected.  
+This means each program must be guaranteed R/W (Read/Write) only within the portion of main memory allocated to it.  
+
+Virtual memory translates a program’s address space into a physical address.  
+
+-> VMs that share memory change dynamically while the VMs are running.  
+--> Dynamic interaction: each program must be compiled in its own address space.  
+---> There must be a separate memory region accessible only by that program.  
+
+= The translation process can protect one program’s address space from other virtual machines.
+
+2. Allows user programs to be larger than main memory.  
+   -> Virtual memory automatically manages a two-level memory hierarchy consisting of main memory and secondary storage.
+
+It has properties similar to a cache, but the terminology is distinguished.  
+
+[Memory block]: the unit/format that communicates with memory  
+Cache = cache line, cache block  
+Virtual memory = page  
+
+A failure in virtual memory is called a page fault.
+
+A processor that supports virtual memory generates a virtual address.  
+It then translates this into a physical address; this is called address mapping or address translation.  
+It is commonly called address translation (e.g., Translation Lookaside Buffer; TLB).
+
+This “physical address” is the address used to access main memory by a combination of HW and SW.  
+ 
+-----
+
+Virtual memory – relocation: simplifies loading of programs to be executed.  
+It maps the virtual addresses used by the program to different physical addresses “before” they are used to access memory.  
+-> Allows a program to be loaded at any location in main memory.
+
+In modern systems, programs are relocated as a set of fixed-size blocks (pages).  
+= There is no need to find contiguous blocks in memory to allocate a program; the OS only needs to ensure there are enough pages in main memory.
+
+### [2025.04.18.]
+
+Changes to cache structure.
+
+Data read, cache miss, and dirty bit cases.
+
+The requested data are fetched from memory according to SAA, but to update the cache, the data output from memory must still continue.  
+Since the address used for the cache update must also continue to be driven, a PC_Stall is required.
+
+Update the dirty bit at CLK1, and at CLK2 update that cleaned block in the cache with the data fetched from data memory at CLK1.  
+In other words, PC_Stall must persist until all cache writes complete.  
+Cache writes finish at CLK2. Since the cache is the first to know that writing is complete, a Cache Write_Done signal was added.  
+
+In RV32I43FC, content about the Write Buffer was missing from the diagram, so I revised to RV32I43FC.R2 and added the Write Buffer.  
+
+![RV32I43FC.R2](/diagrams/design_archive/RV32I43FC.R2/RV32I43FC.R2.drawio.png)
+
+At the same time, I also added the DC_WriteDone signal to the Data Cache as noted above.  
+
+Reflected this in RV64I59F_5SP as well.  
+![RV64I59F_5SP.R2](/diagrams/design_archive/ima_make_rv64/RV64I59F_5SP/RV64I59F_5SP.R2.drawio.png)
+
+While looking into the A extension,,
+
+For instructions that already take more than two cycles, I had designed it so that the pipeline stops via Ready signals from the Control Unit and the Cache or Memory,
+and waits without updating instructions until the current memory operation is completely finished.  
+
+AMO operations are aligned with this focus; without a multi-core structure, there doesn’t seem to be anything more complex to implement.  
+
+It seems I can keep most of the existing structure, but the problem is Zalrsc rather than Zaamo.  
+I still don’t fully understand this “reservation.”  
+I understand the actions required when setting the aq and rl bits for each instruction execution, but LR.W and SC.W…  
+
+To do tomorrow: study reservations.
+
+### [2025.04.22.]  
+I was on duty. I had off-base leave on the 19th and 20th for a Jeet Kune Do seminar, and on the 21st I was on duty again.  
+During duty I originally planned to study virtual memory further, but because of a knee fracture my energy was pretty drained, so I worked on the A-extension design/implementation.  
+
+I started with the easier-to-understand Zaamo subset.  
+
+Additional design items for Zaamo
+
+1. There is no datapath where ALUresult is driven to Memory.  
+   Most Zaamo instructions follow this form:  
+   R[rd] ← M[R[rs1]]  
+   M[R[rs1]] ← M[R[rs1]] bit operation with R[rs2]
+
+In this case, the bit operation is performed in the ALU. 
+RD2 (the value of R[rs2]) sits on ALUsrcB, but the operand M[R[rs1]] that must be combined with it is not on ALUsrcA. 
+Therefore, expand the existing ALUsrcA MUX to 3 bits so it can select among RD1, PC, rs1, and D_RD (Data area Read Data).  
+
+2. ALUresult must be routable to the Data area’s Data Cache input DC_WD (Data Cache Write Data).  
+   Previously, ALUresult was only used as an address on the data side, but in the A extension ALUresult is also used as data to be written.  
+   DC_WD’s inputs were chosen between two sources—input from DM for write-back and input from the Register File—selected based on cache hit/miss.  
+   Given the added requirement above, either expand that MUX to 2 bits so CU can select the input, or keep the existing MUX and add one more MUX after it (two 1-bit MUXes total), letting the CU choose between ALUresult and the existing WB/RegF value.
+
+Item 1 applied. Item 2 applied using option 2 (two 1-bit MUXes).  
+One concern: with option 2, could there be a data conflict during WriteBack?  
+Let’s do a thought experiment.  
+
+AMOADD.W  
+R[rd] = M[R[rs1]]  
+M[R[rs1]] = M[R[rs1]] + R[rs2]  
+
+[Control signals]  
+MemWrite = 1.  
+RegWrite = 1.  
+Atomic = 1.  
+
+Now, suppose the address M[R[rs1]] misses; we must fetch from Data Memory.  
+Due to SAA, M[R[rs1]] is returned first. At the same time, DM_RD must feed the DC_WD input.  
+The WB/Reg MUX selects WB on a miss, so DM_RD is chosen. Since this is an atomic operation, the WB/Reg / Atomic MUX selects Atomic.  
+
+Wait. Write-back is impossible here. In other words, on a cache miss the cache will be updated in the next cycle, so the Atomic MUX must always be set to WB/Reg when there’s a cache miss…  
+Therefore, the CU must be able to determine cache hit/miss, or DC_WD must always select WB/Reg when DC_Ready is Not Ready.  
+Miss = Not Ready. For cache M2C updates we wait for the Write_Done signal, so a miss implies Not Ready.  
+
+With this, on a cache miss we naturally PC_Stall until the cache update completes.  
+
+CLK 1. R[rd] = M[R[rs1]]  
+
+Data Cache lookup finds no M[R[rs1]].  
+Cache miss. Begin cache update sequence. Assert MemWrite = 1.  
+
+[if Clean]  
+DC_Ready : not ready.
+
+- SAA: Data Memory outputs M[R[rs1]]   
+   - → written to R[rd].
+   - M[R[rs1]] = M[R[rs1]] + R[rs2]   
+   executed simultaneously output to the Data Cache as well.   
+   Store that data at the current DC_Addr input, i.e., R[rs1].
+
+-----
+
+[if Dirty]  
+DC_Ready : not ready → PC_Stall  
+
+SAA return;   
+- Data Memory outputs M[R[rs1]] → written to R[rd].   
+- M[R[rs1]] = M[R[rs1]] + R[rs2], MemWrite = 1  
+Store the cache’s dirty data block with its address into the Write Buffer.   
+At the same time… compute M[R[rs1]] op R[rs2].  
+Clear the cache dirty bit.  
+
+CLK 2. Since CLK1 was PC_Stall, DC_Addr is still the same address.  
+Overwrite the cleaned cache block with the memory block.  
+Write the address/data saved in the Write Buffer back to memory.  
+
+![RV32I47NF.R1](/diagrams/design_archive/RV32I47NF.R1/RV32I47NF.R1.drawio.png)
+![RV64I59F.R2](/diagrams/design_archive/ima_make_rv64/RV64I59F/RV64I59F.R2.drawio.png)
+
+### [2025.04.23.]
+
+![RV64I59F_Zaamo_temp](/diagrams/design_archive/ima_make_rv64/RV64I59F/RV64I59F_Zaamo_temp.drawio.png)
+
+Ah… what should I do about the A extension.  
+During work hours I significantly improved my understanding of virtual memory/paging. I don’t fully grasp everything including the TLB yet, but I think I’ve learned the basics.  
+If the buffer between registers and memory is the cache, then the buffer between cache and memory/secondary storage seems to be virtual memory; pages.  
+A fully associative, cache-like structure… the virtual page number is used like a tag, and the physical page number is the corresponding data. Separately there is a page offset…  
+The page offset determines the number and size of pages. Number of page-number bits × page offset = the size of that paged memory (virtual page bits → virtual paging size; physical page bits → physical memory size).  
+Therefore, to implement a TLB or virtual memory, I think we need to fix the physical memory size itself.  
+
+One TLB miss handling method is to hand control over to the OS, and supporting virtual memory implies that in addition to main memory, secondary storage must also exist.  
+So, for some reason I had thought implementing only the main memory DDR3 SDRAM would suffice, but that’s not it—we have to consider external storage as well…  
+
+There’s more to do than I expected… it feels like the more I dig, the more it grows…
+
+The issue I was worrying about yesterday can probably be solved by implementing an FSM.  
+Let’s run the thought experiment again.
+
+Assume the worst case: cache miss with block dirty.  
+The instruction is Zaamo; AMOADD.W  
+
+AMOADD.W  
+R[rd] = M[R[rs1]]  
+M[R[rs1]] = M[R[rs1]] + R[rs2]  
+
+[Control signals]  
+MemWrite = 1.  
+RegWrite = 1.  
+Atomic = 1.  
+
+**CLK1**
+I need to do M[R[rs1]] into R[rd].  
+SAA: Query Data Cache and Memory; the address value is driven on DC_Addr and DM_Addr.  
+Cache index, miss.  
+The Memory WB/ALUresult MUX switches to ALUresult on the cache-miss signal, and the memory read at that address begins.  
+
+The memory identifies the data at that address and outputs it (DM_RD).  
+The output DM_RD is driven to the register’s RF_WD and stored into R[rd], which is currently on the register’s RF_WA.  
+R[rd] = M[R[rs1]] complete.  
+
+At the same time, since the output DM_RD must also update the Data Cache, it is being driven to DC_WD.  
+At the first MUX (WB/Reg MUX), WB is selected via the cache-miss signal and goes to the second MUX.  
+
+> “At the second MUX, since this is Atomic, it selects ALUresult instead of WB.”  
+
+That’s the problem.  
+
+Because it’s a cache miss, WB must take precedence over Atomic so that WB occurs.
+
+Ah… I need to write more… time out… this is it for evening study today.
+
+### [2025.04.24.]
+
+I thought about it during work hours. A way to solve the issue.  
+At the second MUX, Atomic control is active, so WB is not selected.  
+
+On cache miss, switch DC_Ready to not ready and have the CU receive it.  
+In the CU, via an always conditional or otherwise, allow the atomic operator to execute only when DC is ready.  
+That solves it.
+
+Assuming this fix, continuing the thought experiment proceeds as follows.  
+
+-----
+At the first MUX (WB/Reg MUX), WB is selected via the cache-miss signal and goes to the second MUX.  
+
+Cache miss sets DC_not ready, so the Control Unit issues PC_Stall and we advance to the next clock cycle.
+
+Since Data Cache is not ready, Atomic = 0 (inactive). 
+Therefore, the second MUX selects WB instead of ALUresult, and the memory’s DM_RD is being driven into DC_WD.
+
+However, since we assumed dirty, the Cache stores the dirty data block together with that block’s address into the Write Buffer.  
+The cache’s dirty bit is cleared, but since it’s not yet updated, we must proceed to the next cycle.
+
+**CLK2**
+Due to PC_Stall, the same-context instruction is executing.  
+The memory’s DM_RD is overwritten into the cleaned cache block.  
+The address/data saved at CLK1 in the WriteBuffer are driven as WB_Data… the DM_Addr MUX needs to select WB, but should DC_Status still be Miss in this CLK2?  
+This doesn’t seem to be about handling only the ‘current’ Hit/Miss… moreover, in CLK2 we need M[R[rs1]] = M[R[rs1]] + R[rs2], so it needs to be a cache Hit…  
+This likely needs adjustment. The select signal of the DM_Addr MUX should probably be handled in the CU as if recognizing the cache FSM. Here, Data Memory should have WriteEnable asserted.
+
+Anyway.
+
+Cache update complete, memory write-back complete.  
+At the same time we need to do M[R[rs1]] = M[R[rs1]] + R[rs2]… I’ll probably need to check this in simulation.  
+
+Usually after a write, the waveform clearly shows it from the next cycle; if this can be tuned, the atomic operation ends in CLK2, but in the worst case due to the cache structure it might slip to CLK3.
+
+(Perhaps CLK3)  
+M[R[rs1]] = M[R[rs1]] + R[rs2].  
+Having gone through CLK1–2, the cache is updated, so it will be a Hit for sure.  
+By driving the RD1 value (bypassed from the ALU) to DC_Addr, the cache outputs the memory data at that R[rs1] address to DC_RD, which then reaches the ALU as D_RD???
+That means it passes through the ALU twice???
+
+Then to drive R[rs1] as the address to DC_Addr, instead of bypassing through the ALU, we have no choice but to make a 2-to-1; 1-bit MUX selecting ALUresult vs. RD1.
+Only then can the operation be completed in a single cycle… and the select signal for that MUX should likewise be handled by the CU.  
+It can be controlled by the same Atomic signal. 
+It will be inactive during Write Back anyway, so no issue, and when DC is Ready, any operation structurally should be fine…
+
+That’s it for today. I updated the organized logic notes and additional control details on the Telegram channel and the Discord server.
+
+![RV64IM90_Zaamo](/diagrams/design_archive/ima_make_rv64/RV64IMA94F/[250424]RV64IM90_Zaamo.drawio.png)
+
+### [2025.04.25.]
+
+Things left to do now   
+aq, rl bit support    
+Zalrsc extension support  
+
+Let’s design aq, rl bit support first.  
+
+#### ~2025.04.16.
+
+The “A” extension instructions use bits 26:25 as **aq** and **rl**, one bit each.
+aq (acquire), rl (release). These two bits are used to control memory ordering.
+
+An instruction with the aq bit set must cause the hart to wait until that instruction completes before subsequent instructions can proceed.
+
+An instruction with the rl bit set must cause the hart to wait until all prior memory accesses complete before executing the rl-set instruction.
+
+-----
+
+This… shouldn’t require structural adjustments. 
+The Control Unit needs to look at the aq, rl bits and assert PC_Stall based on conditions, so I need to add the relevant funct7 bit range as input signals.  
+Done. RV64IM90_Zaamo_aqrl  
+
+![250425-RV64IM90_Zaamo_aqrl](/diagrams/design_archive/ima_make_rv64/RV64IMA94F/[250425]RV64IM90_Zaamo_aqrl.drawio.png)
+
+What remains is Zalrsc… Load-Reserved, Store-Conditional…
+
+Zalrsc Extension: Z, Atomic; Load-Reserved / Store-Conditional Extension
+- LR.W : R[rd] = M[R[rs1]],  
+Set a reservation on the value in R[rs1]   
+(the memory address used in step 1).
+
+- SC.W :  
+if Reservation is valid, M[R[rs1]] = R[rs2], R[rd] = 0  
+if Reservation is invalid, R[rd] = 1  
+
+To implement the Zalrsc extension, I first need to understand the notion of reservation.  
+I searched a lot of material, but there wasn’t anything that explained it clearly, so I’ll have to rely entirely on the manual to understand it.  
+
+The basis of the A extension is to synchronize atomic read-modify-write on shared memory when multiple RISC-V harts operate in the same memory space.  
+There are two forms of atomic instructions: “load-reserved/store-conditional instructions” and “atomic fetch-and-op memory instructions.”  
+Both support various memory-ordering semantics: unordered, acquire, release, and sequentially consistent.  
+These instructions allow RISC-V to support the RCsc memory consistency model.  
+(RCsc: release consistency with special accesses sequentially consistent; Memory consistency and event ordering in scalable shared-memory multiprocessors, Gharachorloo et al., 1990)
+
+After much discussion, RISC-V adopted release consistency as the standard memory consistency model.  
+So RISC-V’s atomic support is based on that model.  
+…
+
+I almost went down the path of translating the entire A Extension chapter into Korean (tempting, but time is too tight—learned my lesson from the Privileged_ISA.Korean.md precedent… lol).  
+Instead, I extracted and summarized sentences in that chapter containing the words “reservation,” “reservation set.” Doing this forced me to read the chapter word by word; the clues I got are as follows.  
+(A_extension_Korean.md created.)
+
+In conclusion, Load-Reserved and Store-Conditional are used as a pair.   
+LR.W establishes a reservation, and a successful SC.W invalidates that reservation.
+Therefore, we need a “data space” for the reservation, and in a single-hart system one is sufficient.   
+The issue is the size of that data; the A spec doesn’t directly prescribe it.  
+
+However, it states:
+> “**The platform should provide a means to determine the size and shape of the reservation set.**”  
+
+> “**A platform specification may constrain the size and shape of the reservation set.**”  
+
+So the size and shape are left to platform design discretion, and the spec requires that the platform document this.
+
+If the reserved data itself needed to be explicitly marked, the spec would have said to reserve “that data” directly; instead, the wording about including the “bytes” of the data suggests a more flexible implementation.   
+It feels a bit like cache tag/index… could be implemented that way. Given locality, data used within an LR/SC sequence tends to be somewhat constrained… but at a point where uncertainty and my own limits could lead me astray, an experimental approach would slow development and add risk.  
+Of course that’d be fun(!), but with only about a month left including FPGA work (deadline May 28), I should take the stable route.  
+
+Memory is fetched in blocks and the target datum is identified within the block via an offset… so perhaps it’s enough to size the reservation to the size of the datum?  
+To keep implementation simple, I’ll do exactly that. This way I can implement Zalrsc in the simplest way without “logically” violating the spec.  
+Add a single buffer register, the reservation register (RR), to store the address and data.  
+Then, on each subsequent memory lookup, compare against RR to judge whether the data at that address matches or differs.  
+
+When does a reservation get broken, again… what exactly am I checking this comparison for? Reservation validity?? I’ll stop here for today—evening study time just ended.  
+
+I think I can implement Zalrsc by tomorrow.
+You’re doing well… doing… well.
+
+### [2025.04.26.]
+
+I decided to define the size of the reservation set based on one cache line.  
+It can be handy when that byte region is referenced, and considering future I/O and structural extensions, allowing that much overhead shouldn’t be a problem.  
+The reservation set will be a 32-byte register.  
+Triggering SC.W invalidates the reservation established by LR.W. Also, the reserved data are registered per hart, and each hart holds only one reservation set at a time.  
+According to the SC.W failure conditions, the reservation set is invalidated under the following cases.  
+Even without a direct association with the reservation set, we must invalidate on execution of SC.W regardless of success or failure to comply with the ISA rule that SC.W invalidates the reservation set.  
+
+0. If the address targeted by SC.W is not contained in the reservation set, invalidate.
+1. If another hart writes to data corresponding to the reservation set, invalidate.
+2. If another device writes to the bytes accessed by LR, invalidate.  
+   (If a write happens to bytes other than those accessed by LR but still within the reservation set, SC may either succeed or fail. For simplicity, in our case we treat line-granularity access as failure.)
+3. If, in program order, there is another SC (to any address) between LR and SC, invalidate.
+
+Implementation is as follows.  
+1. When executing SC.W (the CU checks via funct7 bits),  
+to judge success/failure, we must check validity of the reservation set in the Reservation Register. 
+- We must check whether the R[rs2] data fall within the reservation set, so feed RD2 as an input to the Reservation Register.  
+During LR.W, the reservation registers the data value of R[rs1] (which is the memory address, since M[R[rs1]]), so feed RD1 as an input to the Reservation Register.  
+
+- Since this is a reservation set, we need a control signal to invalidate when required, so add an invalidate control as a CU output and feed the Invalidate signal into the Reservation Register.  
+Because this is implemented as a register, provide the clock as an input to align outputs with the clock.  
+We need an output signal that indicates success/failure by comparing RD2 to the address registered in RD1 as the reservation-set base; call this output **Rsv_YN** (Reservation_Yes_or_No). Feed **Rsv_YN** back into the Control Unit.  
+
+1. We must detect writes to the reserved memory address (R[rs1])… at this point it seems best to make a separate Atomic Control module.  
+   - Atomic Control Unit  
+   On memory writes, check whether the write address falls within the reservation set.  
+   **[Inputs]**  
+      - CLK,
+      - MemWrite,
+      - Rsv_Invalid,
+      - RD1,
+      - RD2,
+      - Data_Addr (ALUresult)  
+
+      **[Output]**
+      - Rsv_YN
+
+   Logic:  
+   On LR.W execution, take the input coming on Data_Addr.  
+   Align that address to form a 32B-block-sized reservation set and mark it Valid.  
+
+   On SC.W execution, compare the incoming RD2 value against the reservation set.  
+   If Valid and within the reservation set, output Rsv_YN = Yes (1).  
+   Simultaneously invalidate the reservation set.  
+   In the CU, on SC success (Rsv_YN is Yes), select DC_Atomic_MUX to ALUresult so that the RD2 value bypassed from the ALU is stored to memory M[R[rs1]].  
+   Simultaneously select RegWDsrc_MUX = 110 to write 0 into R[rd].  
+
+   If Valid but not within the reservation set, output Rsv_YN = No (0).  
+   Then invalidate the reservation set. Simultaneously select RegWDsrc_MUX = 111 to write 1 into R[rd].  
+
+   If Invalid in any situation, Rsv_YN = No, and select RegWDsrc_MUX = 111 to write 1 into R[rd].  
+
+   For other instructions, if MemWrite is asserted and Data_Addr (ALUresult) lies within the current reservation set, invalidate the reservation set.
+
+---------- Zalrsc overall summary ----------
+
+Premise: Complex atomic memory operations ~~ are performed with the load-reserved (LR) and store-conditional (SC) instructions.  
+In other words, treat the operations covered by Zalrsc as memory operations.  
+
+LR.W loads a word from the address in rs1, places the sign-extended value in rd, and registers a reservation set  
+-> a set of bytes that subsumes the bytes in the addressed word.  
+--> LR.W loads a word from the address in rs1, writes its sign-extended value into rd, then registers it in the reservation set.  
+The reservation set is the set of bytes that includes the bytes of the word loaded from rs1.
+
+Load means loading a value from Memory into a Register.  
+So “word from the address in rs1” is M[R[rs1]].  
+Sign-extend M[R[rs1]] and write into R[rd], then register it in the reservation set.
+The reservation set is the set of bytes that includes the bytes of the word loaded from the rs1 address.  
+So we write M[R[rs1]] into the reservation set at cache-line granularity (32B in our case).  
+If 0x8000_1234 is M[R[rs1]], then designate 0x8000_1200–0x8000_123F as the reservation set.  
+
+Therefore we need a place to hold that reservation set; call this the Reservation Register, and since we must invalidate and update it via control, place the Reservation Register inside the Atomic Unit.  
+In the diagram, Atomic Unit ≈ Reservation Register is acceptable.
+
+-----
+
+SC.W conditionally writes a word in rs2 to the address in rs1:  
+the SC.W succeeds only if the reservation is still valid and the reservation set contains the bytes being written.  
+
+= SC.W conditionally writes the word from rs2 to rs1. SC.W succeeds if the reservation is still valid and the reservation set contains the bytes to be written to rs1.
+
+> “SC.W conditionally writes the word from rs2 to rs1…”
+
+Store means writing a Register value to Memory.  
+So the word in rs2 is R[rs2], and writing to rs1 means storing to M[R[rs1]].  
+That is, M[R[rs1]] = R[rs2].  
+And the bytes to be written to rs1—i.e., to M[R[rs1]]—are R[rs2].  
+SC.W and LR.W operate as a pair.  
+For SC.W to succeed as above, the bytes written by SC.W to rs1 must be contained in the Reserved Set of bytes registered earlier by LR.W.  
+
+![250426-RV64IM90_Zaamo_aqrl](/diagrams/design_archive/ima_make_rv64/RV64IMA94F/[250426]RV64IM90_Zaamo_aqrl.drawio.png)
+
+That’s it for today.
+
+### [2025.04.27.]
+
+![250427c-RV64IMA90](/diagrams/design_archive/ima_make_rv64/RV64IMA94F/[250427c]RV64IMA90.drawio.png)
+
+### [2025.04.28.]
+
+20:18 Finally today—after many twists and turns—I decided how to do it.  
+
+On executing LR.W, place the sign-extended M[R[rs1]] value into rd.  
+In other words, M[R[rs1]] is written to R[rd].  
+The address of M[R[rs1]] is R[rs1].  
+
+*reservation set* : a set of bytes that subsumes the bytes in the addressed word.
+The set of bytes that includes the bytes of the “*addressed word*.”  
+
+Here’s the problem.  
+Is the **addressed word** the address of M[R[rs1]], i.e., R[rs1]?  
+—or is it the data value of M[R[rs1]], i.e., M[R[rs1]] itself?  
+
+Let’s split into cases and analyze.  
+
+What if addressed word meant Data itself?  
+-> For SC.W to check the reservation, we would have to compare the data output (D_RD) with the Reservation Set.  
+
+Contradiction. In this case, data is output and compared to the Reservation Set, but D_RD flows straight through BE_Logic and RegWDmux into the Register File.  
+If Register Write Enable is active then it is written immediately; adding extra logic and controls just to block this would cause extreme structural inefficiency.
+
+What if address word meant Address?  
+-> For SC.W to check the reservation, we would compare the memory address (ALUresult) with the Reservation Set.  
+Along with the contradiction above, “Store Conditional” implies that the reservation decision must be made before the data for the store is even provided.  
+At the moment the address for the store—i.e., RD1 (when the 5-bit rs1 goes into the Register File and the data stored at that register-address is output)—is fetched, we compare against the reservation set and gate execution through conditionals.   
+This is natural and structurally ideal for implementing the function.
+
+It follows the existing logic as-is, but now with a clearer, self-consistent reason.
+
+With that, we can now write it simply. hehe…
+
+LR.W : R[rd] <- M[R[rs1]]  
+Reservation Set <- ( the 32B block address set that contains R[rs1] )  
+
+SC.W : condition check.  
+```
+if { ( R[rs2] ∈ Reservation set && Reservation set == valid )  
+ M[R[rs1]] = R[rs2],  
+ R[rd] = 0  
+}  
+
+else R[rd] = 1
+```
+Done!!! haha
+
+The Atomic Unit holds the Reservation Set, and when executing Zalrsc instructions,
+it informs the Control Unit whether SC.W should succeed or fail,
+so MemWrite must be enabled or disabled.   
+In this case, since we must store 0 or 1 in Register File R[rd], the CU enables RegWrite.
+
+And to determine validity of the Reservation Set according to the failure conditions described above, when a memory write occurs we must check whether the address being written falls within the Reservation Set.  
+That is, the ALUresult (data memory address) must be an input signal.
+
+At the same time, on memory reads, we must not invalidate just because that ALUresult was looked up in memory; therefore, perform the comparison only when MemWrite (i.e., a write) is active, so MemWrite must also be an input signal.  
+
+And when SC.W executes, the Reservation Set must be invalidated automatically regardless of success/failure.  
+Since the Control Unit is the first to know the exact instruction being executed and manages the control flow, the CU must be able to invalidate the Reservation Set on SC.W execution—so the CU sends Rsv_Invalid to the Atomic Unit.   
+In other words, Rsv_Invalid must be an input signal.
+
+-----
+Now we can finalize the Atomic Unit design.
+
+- [Input signals]  
+   - R[rs1]   
+   for registering the Reservation Set, i.e., RD1 from the Register File.
+   - R[rs2]   
+   for comparing with the Reservation Set, i.e., RD2 from the Register File.
+   - ALUresult  
+   the memory address signal to know whether writes (other than SC) hit the Reservation Set.
+
+These three are the data signals to receive.  
+The rest are control signals.  
+
+- MemWrite,   
+the write-enable signal to know whether a write to an address in the Reservation Set (other than SC) is happening.
+- Rsv_Invalid.
+
+The theory only takes you so far.  
+Later in the verification procedure and testbench I’ll be able to see whether my understanding was correct.
+
+Cheers.
+
+---Evening self-study---
+
+Ah, since the Reservation Set is implemented as a register, it must include a CLK signal.  
+
+As for output signals mentioned above from the Atomic Unit to the Control Unit,
+we need Rsv_YN (Reservation Yes/No) to indicate success or failure.  
+
+- [Output signal]
+   - Rsv_YN,   
+   whether access to the Reservation Set succeeded or failed.
+
+-----
+
+Verifying the LR.W datapath.  
+Since the Atomic Unit’s Reservation Set is implemented as a register similar to the Register File, it will need a write-enable signal.  
+Add Rsv_Write to the input signals. However, derive this signal from the DC_Atomic_MUX control.  
+When DC_Atomic_MUX is enabled for an Atomic instruction—to drive RD1 as the address only in Atomic ops—then, likewise, we can enable writes to the Reservation Set register for that Atomic op.  
+
+But… that would also write during SC.W. Inevitably we need a separate signal from the CU.  
+Add Rsv_Write as an output from the Control Unit and an input to the Atomic Unit.
+
+For LR.W… there’s really no need to output Rsv_YN. 
+Whatever value it is, we won’t use it while executing that instruction anyway.
+
+Move on to verifying the SC.W datapath.   
+Uh. I separately fed RD1 via a MUX signal, but RD2 needs an ALU bypass?   
+Well, bypass is fine; we never use RD2 as a memory address in this operation. 
+Let’s do bypass.
+
+Hmm… problem. We only compare on writes (i.e., when SC.W causes a memory write), but SC is a store, so MemWrite would already be asserted by default and we couldn’t conditionally enable it…  
+
+Have the Control Unit, when the opcode belongs to the Zalrsc extension, drive MemWrite conditionally based on Rsv_YN.  
+
+If that doesn’t work, a separate Control Unit… no. That’s the only viable way.
+
+Wait. The Atomic Unit must know it’s an Atomic operation.  
+By default, to see whether a write to an address in the reservation set is happening, the Atomic Unit takes MemWrite and ALUresult.  
+When MemWrite is asserted, it compares ALUresult against the Reservation Set.  
+
+However, when SC.W appears,  
+assuming MemWrite is deasserted by default, there is no identifier that tells us we must compare in this case.  
+Therefore, via a signal indicating “Atomic,” we must force comparison of Reservation Set and RD2.  
+For this, add the DC_Atomic_MUX’s Atomic signal as an input to the Atomic Unit.  
+
+Done… A-extension implementation success…
+RV64IMA94F… Now I just need to add this to the 5-stage pipeline… hahaha…
+That’s it for today!!!
+
+![250428-RV64IMA94F](/diagrams/design_archive/ima_make_rv64/RV64IMA94F/[250428]RV64IMA94F.drawio.png)
+
+### [2025.04.29.] 
+
+While doing the 5-stage pipelining, most actions like registering the reservation set, invalidating it when executing SC.W, and comparing RD2 with the reservation set could be performed in the Instruction Decoding stage.   
+This is because the Control Unit must immediately check upon fetch whether to enable MemWrite for SC.W through the Atomic Unit’s Rsv_YN, and because that control signal must be pipelined and take effect properly in the MEM stage.  
+
+I’m currently pipelining Zalrsc behavior, and one issue has already come up. 
+I think I only need to solve this one: if a separate Store occurs within the address range registered in the reservation set, that reservation set must be invalidated.  
+In other words, I need to compare ALUresult (Data_Address) against the reservation set, but the comparison must happen only after a reservation has been made.  
+
+If I compare the ALUresult value fetched in the MEM stage whenever MemWrite is asserted, then in terms of pipeline context, even if it’s outside the LR/SC sequence, a write within the LR-related address range would immediately cause invalidation from the Instruction Decoding stage’s perspective.   
+That must not happen.
+
+So I probably need a separate comparison unit for the reservation set in the MEM stage.  
+And that comparison unit must share the reservation set with the Atomic Unit.  
+Ah. Right. I can add a flag that says “LR and SC have begun, so start comparing,” to mark the start and end.  
+
+Then I don’t need a separate comparison unit; I can keep the ALUresult output in the MEM stage wired into the Atomic Unit just like in the single-cycle implementation, and provide an identifier that LR/SC has begun and ended during the atomic operation.  
+
+I shouldn’t use the Atomic_MUX signal (it’s also used by Zaamo and could be misinterpreted), so the CU should provide a separate flag signal.  
+Alternatively I could feed opcode and funct7, but that would get too messy. I’ll add a dedicated signal in the Control Unit.  
+That’s it for today.
+
+![RV64IMA94F_5SP](/diagrams/design_archive/ima_make_rv64/RV64IMA94F_5SP/RV64IMA94F_5SP.drawio.png)
+
+### [2025.04.30.]
+
+I added the flag signal for LR.W and SC.W that I mentioned yesterday to the CU as LRSC_Flag, and also to the Atomic Unit.  
+
+In the pipeline, the behavior for aq and rl bits must work a bit differently.  
+When aq is set, the hart must stall execution of subsequent instructions until the A-extension instruction with aq completes, then resume.  
+When rl is set, the hart must wait until all prior memory-access instructions complete before resuming the instruction with rl set.  
+
+When the Control Unit recognizes that aq is set, it should hold PC_Stall while waiting for an identification signal in the WB stage that the aq-set instruction has completed.  
+Similarly, when the Control Unit recognizes that rl is set, it should hold PC_Stall while waiting until all instructions prior to the rl-set instruction have completed up to the WB stage—in other words, insert a bubble.  
+
+How to implement this…  
+Pipeline the Atomic signal and carry it to the WB stage.  
+Place a comparison module in WB; when Atomic is 1 and the instruction arrives, return an aq_done signal to the Control Unit to release PC_Stall.  
+No, wait… if that’s the plan, I can just carry the Atomic signal to WB and feed it directly back to the Control Unit.  
+I’ll do that.  
+
+Then how about rl?  
+How do I insert the bubble… The Hazard Unit already has flush capability per pipeline register, so I’ll implement it so that when the rl bit is set, using the flush function we issue a NOP, based on inputs of the Atomic identification bit, the rl bit at ID, and the rl bit at WB.  
+
+Wiring the rl bit in WB now.  
+That’s it for today.  
+I spent some time reading the 2026 KAIST admissions guidelines that were just released.  
+
+May is close; FPGA starts in June.  
+Let’s wrap this up well.  
+
+![RV64IMA94F.R1](/diagrams/design_archive/ima_make_rv64/RV64IMA94F/RV64IMA94F.R1.drawio.png)
+
+### [2025.05.01.]
