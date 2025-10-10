@@ -307,7 +307,7 @@ For each module's logic description, go to `documents/modules_and_signals/` for 
   |ALUsrcMUX_B|-|read_data2, imm, **csr_read_data**, alu_src_B_select|srcB|
   |Reg_WD_MUX|-|byte_enable_logic_register_write_data, alu_result, imm, pc_plus_4, csr_read_data, register_file_write_data_select|register_file_write_data|
   |**CSR_addr_MUX|-|trapped, raw_imm, csr_trap_address|csr_address**|
-  |**CSR_addr_MUX|-|trapped, csr_trap_write_data, alu_result|csr_write_data**|
+  |**CSR_data_MUX|-|trapped, csr_trap_write_data, alu_result|csr_write_data**|
   |**DBG_RD_MUX|-|debug_mode, im_instruction, dbg_instruction|instruction**|
 </details>
 
@@ -546,7 +546,7 @@ We're going to work on easy C program import on SoC soon.
 
 ✅ Complete basic_RV32s repository structure  
 ✅ Contribute riscv/learn as tutorial resource  
-🔄 Writing Paper about this repository  
+✅ Writing Paper about this repository  ✨ISOCC 2025 Accepted (Oral)
 🔄 Translate Korean resources to English  
 
 📋 Run Coremark and RISC-V ISA test on 46F5SP_SoC  

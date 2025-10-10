@@ -6487,3 +6487,94 @@ RISC-V 프로세서의 모의실행 및 합성
 
 오늘은 여기까지. 
 내일은 블럭 다이어그램 완성을 하고, 논문의 초록을 적는 것 부터 시작해봐야겠다.!!
+
+## [2025.09.15.]
+### 근황
+근황 업데이트. basic_RV32s에 대한 논문을 작성했고, ISOCC 2025에 투고해 채택되었다. paper ID 146, 10월 17일 구두 발표 예정..
+논문 투고에 꽤 많은 이슈가 있었는데, 논문 마감 기간이 2회정도 밀렸던 것 같다.
+그래서 원래 FPGA 구현하고 Dhrystone을 정식으로 돌리고 Coremark나 다른 RISC-V 코어들과 성능 비교하고 하려했지만 
+기한에 맞추려고 Dhrystone을 MMIO없이 CSR의 minstret과 mcycle 값을 debug 신호로 받아서 출력하는 간이 구동 방식을 고안해 측정했다. 
+일단은 그렇게 논문 작성은 모두 끝났고, 해당 7월에 남은 기간동안 arxiv 투고용 한국어 풀 논문을 초고를 작성했다. 학회 논문은 2페이지지만 사실 그 안에 담지 못한 내용이 꽤 많기에
+RISC-V에 대한 내용, 설계한 마이크로아키텍처의 설명, 문제점과 해결 등.. 7월 끝나고 투고하려고 보니까 arxiv에서 cs.AR 분야 투고를 위해서는 endorsor가 필요하다.
+그렇게 arxiv.org에 등재된 cs.AR분야 RISC-V 논문을 꽤나 많이 찾아보던 중 Nils Wistoff 라는 스위스 취리히 연방 공과대학교의 박사 과정에 계신 분의 논문들이 부합한 것 같아 직접 메일드려 endorsement를 받았다. 
+근데 지금 이 근황을 작성중인 지금까지도 on-hold이다.. mail이 gmail로 되어있어 그런가..
+
+8월부터는 KAIST 자기소개서를 썼고, 얼마 전에 마감됐다. GIST랑 UNIST, DGIST까지 썼는데 
+DGIST는 일정 수학 수준이 안되면 정원과 상관없이 안뽑는다고 하고, UNIST는 아예 졸업 이후 활동에 대해서는 평가하지 않는다고 해서 두 대학은 거의 버리는 카드였다.
+KAIST가 가장 가능성 높고, GIST가 그 다음일 것 같다. 
+
+그리고 RISC-V 공식 학습 레포지토리에 원래 open-implementation에 추가되기 위해서 riscv/learn에 issue를 작성했더니 Intermediate-Level Resources로 됐다.. 
+캬..
+
+지금은 학회 PPT를 만들고 있다. 
+오늘 자정까지 제출 마감인데, PPT 제출은 필수가 아니고 biography는 필수지만 일단 기본적인 첨삭? 평가를 해준다고 적혀있길래 데이터가 아직 실리지 않은 PPT에 대해서 제출을 먼저 해보려고 한다.
+어차피 이외 슬라이드는 모두 만든 상황이라.
+
+### Today's todo
+지금은 그 데이터를 산출하기 위한 작업중이다. 9월 10일에 전역하고, 저번에 하지 못했던 Dhrystone의 MMIO를 이용한 정식 구동과 Coremark 벤치마크를 수행하기 위해서 툴체인 설치중.
+dependency때문에 자꾸 make 중에 abort되어서 씨름중이다. 분명 다 설치했는데.. 
+지금은 그 기록에 대해 적기 위해 오랜만에 다시 devlog를 찾았다.
+
+### RISC-V GNU GCC Toolchain install
+Dhrystone을 위해 툴체인부터 다시 설치해보려한다. 저번에는 local-system을 사지방에서 굴리기엔 인터네싱 너무 느려 친구의 컴퓨터에서 make하고 compile해서 해당 hex 파일을 받았었는데
+직접 Dhrystone과 Coremark를 컴파일하기 위해서는 직접 설치해야한다.
+
+1. 인터넷에 RISC-V RV32I ilp32의 툴체인 프리 빌드 파일은 없다. 
+꽤나 찾아보았지만 찾을 수 없었다. 이전에 siFive의 툴체인이 있다고 하던데, 해당 툴체인은 rv64gc같은 고수준 ISA의 툴체인밖에 없었다. 멀티lib도 없었어서 안됐다.
+그래서 직접 ./configure 에서 직접 --with-arch=rv32i ilp32를 해서 make해야한다.
+
+2. 툴체인 make를 위한 과정
+https://github.com/riscv-collab/riscv-gnu-toolchain
+이 공식 github의 readme를 따라야한다. 
+나같은 경우 ubuntu에서 진행하기 때문에 아래 dependency 파일들을 설치했다.
+'$ sudo apt-get install autoconf automake autotools-dev curl python3 python3-pip python3-tomli libmpc-dev libmpfr-dev libgmp-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev libexpat-dev ninja-build git cmake libglib2.0-dev libslirp-dev'
+
+문제는, 위 명령어 그대로 수행하면 python3-tomli라던가 ninja-build라던가 찾을 수 없다고 나온다.
+지금 구동환경은 그냥 ubuntu가 아니라 Windows 10에 WSL을 설치하고 그 안에 기본으로 있던 ubuntu를 사용하는 것인데, 이 경우엔 그 이상의 dependency가 발생해 추가적으로 설치해야하는 파일들이 있다.
+처음에는 찾을 수 없다고 메세지가 출력됐을 때 오래된 라이브러리라 risc-v 의 명령어가 최신화되지 않은 것이라 간과했는데, 
+configure 이후 직접 make하면서 ERROR로 이게 없어서 진행 안된다 하고 완료가 안된경우가 수 번 있었다.
+그걸 수동으로 하나하나 설치하는 중인데, gdb도 설치 안되어있어 최신버전 설치중이다..
+일단 GDB 설치까지도 시간이 꽤 걸리니까 그동안 MMIO 설계를 해봐야겠다.
+
+갑자기 MMIO가 나온 이유? Dhrystone이 기존에는 원래 printf 같은 표준 출력 함수들이 있는데, 구현의 속도와 편의성을 극대화하기 위해서 이를 모두 제외하고 CSR의 값을 읽어오는 것으로 진행했었다.
+이를 없애고 학회 발표에서는 정식 값을 말하기 위해 정식 수행을 하려고 printf 출력의 구현을 위해 MMIO를 이용한 UART를 만드려고 하는 것.
+
+Data Memory를 봤을 때, MMIO를 위해 수정할 사항들이 있다.
+
+Data Memory에서 MMIO UART 데이터 영역을 0x2000_0000부터로 설정하고,
+현재 busy인지의 값을 CPU에서 담아둘 수 있도록 2000_0004를 status 주소로 지정한다. (0x004)
+그리고 tx로 보낼 데이터의 주소를 0x000으로 해뒀다.
+
+로직은 다음과 같다.
+0x2000임을 확인하면 uart_tx_access를 참으로 만들어 tx접근인지, status check인지, else인지 확인한다
+만약 posedge clk에 write하는데 그 주소 영역이 UART BASE (0x2000_0000), tx data 영역인 경우, 그리고 tx_busy가 아닐 때
+write_data를 mmio_tx_data로 출력해서 UART로 송신한다. 
+나머지 동일.
+
+탑 모듈에도 인스턴스 적용하는데..
+
+어라. 생각해보니까 Instruction Memory rom_address에 MEM_alu_result를 입력시키고 있었다.
+물론 이렇게 해도 수행에는 문제 없지만 Data Memory에 처음 로직이 해당 주소 영역을 체크하고 해당될 때 IM쪽으로 bypass해서 데이터가 나오도록 하는 것이었다.
+그래서 Data Memory에 rom_address output 신호를 넣었었는데 이걸 깜빡했었네.
+
+rom_address(rom_address)하니까 LUT가 기존 11,660 LUT에서 (46F5SP_SoC with Dhrystone) 9,872 LUT로 거의 3,000개의 LUT가 줄었다.
+허허..
+
+툴체인 갈아엎기를 8번. 22시 정도에 빌드가 완료되었다. 
+이걸로 Dhrystone을 컴파일해서 다시 올리기엔 시간이 너무 촉박하다 생각해서 PPT를 모두 다 마치고, 기존 vivado project file에서 데이터들을 산출해 PPT에 적용했다. 
+원래는 맘같았으면 다른 RISC-V 코어 디자인들 FPGA에 직접 올려서 벤치마킹까지 해보는건데..
+
+PPT 제출 완료 (23:58)
+괜찮다. 어차피 학회 발표 때 직접 PPT를 갖고 가는 것이고, 어차피 지금 제출하는 것은 ISOCC에서 한번 보고 고칠점이나 그런거 알려주는 단계니까.
+PPT is not mandatory 라고 못박아놨겠다, short biography 에 profile만 제출만 필수.
+
+발표 전까지 
+Dhrystone, Coremark 벤치마킹 해보기..
+다른 RISC-V 코어들 구현하고 벤치마킹 해보기...
+**basic_RV32s 레포지토리 완성하기**
+
+어우 마지막게 너무 세다. 할 수 있겠지? 지금으로부터 딱 1달 남았다.
+
+아이러니하게도 KAIST 반도체시스템인재전형 I의 합격자 발표가 10월 17일, ISOCC에서 내 발표 일자와 겹친다.
+드가자~
+오늘은 여기까지.
