@@ -2516,7 +2516,7 @@ On hardware: per the professor’s recommendation, I purchased a Nexys Video FPG
 
 Revisions completed up through 43F.
 
-![RV32I37F.R4](/diagrams/design_archive/RV32I37F.R4/RV32I37F.R4.drawio.png)
+![RV32I37F.R4](/diagrams/design_archive/RV32I37F/RV32I37F.R4.drawio.png)
 ![RV32I43F.R3](/diagrams/design_archive/RV32I43F/RV32I43F.R3.drawio.png)
 
 ### [2025.03.21.]
@@ -2573,7 +2573,7 @@ Cache structure is finalized; time to implement. Targets: RV32I43F_C.R1 and RV32
 With the finalized cache structure and the revised roadmap, I completed RV32I43FC.R1 and RV32I47NF, the finished architectures for the rv32s project. 
 I finished them at 14:58 and 15:50, respectively.   
 
-![RV32I43FC.R1](/diagrams/design_archive/RV32I43FC.R1/RV32I43FC.R1.drawio.png)
+![RV32I43FC.R1](/diagrams/design_archive/RV32I43FC/RV32I43FC.R1.drawio.png)
 ![RV32I47NF](/diagrams/design_archive/RV32I47NF/RV32I47NF.drawio.png)
 
 I also wrapped up small signal-placement optimizations. 
@@ -3810,7 +3810,7 @@ Cache writes finish at CLK2. Since the cache is the first to know that writing i
 
 In RV32I43FC, content about the Write Buffer was missing from the diagram, so I revised to RV32I43FC.R2 and added the Write Buffer.  
 
-![RV32I43FC.R2](/diagrams/design_archive/RV32I43FC.R2/RV32I43FC.R2.drawio.png)
+![RV32I43FC.R2](/diagrams/design_archive/RV32I43FC/RV32I43FC.R2.drawio.png)
 
 At the same time, I also added the DC_WriteDone signal to the Data Cache as noted above.  
 
@@ -3905,7 +3905,7 @@ CLK 2. Since CLK1 was PC_Stall, DC_Addr is still the same address.
 Overwrite the cleaned cache block with the memory block.  
 Write the address/data saved in the Write Buffer back to memory.  
 
-![RV32I47NF.R1](/diagrams/design_archive/RV32I47NF.R1/RV32I47NF.R1.drawio.png)
+![RV32I47NF.R1](/diagrams/design_archive/RV32I47NF/RV32I47NF.R1.drawio.png)
 ![RV64I59F.R2](/diagrams/design_archive/ima_make_rv64/RV64I59F/RV64I59F.R2.drawio.png)
 
 ### [2025.04.23.]
