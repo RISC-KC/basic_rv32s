@@ -2311,7 +2311,7 @@ Thinking it through, we obviously need a discriminator to notify the Instruction
 The IC_Clean signal should exist. The Trap Controller should receive the FENCE.i identifier and cause the Instruction Cache to invalidate.   
 However, instead of handling the Trap Controller’s signal as a separate IC_Clean input in the Instruction Cache, we can simply treat it as the RST (reset) signal.
 
-![250315-RV32I50F.5SP.R1](/diagrams/design_archive/RV32I50F.5SP/250315RV32I50F.5SP.R1.drawio.png)
+![250315-RV32I50F.5SP.R1](/diagrams/design_archive/RV32I50F.5SP/[250315]RV32I50F.5SP.R1.drawio.png)
 
 - After switching the cache write policy to Write-Back, ChoiCube84 asked about the cache–memory interface signals: 
 
