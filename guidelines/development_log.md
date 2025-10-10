@@ -2743,3 +2743,348 @@ I finished writing the HCWcloud documentation and returned to CPU development. I
 ![250331-RV64I59F_5SP_temp](/diagrams/design_archive/64s/RV64I59F_5SP_temp250331.drawio.png)
 
 ### [2025.04.01.]
+11:59 I finished placing all pipeline registers and also optimized the signals.  
+
+![RV64I59F_5SP](/diagrams/design_archive/64s/[250401]RV64I59F_5SP.drawio.png)
+
+Now I need to place the hazard unit… time to start the research.  
+Let me finish organizing what I started on 2025.03.14 about pipelining.  
+
+Based on computer architecture (Computer Organization and Design, David A. Patterson, 2015)
+Definition of a hazard: a situation where the next instruction cannot execute in the next clock cycle. There are three types:  
+
+1. **Structural hazard**  
+   – Means the hardware cannot support the combination of instructions that want to execute in the same clock cycle.  
+   → This might correspond to the case where synchronous memory cannot return data in a single cycle.
+
+2. **Data hazard**  
+   – Occurs when a pipeline must be stalled because one stage must wait for another stage to finish.  
+   – In CPU pipelines, this happens when an instruction in the pipeline depends on an earlier instruction still in the pipeline.
+
+Types: RAW (Read After Write), WAR (Write After Read), WAW (Write After Write)
+
+Solution 1: forwarding/bypassing  
+Add hardware so you can obtain values earlier from internal resources than you normally could.
+
+Solution 2: CCC; Change Clock Cycle   
+Split the clock so writes happen in the first half and reads happen in the second half.
+
+3. **Control hazard**  
+   – Occurs when other instructions need to make a decision based on the result of an instruction that is still executing (branch instructions).
+
+Solution 1: delay
+
+Solution 2: branch prediction  
+Simple: assume branches are always not taken; only stall when a branch actually occurs.
+Advanced: predict taken in some cases and not taken in others (dynamic hardware predictor).
+Keep a history of whether each branch was taken, and use recent history to predict the future. When a misprediction occurs, squash the instructions after the mispredicted branch and restart the pipeline from the correct target.
+
+Solution 3: delayed decision (software); delayed branch  
+Always execute the next sequential instruction; the actual branch occurs one cycle later, after that instruction has entered the pipeline.
+
+Since structural hazards classify hardware-insufficient cases, I’ll set them aside; what we must handle are data hazards and control hazards.
+
+To handle pipeline hazards in hardware, we need two kinds of logic:
+
+1. detection logic to determine whether a hazard has occurred
+2. handling logic to resolve the hazard once detected
+
+Designing hazard detection logic:
+
+First, data hazards.  
+Because of dependencies among instructions, we may need to pause the current instruction until the previous one finishes.  
+So we need to know the dependencies among in-flight instructions in the pipeline.  
+Since the processor works around registers, we check whether the destination register of a prior instruction matches the source register(s) referenced by the current instruction.  
+Compare instruction A’s rd (register destination) against instruction B’s rs1 and rs2 (register sources).  
+
+Exclude x0 since it is always zero and never changes, so no forwarding is needed for x0.
+We only know rd/rs1/rs2 after decode, so the earliest place to judge this is probably at ID/EX.
+
+- ALU data sources are srcA and srcB.
+   - srcA can be RD1, PC, rs1  
+   - srcB can be RD2, imm, imm(shamt), csrRD
+
+Register values are used as resources; due to the pipeline, a register’s value may be changed by a prior instruction, so we may need to wait.  
+To minimize the waiting, we use forwarding: deliver the result of instruction 1 forward to instruction 2’s ALU inputs before it is written back to the register file.  
+This requires an extra MUX to choose between the normal ALUsrc path and the forwarded data. The forwarded data can be one of the five writeback sources: D_RD, ALUresult, CSR_RD, imm (LUI), PC+4.  
+So forwarding must select, according to the instruction, one of these potential writeback sources and deliver it to the right ALU source.  
+
+I split this into two modules: a hazard detection unit and a forwarding unit.  
+The hazard detection unit stores rs1.A, rs2.A, rd.A from the instruction in Decode and compares them with the next instruction’s rs1.B, rs2.B, rd.B.  
+If rd.A matches either rs1.B or rs2.B, it flags a data hazard to the forwarding unit via a hazardop signal.  
+
+The forwarding unit, seeing hazardop, selects the prior instruction A’s to-be-written result (the value that will eventually go to the register file) and forwards it to one of the EX-stage ALU sources for instruction B, according to B’s type.  
+
+- Signals needed by the forwarding unit:  
+
+   - EX/MEM.imm (LUI)
+   - EX/MEM.ALUresult
+   - EX/MEM.CSR_RD
+   - MEM.D_RD
+   - EX.PC+4
+
+Plus an instruction identification signal. For now, I set it up this way.  
+The forward unit needs an instruction identifier; but we don’t need to identify every instruction—only those whose result writes to the register as one of D_RD, ALUresult, CSR_RD, imm (LUI), or PC+4.  
+
+I’ll identify via opcode. Even if I made a separate signal, pipelining would force me to decide when and where that signal is generated anyway.  
+Added signals to the forwarding unit:  
+
+- EX/MEM.opcode  
+  When a hazard is detected in ID and the hazardous instruction reaches EX, the instruction in MEM (right ahead) must be identified so we know what result will be written to rd.   
+  Hence I take opcode from EX/MEM.
+
+With this, the forwarding implementation is “done” for now… 19:49. I’ll rest a bit and then study control hazards.
+
+![RV64I59F_5SP_Forwarding](/diagrams/design_archive/64s/[250401]RV64I59F_5SPH_FW.drawio.png)
+
+—Evening study—  
+Now, control hazards.
+
+Control hazards arise from branch handling.
+
+Researching this, there are many branch predictor types, and there are associated security risks…  
+Those are more relevant to OoOE designs; for now I’ll focus on the branch prediction itself.
+
+First, summary from the book.  
+Branch prediction ⊂ speculation
+
+1. **Static branch prediction** (predict fall-through sequential execution)  
+   Assume the branch is not taken and keep executing sequentially.  
+   If the branch is actually taken, flush the fetched/decoded instructions and continue execution at the branch target.  
+   Similarly for the opposite assumption.  
+
+   Implementation:  
+   When a misprediction is discovered, once the branch reaches MEM stage, zero the control signals for all earlier-stage instructions so they are annulled.
+
+2. Earlier branch resolution  
+   If we can decide taken/not-taken earlier than MEM, we can reduce the misprediction penalty.  
+
+   Implementation:  
+   In my RV32I37F-based design, branch decisions are computed in ALU (EX). In the pipelined RV64I59F_5SP, that effectively resolves in MEM (after EX/MEM). 
+   If I add a dedicated branch-evaluation unit and move it earlier—say into ID—that would require further research.
+
+3. **Dynamic branch prediction**  
+   Predict during execution.  
+   3.1. Look up whether the branch was taken the last time it executed at this address.
+   If so, fetch from the target this time too.  
+
+   Implementation:  
+   3.1.1. One-bit predictor  
+   Use a branch prediction buffer (branch history table), a small memory indexed by low bits of the branch PC, storing a bit indicating whether it was recently taken.
+
+   3.1.2. Two-bit predictor  
+   Implemented as a small special buffer accessed in IF by instruction address.  
+   If predicted taken, fetch from the target as soon as the PC is known (if early resolution is implemented, possibly as early as ID).  
+   If predicted not taken, fetch sequentially; on misprediction, update the two-bit state (needs two consecutive misses to flip direction).  
+
+   3.1.3. Branch Target Buffer (BTB)  
+   Cache the branch target PC (and/or target instruction) with tags; use it like a cache.
+
+   3.1.4. Correlating predictor  
+   Use both local behavior of the branch and global behavior of recent branches to improve accuracy using the same number of bits.
+
+### [2025.04.03.]
+
+![RV64I59F_5SP_BP-temp](/diagrams/design_archive/64s/[250403]RV64I59F_5SPH_FW_BP_temp.drawio.png)
+
+### [2025.04.04.]
+
+![250404-RV64I59F_5SP_BP-temp](/diagrams/design_archive/64s/[250404]RV64I59F_5SPH_FW_BP_temp.drawio.png)
+
+> ChoiCube84’s cache-implementation question
+
+[Starting state]  
+Cache: AAAA_AAAA (tag: 00000)  
+
+Memory:  
+00000_00000: AAAA_AAAA  
+00001_00000: 0000_0000  
+
+**SW, address 00001_00000, write data = DEAD_BEEF**
+
+[After SW]  
+Cache: DEAD_BEEF (tag: 00001) (dirty)
+
+Memory:  
+00000_00000: AAAA_AAAA  
+00001_00000: 0000_0000  
+
+**SH, address 00000_00000, write data = CAFE_CAFE, write mask = 0011**
+
+[After SH]  
+*Flush*  
+Cache: DEAD_BEEF (clean) (tag: 00001)  
+
+Memory:  
+00000_00000: AAAA_AAAA  
+00001_00000: DEAD_BEEF
+
+— input, Addr: 00000_00000, Data: CAFE_CAFE, Mask: 0011  
+
+! Tag differs; assuming all blocks are full.  
+The cache must fetch the new tag’s data.  
+
+Cache: AAAA_AAAA (clean) (tag: 00000)  
+
+Memory:  
+00000_00000: AAAA_AAAA  
+00001_00000: DEAD_BEEF 
+
+------
+
+[Write]  
+Cache: AAAA_CAFE (dirty) (tag: 00000)
+
+Memory:   
+00000_00000: AAAA_AAAA   
+00001_00000: DEAD_BEEF
+
+In other words, a Memory → Cache synchronization is needed.  
+When the cache set is full and you need to replace a line, you must bring in the existing data from memory.  
+In the worst case, to model **flush → read → write** with an FSM, you’d need to encode these phases into the **valid** bit (or an equivalent status).  
+
+**My answer:** Would that situation even arise?   
+In modern CPU designs, a cache line isn’t 1:1 with memory words like ours—it’s typically 64 bytes per line.   
+We’re currently not using the **offset**; if we use it, we can both preserve a set-associative design and resolve this problem.  
+
+### [2025.04.05.]
+
+*Duty shift. A reminder of what I did.  
+Since I was on duty, I’m writing this on 2025.04.06.*  
+
+First off… cache issues resolved.
+
+I read everything on caches in “Computer Organization and Design.”  
+Based on that, I’m going to simplify and solve the cache design by defining a clear specification from scratch.  
+
+The cache structure we’re building now is the Instruction Cache and Data Cache that will eventually become L1$.  
+
+-----
+
+#### RV32I43FC-based cache specification  
+Specification (L1$)  
+
+- L1 Cache
+
+   - 2-way set associative  
+[Tag, Index, Offset]  
+Tag: block search within a set  
+Index: set selection among ways  
+Offset: data selection within a block
+
+   - 32 KiB each for Instruction & Data Cache (Harvard structure)  
+   Total 64 KiB of L1$
+
+   - 32-byte data per block (8 words per block; B = byte)  
+   (Block = minimum transfer unit between memory hierarchy levels)
+
+   - 512 sets, 1024 blocks.
+
+   - 32 − 5 (offset, log2 32 = 5) = 27 bits “left” to split    
+   log2 512 = 9 bits for Index    
+   27 − 9 = 18 bits for Tag. 
+
+   - 32-bit requested address:  
+   Tag 18 bits  
+   Index 9 bits  
+   Offset 5 bits  
+   Tag [31:14], Index [13:5], Offset [4:2]  
+
+   - Cache block replacement: LRU (Least Recently Used)
+
+-----
+
+RV32I43FC-based memory hierarchy behavior  
+[Write buffer, SAA (Simultaneous Address Access) adopted.]
+
+1. Load  
+   [Cache hit] (Dirty bit doesn’t matter here.)
+
+(1) Return the data from the cache.
+
+- [Cache miss]  
+   - (1) Access memory.  
+   - (2) Decide the block to replace in the indexed set (check dirty bit). 
+
+- [if Clean]  
+   - CLK 1  
+   (1) With SAA, return memory data.  
+   (2) Overwrite the cache line with the returned memory data.  
+   (3) Set the cache line’s dirty bit.
+
+- [if not SAA]
+   - CLK 2  
+   (4) Return the updated clean cache-line data at that address.  
+
+—————
+- [if Dirty]
+   - CLK 1  
+   (1) With SAA, return memory data.  
+   (2) Save the cache’s dirty block (data + its address) into the write buffer.  
+   (3) Clear the cache line’s dirty bit.
+
+   - CLK 2  
+   [After SAA, the requested address must keep being presented]  
+   (Needed so we have the address for the memory block being fetched for step (3).)    
+   - (3) Overwrite the now-clean cache line with the memory block.
+   (4) Write the buffered address+data back to memory.
+
+(If by any chance the write-buffered address equals the memory block being fetched: it can’t; if they were the same, it would have been a cache hit to begin with.)
+
+- [if not SAA]
+   - CLK 3  
+   (5) Return the updated clean cache-line data at that address.
+
+2. Store
+
+- [Cache hit]
+   - (1) Write the data into the cache (set dirty bit).
+
+- [Cache miss]
+   - (1) Access memory.
+   - (2) Check dirty bit on the block to be replaced in this index.
+.
+- [if Clean]
+   - CLK 1  
+   (1) Overwrite with the memory-returned data.
+   - CLK 2  
+   (1) Perform the store into the refreshed cache line.  
+   (2) Set the line’s dirty bit.  
+—————
+- [if Dirty]
+   - CLK 1  
+   (1) Save the dirty cache block (data + address) into the write buffer.
+
+   - (if not SAA; CLK 2)  
+   (2) Overwrite with memory-returned data; line becomes clean.  
+(SAA hazard is conceivable: the address where memory data is written back equals the address of the dirty cache line. Since L1$ is fastest, timing might work out, but it’s a concern; if it actually occurs, we’ll revisit.)
+
+   - CLK 2 (if not SAA; CLK 3)  
+   (1) Perform the store into the refreshed clean cache line.    
+   (2) Set the line’s dirty bit.    
+   (3) From the write buffer, output the data+address to memory; update memory   (cache–memory synchronization).
+
+-----
+For a 32-bit ISA with a 2-way set-associative cache, we’ll benchmark and study AMD’s K6-III CPU as closely as possible.
+Branch prediction will also be benchmarked on AMD-based systems.
+
+By defining the cache structure this way, I’ve resolved the issues. As expected, you really do need to settle the specification first before diving into development…
+
+Branch prediction research results are as follows.
+(Gotta grab dinner. 2025.04.06. 17:43)
+
+—— Evening self-study ——
+
+I’ll start with an explanation of the branch predictor.
+First, the branch predictor to be designed into this RV64I59F structure has the following specification.
+
+[Dynamic branch prediction]
+Tournament branch predictor.
+
+Global branch correlation predictor
+Local branch correlation predictor
+Meta predictor
+
+It consists of three 2-bit predictors.
+
+On cold start, they’re all set to Weakly Not Taken (correlation predictors) / Weakly Local (meta predictor).
