@@ -4377,4 +4377,1491 @@ Let’s wrap this up well.
 
 ![RV64IMA94F.R1](/diagrams/design_archive/ima_make_rv64/RV64IMA94F/RV64IMA94F.R1.drawio.png)
 
+![250430-RV64IMA94F_5SP](/diagrams/design_archive/ima_make_rv64/RV64IMA94F_5SP/[250430]RV64IMA94F_5SP.drawio.png)
+
 ### [2025.05.01.]
+
+I was on duty. I’ve pipelined Zalrsc, and I’m in the middle of wiring the logic made yesterday to support the aq, rl bits.  
+
+![250501-RV64IMA94F_5SP](/diagrams/design_archive/ima_make_rv64/RV64IMA94F_5SP/[250501]RV64IMA94F_5SP.drawio.png)
+
+What remains now is to verify the datapath to ensure Zaamo works correctly.  
+With that, the A extension will be finished, and I’ll move on to preparations for OS bring-up.   
+At the very least… for the OS, I need virtual memory and I/O (including GUI). And while implementing those two, the privileged levels should naturally get implemented too…  
+hmm…  
+
+### [2025.05.02.]
+
+Since the backend dev side hasn’t yet completed RV32I47NF, after finishing this Zaamo pipeline check I plan to jump back into backend and push quickly.  
+The goal is to finish implementing basic_rv32s during this holiday stretch—by May 6.
+
+Let’s begin!
+
+Ah, right. Come to think of it, for Zaamo I included the D_RD signal in ALUsrcA…
+In single-cycle, every unit can be used in the same cycle, so no problem.
+But in a pipeline, before MEM, the EX stage cannot use memory-fetched data as an operand. The memory fetch has to happen in EX… this would be overstepping…
+
+**~2025.04.13~**
+
+If we execute AMOADD.W as `AMOADD.W rd, rs2, rs1`, it performs:  
+R[rd] <- M[rs1]  
+M[rs1] <- M[rs1] + R[rs2]  
+
+First M[rs1] is written to R[rd], then M[rs1] is updated with (old M[rs1] + R[rs2]).
+
+I considered placing a Zaamo-only ALU in a separate MEM stage, but concluded we can’t recover the one-cycle loss.  
+Placing an ALU in MEM is effectively, for Zaamo only, moving EX after MEM (or merging the two)—a dynamic pipeline arrangement.  
+Normally it’s IF/ID/EX/MEM/WB, but for Zaamo, EX would have nothing to do in the middle, so it would just pass through and become IF/ID/MEM/EX/WB.  
+The problem is we haven’t implemented such “skips.”  
+So instead of dynamic rearrangement like IF/ID/MEM/EX/WB, it becomes IF/ID/bubble/MEM/EX/WB—incurring a one-cycle penalty.  
+If we did implement dynamic rearrangement, we could avoid that penalty and even gain performance versus the baseline datapath, but there isn’t time now to attempt such a non-standard approach. So, another path:  
+
+Use PC_Stall.  
+When a Zaamo instruction is recognized, have EX assert a signal to the CU to PC_Stall.  
+Hold the Zaamo in EX; on the next clock, proceed to MEM.  
+When the memory source appears in MEM, feed it back into EX and simultaneously release PC_Stall.  
+Then we return to the original order: EX-stage ALU computes, passes the result to MEM, and commits in WB.  
+
+In short, based on core pipeline principles, we accept a one-cycle loss but proceed without adding hardware resources.  
+
+I’ll go with this. I already have stall/flush logic per pipeline register.  
+
+Done! RV64IMA94F_5SP.R1, 23:56; KHWL2025!!
+
+![RV64IMA94F_5SP.R1](/diagrams/design_archive/ima_make_rv64/RV64IMA94F_5SP/RV64IMA94F_5SP.R1.drawio.png)
+
+### [2025.05.03.]
+Today, before starting Verilog development for RV32I47NF, I’m going to organize the logic and explanations of each module in the processor design I’ve built so far.  
+Once that’s done, I plan to jump into backend. The reason to do this now is clear: later on I kept running into “huh, why does this signal exist again?” even while the project was underway.
+
+I’ll start from RV32I37F and add on.  
+Each architecture had additions/changes to module roles, so I need to be careful about that.  
+Start! (10:23)  
+
+![RV32I37F.R4v2](/diagrams/core_architectures/RV32I37F.R4v2/RV32I37F.R4v2.drawio.png)
+
+20:48 Done… a 10-hour task…  
+
+Based on this, I just need to create documents on the modules that changed from the original when moving to 43FC, plus any added modules.  
+Probably… I can finish the docs tomorrow morning and jump to backend in the afternoon.  
+
+I’ve wrapped most of it up through 43F. I really might be able to finish tomorrow… right? That’s it for today. 23:59.
+
+### [2025.05.04.]
+
+I finished documenting up through 43FC. But I found an issue and we went into a meeting around 20:00.  
+The root cause was designing the Data Cache miss signal as the control for DM_Addr_MUX in the Data Cache–Memory structure.  
+The resulting problem is as follows.  
+
+1. Read attempt (address 0x1111_1111)  
+   Data cache: let’s look it up.  
+   Data memory: let’s look it up.  
+
+2. Cache: oh, it’s a cache miss.  
+   -> The address that had been driven to memory automatically switches to WB_Addr.   
+   SAA is interrupted mid-way.
+
+Memory: huh?? What, you want me to fetch WB_Addr?  
+-> It fetches the value at WB_Addr as is.
+
+In other words, this is an issue caused by SAA.  
+If DM_Addr_MUX is simply set to WB_Addr on DC_Status = Miss,  
+then instead of fetching data at ALUresult as the address, it fetches data at WB_Addr.  
+
+My fix for this: build a 1-bit FSM in data memory.  
+Read.  
+Cache and memory access the address via SAA.  
+
+Cache miss!  
+-> Send the cache-miss signal to both D_RD_MUX and Data Memory.
+
+D_RD select MUX chooses DM_RD.
+
+Data Memory access… address in progress… complete!  
+DM_RD fetched and cache miss detected!  
+-> DM_RD has been fetched, and the cache miss is detected.  
+flag rises, enter write-back mode.  
+Since both conditions are met, switch to Write-Back mode (set the FSM bit to 1).
+
+WB_Addr input, WB_Data wrote.  
+Set Data Memory’s Address MUX to WB_Addr input.  
+Complete Data Memory write-back (C2M).  
+
+Back to normal mode (set FSM bit back to 0. DM_Addr_MUX switches back to ALUresult).
+
+The above logic is under review, and CC84 proposed an idea.  
+
+#### Meeting 
+
+> CC84:  
+Even if the value at flush_address is fetched, the control unit has already stopped PC updates anyway, so it shouldn’t be a problem.
+
+KHWL:  
+LW instruction. R[rd] = M[R[rs1]]
+
+- CLK1.
+
+   - SAA. Simultaneous address access by cache/memory.  
+Cache miss, Not Ready, PC_Stall.  
+D_RD selects DM_RD.
+
+   Data Memory should output the correct data.  
+   But since DM_Addr is using WB_Addr due to the cache miss, it outputs data based on WB_Addr.  
+   -> R[rd] = wrong M[R[rs1]].  
+   At the same time, the cache also receives incorrect data based on WB_Addr.
+
+   The data cache outputs the dirty block and its address to the Write Buffer for flush to DM.
+
+- CLK2.
+   - DC Status is still Miss.
+   - Not Ready, PC_Stall ongoing.
+   - DM_Addr is still receiving WB_Addr.
+   - MemWrite is asserted, and the Data Cache is updated with the incorrect M[R[rs1]].
+   - D_RD is still DM_RD, and the wrong data based on WB_Addr is being output.
+
+   - DM_Not ready.
+   - Write Buffer outputs WB_Addr and WB_Data to Data Memory. Write-back occurs in DM.   
+   Flush to memory ends.
+
+- CLK3.
+   - DC_Ready, DM_Ready. PC_Stall is released. Instruction updates resume.
+
+If there’s no flaw in this reasoning, the problem indeed occurs.
+
+> CC84 option 1:  
+When controlling the dm_address signal MUX, instead of using only hit/miss, combine it with cache_ready to control the MUX.
+
+hit | cache_ready | select
+:---:|:---:|:---
+0 | 0 | flush_address
+0 | 1 | alu_result
+1 | 0 | x
+1 | 1 | x
+
+KHWL:   
+The initial state is Miss and Not Ready; if you feed flush_address in that case, the memory fetch will be incorrect.
+
+In the second cycle, the cache would have to become ready. 
+Since the update happens in the second cycle, that’s when data at ALUresult should be fetched from memory, sent to the data cache, and simultaneously be the value written to the register.
+
+But? There’s no case where the cache becomes ready in the second cycle.  
+It becomes ready after the update, which means readiness becomes “effective” starting from CLK3.  
+
+CLK3? DC and DM are Ready.   
+Even if you switch back to ALUresult at this point, the data won’t come out of Data Memory. Why? Because PC_Stall was released and instruction updates resumed.
+
+Considering the time cost of introducing extra logic just to preserve SAA, I’m reviewing dropping SAA.   
+The above is the summary of a 1 hour 10 minute meeting.
+
+For now, I’ll see how far I can get by tomorrow and then decide.  
+Most of the logic is already implemented, and I’m told that aside from the cache issue, converting what was a 10-bit address cache structure into the specified 32-bit scheme should be mostly straightforward.  
+
+### [2025.05.05.]
+
+Aside from the cache structure issue (I marked the docs with [43FC]!!DM_Addr_MUX to indicate what needs to be corrected),
+I finished structural documentation up through RV32I47NF. (17:27)  
+
+I think I can wrap up RV64IMA94F within today.  
+During evening study I’ll switch to backend with the goal of designing the Exception Detector and Trap Controller.  
+
+Time to grab food.  
+
+Finished through RV64I59F…  
+RV64IM72F has no structural differences from RV64I59F.  
+
+### [2025.05.06.]
+
+#### Trap Controller Design
+Let’s design the Trap Controller..
+
+I can’t remember exactly what ECALL and EBREAK were supposed to do… let me dig through the notes.
+
+##### - [EBREAK handling process]
+
+1. [Detect EBREAK.]
+   I_RD signal goes into Instruction Decoder and Exception Detector.  
+   Exception Detector detects EBREAK. Outputs Trap_Status = 10.  
+   Trap Control detects EBREAK via Trap_Status. Prepares to enable debug mode.  
+
+2. [Prepare to enable debug mode.]  
+   Trap_Control writes mepc and mcause into the CSR via CSR_Addr and CSR_Data (mcause; EBREAK code = 3).
+
+3. [Run Trap Handler]  
+   Trap_Control sets PC to mtvec from CSR.  
+   CPU jumps to the Trap Handler routine to prepare debug mode.  
+   The Trap Handler routine reads mcause and mepc from CSR to prepare interaction with the debugger.
+
+4. [PC update stop sequence]  
+   Trap Control enables debug mode. PCC stops outputting NextPC.  
+
+5. [Debugging]  
+   The external debugger sends the instruction add x7, x5, x6 via the debugger interface.  
+   The debugger interface outputs that instruction to the Instruction Decoder.  
+   CPU executes it. Register and memory values change according to the debugging.
+
+6. [Exit debug]  
+   The debugger finishes and executes mret.  
+   The Trap_Control module fetches mepc and outputs it to the PCC so that PCC can output NextPC as mepc.
+
+7. End.
+
+Simplifying: ECALL = wait in PC-stall until mret executes.  
+EBREAK = execute instructions from the debug interface.  
+
+-----
+
+Ah… implementing mret…   
+On mret, we need to fetch mepc and send it to PCC so it can become NextPC…  
+Likewise, send it via T_Target and then drop PC_Stall and Trapped—shouldn’t that do it?
+
+Wait.  
+To implement mret, we need to read mepc and pass it to PCC, and since SYSTEM instructions and CSR are controlled according to logic, it seems reasonable for the Trap Controller to handle it.  
+But currently the Exception Detector doesn’t take funct7 as input.  
+It only takes opcode, funct3, and raw_imm; with that, it can’t distinguish ECALL/EBREAK (same opcode/funct3) from mret.  
+ECALL/EBREAK are each I-Type and can be distinguished by bit 0 of raw_imm, but mret needs bits 29 and 28 of funct7, so we must feed funct7 in.  
+
+I included funct7 in the implementation, but I need to fix the diagram again.
+
+!To-do  
+Add funct7 to Exception Detector in the diagram.
+
+-----
+
+Instead of internally aligning and giving T_Target on misalign exception in the trap controller…  
+it might be better to branch to an address of a handler routine that performs the alignment and returns.  
+Then… how does mtvec behave again? direct vs vectored…  
+No, using just one is fine.  
+Enter a single Trap Handler first, then in that program code use a zicsr instruction to read mcause, determine what exception it was, and handle accordingly.  
+
+Trap Controller Testbench Scenario
+
+- Trap-handling instructions must be present starting at Instruction Memory address 10000.
+
+- CSR mtvec and current pc should be provided as inputs (assumption).
+
+- Declare $display for the trap_handle_state register so we can observe its changes.
+
+Tomorrow I should implement the testbench for the trap controller.  
+The code is fairly well-organized and I think I implemented the intended logic, so even if I test tomorrow there shouldn’t be major issues.  
+It’s been a while since I wrote Verilog—syntax and all—feels nostalgic in many ways.  
+
+On the cache side, it looks like verification via testbench is ongoing; the 32-bit conversion process itself seems to be going well.  
+Starting today, I’ll set the cache aside for a bit and from tomorrow move to the 64-bit, M, and A extensions.  
+There will be some edits needed, but nothing too hard, and since the logic is already established, assuming I follow and implement as understood, I’m setting the 64IMA extension deadline to the 12th.  
+
+After that I’ll return to the cache structure to finish it, and I’ll also take on external-device interrupts or pipelining as a two-track approach.
+And from May 27 to 31 there’s an FPGA implementation course at IDEC. After taking that, I’ll focus on FPGA implementation in June.
+
+That’s it for today!
+
+### [2025.05.07.]
+
+##### Testbench day
+
+Let’s go.
+
+The cache implementation that had been ongoing up to yesterday is on hold after partial completion of the data cache.  
+Just in case, here’s a note of the immediate cache issue:  
+[Read, cache miss, lines are full, all lines are clean]  
+We’ll perform two reads of 3333_3333.  
+
+```
+A: 1111_1111  LRU: old  
+B: CCCC_CCCC  LRU: recently used  
+```
+On the first access, 3333_3333 misses. So A gets replaced.
+
+At replacement, the A block that was old and a miss becomes hit immediately.  
+Because the address is still being driven… why is this a problem again?  
+Honestly, the MUXes up front are already controlling this, and on a miss, SAA already outputs the intended data via DM_RD, so it doesn’t seem like a big problem.
+
+Anyway, since finishing the cache will require more verification time, I’m putting it on hold and doing the 64IMA extensions first.  
+Today I briefed ChoiCube84 on my research to date regarding the A extension—Zalrsc, aq/rl bits, Zaamo.  
+Today, ChoiCube84 will handle the 64-bit extension, likely starting in a separate repository.  
+For now, docs stop here; I’ll code until evening study ends, then come back and push.  
+
+#### Begin Trap Controller testbench implementation
+
+What to observe in Trap_controller:  
+
+- Changes in trap_handle_state  
+- Address changes in csr_trap_address
+- Value changes in csr_trap_write_data
+
+Changes in trap_target address
+
+Whether ic_clean is asserted on FENCE.I
+
+On MRET, whether debug mode returns to 0  
+Whether mepc is correctly output as t_target
+
+On NONE, whether ic_clean, debug_mode are 0 and trap handle state is IDLE  
+
+For now, the tb itself more or less works. I didn’t have time to check the waveform, but the values printed with $display appear as intended.  
+Tomorrow I’ll do deep verification.  
+Let’s go!
+
+### [2025.05.08.]
+
+#### Pre-Trap Handling procedure logic - PTH
+
+I built the Trap Controller testbench scenarios during work hours.
+
+I call the preparatory work done before branching to the Trap Handler address **“Pre-Trap Handling.”**  
+This Pre-Trap Handling includes CSR mepc write and CSR mcause write.  
+After that, by reading CSR mtvec we set NextPC to the Trap Handler address and branch there, or handle it inside the Trap Controller’s own logic.
+
+Typically, exceptions/traps like ECALL, EBREAK, MISALIGNED end with mret in the TH (Trap Handler), so you can consider using MRET as part of the same bundle.
+
+The scenarios are as follows.
+```
+ECALL - mret  
+MISALIGNED - mret  
+EBREAK - mret  
+zifencei  
+none  
+```
+For detailed input addresses and expected outputs, see the Trap_Controller_tb.v file.  
+I wrote everything out in comments, one by one.
+
+I rewrote the Trap_Controller testbench directly, built scenarios, and I’m verifying.  
+Originally the FSM only had three states: IDLE – WriteMEPC – WriteMCAUSE.  
+That worked because execution starts in IDLE; then write mepc; and if write mepc, proceed to write mcause, and return to idle.  
+But in back-to-back Trap Controller interventions, this tangles the FSM.  
+And if signals keep coming in, I observed in vcd that the current situation gets re-recognized and the FSM cycles again.  
+So I added a terminal READ_MTVEC state so that on the next instruction update we return to IDLE and can run from the start again.
+
+Also, it takes 3 cycles total from trap occurrence to control, during which the PC must be frozen, and we also need additional write control for the CSR File.  
+But only the Trap Controller knows when writes to the CSR File occur, so the TC should send a write enable signal to the CSRF, and in the top we should OR the CU and TC write-control signals so that CSRF write is enabled.  
+
+Similarly, during Pre-Trap handling, the PC must not update; I think we should add a Trap_Done signal to the CU.  
+Ugh. Pipelining this will be a headache.
+
+23:43. Everything works correctly according to the scenario test cases.  
+I need to apply the above modifications.  
+
+!To-do
+- Add Trap_Done logic to the Control Unit
+- Add CSR_WD (CSR Write Enable) signal to the Trap Controller
+- In the soon-to-be RV32I47NF top module, OR the CSRF write-enable signals from TC and CU and feed as CSR_Write.  
+
+That’s it for today! Ahh, it feels good to see code working well again after a while.  
+I should aim to build RV32I47NF by tomorrow.  
+Let’s do it.
+
+### [2025.05.09.]
+
+When should I drive Trap_Done to 0 for Pre-Trap Handling…  
+When trap status is detected?  
+When trap_Handle_state is IDLE?  
+Once PTH runs, it doesn’t go back to IDLE unless it’s MRET or NONE…  
+After the final mtvec read or after internal logic completes, bring it back to 1.  
+Wait. If Trap_Done is driven in IDLE, then when it’s not a TRAP situation…  
+Ah, the case statement only runs after TRAP is detected anyway, so even if it’s IDLE before detection, it’s fine.  
+
+I’ll first implement trap_done <= 1'b0 in the IDLE: begin block and trap_done <= 1'b1 in the WRITE_MCAUSE: begin block, then run the tb.  
+
+If it doesn’t behave as intended, I’ll move trap_done <= 1'b1 into a new READ_MTVEC: begin block and include it there.
+
+Now it’s 0 only in IDLE, and 1 in WRITE_MEPC, WRITE_MCAUSE, READ_MTVEC…
+
+I moved trap_done <= 1'b1 into WRITE_MCAUSE (or READ_MTVEC for other cases), and
+I wrote trap_done <= 1'b0 directly where trap_status is set, not in the trap handle state.  
+With this, trap_done goes to 0 during Pre-Trap Handling, and rises back to 1 at TRAP_NONE next, which is as intended.
+
+But… doesn’t PTH’s last state need to rise back to 1 so PC updates can proceed?  
+If it stays 0 until the end, there won’t be a next instruction and it won’t proceed…
+Right now, the tb is driving the next scenario, so it looks like it flows, but that’s not right. I should fix it.  
+
+Or not.  
+For safety I gave 5 clocks to the first ECALL scenario even though ECALL needs 3 clocks;  
+after the fix, with Trap_handle_state stuck at 11, Trap_Done also rises to 1 as is.
+The problem is EBREAK… in the waveform, THS goes to 10 (WRITE_MCAUSE), rises to 1, then drops back to 0. Why… I need to run it again and check.
+
+Driving trap_done to 1'b1 explicitly in WRITE_MCAUSE fixes it.  
+Even with one extra slack cycle it stays 1 correctly, and with exactly 3 cycles it returns to 1 on the next.
+
+Huh, the waveform shows csr_write_enable = 1 on MRET… why?  
+—The waveform file was old…
+
+Added TC’s Trap_Done and CSR_WE output signals and finished tb.  
+Added CU’s Trap_Done input signal (for PC_Stall) and finished tb.  
+
+I’m on duty tomorrow… I should figure out approaches for OS and virtual paging support.  
+On Sunday I’ll move into designing the RV32I47NF top module.  
+Fighting!!!
+
+### [2025.05.10.]
+
+I was on duty, and to find a lead on guidelines for hardware support for virtual paging, I started reading “Computer Organization and Design.”  
+Below is a transcription of what I wrote in my notebook.
+
+#### -Architecture changes-  
+When adding the “M” Extension, ALUresult must be 128-bit [127:0].  
+In computer multiplication algorithms, the product of a multiplicand and a multiplier has up to n+m bits for n-bit and m-bit operands.  
+So, as described in RISC-V, the result has 2 × XLEN bits.  
+-> In COD 5e, it says if the sign bit is ignored, the size is n+m bits, but in the RISC-V Unprivileged Architecture Manual I, it’s specified simply as length 2 × XLEN bits.  
+
+> “MUL performs an XLEN-bit × XLEN-bit multiplication of rs1 by rs2 and places the lower XLEN bits in the destination register. MULH, MULHU, MULHSU perform the same multiplication but return the upper XLEN bits of the full 2 × XLEN-bit product.”
+
+So is handling of the sign bits left to design discretion?  
+The ISA ought to define this…  
+Well, given that COD 5e references MIPS and RISC-V is fundamentally different (e.g., flag usage), that may explain it.
+
+In any case, I’ll ask ChoiCube84 about two options:  
+
+1. Provide a separate 128-bit result signal for multiplication.
+2. Extend the existing ALUresult signal to 128 bits; for legacy XLEN-wide results, output zero-extended.
+
+Option 1 doesn’t make sense—the modules needing 128-bit data would have to be audited separately, with per-instruction identifiers and logic.  
+
+So option 2…
+
+Oh right—RISC-V “M” extension splits the instructions so you can fetch either the lower or upper XLEN bits with different opcodes as needed…  
+Then I can keep ALUresult as 64 bits (XLEN) with no structural change, as I originally thought.  
+
+#### -Architecture changes 2-
+Privileged Architecture research.  
+Notes.
+
+3 privilege levels  
+Machine level, Supervisor level, User level
+
+4 privilege modes  
+Debug mode > Machine mode > Supervisor mode > Hypervisor mode
+
+Level and mode are often used interchangeably.
+
+---
+
+Prefixes for Privileged Architecture extensions.  
+
+- Machine level: Sm  
+- Supervisor level:
+
+  - Supervisor-level Virtual memory architecture: Sv
+  - Supervisor-level architecture: Ss
+- Hypervisor level: Sh
+
+---
+
+##### Machine-level Privileged Extensions
+
+- Sm state en (Smstateen): State Enable extension
+- Sm csr ind (Smcsrind): Indirect CSR access
+- Sm e pmp (Smepmp): Enhanced PMP (Physical Memory Protection)
+- Sm cntr pmf (Smcntrpmf): Counter Privilege Mode Filtering
+- Sm r n m i (Smrnmi): Resumable Non-Maskable Interrupts **Frozen Specifications**
+- Sm c deleg (Smcdeleg): Counter Delegation
+
+##### Supervisor-level Privileged Extensions
+
+- Sv32, Sv39, Sv48, Sv57: Page-Based 32, 39, 48, 57-bit Virtual Memory System
+
+- Sv n a p o t (Svnapot): Naturally Aligned Power Of Two translation contiguity
+
+- Sv p b m t (Svpbmt): Page-Based Memory Types
+
+- Sv inval (Svinval): Fine-Grained Address-Translation Cache Invalidation
+
+- Sv ad u (Svadu): A/D Bits hardware Updating
+
+- Sv v ptc (Svvptc): Eliding Memory-Management Fences on making PTEs Valid
+
+- Ss state en (Ssstateen): State Enable
+
+- Ss csr ind (Sscsrind): Indirect CSR access
+
+- Ss t c (Sstc): Supervisor-mode Timer Interrupts
+
+- Ss c of pmf (Sscofpmf): Count OverFlow and Privilege Mode Filtering
+
+---
+
+##### RISC-V Privileged Instruction Set Listings
+
+- Trap-Return Instructions
+
+  - SRET: Supervisor-level trap-RETurn
+  - MRET: Machine-level trap-RETurn
+  - MNRET: Smrnmi’s return instruction **Frozen Specifications**
+- Interrupt-Management Instructions
+
+  - WFI: Wait For Interrupt
+- Supervisor Memory Management Instructions
+
+  - SFENCE.VMA
+
+---
+
+##### RISC-V CSR Address Mapping Conventions
+
+- CSR = 12-bit [11:0]
+
+   - [11:8]  : Read/write accessibility by privilege level
+   - [11:10] : Whether the register is read/write or read-only
+   - [9:8]   : Lowest privilege level that can access the CSR.
+
+---
+
+Unlike the Unprivileged Architecture, which introduces additional instructions via extensions, the Privileged Architecture regulates the data in each CSR and the extensions that must be supported.  
+Privileged Architecture instructions are all encoded with the SYSTEM opcode and fall into two families:
+
+1. Zicsr: instructions that atomically read-modify-write CSRs.
+2. The other Privileged Instructions
+
+   - At the supervisor/debugger side there are four: SRET, MRET, WFI, SFENCE.VMA.
+
+Since the OS or kernel reads CSRs and performs actions accordingly, the Privileged Architecture feels like mapping the necessary info as “extensions” so software can use them.
+
+For example: if bit 11 of CSR 0x0FF is set and we try to execute instruction A?
+If that bit implies hypervisor, but the instruction is for machine mode, then access denied—raise exception.
+Something like that.
+
+If my understanding is correct, conceptually it’s not hard, but in terms of workload it’s not exactly easy.  
+We need to implement exception conditions for each extension accordingly,
+set each CSR’s values to fit our spec, set per-CSR logic per WLRL/WARL rules… lots to audit in the Privileged Architecture.
+
+## RV32I46F Design
+
+### [2025.05.11.]
+
+Today was supposed to be RV32I47NF top-module design synthesis.  
+I planned to do synthesis and then come back to the docs.  
+
+But first I need to reflect the diagram changes that arose while implementing the Trap Controller and Exception Detector.  
+Due to the temporary halt on the cache, I also have to reflect the memory-structure change for the RV32I47NF.R1 I’m about to synthesize.  
+Since dropping the cache means I can’t support Zifencei anyway, rather than naming it RV32I47NF_noCache, **I’ll just call it RV32I46F.**  
+
+1. Added funct7 to ED — done
+2. Added Trap_Done to CU — done
+3. Added CSR_WE to TC — done
+4. OR’ed the CSR_WE signals from TC and CU — done
+
+Those were the changes. I applied all of them.
+
+![RV32I46F](/diagrams/design_archive/RV32I46F/RV32I46F.drawio.png)
+
+Now I’ll switch branches to design the RV32I46F top module.  
+Uh… I renamed the branch that implemented the Trap Controller (feat/exception_detector) to “Trap Controller,” pushed, opened a PR, and merged into develop.  
+To do RV32I46F on a new branch, I should branch off develop with those changes already merged… for now I’m separately developing a file parser.  
+It should be fine; I’ll probably PR it tomorrow.  
+
+Other than updating diagrams, tweaking GitHub branches, and signing up for arXiv, I didn’t do much…  
+Oh, the research notes I left yesterday… hmm…  
+
+I want to do more tomorrow, but I’ve also got cooking-support duty, so I’ll just go as far as I can.  
+Let’s do our best.  
+That’s it for today.
+
+### [2025.05.12.]
+
+Come to think of it, I… didn’t actually add funct7 to the Exception Detector.  
+I updated the diagram, but I missed the actual Verilog change. I’ll do this and then merge.  
+
+After that I’ll build RV32I46F… let’s do it right.  
+
+Turns out I misread the branch and just thought I hadn’t added funct7 to ED.  
+Looking at the commit history, it was the very first thing I implemented… haha.  
+
+I created the RV32I46F top module, and while declaring signals I noticed the Trap Controller’s reset signal is named rst. 
+It shouldn’t be the odd one out, so I’ll spin up a new feat/trap_controller branch to fix it and then merge again.  
+
+I also realized I hadn’t implemented the Debug Interface module.  
+I implemented CSR_Addr_MUX and CSR_WD_MUX, and I OR’d the CU’s write-enable with the TC’s write-enable to drive the CSR write enable input.  
+While doing that, I hit the question of where the instruction fed into ID comes from in debug mode—Instruction Memory or Debug Interface.  
+So the Debug Interface needs to output a [31:0] instruction signal with a clear name to derive and wire signals; I noticed this was missing.  
+I’ll add it. I’ll probably finish the RV32I46F top-module design before evening study ends today!
+
+?Question I see Instruction Memory automatically takes the PC address with its lower 2 bits aligned to 00…  
+
+```verilog
+always @(*) begin
+   instruction = data[pc[31:2]];
+```
+
+end
+
+But now in the RV32I47NF (RV32I46F) design I formally handle misaligned exceptions. Should I remove this structure, or leave it as-is?
+
+**!Notes**
+
+Problem…  
+For this design I planned a lightweight Debug Interface that simply outputs a fixed instruction (an input device from the core’s perspective) to fetch something like 0xABADBABE into a register.  
+But to write 0xABADBABE into a register, I’d have to clear that register first (shift instruction), then add the whole value (ADDI).  
+
+Sure, using the initial testbench value of x22 I could compute a single ADDI that lands on ABADBABE, but that runs counter to the spirit of a debug interface that shouldn’t “know” internal state up front.  
+
+Even with a single instruction, issues appear. With two instructions the problem is this:  
+> Because of memory semantics, values are fetched based on inputs.
+
+So the debug instruction execution must be recognized and fetched in sequence, cycle-aligned.  
+And this must include midstream halt on PC_Stall.  
+The module complexity is higher than I expected.  
+
+How can I force a fixed value the simple way…
+
+Ah! In the top module I can just declare a signal and set its contents to a fixed constant—encoded as a 32-bit instruction!  
+Ha. Such a simple fix.  
+This won’t let me run two instructions in sequence though… and I do want two…  
+
+Since SLLI and ADDI can be handled in single cycles, I’ll just output one at a time, clocked in sequence.  
+On an FPGA I’d probably drive this with a button.
+```verilog
+always @ (posedge clk) begin
+   instruction = data[pc[31:2]];
+end
+```
+The current Instruction Memory code is like this… To change it stepwise per clock… I’ll add a counter.
+
+Done.
+
+I should’ve finished today…  
+Sigh… tomorrow morning I’ll finish the Debug Interface testbench, and in the afternoon I’ll finish the RV32I46F top module and its testbench.
+
+### [2025.05.13]
+
+This way the Debug Interface keeps running even when it’s not used, so I’ll just do the simpler thing… implement it as an add on the current x22 value—by adding a signal in the top module.  
+And to construct ABADBABE by 12-bit imm ADDIs I’d have to keep adding; that’s cumbersome and inflates the instruction count.  
+The Debug_Interface as implemented so far will be redesigned later, so I’m pausing the module and wrapping feat/debug_interface here.  
+No need to merge into develop; in cases like this I’m not sure what’s best. Given the shape will change a lot, discarding it might be right.  
+I’ll keep it for now just in case.
+
+I’ve copied the exact Trap Controller testbench scenarios into Instruction Memory.
+
+#### Trap_Handler
+
+- Trap Handler start address. mtvec = 0000_1000 = 4096 ÷ 4 Byte = 1024  
+- On entry we should store the original GPRs into a separate heap area and proceed, but we’ll omit this for now.  
+- Read CSR mcause: if ecall, set x1 = 0000_0000; if misaligned, add FF to x2  
+- Then mret
+
+#### Write this in RISC-V assembly…
+```RISC-V
+// Prep loads for conditional branches/comparisons  
+csrrs x6, mcause, x0   // load mcause into x6
+addi x7, x0, 11        // load ECALL code 11 into x7 (to compare mcause we need 11 in a register and compare regs)
+
+// Analyze mcause and branch to the relevant Trap Handler
+beq x6, x7, +12        // ECALL; if x6==x7, branch to address +12 bytes = data[1029]
+beq x6, x0, +16        // MISALIGNED; if x6==0, branch to address +16 bytes = data[1032]
+jal x0, +16            // End TH (jump to mret code address)
+
+// ECALL Trap Handler @ data[1029]
+addi x1, x0, 0         // clear register x1
+jal x0, +8             // End TH (jump to mret code address)
+
+// MISALIGNED Trap Handler @ data[1031]
+addi x2, x2, 255       // add 0xFF to x2 (BC00_0000 -> BC00_00FF)
+
+// ESCAPE Trap Handler @ data[1032]
+MRET                   // PC = CSR[mepc]
+```
+#### Encode that assembly to binary and load into Instruction Memory.
+```RISC-V
+// Prep loads for conditional branches/comparisons
+data[1024] = {12'h343, 5'd0, 3'b010, 5'd6, `OPCODE_ENVIRONMENT};
+	data[1025] = {12'd11, 5'd0, `ITYPE_ADDI, 5'd7, `OPCODE_ITYPE};
+
+// Analyze mcause and branch to the relevant Trap Handler
+data[1026] = {1'b0, 6'd0, 5'd7, 5'd6, `BRANCH_BEQ, 4'b0110, 1'b0, `OPCODE_BRANCH};
+data[1027] = {1'b0, 6'd0, 5'd0, 5'd6, `BRANCH_BEQ, 4'b1000, 1'b0, `OPCODE_BRANCH};
+data[1028] = {1'b0, 10'b000_0001_000, 1'b0, 8'b0, 5'd0, `OPCODE_JAL};
+
+// ECALL Trap Handler @ data[1029]
+data[1029] = {12'd0, 5'd0, `ITYPE_ADDI, 5'd1, `OPCODE_ITYPE};
+data[1030] = {1'b0, 10'b000_0000_100, 1'b0, 8'b0, 5'd0, `OPCODE_JAL};
+
+// MISALIGNED Trap Handler @ data[1031]
+data[1031] = {12'hFF, 5'd2, `ITYPE_ADDI, 5'd2, `OPCODE_ITYPE};
+
+// ESCAPE Trap Handler @ data[1032]
+data[1032] = {7'b0011000, 5'b0, 5'b0, 3'b0, 5'b0, `OPCODE_ENVIRONMENT};
+```
+I’m told the convention for read-only CSR access is CSRRS with rs1=x0…  
+An assembler directive like csrr x5, mcause is auto-encoded as csrrs x5, mcause, x0, and csrrw modifies rd, etc.
+
+Anyway, done. I haven’t actually run the tb to confirm the instructions emit correctly—so I’ll run it, then create a new feat/rv32i46f branch and proceed with tb.
+
+Given there’s only one debug instruction, it must be at the very end of the testbench scenario… I’ll move it.
+
+Ah, I must need a break. It was already in that position—I forgot again.  
+I’ve been at this for hours straight. I’ll pop over to the PX, get ChoiCube84’s PR approval, and then switch to the RV32I46F top-module testbench. (15:07)
+
+*Getting comfortable with Verilog. Declaring and instantiating signals in the top module led to a bit of reflection.*
+
+Module-to-module connection signals should be wire; signals whose values change should be reg.
+
+And instantiation syntax goes roughly like this:
+```verilog
+[ModuleToInstantiate] [instance_name]   (
+   .internal_signal (top_level_signal_name)
+)
+```
+## RV32I46F Top module Debugging
+
+Why did ECALL get recognized correctly, mepc (CSR 341) got the current PC written, but the next PC didn’t stall and instead updated to 0000_0000…  
+pc_stall… becomes asserted not at 0000_00BC (ECALL) but the next cycle…? Is that it?
+
+Originally, on TRAP occurrence during PTH I set trap_done to 0, but since TC sets trap_status != 0, trap_done should be 0 for all instructions anyway.   
+Maybe I should set trap_done in the case statement itself rather than per-case.
+
+Tried that, but Verilog disallows writing something before the case condition declaration.
+
+Previously I only drove trap_done <= 0 at the start of each FSM state and assumed it would persist, then set trap_done <= 1 at the end of the FSM.  
+Now, except for the final FSM stage, I put trap_done <= 0 into every FSM state.  
+I need to compare the new vcd with the old to see what differs…  
+
+No difference in the traces… I’ll check the actual top module.  
+
+Still no difference.  
+To avoid unintended latches in the Trap Controller, I set trap_done <= 1 before the case(trap_status), but reset will assert anyway at start…  
+And every case path drives trap_done explicitly, so it should be fine, right?  
+I’ll re-run the TC testbench like this.
+
+Same outcome, but I caught a different angle.
+
+PTH’s activation itself is one cycle late… Why?  
+How can I pull it one cycle earlier so PTH triggers in the same cycle trap_status arrives?
+
+I made the detection logic combinational (always (*)) to monitor changes and kick off PTH immediately, and kept the FSM progression sequential (always (posedge clk or posedge reset)) so it recognizes and reacts right away.  
+
+Some of the edge-registered logic might not fire…?  
+But as long as PC_Stall happens, we’re fine… I’ll run the RV32I46F top module.
+
+Wow, that works! But it didn’t branch to the mtvec address.  
+Trapped asserted, trap_target looked good, pc_stall dropped properly… I’ll check the PC_Controller signals; maybe that’s where it is.
+
+Right—next_pc wasn’t selected as trap_target. I’ll have to debug that.
+
+Looked at PCC logic—still fine…  
+Maybe the PC_Aligner is lingering and causing this; I removed it to check.
+
+Reran the sim and looked closely: the instruction after AUIPC is a JAL that jumps to a misaligned address. That’s when the freeze happens.  
+So next_pc must already be available while the current PC is executing… that’s how ED detects it.  
+Maybe next_pc misalignment should be detected in PCC instead? Needs thought. If I fix this it might resolve the issue. That’s it for today.
+
+### [2025.05.14.]
+
+I had duty.
+
+I studied general syntax with Palnitkar’s “Verilog HDL: A Guide to Digital Design and Synthesis,”
+and I organized the current RV32I46F debugging progress.
+
+**RV32I46F Debug Log**
+
+#### Situation 1.
+
+Trap Controller triggers fine. 
+But PTH only proceeds to the first FSM stage and doesn’t branch to mtvec.  
+In the waveform I saw PC restart from 0.  
+— Upon recognizing a SYSTEM instruction, PTH starts from the next cycle.  
+Because of that, trap_done goes 0 → pc_stall, and PTH should proceed—but it doesn’t.
+
+So PTH must begin in the same cycle the SYSTEM instruction is identified.
+
+#### Situation 2.
+
+I synthesized the Trap Controller’s trap_status condition as combinational logic (always (*)) so PTH begins immediately on trap_status input.  
+Previously everything ran on posedge clk (always (posedge clk or posedge reset)).
+The internal FSM update logic remains sequential.  
+— In the Trap Controller testbench I confirmed PTH now begins immediately upon detecting trap_status, as intended.
+
+#### Situation 3.
+
+In the RV32I46F top-module testbench, I confirmed via waveform that PTH proceeds through the last stage (reading mtvec).  
+But still, PC does not branch to the Trap Handler at 0x0000_1000.  
+Trapped asserted, trap_target looked correct, pc_stall deasserted—still no branch. I suspected PCC.  
+I confirmed next_pc wasn’t selected as trap_target. PCC logic itself looks fine.
+— I removed PC_Aligner in case it was interfering.
+
+#### Situation 4.
+
+I found the RV32I46F top-module testbench doesn’t stop.   
+It hung at 29500 ms; I forced stop and inspected the waveform.  
+The instruction after AUIPC is a JAL that jumps to a misaligned address. That’s where it freezes.  
+So next_pc must already be produced while the current PC is executing, but since it wasn’t, ED didn’t detect it and we went to a misaligned PC.  
+Maybe next_pc misalignment should be detected in PCC. Needs investigation.
+
+## RV32I46F 29500ms issue debugging
+
+### [2025.05.15.]
+
+Why…  
+Did it really go to a misaligned PC in the first place?  
+PCC itself is combinational, so it’s not a clocking issue, and ED also takes next_pc combinationally and should flag immediately.  
+So it should flag immediately…?
+
+JAL itself is fine. The issue is that the next_pc after it is misaligned.  
+If JAL changed next_pc to jump_target successfully, and ED detected the misalignment, then PCC should receive Trapped and switch next_pc to trap_target.  
+
+Oh.
+Because we’re executing JAL, Control Unit keeps asserting jump, making next_pc = jump_target; at the same time, `trapped` is asserted, making next_pc = trap_target. That’s a race condition.  
+
+On top of that, `trap_target` (the Trap Handler’s entry) is produced at the last PTH FSM stage, and while that runs, Trap Controller keeps trap_done = 0, so Control Unit outputs pc_stall. Now next_pc = pc also contends with the two above.  
+How do I resolve this… this seems like the problem.
+
+In short,
+
+#### Approach A to the RV32I46F 29500 ms issue
+
+If the race is among control signals selecting next_pc in PCC:
+
+1. JAL instruction → Control Unit asserts Jump  
+   ▶ next_pc = jump_target
+2. Exception Detector sees next_pc misaligned, asserts Trapped  
+   ▶ next_pc = trap_target
+3. Trap Controller sees Trapped, starts PTH, sets trap_done = 0.  
+   Control Unit asserts PC_Stall.  
+   ▶ next_pc = pc
+
+So three drivers for next_pc selection race and freeze the simulation.
+
+How to fix?  
+Late at night in the barracks I read Palnitkar looking for answers in Verilog semantics.  
+To check tomorrow:  
+
+1. Can tri/trireg and drive strengths address the race?
+2. Can blocking/non-blocking assignments and timing controls (event-based, level-sensitive) resolve it?
+3. Can zero-delay techniques resolve the race?
+
+Come to think of it, in Trap Controller I allowed trap_target (return address) on MRET to be an unaligned value. That’s separate from the current issue, but:
+
+```verilog
+`TRAP_MRET: begin
+    csr_write_enable   <= 1'b0;
+    csr_trap_address   <= 12'h341; //mepc
+    trap_target        <= ({csr_read_data[31:2], 2'b0} + 4);
+    debug_mode         <= 1'b0;
+    trap_done          <= 1'b1;
+end
+```
+
+I changed it so mepc return can’t go to a misaligned address.
+
+I peeked at the top module: even putting PC_Aligner back and letting it pass through, the trap scenarios for TC/ED verification still don’t select next_pc = trap_target properly. Where did this go wrong…
+
+### [2025.05.16.]
+
+I was on duty.  
+And as always, I found a thread that could lead to an answer.  
+While thinking through the problem during duty, I tried clearing my head and redrawing RV32I46F’s diagram from the left (starting at the PC) by hand, and suddenly it hit me.
+
+#### Approach A to resolving RV32I46F’s 29500 ms issue.
+
+The PCC logic is simple and already solid. Maybe the key lies in the Control Unit, which is the source of the PCC control signals.  
+In other words, if we prevent all overlapping signals from being sent to the PCC at once, we can eliminate the race condition itself.  
+Either use conditionals on the PCC control signals so that only one of them is asserted, or send a single unified PCC control signal to the PCC.
+
+#### Solution plan A-1 for the RV32I46F next_pc race condition
+
+After the Control Unit decodes an instruction, do not drive jump, trapped, and pc_stall as separate signals to the PC Controller.  
+Provide the PC Controller with an opcode-like pcc_op signal—i.e., a PC Controller operation code—so that the PCC determines next_pc from just one control input.  
+*This is the moment it clicks why modern systems employ μ-opcodes; micro-ops. Of course the main reason is to graft RISC-like traits to overcome CISC limits, but still, it makes sense here.*
+
+It took three days just to pinpoint the problem, and two more days to arrive at this answer.  
+I’ll apply it tomorrow as-is. It should work.
+
+### [2025.05.17.]
+
+Nope, it doesn’t.  
+The problem is unchanged. It’d be nice if at least something had shifted, but depressingly not a single result bit moved.  
+In standalone testbenches for the Control Unit and PC Controller with pcc_op integrated, there were no issues—even with race-condition tests.  
+What’s wrong… what is it…
+
+![RV32I46F.R3](/diagrams/design_archive/RV32I46F/RV32I46F.R3.drawio.png)
+
+Back to the beginning.  
+What if this isn’t a race condition problem?  
+With the old PC_Aligner in place, next_pc was auto-aligned and execution proceeded correctly.  
+Is the problem in the Program Counter register that next_pc feeds into?  
+Is next_pc getting into the Program Counter but then not taking effect?  
+It’s such a simple module… could it really be the culprit?  
+Ah.
+
+#### Approach B to resolving RV32I46F’s 29500 ms issue.
+
+The program counter only samples on posedge clk.  
+> “What if, instead of basing the misaligned check on next_pc in the Exception Detector, we compute misalignment in the PCC based on the candidate address source that would be selected?”  
+
+I can’t believe I overlooked such a fundamental structural point.  
+This isn’t a big-company setup with one person per module; I’m solo tracking dozens of modules and hundreds of signals, so mistakes like this are hard to avoid.  
+The current design judges misalignment based on next_pc.  
+It looks at next_pc and, if misaligned within the same clock, it assumes we can trap or stall and thus “change” the PC value.  
+But the program counter only holds a value captured on posedge clk.  
+Which means once a misaligned value is presented and we try to trap and fix it, the misaligned PC has already been latched, and we can’t change the current PC for that cycle.  
+And changing this clocked update scheme would introduce stability risks.  
+So the program counter should stay as-is. We need a different exception-handling scheme.  
+Should I place a checker—not an aligner—there to detect misalignment? That feels messy.  
+What if, instead of the Exception Detector judging next_pc, the PCC computes misalignment based on whichever address source it’s about to select?  
+
+Have the PC Controller detect a misaligned jump_target and self-issue pc_stall by holding next_pc = pc.  
+Then the Exception Detector can simultaneously recognize the misaligned jump_target and proceed with PTH normally. (20:32)  
+Let’s implement it right away.
+
+It works… (20:35) I made the PCC self-stall the PC, and the simulation no longer freezes.  
+The 30th instruction shows up cleanly in the waveform…  
+Now I’ll wire the Exception Detector signals so PTH actually runs.  
+
+We need to detect misalignment for all branch targets, not just jump_target.  
+However, in the old 43F-based architecture, the PCC computed the branch target internally by adding the current PC and the immediate and directly output that as next_pc.  
+
+`jump_target` arrives on the alu_result signal, so I could feed that into the Exception Detector, but with branching done inside the PCC I can’t observe branch_target misalignment.  
+To fix this, rather than adding a separate Branch Adder/Calculator (which would get messy), I decided to embed branch-target computation inside the Branch Logic module.
+Assuming that change in Branch Logic, I’ll update the Exception Detector.
+
+PTH is entered properly!!!
+The trap_handle_status FSM advances correctly and we branch to the Trap Handler address!!! (20:47)
+
+But I must have encoded the CSR address wrong in the Trap Handler routine; it didn’t behave as intended.  
+mret didn’t branch back to the mepc value.  
+Still, that’s a small, clearly visible issue in the waveform—easy to fix.  
+
+I’ll propagate the Branch Logic changes. New branch!  
+Done. I added functionality so the Branch Logic computes the address only when the branch is taken.  
+Now the Branch Logic takes PC and imm, computes the branch_target by addition, and outputs it.  
+Testbench finished.  
+
+Next, I’ll inspect and fix whatever’s wrong in the Trap Handler. instruction memory branch…  
+In the Trap Handler starting at Instruction Memory data[1024], the goal was csrrs x6, mcause, x0, but I had encoded the CSR address as 12'h343, which threw off the program’s control flow.  
+I corrected it to 12'h342, the actual CSR address for mcause. Then PTH behaved correctly. Everything works.
+
+Ah, there’s still some issue with EBREAK. Earlier, pcc_op wasn’t applied correctly so we failed to branch to trap_target, but I fixed that.  
+However, after EBREAK, the instruction inside the EBREAK handler should execute… but the debug instruction doesn’t appear. Why???  
+
+That’s it for today… time’s up.
+
+## RV32I46F EBREAK debugging
+
+### [2025.05.18.]
+
+Why won’t it switch to the debug instruction… why did the waveform stop at the PTH FSM stage where debug_mode should appear…  
+The debug signal itself never goes high to begin with… why?
+
+I poked through the code, tweaking bit by bit and checking.  
+I fiddled in the top module—no luck—so I tried adding a MUX in the Instruction Decoder.  
+Now the decoder takes both the instruction-memory instruction and the debug instruction, and it also detects debug mode.  
+When I made the decoder do nothing in debug_mode, the debug_mode signal itself rose correctly, but decoding didn’t happen.  
+Which is expected. But when I wrapped that in a conditional so it also decodes in debug mode—even if I just preset something like `opcode = 7'b0001100` inside—it freezes immediately at that timing. Something’s off.
+
+Maybe it’s because I’m passing the control signal straight through?  
+What if I add a separate toggle flag register and set it to 1 when the signal arrives?
+
+Huh, strange. In the top module the debug_mode signal doesn’t show up in the waveforms for either the top module or the trap_controller, but the flag does rise at that timing.  
+Something must be forcing the signal back to 0.  
+I checked and found Trap Controller still had code that always defaulted debug_mode to 0.  
+
+Since once debug_mode is active the debugger returns by executing MRET—and I already designed MRET to clear debug mode back to 0—I figured that defaulting wasn’t needed, so I removed it.  
+Still not working… why…
+
+---
+
+On a hunch I changed the coding style.
+Now it works…
+
+Previously I had:
+
+```verilog
+if (debug_mode) begin
+    instruction = dbg_instruction;
+end else begin
+    instruction = im_instruction;
+end
+```
+
+I changed it to:
+
+```verilog
+if (debug_mode) instruction = dbg_instruction;
+else instruction = im_instruction;
+```
+
+and it works…
+
+If I use debug_mode directly there, it freezes again. Replacing it with the flag makes it behave.  
+With that in place, an ECALL routes to the debug instruction, it decodes correctly, and the instruction executes.
+
+I spun up a separate top module to debug everything end-to-end, so I didn’t jot notes in real time; I can’t fully capture the five-hour stream of debugging thought.
+But with this, RV32I46F is complete.  
+
+I also moved the Instruction Decoder’s MUX out into the top module and tried it—works fine.  
+Done… 2025.05.18. 12:01.
+
+![RV32I46F.R4](/diagrams/design_archive/RV32I46F/RV32I46F.R4.drawio.png)
+![RV32I46F.R5](/diagrams/design_archive/RV32I46F/RV32I46F.R5.drawio.png)
+
+## RV32I46F_5SP Design
+
+### [2025.05.19.]
+
+While managing branches, creating PRs, and merging one by one was consuming a lot of time and imposing constraints on the work, most of the debugging and implementation logs above were written while implementing in a dirty file (an integrated file that doesn’t leave a branch record).  
+Today I reflected what should have been in the dirty file back into the main files and left git logs, but things that used to work stopped working, so I had to re-debug the already-working RV32I46F.  
+
+The biggest issue was that in the Trap Controller I needed to distinguish between blocking and non-blocking assignments, but due to lack of skill I wrote them incorrectly when moving from the dirty file, which caused the problem.  
+PTH wouldn’t run on ebreak, and switching to blocking assignments fixed it. I also hadn’t reflected some instruction changes in the Instruction Memory, so I applied those too.  
+After confirming the top module works correctly on the current branch, I merged into the develop branch.  
+
+Since ChoiCube84 is hospitalized and can’t directly develop right now, he handled code review. He pointed out that having the Branch Logic compute branch_target only when branch_taken wouldn’t really give power-efficiency gains or similar effects, so I looked it up and learned that this is a misconception at the RTL level and has negligible practical effect.  
+
+So I changed the Branch Logic to:  
+```verilog
+always (*) begin 
+   branch_target = pc + imm; 
+end
+```
+and then immediately pass through a case statement by branch type, so that branch_target is always computed in all situations.
+
+He also asked me to spell out variable names like j_target_lsbs in full, and I agreed—something I’d missed in the rush—so I fixed those.  
+After that, I plan to document the 46F Architecture and then move on to the pipeline implementation.
+
+I wrote the pipeline registers bit by bit during the morning while doing code review.  
+On the diagram I found signals unnecessarily connected to pipeline registers (e.g., rs2 and rd on the ID/EX register, or connecting the IF stage’s PC to ID/EX), and signals that should’ve been connected but I forgot (e.g., the register write data source select signal should come out of EX/MEM and go into MEM/WB).  
+I redrew those parts on the diagram, and finished defining the pipeline registers themselves.  
+The amount of repetitive work was pretty eye-straining.
+
+Done. Now only the documentation remains, and then all RV32I46F work will be wrapped up.  
+Originally I planned to integrate the cache, but I’ll likely postpone it to June—once we’re into pipelining—and hand time to it as soon as ChoiCube84 is discharged.  
+In my mind, pipelining felt a bit more “textbook” computer architecture, and I was going to use that as the reason to do it first, but while Patterson’s *Computer Organization and Design* does present memory and pipelining before cache, the cache hierarchy is also part of the “textbook” path, so it didn’t feel right to lean on that as a justification.  
+If I finish the 46F design today, I’ll wire the signals coming out of the pipeline registers into each module.  
+RV64I and the M, A extensions will come after pipelining.  
+
+The deadline is about 7 days out and I’m on duty again tomorrow, so the schedule is tight, but it is what it is. I’ll just do what I can.  
+
+--Evening study starts. (22:05)--
+
+While writing the 46F Architecture specification, I found that—due to divergences between design and implementation—a number of signals were no longer used.  
+I removed funct7 from the Exception Detector, and removed signals like MemRead from the Data Memory.  
+In BE_Logic, I changed BEDC_WD to BEDM_WD (Byte Enabled Data Cache Write Data → Byte Enabled Data *Memory* Write Data), which was slated for the 47NF structure.
+I named this RV32I46F.R5v2.  
+
+![RV32I46F.R5v2](/diagrams/design_archive/RV32I46F/RV32I46F.R5v2.drawio.png)
+
+Documentation of the 46F Architecture is complete.  
+Phew. It really feels like it’s time to move on to the next step.  
+
+> One completion isn’t the end.  
+The futility of victory lies in the fact that, ahead of any victory achieved, a new victory awaits—and harsher trials than before must be endured to seize it.  
+A bold leap toward that challenge is already a victory in itself,
+and because it is a victory, the new challenge becomes a great one.  
+— *Jonathan Livingston Seagull*, Richard Bach / translated by Kang Min-Woo
+
+23:40… Time’s not generous, but I’ll push as far as I can.
+
+I finished the first draft of the RV32I46F pipelined version diagram!
+
+![RV32I46F_5SP](/diagrams/design_archive/RV32I46F_5SP/RV32I46F_5SP.drawio.png)
+<sub>Printed day is wrong. It's likely 250519.</sub>  
+
+That’s it for today, haha. Let’s keep charging ahead!!!
+
+### [2025.05.20.]
+
+I was on duty.  
+Hmm… thinking about RV32I46F, I realize I likely overlooked that the data memory had been changed while we were moving to a cache-based structure and proceeded as-is.  
+I should verify this.  
+
+### [2025.05.21.]
+
+Upon checking the top-module VCD, I confirmed that Data Memory was outputting 256-bit-wide data, making correct operation unlikely.  
+So I created a new branch, feat/data_memory, added a separate data-memory module based on the older 43F Architecture, and split the cache-structured (43FC Architecture) data memory into a file named Data_Memory_For_Cache.v.  
+In Data_Memory_tb.v (the testbench), not much changed—Read Data was switched from the prior 256-bit to 32-bit, and I left a comment noting that when we go back to a cache-based structure, we should match the block length.  
+
+I’m organizing the design of the pipeline hazard units, extracting and summarizing notes from 2025.04.01.  
+
+==========
+
+#### Hazard Unit design
+
+- [Inputs]
+   - ID_rs1 (from Instruction Decoder)
+   - ID_rs2 (from Instruction Decoder)
+   - ID_rd  (from Instruction Decoder)
+
+- [Outputs]
+   - Hazardop (to Forward Unit)
+
+- [Logics]
+   - Compare whether instruction A’s rd equals instruction B’s rs1 or rs2.
+
+After instruction fetch, rd, rs1, and rs2 become observable at the decoding stage.  
+So, capture rd, rs1, rs2 from the ID stage, store them, and in the next clock cycle compare the previously stored rd with the freshly received rs1 and rs2.  
+If equal, assert Hazardop to the Forward Unit so it can perform forwarding.  
+At the same time, update the stored rd with the current rd.  
+
+[Note]  
+Hazard detection is the Hazard Unit’s original design goal.
+
+1. Data hazard  
+   When, due to dependencies between instructions, the current instruction must wait until a prior one finishes.  
+   RAW: Read After Write. Since writes to memory or registers complete only after the prior instruction finishes, leaving “empty” cycles (and if the value hasn’t been written yet, program context is lost and results are wrong), we insert bubbles.   
+   But bubbles alone hurt performance; since a prior instruction’s result is available before it’s actually written back, we forward that pre-WB value to the current instruction’s source.  
+   This is the forwarding method, and this design implements it.
+
+*We must know the dependencies between in-flight pipeline instructions.*  
+Check whether the register address that must be written by a past instruction is referenced by the current one.  
+Compare A’s rd with B’s rs1 and rs2.  
+
+rd, rs1, rs2 are visible at the ID stage:  
+capture ID-stage rd/rs1/rs2, compare the previously stored rd with the current rs1/rs2, and if equal, use forwarding.  
+Then update the stored rd with the current rd.  
+
+This tells us when a data hazard occurs.  
+Signal this data-hazard occurrence to the Forward Unit, which actually performs the forwarding.  
+
+#### Forward Unit design
+
+[Inputs]
+
+[Outputs]
+
+[Logics]
+Upon Hazardop indicating a data hazard, forward the prior instruction A’s result (the value that would eventually be written to the register file) to one of the ALU sources for the current instruction B, appropriately chosen based on B’s type.
+
+**[Note]**
+
+I saved the Hazard Unit and Forward Unit design notes under the 46F_5SP_Architecture folder.  
+
+### [2025.05.22.]
+
+And now, the end is near.  
+Let’s implement the pipelines as actual files.  
+
+- IF_ID Register
+- ID_EX Register
+- EX_MEM Register
+- MEM_WB Register
+
+I created all four pipeline registers, following the RV32I46F_5SP_R1 diagram.
+
+![RV32I46F_5SP.R1](/diagrams/design_archive/RV32I46F_5SP/RV32I46F_5SP_R1.drawio.png)
+
+I finished testbenches for the IF_ID Register and the ID_EX Register, and verified the reset signal, flush signal, and the “output current value on the next clock” behavior of the pipeline registers.  
+Tomorrow I’ll write the testbenches for the EX_MEM and MEM_WB registers.  
+That’s it for today. Even if I didn’t meet my quota, the testbenches ran well, so I’m satisfied. I can’t wait for tomorrow.  
+
+### [2025.05.23.]
+
+Personal maintenance time.   
+I finished all the testbenches up through the MEM_WB register.  
+20:06.  
+
+Looking now, I realized I hadn’t pipelined the Write Enable signal for the Register File and the Write Enable signal for the CSR File.  
+That won’t do. Since Write Back is literally the register write-back stage, this is logically inconsistent.  
+
+For CSR, the Write Enable coming from the Trap Controller occurs during exceptional handling rather than normal program flow, so it should be flushed and executed immediately—direct connection is fine for that path.   
+But for regular program instructions like Zicsr, the CSR Write Enable coming from the Control Unit should indeed be pipelined.  
+
+Resolved. I added register_write_enable and csr_write_enable signals to all of ID_EX, EX_MEM, MEM_WB registers, and finished their testbenches as well.  
+Next, from the existing RV32I46F I need to build the 5SP (5-Stage Pipeline) top module, wire up the pipeline registers and signals, and do a first-pass bring-up.  
+Of course, since the instruction sequence will create data hazards between producer/consumer pairs, values will look odd, but the point of this first pass is simply, “does it run?”
+
+20:46.
+
+--Evening study--
+Evening study. I’m catching up the devlog and now starting the first-pass top-module work mentioned above. 22:19.  
+
+When placing those pipeline registers, the RV32I46F PCC op micro-opcode structure becomes problematic.  
+It carries things like Jump and PC_Stall, and each control must arrive at PCC from different pipeline stages; making PCC decode one unified signal with precise timing separation explodes complexity unnecessarily.  
+Since the earlier issue I mistook for a race condition turned out to be a PC characteristics issue rather than a pcc_op vs. overlapping controls issue, rolling back the PCC to the pre-pcc_op structure should still work.  
+So I rolled PCC back to the older structure and kept the pcc_op versioned module around just in case for the future.  
+
+Ah—while declaring pipeline registers in the top module I realized: if the Reg Write signal is pipelined, the write-address must be pipelined too, but I was simply feeding rd straight from decode. I fixed this by pipelining rd.  
+I stubbed it in via top-module signal declarations; now I’ll jump back to the feat/pipeline_registers branch and add it properly…  
+All added. Done. That’s it for today.
+
+![RV32I46F_5SP.R2](/diagrams/design_archive/RV32I46F_5SP/RV32I46F_5SP_R2.drawio.png)
+
+### [2025.05.24.]
+
+Now it’s time to design the Hazard Unit, Forward Unit, and Branch Predictor.
+
+I had removed PCC_op codes from the PC_Controller earlier; since the Branch Predictor will own the Branch Target address in the future, I removed the imm from the rolled-back PC_Controller and added a branch_target signal instead.
+
+Let’s design the Hazard Unit.
+
+Hazard Unit is fully designed.  
+While designing the flush behavior, I paused to re-examine a few things.  
+
+On a jump, or when branch prediction is wrong, pipeline registers must be flushed.  
+The decision point is in EX, and information carried in EX/MEM and MEM/WB pertains to already-preceding instructions at that moment, so those must not be flushed. Hence, no flush signals are needed for those registers.  
+(There’s no instruction that explicitly orders “flush this specific pipeline register,” either.)  
+
+What’s left are IF/ID and ID/EX.   
+If I flush ID/EX, I lose the in-flight EX-stage judgment context for the current jump/branch prediction decision, so ID/EX must not be flushed.  
+
+Therefore, I decided to flush only the IF_ID_Register.  
+(Of course, I’ll find out in the top-module integration if this needs tuning, haha.)
+
+So the Hazard Unit design is done, and the testbench, too.  
+While coding, I hit some friction with the hazard_op signal.  
+Because it’s combinational, I typically set an initial hazard_op = 0; and then inside conditions set hazard_op = 1’b1;.  
+
+But that yields only a momentary pulse in the waveform, and depending on the code it immediately returns to 0, leaving no time for the downstream logic to react.  
+
+To solve this, I introduced a flag: use hazard_flag inside the conditional branches, and outside have hazard_op = hazard_flag so that even in pure combinational logic the value persists until the inputs change. I implemented it that way.
+
+My previous RV32I46F single-cycle experience with debug_mode helped here.  
+I could immediately infer that the lack of expected tb results was due to the pulse effect, and also be confident the logic itself wasn’t conceptually wrong.  
+“Let’s try the flag trick from back then—since it worked then”—that hunch helped, too.  
+It’s my own idea I haven’t seen written elsewhere, but I imagine others do something similar.
+
+![RV32I46F_5SP.R3](/diagrams/design_archive/RV32I46F_5SP/RV32I46F_5SP_R3.drawio.png)
+
+Evening study over.  
+If not for weekend leave, I might have finished the 2-bit Branch Predictor as well…  
+Still, I think I can make decent progress tomorrow.  
+
+### [2025.05.25.]
+
+Originally I planned to wire the pipeline registers into the top module first, then implement the other pipeline hazard modules and integrate.  
+But for debugging efficiency, I decided to design all hazard units first and debug them together (higher difficulty, but I trust the architecture and I’m short on time).  
+Yesterday I finished the Hazard Unit; now onto the Forward Unit.
+
+While designing the Forward Unit, I realized I need identifiers to distinguish: does rs1 need forwarding due to matching a prior rd, does rs2, or both?  
+So I expanded the hazard_op from the Hazard Unit from a single “data hazard occurred” bit to 2 bits: bit 0 indicates an rs1 hazard, bit 1 indicates an rs2 hazard. I updated the Hazard Unit accordingly.
+
+Back to the Forward Unit.  
+Design complete.  
+The Forward Unit receives the 2-bit hazard_op from the Hazard Unit: 2’b01 → rs1 hazard, 2’b10 → rs2 hazard, 2’b11 → both, 2’b00 → no hazard.
+
+When hazard_op indicates a data hazard, it switches the ALU source select from the “normal dataflow” value 2’b01 to 2’b10 to accept forwarded source data for computation.  
+This ALU source MUX will be implemented in the RV32I46F_5SP top module. 2’b00 remains unused to mean “no selection.”
+
+Given which hazard it is (via hazard_op), and using the current instruction’s opcode, it chooses what value to forward:  
+- for loads, forward Data_Memory’s MEM_read_data;
+- for SYSTEM (CSR, etc.), CSR File’s MEM_csr_read_data;
+- for LUI, MEM_imm;
+- for JAL/JALR, MEM_pc_plus_4;  
+ otherwise, forward MEM_alu_result.
+
+Note to self: don’t forget to implement the normal-vs-forward source-select MUX in the top module.
+
+Now the Branch Predictor remains. A BHT would be nice, but first I’ll do a simple 2-bit FSM predictor; if the top-module integration behaves, I can add a BHT later.  
+Better to finish something—even if shy of the ideal—than to chase perfection and never land it.
+
+I implemented a simple 2-bit FSM Branch Predictor.   
+While designing, I added EX_branch to the predictor—a signal the original 5SP didn’t have.  
+As I wrote in the PR, to update the predictor’s 4-state FSM (Strongly Not Taken, Weakly Not Taken, Weakly Taken, Strongly Taken), I must know whether the moment is actually a branch.  
+Without a branch-identify signal, the predictor would keep updating counters even when the instruction isn’t a branch.  
+So I added it and reflected this in the RV32I46F_5SP.R4 diagram. That’s the 101st PR already.  
+
+![RV32I46F_5SP.R4](/diagrams/design_archive/RV32I46F_5SP/RV32I46F_5SP_R4.drawio.png)
+
+Writing the testbench isn’t easy now—values must be driven and checked aligned to pipeline timing, and validation must look at the correct cycle, not “current” values—so it took quite a while.  
+I aimed to finish by dinner and just made it. Now after eating, it’s time to integrate into the top module and debug.  
+Only the biggest part remains. Let’s do this. (17:29)
+
+![RV32I46F_5SP.R4v2](/diagrams/design_archive/RV32I46F_5SP/RV32I46F_5SP_R4v2.drawio.png)
+
+Top-module verification start. It runs, at least.  
+register_write_data in the WB register is declared wrong. 
+I need to rename it to byte_enable_logic_register_file_write_data.  
+Also, in the pipelined structure the Branch Predictor now computes branch_target.  
+If branch_prediction_miss is 0, it keeps outputting IF-stage pc+imm as branch_target; if the prediction is wrong, then at the EX-stage decision point it is already receiving EX_pc and EX_imm and outputs that as branch_target.  
+
+Therefore, I must remove the Branch Logic’s branch_target computation from the scalar (single-cycle) 46F architecture.  
+Still, values look wrong—why aren’t values coming out correctly from the register file?
+
+![RV32I46F_5SP.R5](/diagrams/design_archive/RV32I46F_5SP/RV32I46F_5SP_R5.drawio.png)
+
+## Debugging RV32I46F_5SP RTL Simulation Testbench
+
+### [2025.05.26.]
+
+Written on 2025.05.29. 
+For several days I poured everything I had into this and couldn’t leave any record at all. What follows is a recollection of that period.  
+I made a dirty file and debugged from there. 
+While I was reproducing the dirty file’s “completion” on the real RISC-KC codebase and debugging step by step, I ran into cases that didn’t happen in the dirty file and cases that did happen there but didn’t here. Keep that in mind reading this.
+
+*I kept thinking till I fell asleep, then went straight to the PC room right after morning formation; I even skipped meals and just analyzed waveforms. These past few days I’ve basically been coding every possible minute without eating. I leave on the 28th for FPGA training, and by then development really has to be finished. The real deadline is the 27th.*
+
+I’ve built the branch predictor, forwarding unit, hazard unit, and the whole pipeline—dropping any of that would be painful.  
+PRs/commits/branch management are soaking up a huge amount of time.   
+So starting today I’ll develop to “done” first in a dirty file, then backfill commits from that dirty file (as of the day I’m writing this, I’m in the middle of committing those dirty-file changes).  
+
+- Issue 1. Registers kept showing values like xx00_00bc.
+   - I wrote an init block to zero all registers so they all start at 0000_0000. That cleared up the register waveform issue.  
+   (As of today’s writing, oddly, I can’t catch that behavior in the waveforms anymore—even without adding that logic to the Register File. Huh?)
+
+- Issue 2. The imm value didn’t seem to come out cleanly. 
+   - WB_raw_imm in the pipeline was x.   
+   I think I worked this out somehow (probably a knock-on effect).
+
+- Issue 3.   
+rs1 was being fed into the Register File just fine, but the corresponding source value wouldn’t come out.
+
+Tracing why the ALU source wasn’t right, I found I’d forgotten to add the MUX in the top module that lets the ALU pick a forwarded source. Fixed that.  
+Also, EX_branch_taken from the Branch Predictor wasn’t wired correctly—fixed.  
+
+Switching the pipeline-stall basis from trapped to trap_done fixed the problem where after PTH the pipeline stalled and wouldn’t branch to the Trap Handler address.  
+Now once PTH finishes, the stall clears and we jump into the Trap Handler as intended.  
+
+I had also missed OR’ing the CSR write-enable from the Trap Controller with the pipelined write-enable coming from the Control Unit in the top module. Fixed.  
+
+With the Branch Predictor defaulting to Strongly Not Taken, the following instruction runs. 
+But even when the prediction is clearly wrong, we still weren’t branching to the EX-stage pc+imm.  
+`branch_target` itself was correct—so why?
+
+First-pass fix: I found I’d been fabricating a nonexistent IF_pc signal for pc—fixed that. 
+That helped, but for some reason PCC’s branch_taken was still 0. Why?  
+
+Looks like I’d derived branch_taken from branch_prediction, which caused trouble.  
+I split signals into branch_estimation and branch_prediction_miss: on actual taken, use branch_target; if the estimation says taken, also use b_target; otherwise, just fall through.
+
+Uh oh. I hit a case that needs WB forwarding.  
+At 188611 ps, an instruction that retired in WB wrote to its rd, but a later instruction had already reached EX without that updated rd. I need the forwarding unit to forward from the WB stage as well.  
+That’s it for today.
+
+![RV32I46F_5SP.R6](/diagrams/design_archive/RV32I46F_5SP/RV32I46F_5SP_R6.drawio.png)
+
+### [2025.05.27.]
+
+When EX_jump is misaligned, we insert a NOP flush because it’s a jump. 
+But then we lose the context that the jump was misaligned, so PTH only runs the first step and then we just move on to ADDI x0 x0 0, and the TH never runs.  
+→ I wired trapped into the Hazard Unit and, when trapped goes high, I stall the ID_EX_Register and EX_MEM_Register.   
+The ID_EX stall preserves context until PTH can run; the EX_MEM stall ensures the preceding (non-faulting) instruction completes.  
+
+PTH takes at least 2 cycles. 
+By then, the WB stage has already completed, and when the stalled MEM stage advances into WB, that WB also completes—so preceding instructions finish.   
+
+Do we need special handling for MEM_WB_Register?   
+No. Two preceding instructions will have already completed, and writing the same value to the same address twice doesn’t cause a data issue in the current system.
+
+#### After a branch prediction miss, we still didn’t jump to the real target:  
+PC only outputs the address set in the previous clock, so even if the EX-stage computes the correct address and PCC passes it on, we won’t branch to it right away.  
+
+So I moved the EX-stage address calculation into the Branch Logic, and PCC now receives both branch_estimation_target and branch_target_actual. 
+PCC decides—based on whether the prediction was right—and outputs next_pc accordingly.  
+
+But why does branch_prediction_miss stay at 1 once it goes high?   
+I must have forgotten to set a 0 default in the combinational logic for the “no condition met” path. Fix that and we’re done.
+
+### [2025.05.28.]
+
+It’s done. 00:54.  
+I’m heading out today to KAIST IDEC for training—Xilinx FPGA implementation, a 3-day course. 
+Now I’ll go through and commit/PR the changes I made in the dirty file but didn’t record.  
+
+Since it’s better to have a “finished” record within May, if time gets too tight I’ll commit the final versions of each module in one go and document the changes in the PR.
+
+![RV32I46F_5SP.R8](/diagrams/design_archive/RV32I46F_5SP/RV32I46F_5SP_R8.drawio.png)
+
+### [2025.05.31.]
+During this time I took the training and learned Vivado’s FPGA synthesis workflow—how to actually implement things on FPGA. Debugging, setting timing constraints, etc.  
+
+At the RTL level, running Simulation and Synthesis in Vivado surfaces far more information and errors than writing with iverilog. 
+From the reports, quite a few blocks were being synthesized into latches, and beyond that I’ll need to set timing constraints and then fix any timing violations that those constraints don’t eliminate.   
+I should learn more about handling the .xdc file…
+
+The roadmap is now:
+
+1. Fix timing-related errors and unintended latch synthesis on FPGA
+2. Bring up a simple OS like FreeRTOS on FPGA
+3. Implement display output and keyboard/mouse input on FPGA
+4. Performance testing and run Doom
+
+All of this needs to happen within June. How long #1 takes will likely determine everything else. 
+The problem is the logic is big enough that one synthesis run takes quite a while. 
+And it needs a lot of memory—on my 16 GB machine, an overnight synthesis hit OOME in the logs around 3 a.m.  
+<sub>*Later on, it turned out to be an RTL error.*</sub>
+
+There’s no time left. I’ll push the backlog of development notes to the main docs and commit the final files.  
+Honestly, while porting the main files from the dirty file, some situations that occurred in the dirty file didn’t occur here, and with fewer changes things gradually shaped up, so I thought optimization might be possible and wanted to go that way—but what matters is “finishing” the project, not chasing perfection given the current situation. We can pursue it, but not make it the goal right now.
+Below are those development notes.
+
+In RV32I46F_5SP, the logic to flush pipeline registers on a trap is missing.  
+I’m planning to add it so that, on an exception, we stop updating the PC, let all in-flight instructions complete, then conduct trap handling.  
+While branching to the Trap Handler, we’ll save the current GPR contents into a heap area in data memory and reload them on mret.
+
+For example, take a misaligned exception.  
+(Current supported traps are misaligned instruction address, EBREAK, ECALL, and mret only. fencei was dropped because we cut the cache due to schedule.)  
+
+The Exception Detector catches this in IF, and the Branch Predictor receives both the branch target calculated in IF and the jump address calculated in EX.  
+Using the opcode to determine the instruction form, instructions being processed before the jump have no context, so we hold the PC until they reach WB, flush, then proceed.
+
+We detected a misaligned jump in EX, which triggered a trap: pc_stall asserted and flush happened.  
+But on the next clock, EX holds a NOP due to the flush (the instruction after the jump), so EX’s opcode is no longer JAL, trapped deasserts, PTH doesn’t run, trap_done returns to 1, and execution continues incorrectly.  
+The likely fix is to add a stall signal that stops pipeline-register updates and holds their current values.
+
+In top-module testbench.  
+PCC decides whether to use branch_target based on branch_estimation. 
+If we estimated not-taken but EX_branch_taken is 1 (misprediction), the Branch Predictor computes the EX-stage branch target by adding the EX pc and imm.   
+I want to code it so that whenever EX contradicts a strongly/weakly not-taken state, we use that branch_target as next_pc.  
+→ This converged to the solution above. See “#### After a branch prediction miss, we still didn’t jump to the real target:” from ## [2025.05.27.]
+
+Because the PC outputs the address set on the prior clock edge, even if PCC passes the EX-stage computed address on a misprediction, we won’t branch to it immediately.  
+So we moved the EX-stage address calculation into the Branch Logic, and PCC now receives both brnach_estimation_target and branch_target_actual, decides whether the prediction was right, and outputs next_pc accordingly.
+
+A case that needs WB-stage forwarding (from 2025.05.25.).  
+The hazard unit outputs separate mem and wb hazard signals as hazard_op: hazard_mem and hazard_wb.  
+The forwarding unit receives and handles them.  
+
+#### Forwarding initially didn’t work.  
+Now that we forward from WB as well as MEM, the top-module logic had to change.  
+
+So I changed it to this scheme:  
+- alu_normal_source_A / alu_normal_source_B.
+- alu_forward_source_data_A / alu_forward_source_data_B.
+- alu_forward_source_select_A / alu_forward_source_select_B.  
+These are, respectively, the current pipeline value, the forwarded value, and the select for those.
+
+#### Branch prediction issues.
+Flush on misprediction worked, the prediction counter updated, NOP got inserted as designed.  
+But once branch_prediction_miss went high, it never dropped even when branch_estimation matched branch taken.  
+I noticed there was no zero-initialization path for miss in the combinational code; adding that fixed it.  
+
+#### Branch misprediction execution issue.
+On misprediction we should branch to the EX-computed branch target, but on the next clock the branch signal is deasserted, so PCC updates IF’s PC with PC+4.  
+Should we pipeline the EX branch-taken signal into MEM and have PCC, on misprediction with MEM stage branch=1, jump to the branch target?  
+
+Hmm… this also converges to the predictor/target issue above. See “#### After a branch prediction miss, we still didn’t jump to the real target:” from ## [2025.05.27.]  
+
+As for where to compute that target:  
+(We could put a combinational adder in the Predictor to add the EX imm and pc to get the actual branch address, but does it have to live in Branch Logic?)  
+I decided to keep the Predictor simple—just IF-stage prediction and EX-result-based update—to keep module boundaries clean, and to include the computation in Branch Logic.
+
+#### WB forwarding wasn’t working;  
+looking at the top module, alu_forward_source_select only forwarded from MEM—I’d forgotten to update it. Fixed.  
+
+#### But alu_forward_source_select_{a,b} weren’t changing at that timing;  
+they stayed at 0.  
+hazard_wb should have asserted from the HazardUnit, but since nothing changed it looks like the WB-forwarding condition wasn’t detected, so hazard_wb never fired. Why?  
+
+Looking closely at the waveforms: the problematic EX_rs1 was 0c, but WB_rd was different, so there was no hazard—that logic was fine.  
+The real issue: in the xor instruction, the rd from a completed sll is already in the Register File after WB, and WB_rd now belongs to the next instruction, so the hazard detector won’t see it.  
+
+How to forward in this case?  
+The data is already being written into the Register File, but the EX stage wants to read that same register in the same clock before the write “takes.”  
+I added a write-through bypass in the Register File: when WB writes the same register being read, the read data = write data in that cycle.  
+Fixed!
+
+#### CSR-side forwarding wasn’t working.
+Since CSR instructions read and write CSR in one go, this pops up. In single cycle, csrrs writes 0x2fc to mepc, then a csrrc immediately reads mepc; 
+Zicsr hazards happen even when rs overlaps, not just rd. How to fix—change the CSR File?  
+I resolved it by adding CSR forwarding support to the forwarding and hazard units.
+
+#### PTH mtvec read issue
+From the waveforms: ECALL is detected in ID by the Exception Detector, trap_status goes to 010 (ECALL), and PTH proceeds inside the Trap Controller as designed.  
+But when PTH ends, reading mtvec from CSR address 305 should yield 0x0000_1000 and we should jump there. We did set csr_trap_address=305, but the read came back 0x0000_0000.  
+Meanwhile in the misaligned PTH, requesting 305 does return 0x0000_1000 and we jump correctly.  
+
+What’s wrong?  
+In PCC, trapped is asserted, but csr_read_data arriving at PCC is 0x0000_0000, so the wrong instruction starts down the pipe from IF. How to fix?  
+I wanted to flush the IF-fetched instruction when ECALL is detected in ID.  
+I solved it by having the Hazard Unit raise IF_ID_Flush when trapped is asserted.  
+
+#### CSR File Read/Write address read issue
+On splitting CSR File read/write addresses.  
+An address read in ID wasn’t producing a value until WB.  
+For non-write operations I want to use the ID-decoded raw_imm as the CSR address, but the current top-module code feeds the WB-stage address, which causes this issue.  
+To execute instructions correctly, CSR values must appear immediately for the address presented, but we were handing it WB’s address instead—fine in single cycle, not here.  
+The fix is to give the CSR File separate ports for read address and write address (like the general Register File), so reads/writes don’t race.  
+
+Also, the Trap Controller accesses the CSR File during PTH and must write to CSR immediately.  
+Even if we add a dedicated write-address port, WB will also be writing CSR on Zicsr results. On a trap we stall the pipeline, but could WB’s write address conflict with Trap Controller’s?  
+And the Trap Controller currently uses a single csr_trap_address for both CSR reads and writes.  
+This suggests splitting the Trap Controller’s CSR address outputs into separate read and write ports, and likewise splitting the CSR’s write-address ports between Trap Controller and WB.  
+
+Do we also need to tell CSR File whether the access is for PTH (e.g., by adding trap_done as an input)? Is that right…?  
+No—WB-stage CSR ops are already in flight before trap detection, and our logic completes in-flight instructions before handling the trap. So there’s no conflict.   
+I solved it by splitting the CSR’s address inputs into separate read-address and write-address ports.
