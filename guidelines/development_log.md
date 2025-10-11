@@ -5907,7 +5907,7 @@ Why? I muttered that I should’ve just started RTL in Vivado instead of iverilo
 
 Vivado’s flow pane suggests a standard workflow;   
 I decided to go step by step, clearing errors/warnings before moving on. 
-So I started with Behavioral Simulation again and focused on eliminating X and Z in the waveforms. While chasing Z’s... I found the culprit.
+So I started with Behavioral Simulation again and focused on eliminating X and Z in the waveforms. 
 
 ### [2025.06.03]
 
@@ -6374,19 +6374,23 @@ No matter how I think, I’ve hit a cognitive limit here; no progress. I’ll pu
 Timing stretched to about 13 ns. I even ran Implementation; that’s 26 ns. Hm.  
 
 Let’s find and fix the next Combinational Loop first.  
-There was a Loop related to debug mode.  
-
-> 19 LUT cells form a combinatorial loop. This can create a race condition. Timing analysis may not be accurate. The preferred resolution is to modify the design to remove combinatorial logic loops. If the loop is known and understood, this DRC can be bypassed by acknowledging the condition and setting the following XDC constraint on any one of the nets in the loop: 'set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets <myHier/myNet>]'. One net in the loop is branch_predictor/branch_estimation. Please evaluate your design. The cells in the loop are: branch_predictor/branch_estimation_INST_0,
-branch_predictor/branch_target[0]_INST_0,
-branch_predictor/branch_target[1]_INST_0,
-exception_detector/trap_status[0]_INST_0,
-exception_detector/trap_status[0]_INST_0_i_3,
-exception_detector/trap_status[0]_INST_0_i_4,
-exception_detector/trap_status[1]_INST_0, if_id_register_i_25,
-if_id_register_i_26, if_id_register_i_27, if_id_register_i_28,
-if_id_register_i_29, trap_controller/debug_mode_INST_0,
-trap_controller/debug_mode_INST_0_i_2,
-trap_controller/debug_mode_INST_0_i_3 (the first 15 of 19 listed).
+There was a Loop related to debug mode.    
+> 19 LUT cells form a combinatorial loop. This can create a race condition. Timing analysis may not be accurate.   
+The preferred resolution is to modify the design to remove combinatorial logic loops.   
+If the loop is known and understood, this DRC can be bypassed by acknowledging the condition and setting the following XDC constraint on any one of the nets in the loop: 'set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets <myHier/myNet>]'.   
+One net in the loop is branch_predictor/branch_estimation.   
+Please evaluate your design. The cells in the loop are:     
+branch_predictor/branch_estimation_INST_0,  
+branch_predictor/branch_target[0]_INST_0,  
+branch_predictor/branch_target[1]_INST_0,  
+exception_detector/trap_status[0]_INST_0,  
+exception_detector/trap_status[0]_INST_0_i_3,  
+exception_detector/trap_status[0]_INST_0_i_4,  
+exception_detector/trap_status[1]_INST_0, if_id_register_i_25,  
+if_id_register_i_26, if_id_register_i_27, if_id_register_i_28,  
+if_id_register_i_29, trap_controller/debug_mode_INST_0,  
+trap_controller/debug_mode_INST_0_i_2,  
+trap_controller/debug_mode_INST_0_i_3 (the first 15 of 19 listed).  
 
 There were 330 LUTs in loops; it seems the CSR_File loop accounted for much of the cost. Now only 19 remain, and inferring the loop path:  
 

@@ -1,5 +1,6 @@
 # 🖍 RISC-V RV32I Processor Debug Log
 This document is a summary of problems that required resolutions from the `development_log.md`.  
+Read `development_log.md` for full informations and contexts searched by the YYYY.MM.DD.
 
 The architecture design evolution is from **37F**, **43F**, **46F**, to **46F5SP**.  
 
@@ -623,3 +624,290 @@ Zicsr hazards happen even when rs overlaps, not just `rd`.
 
 ## RV32I46F_5SP Debugging (FPGA Implementation; Vivado)
 ### [2025.06.01.]
+
+Issue 1. Timing Constraints Wizard issue
+- While taking the FPGA course I tried an initial implementation of this RV32I46F_5SP on the board. 
+    - I ran the Timing Constraints wizard and accepted all recommended options, but then synthesis took **half a day**. 
+    - That felt wrong, so I asked my professor; even his RV32I-based 5–6 stage pipeline CPU synthesizes in ~5 minutes. So, yeah—likely a constraints issue.
+- I removed the timing constraints entirely and re-ran synthesis.
+
+Issue 2. Timing Closure
+- Synthesis without any timing constraints showed result of around 30 ns.   
+    - The board target is 100 MHz, so that’s a >20 ns violation.
+- Inspecting the paths, these were C->CE paths (clock to clock-enable) involving signals between modules that my RV32I46F_5SP never actually links
+    - e.g., **id_ex_register** driving **if_id_register**, or a **Trap Controller** FSM reg feeding some other module.   
+- Since these are unintended/unused paths, the docs say Implementation optimization will drop them, and in the meantime you can mark them as false using `set_false_path` in XDC to suppress violations in the report.
+    - I put the constraints in the XDC and re-ran, but they didn’t seem to apply
+    - I should add them via “Edit Timing Constraints” rather than directly editing the XDC
+        - they actually took effect
+- Had hundreds of these C->CE offenders from those unintended paths;   
+    - Used patterns like `id_ex_register/*/*/*` to exclude entire subpaths with `set_false_path`, and that eliminated the reported timing violations.  
+    - if I accidentally excluded real, used paths, then the design could be broken in implementation, and I’d just be ignoring true timing issues.
+
+### [2025.06.02.] ~ [2025.06.03.]
+
+Issue 3. Vivado simulation issue
+- Ran a Post-Implementation Timing Simulation(PITS). 
+    - The waveforms looked nonsensical, lots of modules appeared to be optimized away
+- Stripped all timing constraints and ran Vivado RTL simulation to check whether the core behaves as intended.
+    - X waveform weren’t too many (mostly due to the Register File lacking init), but there were lots of Z’s. 
+- Vivado’s flow pane suggests a standard workflow;   
+    - Decided to go step by step, clearing errors/warnings before moving on. 
+    - So started with ***Behavioral Simulation*** again and focused on eliminating X and Z in the waveforms. 
+- I solved most of X and Z.   
+    - In the old top module, my Verilog inexperience had me duplicating module-derived signals as extra top-level declarations—those duplicates were driving Z’s. 
+    - Removed them, added reset/init logic for the Register File, and the X’s disappeared too.
+
+- Timing improved a lot: ~12 ns now, i.e., around a 2 ns violation—much better than ~35 MHz-equivalent (30 ns violation).   
+    - Many of those odd C->CE paths in the original RTL are gone too, though not all. And this is only post-synthesis; Implementation may differ.
+
+## RV32I46F_5SP Debugging (Debugging + Timing Closure)
+### [2025.06.03.]
+
+> - Problem : 
+>   - Vivado warnings about ***combinational loops*** from deep combinational chains, which can undermine timing analysis accuracy. 
+>       - very deep comb logic can cause the tool to replicate regs by fanout and generally do unhelpful things
+>       - The fix is to register internal outputs to break combinational chains with flops.   
+
+### [2025.06.04.]
+
+- **Attempts** : 
+    - Removed clk/reset from the **Hazard Unit**.  
+    - Fixed `raw_imm` mis-declared as [11:0] in **pipeline registers** (was causing Z’s).  
+    - Removed re-declared, unused top signals (more Z’s gone).  
+    - Waveforms are now all clean.  
+
+-----
+
+### [2025.06.05.]
+
+![First_Linter_Result](/project_devlog/KHWL/Devlog_images/FirstLinterResult.png)
+![multi-driven\_debug\_mode](/project_devlog/KHWL/Devlog_images/TrapControllermultidriven.png)
+
+- Linter ASSIGN-7 issue (multi-driven) A.
+    - Next, ASSIGN-7. It says the `branch_target` signal in the **Branch Predictor** module and the `debug_mode` signal in the **Trap Controller** are multi-driven; I should check the code.  
+    - Since there is no redeclaration, this probably isn’t that problem. 
+    - Looking at the screenshot, on reset I tried to initialize `debug_mode` to 0 and included it in sequential logic, while normally that value is handled in combinational logic. 
+    - That makes both logics assign the value and likely triggers the warning.
+        - I split the roles using a `debug_mode_enable` signal and resolved it.  
+
+- Linter ASSIGN-7 issue (multi-driven) B.
+    - Also says the `branch_target` signal in **Branch_predictor** is multi-driven
+        - It initializes to 0 sequentially on reset, but the actual value is generated in combinational logic, so that seems to be the issue. 
+        - Even if I set the default to 0 in combinational logic, it will compute the address under conditions, and those conditions aren’t momentary pulses, so it should be fine.  
+        - Applied, Solved.
+
+- Issue 2. Timing Closure
+    - Synthesis option that had stretched to **18 ns** was changed to `Flow_PerfOptimized_high` and reduced to about **15 ns**. 
+        - **14 ns** would require `full flatten`, but that makes debugging hard, so I kept `rebuilt`.  
+    - Roughly **15 ns** violation.
+        - I replaced the pipeline stall signals from if-statements to ternary operators and secured a **0.1 ns** margin.  
+    - Ran Post Synthesis Timing Simulation with no violations. (Adjusted to 25ns=40MHz constraint)
+        - Unintended and unknown signals spit out weird values, the program doesn’t flow correctly, and from a certain point on the waveforms are flooded with X and Z
+
+-----
+
+## RV32I46F_5SP Debugging (Combinatorial Loop)
+### [2025.06.05.] ~ [2025.06.08.]
+
+> - Problem : 
+>   - Vivado says there’s a Timing Loop, a Combinational Loop.  
+>       - ALU
+>        - Exception Detector, 
+>        - CSR File, 
+>        - Trap Controller, 
+>        - RV32I46F_5SP top module.
+>   - From the Timing Analysis list
+>       - Forward Unit, 
+>       - IF ID Register, 
+>       - Branch Predictor are included.
+
+- **Resolution 1** : 
+    - Revised CSR File Synchronous from Asynchronous
+        - Set up the CSR output stage as `csr_data_out` and kept the existing `csr_read_data` as an internal register. 
+        - Updated the top module accordingly.  
+        - Added a `csr_ready` signal to the CSR and had the **Control Unit** use it to perform `PC_Stall`
+        - And also gave the **Hazard Unit** the `csr_ready` signal so that if `csr_ready` is not asserted, all pipeline registers stall.  
+        - While converting CSR to synchronous, I added `READ_MEPC` stage to the PTH.   
+        - Since `MRET` can no longer branch to mepc in a single cycle, it must hold the same address until the second cycle when `mepc` is available. 
+        - I kept debug mode to be released immediately and made `trap_done` go high again in `READ_MEPC`.
+    - CSR File Revision Result : 
+        - Ran Simulation; though a few Z values appeared, the values held correctly up to the final EBREAK debug instruction `ABADBABE`
+        - I recall about 6 Timing Loops being reported before; now it’s down to 3 and the timing
+        - WNS was captured as 37.565 ns, now Total Delay is 12.108 ns. 
+        - That implies roughly 15 ns, i.e., around 75 MHz
+
+- **Resolution 2** : 
+    - There was a Loop related to debug mode.    
+    > 19 LUT cells form a combinatorial loop. This can create a race condition. Timing analysis may not be accurate.   
+    The preferred resolution is to modify the design to remove combinatorial logic loops.   
+    If the loop is known and understood, this DRC can be bypassed by acknowledging the condition and setting the following XDC constraint on any one of the nets in the loop: 'set_property ALLOW_COMBINATORIAL_LOOPS TRUE [get_nets <myHier/myNet>]'.   
+    One net in the loop is branch_predictor/branch_estimation.   
+    Please evaluate your design. The cells in the loop are:     
+    branch_predictor/branch_estimation_INST_0,  
+    branch_predictor/branch_target[0]_INST_0,  
+    branch_predictor/branch_target[1]_INST_0,  
+    exception_detector/trap_status[0]_INST_0,  
+    exception_detector/trap_status[0]_INST_0_i_3,  
+    exception_detector/trap_status[0]_INST_0_i_4,  
+    exception_detector/trap_status[1]_INST_0, if_id_register_i_25,  
+    if_id_register_i_26, if_id_register_i_27, if_id_register_i_28,  
+    if_id_register_i_29, trap_controller/debug_mode_INST_0,  
+    trap_controller/debug_mode_INST_0_i_2,  
+    trap_controller/debug_mode_INST_0_i_3 (the first 15 of 19 listed).  
+
+    - There were 330 LUTs in loops; 
+        - it seems the CSR_File loop accounted for much of the cost. Now only 19 remain.
+    - Inferring the loop path:  
+        - `debug_mode` affects IF’s opcode and imm (instruction changes),  
+        - which then affects `branch_target` in **Branch Predictor** and trap detection in **Exception Detector**, creating a loop.  
+    - So I registered `debug_mode` and succeeded in removing the combinatorial loop. Down to zero.  
+
+## RV32I46F_5SP Debugging (Module logic debugging)
+### [2025.06.07.]
+#### ECALL Logic debugging
+> - **Problem A** : 
+>   - Due to `ECALL` entering PTH, CSR access instructions staying in EX and MEM cannot complete and get invalidated in testbench scenario.
+>   - Even if it returns with `MRET`, `ECALL` is resolved in the ID stage and jumps to `mepc`+4
+>       - So the two instructions that were in EX and MEM before ECALL cannot be saved.  
+>   - If I jump back to them, `ECALL` will be executed again and I’ll just fall into recursion.  
+
+- **Attempts A** : 
+    - When ECALL is detected, the pipeline should stall for two cycles. 
+    - Made the FSM wait on ECALL to preserve even the WB-stage instruction, but then I found that ECALL’s own PTH didn’t execute.
+
+- **Reasoning A** : 
+    - When ECALL occurs, the instruction that identifies ECALL in the ID stage must stall, but it gets flushed and the `ECALL` context disappears.  
+        - Because of this the ED doesn’t even recognize a trap, so PTH doesn’t proceed. There is indeed a flush in **IF_ID_Register** in the waveform.
+    
+- **Resolution A** : 
+    - During debugging I had inserted a logic into **Hazard Unit** to flush **IF_ID_Register** on ECALL; I must have forgotten to remove it. 
+    - Removing it lets PTH proceed.
+
+> - **Problem B** : 
+>   - Right after branching to the Trap Handler via ECALL PTH, a Misaligned instruction follows ECALL and raises another PTH; 
+>   - Before finishing the ECALL handling, it jumps to the Trap Handler again.
+
+- **Resolution B** : 
+    - Once ECALL’s PTH finishes, in principle I should branch to the **Trap Handler** and flush all preceding instructions. 
+    - When Trap Controller reaches GOTO_MTVEC and the IF stage PC is also the Trap Handler start address (mtvec), I can send a flush signal to the Hazard Unit.  
+        - I added a pth_done_flush signal; similar role, but moving the assertion point from READ_MTVEC (previously 1 there) to GO_MTVEC fixed the issue.  
+
+
+### [2025.06.08.]
+#### WB-Stage Forwarding issue
+> - **Problem** : 
+>   - Two consecutive instructions to the same CSR with the same R[rd]; 
+>   - due to the preceding instruction A, the CSR is changed, but the following instruction B reaches WB and writes the stale CSR value it read to R[rd]. 
+>   - It should instead read the new CSR value modified by A and write that to R[rd].  
+>       - Earlier the ALU already had forwarding for this hazard and produced correct values so CSR got the right value, 
+>       - But the value to store into the Register File lacked forwarding logic.  
+
+- **Resolution** : 
+    - The `alu_result` of the retiring instruction A in WB should be the `reg_write_data` for the following instruction B’s R[rd], so forward A’s alu_result.  
+        - But A has already retired; 
+        - fetching `alu_result` from the WB register just forwards to itself, which is not intended and must not be done.  
+    - Add a register in top_module that stores the retiring instruction’s `alu_result` and design a MUX so that on a csr-reg hazard the `register_file_write_data` becomes `retired_alu_result`.  
+    - In **Hazard Unit**, I could also do WB-MEM, but for consistent timing detection/handling I’ll add separate `retire_rd` and `retire_alu_result` in the module and make hazard detection and logic as below.
+
+```verilog
+wire reg_csr_hazard = (EX_opcode == `OPCODE_ENVIRONMENT && (WB_rd == retire_rd) && (WB_csr_write_address == retire_csr_write_address));
+
+always @(posedge clk or posedge reset) begin
+   if (reset) begin
+      retire_rd <= 5'b0;
+      retire_csr_write_address <= 12'b0;
+   end else begin
+      retire_rd <= WB_rd;
+      retire_csr_write_address <= WB_csr_write_address;
+   end
+
+end
+```
+- Hazard detection: when it’s a CSR (SYSTEM; ENVIRONMENT OPCODE) instruction and the WB-stage destination register equals retire_rd, and the WB CSR write address equals retire_csr_write_address, the hazard occurs.  
+    - Each retire_rd and retire_csr_write_address is delayed by one cycle via clocking for comparison.
+    - Top module logic for the retired_alu_result and register_file_write_data MUX is:
+
+```verilog
+always @(posedge clk or posedge reset) begin
+   if (reset) begin
+      retired_alu_result <= {XLEN{1'b0}};
+   end else begin
+      retired_alu_result <= WB_alu_result;
+   end
+end
+
+`RF_WD_CSR: begin
+   if (csr_reg_hazard) begin
+      register_file_write_data = retired_alu_result;
+   end else begin
+      register_file_write_data = WB_csr_read_data;
+   end
+end
+```
+
+## 46F5SP_SoC Debugging
+### [2025.06.16.]
+
+Issue 1. 
+- Timing not met, so I added constraints in XDC, and then ran Implementation hoping it would come out better.  
+```xdc
+create_generated_clock -name clk_50mhz -source [get_ports clk] -divide_by 2 [get_pins clk_50mhz_reg/Q]
+
+`set_multicycle_path -setup 2 -from [get_clocks clk_50mhz] -to [get_pins */*clk_enable*]
+```
+
+- To silence violations from unintended timing calculations due to clk50mhz, I also used set_false_path.  
+
+### [2025.06.17.]
+Issue 2. 
+- Looking at the results, there was still a port issue; 
+    - I found that a wildcard like set_property ... [get_ports debug_*] in the xdc was unintentionally tying in numerous signals.  
+    - Removed that to fix it, and Implementation succeeded.  
+
+- Timing looks fine, but now I get Critical Warnings saying “not reached by a timing clock” in places like the list below.  
+
+> not reached by a timing clock
+
+> TIMING #1 The clock pin FSM_onehot_display_update_state_reg[0]/C is not reached by a timing clock  
+TIMING #4 The clock pin FSM_onehot_step_state_reg[0]/C is not reached by a timing clock  
+TIMING #7 The clock pin button_controller/button_prev_reg[0]/C is not reached by a timing clock  
+TIMING #12 The clock pin button_controller/button_rising_edge_reg[0]/C is not reached by a timing clock  
+TIMING #17 The clock pin button_controller/button_stable_reg[0]/C is not reached by a timing clock  
+TIMING #22 The clock pin button_controller/button_sync_reg[0][0]/C is not reached by a timing clock  
+TIMING #37 The clock pin button_controller/continuous_counter_reg[0]/C is not reached by a timing clock  
+TIMING #62 The clock pin button_controller/continuous_mode_reg_reg/C is not reached by a timing clock  
+TIMING #63 The clock pin button_controller/continuous_pulse_reg/C is not reached by a timing clock  
+TIMING #64 The clock pin button_controller/debounce_counter_reg[0][0]/C is not reached by a timing clock  
+TIMING #159 The clock pin button_controller/display_mode_reg_reg[0]/C is not reached by a timing clock  
+TIMING #161 The clock pin button_controller/mode_changed_reg_reg/C is not reached by a timing clock  
+TIMING #162 The clock pin button_controller/reg_changed_reg_reg/C is not reached by a timing clock  
+TIMING #163 The clock pin button_controller/selected_register_reg_reg[0]/C is not reached by a timing clock  
+TIMING #168 The clock pin button_controller/step_pulse_reg_reg/C is not reached by a timing clock  
+TIMING #169 The clock pin button_controller/step_pulse_reg_reg_lopt_replica/C is not reached by a timing clock  
+TIMING #170 The clock pin cpu_clk_enable_reg/C is not reached by a timing clock  
+TIMING #171 The clock pin oled_interface/FSM_onehot_spi_state_reg[0]/C is not reached by a timing clock  
+TIMING #174 The clock pin oled_interface/FSM_onehot_state_reg[0]/C is not reached by a timing clock  
+TIMING #181 The clock pin oled_interface/delay_counter_reg[0]/C is not reached by a timing clock  
+TIMING #201 The clock pin oled_interface/frame_buffer_reg[0][1]/C is not reached by a timing clock  
+
+- Excerpted by type; from 201 to 1000 it’s the frame buffer’s “not reached by a timing clock.” To fix this I added `create_generated_clock` back into the xdc.
+    - I had removed it before, now recreated it.  
+
+- Then **CDC; Clock Domain Crossing** appeared, so I used a false path from `clk` to `clk_50mhz` to eliminate it.  
+
+Then 
+
+> CKLD #1 Clock net clk_50mhz is not driven by a Clock Buffer and has more than 512 loads.   
+Driver(s): FSM_onehot_display_update_state_reg[0]/C,  
+FSM_onehot_display_update_state_reg[1]/C,  
+FSM_onehot_display_update_state_reg[2]/C, FSM_onehot_step_state_reg[0]/C,  
+FSM_onehot_step_state_reg[1]/C, FSM_onehot_step_state_reg[2]/C,  
+clk_50mhz_i_1/I1, clk_50mhz_reg/Q, cpu_clk_enable_reg/C,  
+reset_sync_reg[0]/C, reset_sync_reg[1]/C, reset_sync_reg[2]/C,  
+rv32i46f_5sp_debug/clk, update_display_reg_reg/C, update_pending_reg/C  
+(the first 15 of 17 listed) 
+
+came up; looking closely, it seems it’s risky without a Clock Buffer, so I inserted a buffer... 
+Now there are no errors.  
+
