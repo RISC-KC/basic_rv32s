@@ -5685,7 +5685,7 @@ So starting today I’ll develop to “done” first in a dirty file, then backf
 
 - Issue 2. The imm value didn’t seem to come out cleanly. 
    - WB_raw_imm in the pipeline was x.   
-   I think I worked this out somehow (probably a knock-on effect).
+   - Solved with correcting instanciation typo error.
 
 - Issue 3.   
 rs1 was being fed into the Register File just fine, but the corresponding source value wouldn’t come out.
@@ -5696,11 +5696,11 @@ Also, EX_branch_taken from the Branch Predictor wasn’t wired correctly—fixed
 Switching the pipeline-stall basis from trapped to trap_done fixed the problem where after PTH the pipeline stalled and wouldn’t branch to the Trap Handler address.  
 Now once PTH finishes, the stall clears and we jump into the Trap Handler as intended.  
 
-I had also missed OR’ing the CSR write-enable from the Trap Controller with the pipelined write-enable coming from the Control Unit in the top module. Fixed.  
+I had also missed bitwise OR’ing the CSR write-enable from the Trap Controller with the pipelined write-enable coming from the Control Unit in the top module. Fixed.  
 
 With the Branch Predictor defaulting to Strongly Not Taken, the following instruction runs. 
 But even when the prediction is clearly wrong, we still weren’t branching to the EX-stage pc+imm.  
-`branch_target` itself was correct—so why?
+Even the `branch_target` itself was correct—so why?
 
 First-pass fix: I found I’d been fabricating a nonexistent IF_pc signal for pc—fixed that. 
 That helped, but for some reason PCC’s branch_taken was still 0. Why?  
@@ -5810,7 +5810,7 @@ Flush on misprediction worked, the prediction counter updated, NOP got inserted 
 But once branch_prediction_miss went high, it never dropped even when branch_estimation matched branch taken.  
 I noticed there was no zero-initialization path for miss in the combinational code; adding that fixed it.  
 
-#### Branch misprediction execution issue.
+#### Branch misprediction execution issue. (Post-Branch Misprediction issue)
 On misprediction we should branch to the EX-computed branch target, but on the next clock the branch signal is deasserted, so PCC updates IF’s PC with PC+4.  
 Should we pipeline the EX branch-taken signal into MEM and have PCC, on misprediction with MEM stage branch=1, jump to the branch target?  
 

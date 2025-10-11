@@ -377,4 +377,249 @@ To fix this, rather than adding a separate Branch Adder/Calculator (which would 
 
 -----
 
-## 
+## RV32I46F_5SP Debugging
+### [2025.05.26.]
+
+- Issue 1. 
+    - Registers kept showing values like xx00_00bc.
+        - I wrote an init block to zero all registers so they all start at 0000_0000. That cleared up the register waveform issue.  
+   (As of today’s writing, oddly, I can’t catch that behavior in the waveforms anymore—even without adding that logic to the Register File. Huh?)
+
+- Issue 2. 
+    - The imm value didn’t seem to come out cleanly. 
+        - WB_raw_imm in the pipeline was x.   
+        - Solved with correcting instanciation typo error.
+
+> - Issue 3.
+>   - `rs1` was being fed into the **Register File** just fine
+>   - But the corresponding source value wouldn’t come out.   
+
+- **Resolution**
+    - I’d forgotten to add the MUX in the top module that lets the **ALU** pick a forwarded source. 
+        - Fixed that.  
+
+- Issue 4.
+    - `EX_branch_taken` from the **Branch Predictor** wasn’t wired correctly
+        - Solved.
+
+- Issue 5. 
+    - After **PTH** the pipeline stalled and wouldn’t branch to the _Trap Handler_ address
+        - Switched the pipeline-stall basis from `trapped` to `trap_done`
+    - Fixed
+
+- Issue 6. 
+    - Missing bitwise OR between CSR write-enable 
+        - One from the Trap Controller 
+        - One from the pipelined write-enable coming from the Control Unit in the top module. 
+    - Solved.  
+
+-----
+
+## RV32I46F_5SP Debugging (Branch Predictor)
+### [2025.05.26.]
+
+> - **Problem** : 
+>   - With the Branch Predictor defaulting to Strongly Not Taken, the following instruction runs. 
+>   - But even when the prediction is clearly wrong, we still weren’t branching to the EX-stage `pc+imm`.  
+>   - Even the `branch_target` itself was correct
+
+- **Attempts** : 
+    - I found I’d been fabricating a nonexistent IF_pc signal for pc
+        - Fixed that
+        - PCC’s branch_taken was still 0
+
+- **Resolution** : 
+    - Derived branch_taken from branch_prediction, which caused trouble. 
+    - Splited signals into `branch_estimation` and branch_prediction_miss
+        - On actual taken, use branch_target
+        - If the estimation says taken, also use b_target
+        - Otherwise, just fall through.
+
+-----
+
+## RV32I46F_5SP Debugging (WB-stage forwarding from Retired Instruction)
+### [2025.05.26.]
+
+> - **Problem** : 
+>   - Case that needs WB forwarding.  
+>   - At 188611 ps, an instruction that retired in WB wrote to its `rd`
+>     - But a later instruction had already reached EX without that updated `rd`.
+
+- **Resolution** : 
+    - Revise **Forward Unit** to forward data from Retired Instruction's value in WB-Stage
+
+-----
+
+## RV32I46F_5SP Debugging (Trap/Exception Pipeline Flush issue)
+### [2025.05.27.]
+
+> - **Problem** : 
+>   - When EX_jump is misaligned, it inserts a NOP flush because it’s a jump. 
+>   - But then we lose the context that the jump was misaligned
+>       - So PTH only runs the first step and then we just move on to ADDI x0 x0 0.
+>       - Thus, the TH never runs.  
+
+- **Resolution** : 
+    - Wired `trapped` into the **Hazard Unit** 
+    - When `trapped` goes high, stalls the **ID_EX_Register** and **EX_MEM_Register**.
+        - The ID_EX stall preserves context until **PTH** can run; 
+        - The EX_MEM stall ensures the preceding (non-faulting) instruction completes.  
+
+- **Notes** : 
+    - PTH takes at least 2 cycles. 
+    - By then, the WB stage has already completed
+    - When the stalled MEM stage advances into WB, that WB also completes—so preceding instructions finish.   
+> Do we need special handling for **MEM_WB_Register**?
+> - No. 
+> - Two preceding instructions will have already completed, and writing the same value to the same address twice doesn’t cause a data issue in the current system.
+
+-----
+
+## RV32I46F_5SP Debugging (Branching to Actual Branch Address when prediction fail)
+### [2025.05.27.]
+
+> - **Problem** : 
+>   - PC only outputs the address set in the previous clock
+>   - So even if the EX-stage computes the correct address and PCC passes it on, we won’t branch to it right away. 
+
+- **Resolution** : 
+    - PCC decides—based on whether the prediction was right—and outputs next_pc accordingly.  
+
+- **Notes** : 
+    - But `branch_prediction_miss` stay at 1 once it goes high?
+        - Forgotten to set a 0 default in the combinational logic for the “no condition met” path.
+        - Solved.
+
+## RV32I46F_5SP Debugging
+### [2025.05.31.]
+
+Issue 1. (flush pipeline registers on a trap is missing)
+- In **RV32I46F_5SP**, the logic to flush pipeline registers on a trap is missing.  
+    - Add it.
+        - On an exception, we stop updating the **PC**, let all in-flight instructions complete
+        - Then conduct _trap handling_
+        - While branching to the _Trap Handler_, we’ll save the current GPR contents into a heap area in data memory and reload them on `mret`.
+- Example Scenario (misaligned exception)
+    - (Current supported traps are misaligned instruction address, EBREAK, ECALL, and mret only.)
+    - The **Exception Detector** catches this in IF
+    - And the **Branch Predictor** receives both the branch target calculated in IF and the jump address calculated in EX.  
+    - Using the `opcode` to determine the instruction form, instructions being processed before the jump have no context, 
+    - So we hold the **PC** until they reach WB, flush, then proceed.
+
+Issue 2. (Context Flush issue)
+- Detected a misaligned jump in EX, which triggered a trap: `pc_stall` asserted and flush happened.  
+- But on the next clock, EX holds a `NOP` due to the flush (the instruction after the jump), 
+- So EX’s opcode is no longer `JAL`, trapped deasserts, **PTH** doesn’t run, `trap_done` returns to 1, and execution continues incorrectly.  
+    - Add a stall signal that stops pipeline-register updates and holds their current values.
+
+Issue 3. (Branch Predition Latch behavior)
+- Flush on misprediction worked, the prediction counter updated, NOP got inserted as designed.  
+- But once `branch_prediction_miss` went high, it never dropped even when `branch_estimation` matched branch taken.  
+    - There was no zero-initialization path for miss in the combinational code
+    - Adding that fixed it.
+
+## RV32I46F_5SP Debugging (Post-Branch Misprediction issue)
+### [2025.05.31.]
+
+> - **Problem** : 
+>   - On misprediction it should branch to the EX-computed branch target
+>   - But on the next clock the branch signal is deasserted, so **PC Controller** updates IF’s `PC` with `PC+4`.  
+
+- **Resolution** : 
+    - [2025.05.27.] ## Branching to Actual Branch Address when prediction fail
+
+- **Notes** : 
+    - We could put a combinational adder in the Predictor to add the EX imm and pc to get the actual branch address
+    - Decided to keep the Predictor simple
+        - Just IF-stage prediction and EX-result-based update—to keep module boundaries clean, and to include the computation in Branch Logic.
+
+## RV32I46F_5SP Debugging (Forward Unit WB-Stage Data Forwarding issue)
+### [2025.05.31.]
+
+> - **Problem** : 
+>   - WB forwarding not working
+
+- **Resolution** : 
+    - Looking at the top module, `alu_forward_source_select` only forwarded from MEM
+    - Solved.
+
+> - **Revealed Problem** : 
+>   - `alu_forward_source_select_{a,b}` weren’t changing at that timing
+>   - They staying at 0
+
+- **Resoning** : 
+    - `hazard_wb` should have asserted from the **Hazard Unit**, 
+        - But since nothing changed it looks like the WB-forwarding condition wasn’t detected
+        - So `hazard_wb` never fired. 
+    - Looking closely at the waveforms: 
+        - The problematic `EX_rs1` was `0c`, but `WB_rd` was different
+        - So there was no hazard—that logic was fine.  
+    - The real issue: 
+        - In the `xor` instruction, the `rd` from a completed `sll` is already in the **Register File** after WB
+        - And `WB_rd` now belongs to the next instruction, so the hazard detector won’t see it.  
+
+    - The data is already being written into the **Register File**
+        - But the EX stage wants to read that same register in the same clock before the write “takes.”  
+
+- **Resolution** : 
+    - Added a write-through bypass in the **Register File**:
+        - When WB writes the same register being read, the read data = write data in that cycle.  
+    - Fixed!
+
+## RV32I46F_5SP Debugging (CSR data forwarding issue)
+### [2025.05.31.]
+
+- Issue 
+    - Since CSR instructions read and write CSR in one go, this pops up. 
+    - In single cycle, `csrrs` writes `0x2fc` to `mepc`, then a `csrrc` immediately reads `mepc`; 
+Zicsr hazards happen even when rs overlaps, not just `rd`. 
+    - Resolved by adding CSR forwarding support to the **forwarding** and **hazard unit**s.
+
+## RV32I46F_5SP Debugging (PTH `mtvec` read-jump issue)
+
+> - **Problem Context** : 
+>   - From the waveforms: 
+>      - `ECALL` is detected in **Instruction Decoder** by the **Exception Detector**
+>      - trap_status goes to 010 (ECALL), and PTH proceeds inside the Trap Controller as designed.  
+>   - But when **PTH** ends, reading `mtvec` from `CSR address 305` should yield `0x0000_1000` and it should jump there. 
+>       - We did set `csr_trap_address=305`, but the read came back `0x0000_0000`.  
+>       - Meanwhile in the misaligned **PTH**, requesting 305 does return `0x0000_1000` and we jump correctly. 
+
+> - **Problem** : 
+>   - In **PC Controller**, trapped is asserted, but `csr_read_data` arriving at PCC is `0x0000_0000`
+>   - So the wrong instruction starts down the pipe from IF.
+
+- **Resolution** : 
+    - Solved it by having the **Hazard Unit** raise `IF_ID_Flush` when trapped is asserted. 
+    - Solved.
+
+## RV32I46F_5SP Debugging (CSR File Read/Write splited address structure issue)
+### [2025.05.31.]
+
+> - **Problem** : 
+>   - An address read in ID wasn’t producing a value until WB.  
+
+- **Reasoning** : 
+    - For non-write operations I want to use the ID-decoded raw_imm as the CSR address,
+        - But the current top-module code feeds the WB-stage address, which causes this issue.  
+    - To execute instructions correctly, CSR values must appear immediately for the address presented, 
+        - but we were handing it WB’s address instead—fine in single cycle, not here.  
+    - The fix is to give the CSR File separate ports for read address and write address (like the general Register File), 
+        - so reads/writes don’t race.  
+    - Also, the **Trap Controller** accesses the **CSR File** during **PTH** and must write to CSR immediately.
+        - Even if we add a dedicated write-address port, WB will also be writing CSR on Zicsr results. 
+    
+    - On a trap we stall the pipeline, but could WB’s write address conflict with **Trap Controller**’s?  
+        - And the **Trap Controller** currently uses a single `csr_trap_address` for both CSR reads and writes.  
+    - This suggests splitting the **Trap Controller**’s CSR address outputs into separate read and write ports, and likewise splitting the CSR’s write-address ports between **Trap Controller** and WB.  
+
+    - Do we also need to tell **CSR File** whether the access is for **PTH** (e.g., by adding trap_done as an input)?
+        - No—WB-stage CSR ops are already in flight before trap detection, and our logic completes in-flight instructions before handling the trap. 
+        - So there’s no conflict.   
+
+- **Resolution** : 
+    - Solved it by splitting the CSR’s address inputs into separate `read-address` and `write-address` ports.
+    - Solved.
+
+## RV32I46F_5SP Debugging (FPGA Implementation; Vivado)
+### [2025.06.01.]
