@@ -1226,7 +1226,7 @@ No. Since the address is computed based on a constant and a referenced register 
 > ChoiCube84:  
 Then let’s look at the relevant content.  
 "will generate instruction-address-misalinged exception."  
-Since it’s an exception, instead of handling it in J_Aligner, how about handling it separately in the Trap_Handler for hardware simplification?  
+Since it’s an exception, instead of handling it in J_Aligner, how about handling it separately in the **Trap_Handler** for hardware simplification?  
 
 KHWL.  
 Hmm. That makes sense. But we also have to keep performance differences in mind.  
@@ -1585,14 +1585,14 @@ During working hours I read the manual on RVWMO.
 Unlike the colloquial, mostly literary books I used to read, reading technical literature—hundreds of pages—was a very different experience.  
 
 Tomorrow, Saturday, I have duty, and it was recently changed to full-time duty where I cannot use my phone from 08:30 in the morning to 08:30 the next morning, so I decided to read through the entire RISC-V manual during that time.  
-So… I printed a document of about 651 pages… and by skimming it I roughly identified a study route.  
+So... I printed a document of about 651 pages... and by skimming it I roughly identified a study route.  
 The current time is 23:24. From now on I will identify the CSR instructions to use, review the current CSR structure of RV32I50F, and then try implementing the CSR module using Verilog HDL.  
 And while reading the manual I learned a great many things. I often made guesses and experienced my head ringing, and of course there were valuable products of thought gained from that, but the basic guide manuals and standards to follow for that were “already” covered in the manual.   
 The cache structure we implemented follows a rather primitive structure and has a structure somewhat different from modern high-performance computing.  
 If you look at the manual, you can see that the table of contents is organized as one big flow where implementing the RISC-V “G” Extension goes up to the “Q” Extension (G = IMAFD + Zicsr + Zifencei Extensions), and accordingly, understanding the cache-management ISA, which is organized as one of the sections before the floating-point extension, will be necessary for our core structure to have a cache structure that follows modern computing.  
 
 “CMO” Extensions for Base Cache Management Operation ISA, Version 1.0.0  
-And in any case, for the semantically complete implementation of the FENCE instruction, there must be multiple harts, that is, a multithreading environment. Since predecessor and successor are assumed, we have to do hyperthreading or a dual-core structure somehow…  
+And in any case, for the semantically complete implementation of the FENCE instruction, there must be multiple harts, that is, a multithreading environment. Since predecessor and successor are assumed, we have to do hyperthreading or a dual-core structure somehow...  
 Therefore, unfortunately for now, the implementation of the FENCE instruction is likely to be replaced with NOP.   
 I will try to make it with the intention of a fully implementable level in actual hardware, but the result will not be able to affect actual output values.  
 It looks like we will end up following as-is the NOP handling of the FENCE instruction due to designing a single-core processor, as in the paper we used as a reference, **"A Design and Implementation of 32-bit Five-Stage RISC-V Processor Using FPGA."**(Sangun Jo, Lee, Jong Hwan and Yongwoo Kim. (2022). A Design and Implementation of 32-bit Five-Stage RISC-V Processor Using FPGA. Journal of the Semiconductor & Display Technology, 21(4), 27-32.)  
@@ -1621,10 +1621,10 @@ I will read it closely tomorrow, but for now the content is mainly about support
 Basically CSR is composed of instructions where reading and writing happen simultaneously, and those pseudo-instructions, i.e., CSRW, CSRR, are decoded into formal CSR instructions by processing the write or read value as 0 according to the logic that operates when uimm | rd is 0 as specified above.  
 
 I should print the Privileged Manual as well. That’s it for today. 23:57.  
-I never feel quite refreshed when ending in the middle of some research. I would feel good if I at least made a firm diagram…
+I never feel quite refreshed when ending in the middle of some research. I would feel good if I at least made a firm diagram...
 
 And since the semantically complete implementation of FENCE requires a multithreading environment, the process after pipelining will be the implementation of a dual-core processor after the G extension.  
-Just thinking about designing a shared cache and implementing the timing coordination and logic between the two harts already makes my head spin…
+Just thinking about designing a shared cache and implementing the timing coordination and logic between the two harts already makes my head spin...
 
 ### [2025.02.15.]
 
@@ -1638,7 +1638,7 @@ It isn’t an industry-standard RTL schematic style, but it’s called DigitalJS
 I haven’t yet found a way to run a testbench, but it seems like a pretty good tool. I don’t know at what synthesis level Vivado generated the schematic, but the rough form looked similar enough that it seemed fine.  
 While testing the ALU in DigitalJS, I discovered that the SUB instruction wasn’t working properly. For some reason, when it was SUB, the MUX signal did select the SUB calculation circuit, but the SUB output was shown as xxxx.  
 I raised this with CC84, and he said he’d take another look if he had time when he got back from off-base leave today.  
-Come to think of it, I was a bit flustered because there was no explicit code specifying how to handle negative results from subtraction, but in the first place the ALU input data are 32-bit “sign-extended”…  
+Come to think of it, I was a bit flustered because there was no explicit code specifying how to handle negative results from subtraction, but in the first place the ALU input data are 32-bit “sign-extended”...  
 Oh, no—right. When the subtraction result is negative, a two’s-complement sign-extended value should come out, and it seems there’s no related logic.  
 When calculating negative minus negative, since it’s arithmetic on signed values, the result will be signed anyway, so that’s fine, but if a positive and a negative, or a positive and a positive yield a negative result, it seems necessary to review the logic of the ALUresult output.  
 
@@ -1704,7 +1704,7 @@ Current RV32I50F, at a level close to bare metal without an OS, list of CSRs to 
    - mcountinhibit
 
 ### [2025.02.17]
-It’s combat leave…  
+It’s combat leave...  
 Results as of 14:36.  
 First, I finalized the move to 64-bit. For CSRs as well, the advantages of shifting to 64-bit are very strong.  
 (CSR implementation becomes easier. Installing Linux becomes easier. There’s no need to consider memory misalign exceptions.)  
@@ -1743,7 +1743,7 @@ Counters and cycle / instruction counters will be additionally implemented upon 
 
 Let’s design the logic for the above 13 CSR files and implement the CSR File.
 
-CSR was a huge door… Each register has fields assigned that can represent interrupts, traps, and status, which means we must implement separate conditional logic so we can write the values those fields signify.  
+CSR was a huge door... Each register has fields assigned that can represent interrupts, traps, and status, which means we must implement separate conditional logic so we can write the values those fields signify.  
 Also, there are cases where two or more CSRs interact to perform an operation, and those must be implemented together as well.  
 Registers whose understanding and logic design I’ve completed so far: Machine Information Registers, Machine Trap Setup.  
 
@@ -1774,7 +1774,7 @@ While on duty on 02.21, I defined all initial values for the CSRs and recorded b
 And the implementation of the CSR file has begun.   
 Up until now in this project, I took charge of the logic, diagrams, and operational design, and ChoiCube84 handled the implementation using Verilog.  
 But I thought proceeding without touching Verilog in this learning-oriented project wouldn’t fit the purpose, so I said I’d implement at least the CSR file from scratch myself.  
-Of course, there’s quite a bit to study and ponder within the CSR logic itself, so CC84 probably would have requested a separate meeting anyway… Once this implementation is done, we can immediately create the TB for RV32I43F and verify it.  
+Of course, there’s quite a bit to study and ponder within the CSR logic itself, so CC84 probably would have requested a separate meeting anyway... Once this implementation is done, we can immediately create the TB for RV32I43F and verify it.  
 
 Currently, CC84 is generating the waveform for RV32I37F and setting up the testbench environment (defining intended output signals per module for each instruction).  
 Our goal is to finish the first round of implementation and verification of the RV32I50F core within February.  
@@ -1782,11 +1782,11 @@ After that comes the 64-bit expansion and 5-stage pipelining, the IMA extension,
 - Mid-March to mid-April: 64-bit expansion and 5-stage pipeline
 - Mid-April to mid-May: IMA extension
 - Mid-May to July: kernel programming to install RISC-V Linux
-- July–: paper writing (CC84 discharge…), mid-August: submit to arXiv.
+- July–: paper writing (CC84 discharge...), mid-August: submit to arXiv.
 - After August: write KAIST self-introduction
-- September: admissions…
+- September: admissions...
 
-Phew… I can do it. Let’s do it well.
+Phew... I can do it. Let’s do it well.
 
 ![RV32I50F.R1v4](/diagrams/design_archive/RV32I50F/RV32I50F.R1v4.drawio.png)
 
@@ -1808,7 +1808,7 @@ that since reads themselves are asynchronous I’ll just use always *, and since
 
 And if it’s like that, the output RDs won’t cause operational problems unless the CU selects them anyway.  
 After thinking, CC84 said then we can just write with a CSR_Write signal. Thus the 3-bit CSRop signal was retired and replaced/optimized with a 1-bit CSR_Write signal.  
-I then produced the CSR file in 15 minutes… (as always, research time is longer than implementation time…)   
+I then produced the CSR file in 15 minutes... (as always, research time is longer than implementation time...)   
 Tomorrow I’ll make a TB and verify it.  
 Tomorrow Monday I get combat leave as compensation for Friday duty, and although CC84 has a normal workday and it’ll be a bit inconvenient, let’s do our best.
 Let’s go let’s go!!!
@@ -1820,7 +1820,7 @@ Let’s go let’s go!!!
 CSRFile implementation complete.  
 I used combat leave for Friday duty and spent almost half a day touching only Verilog.  
 While reviewing I learned a lot of syntax and various things, and although it’s a bit cumbersome, I found a way to partially lift the restrictions on the PC room computers.  
-Installing drivers in Safe Mode and such… then I can run GTKWave too. Haha.  
+Installing drivers in Safe Mode and such... then I can run GTKWave too. Haha.  
 
 Anyway, verification was the problem while implementing CSR, and in the TB the original value and the value after write should come out separately, but the original value, i.e., the value right after RESET, was not the designed 0 but the output signal value I had written just before.  
 So after adding delays and flailing about, it behaved correctly and I made that the final.  
@@ -1829,7 +1829,8 @@ With the remaining time, I manually rewrote the RV32I50F Core Architecture Manua
 Then came evening study time.  
 
 While I was adjusting the format of the CSR file and almost finished, CC84 found a critical problem in the top-module bench.  
-The true value of the top-module bench is beginning to show!
+The true value of the top-module bench is beginning to show!  
+
 The problem is: since ALUop does not have an instruction-type identifier, there’s no way to distinguish I-type SRAI from R-type SRA.  
 For I-type instructions, only for shift instructions, I had separated them with funct7 and shamt in the imm field, and the key is slicing this.  
 If we just slice the input source data, the ALU wouldn’t know whether it’s R-type SRA or I-type SRAI, so following the ALUop code for SRA, it could end up slicing f7 and shamt from RD2.  
@@ -1839,20 +1840,19 @@ I remembered the original intent that ALUop should include the instruction type,
 > CC84: What is the role of the ALUop signal? Is it merely ALU enable and Bypass?  
 — The ALUop signal is an identifying code for performing type-specific operations, receiving the instruction type according to the opcode.  
 
-
-The original purpose was to embed the Type in ALUop…  
+The original purpose was to embed the Type in ALUop...  
 It seems during development it felt more important to define the kinds of ALU operations themselves, so the direction changed.  
-So I felt we should either add the instruction type to ALUop… or give a separate signal to notify the ALU of the type, but CC84 is thinking differently.  
+So I felt we should either add the instruction type to ALUop... or give a separate signal to notify the ALU of the type, but CC84 is thinking differently.  
 
 He suggested slicing imm[4:0] and putting it into ALUsrcB. Doing so gives shamt → imm[24:20] → SRA operator. Shift by imm[24:20].  
-But here’s the thought… yes, that works, but later there will be more instructions regardless of I-type and so on…
-Thinking of generality for the future, wouldn’t adding a type-identifying signal be the right decision? This feels too limited to the SRA issue at hand…  
+But here’s the thought... yes, that works, but later there will be more instructions regardless of I-type and so on...
+Thinking of generality for the future, wouldn’t adding a type-identifying signal be the right decision? This feels too limited to the SRA issue at hand...  
 In the sense of including the meaning of a general solution, I think it’d be better to add a type identification signal.
 Evening study time is over. We’ll need a separate meeting on this. That’s it for today.
 
 ### [2025.02.25.]
 
-Weekday off-post… In the end, yesterday’s issue was decided by separately extracting imm and adding one more selection to ALUsrcB with a 4:1 MUX.  
+Weekday off-post... In the end, yesterday’s issue was decided by separately extracting imm and adding one more selection to ALUsrcB with a 4:1 MUX.  
 Even if we consider future instruction extensions, merely identifying types doesn’t seem to yield a clearly suitable signal utility that justifies changing the current design.  
 
 When I came back for evening study, I tried to systematize the memory–cache operation logic structure in earnest and document and concretize it, but a bit-related conflict over MUX arose with CC84.  
@@ -1871,7 +1871,7 @@ It seems that was a reply considering that since it ultimately doesn’t affect 
 
 After much thought, since the inactive signal was kept with the possibility it could become a problem later in mind, I said we’ll add the inactive signal if and when it becomes a problem.  
 CC84 said he already proceeded with 3 bits as discussed, so let’s revisit it in a later optimization session. 
-Thus I again got nothing done during evening study, with only about 5 minutes left…  
+Thus I again got nothing done during evening study, with only about 5 minutes left...  
 Originally, the deadline was to finish design and verification up to RV32I50F within February and move to 64-bit expansion in March, but it feels even further away.
 Still, shouldn’t we do what we can.
 
@@ -2078,7 +2078,7 @@ Next, the ID/EX register.
 The Instruction Decoder already splits out signals like opcode, funct3, funct7, and imm and wires them to each module. Now those signals should pass through the ID/EX register before reaching the modules.   
 Be careful not to disturb independently operating paths—e.g., don’t interfere with signals like J_Target that share similar routes. While drafting the pipeline I wondered whether the presence of ID/EX would make the Instruction Decoder unnecessary, but the conclusion is no: we still need a separate module to do decoding.  
 
-“CPU fits on a single A4 page” they say… It’s starting to feel hard to keep it all on one sheet. The limit comes from labeling each signal with explicit source and destination to keep datapaths clear. I’ll try to keep this 5-stage pipeline on a single A4 for now, then consider increasing the layout size afterward.   
+“CPU fits on a single A4 page” they say... It’s starting to feel hard to keep it all on one sheet. The limit comes from labeling each signal with explicit source and destination to keep datapaths clear. I’ll try to keep this 5-stage pipeline on a single A4 for now, then consider increasing the layout size afterward.   
 
 These are draft designs of RV32I50F's 5-Stage Pipelining : RV32I50F_5SP
 ![RV32I50F_5SP-draft0](/diagrams/design_archive/RV32I50F.5SP/RV32I50F_5SP.drawio.png)
@@ -2091,7 +2091,7 @@ These are draft designs of RV32I50F's 5-Stage Pipelining : RV32I50F_5SP
 
 CC84 uploaded a waveform for the RV32I37F Data Memory read-timing fix; I haven’t looked yet, but CC84 says it seems fine. Good—if it hadn’t worked, it would have taken longer, which might have been painful but also fun. There will be equal or worse problems ahead anyway. For now I’ll take a quick PX break and then start signal verification. If things go well, we might finish RV32I37F verification today.
 
-During verification… (waveform via GTKwave / Surfer project)
+During verification... (waveform via GTKwave / Surfer project)
 
 Both Read Done and PC_Stall behave correctly. Only on the first read does the logic stall until the read finishes; after that initial two-cycle read produces the correct value, subsequent loads return in a single cycle as intended. Later, during pipelining, this PC_Stall from the PC Controller should be handy for hazard handling. Good—this worked as designed.
 
@@ -2112,7 +2112,7 @@ Ah—I noticed RV32I37F’s misalignment checks weren’t in the testbench. I qu
 I requested tests for all four, but CC84 asked to do only one; we settled on two cases:  
 - misaligned PC and misaligned data memory address.   
 
-It’d be best to cover them all, but it seems heavy right now; given the effort already spent, I accepted that for the moment. I could just do it myself…
+It’d be best to cover them all, but it seems heavy right now; given the effort already spent, I accepted that for the moment. I could just do it myself...
 
 We discussed improving the repository file structure, and concluded that making separate folders for each of RV32I37F through 50F will lead to too much duplication.   
 
@@ -2137,7 +2137,7 @@ For stores, we also saw BE_Logic’s misaligned flag assert.
 
 With that, RV32I37F verification is complete—2025-03-03 23:34. RV32I37F is done.  
 
-Nine minutes left in evening study… I’ll sketch more of the pipeline and call it a day. Keep moving forward.  
+Nine minutes left in evening study... I’ll sketch more of the pipeline and call it a day. Keep moving forward.  
 
 ### [2025.03.04.]
 Today I planned to continue the 2-stage pipeline design and place the EX/MEM register.  
@@ -2224,15 +2224,15 @@ I should have recorded things right away, but two days slipped by without the ch
 We’re getting to the point where an FPGA board is needed to proceed with implementation verification. *I spent a fair bit of time choosing a board, and along the way I came across ADChips’ EISC-architecture “ARK core,” a general-purpose CPU from a domestic Korean company. Might be worth looking up later.*  
 
 DE0-115 and Z7-20 were in the initial candidate set as mainstream FPGA boards, and I figured time having passed, there’d be better boards for similar prices—but no. 
-The Z7-20 seems the most suitable. It has a graphics output interface, it’s Xilinx-family so we can rely on AMD’s FPGA courses and support, and the licensing… is quite permissive!
+The Z7-20 seems the most suitable. It has a graphics output interface, it’s Xilinx-family so we can rely on AMD’s FPGA courses and support, and the licensing... is quite permissive!
 
 ### [2025.03.10.]
 *One year since enlistment. I got dragged out early as a mobilization-reservist TA and accomplished nothing notable, then came back, rested, and realized personal maintenance time ends at 20:30—so I rushed over to write the overdue dev logs.* 
 
 I just finished the logs for the 8th and 9th. It’s 20:26 now.   
-I have to go… I wanted to buy a Z7-20, but as a personal purchase it runs close to 600–700k KRW, and running it on base would incur nontrivial additional costs… Tomorrow I’ll bring the computer architecture textbook and a print of the current architecture diagram, and whenever there’s spare time I’ll continue the pipeline design and study dual-core architecture.  
+I have to go... I wanted to buy a Z7-20, but as a personal purchase it runs close to 600–700k KRW, and running it on base would incur nontrivial additional costs... Tomorrow I’ll bring the computer architecture textbook and a print of the current architecture diagram, and whenever there’s spare time I’ll continue the pipeline design and study dual-core architecture.  
 
-It is what it is. Let’s handle it. *(ChoiCube84 started leave(vacation) today… and there’s no evening study because of training tomorrow…)*
+It is what it is. Let’s handle it. *(ChoiCube84 started leave(vacation) today... and there’s no evening study because of training tomorrow...)*
 
 ### [2025.03.13.]
 *Three days of mobilization training are over. I’ll go back tomorrow to wrap up, but tonight I got personal maintenance time. Whether from fatigue or from frustration at not being able to develop, I felt pretty drained.*
@@ -2369,7 +2369,7 @@ This morning, I optimized the signal routing in the RV32I50F.5SP.R1 diagram. Whi
 ![SignalOpt-RV32I50F.5SPH.R1](/diagrams/design_archive/RV32I50F.5SP/RV32I50F.5SPH.R1.drawio.png)
 
 After that, I continued studying the one-cycle latency in Data Memory. 
-During last night’s meeting after the evening session, we floated the idea of making the read enable signal posedge-based and I tried it—merciless syntax error…  
+During last night’s meeting after the evening session, we floated the idea of making the read enable signal posedge-based and I tried it—merciless syntax error...  
 Right now, at the rising edge of the clock (when it goes to 1), read enable is seen as 0, and by design it only becomes 1 after passing through multiple conditionals, so it looks like we can’t start a read immediately.  
 
 Is there no way around this? 
@@ -2416,7 +2416,7 @@ Under the current Write-Back cache policy, on FENCE we will commit pending write
 Since the cache knows when the flush has finished, Write Done was connected from the Data Cache, and since PC_Stall will likely still be useful in the pipeline, I left it in place. 
 I haven’t yet verified behavior after modifying with the reference code.
 
-Oh—it worked… the issue was Verilog’s “=”… What a relief. It wasn’t that I was missing something bigger; it was a mistake from not being fluent enough with Verilog.  
+Oh—it worked... the issue was Verilog’s “=”... What a relief. It wasn’t that I was missing something bigger; it was a mistake from not being fluent enough with Verilog.  
 With this, the read_done signal goes away. 
 
 And if PC_Stall goes into the PCC, then Write Done is no longer needed by the PCC, but it remained in the diagram—so I removed it. 
@@ -2613,7 +2613,7 @@ I studied operating systems and found a pretty solid paper: “BRISC-V: An Open-
 It covers single-cycle, 5–7 stage pipelines, cache hierarchies, multicore scaling, and more—basically a platform-level hardware stack.   
 A lot of it aligns with our roadmap, so it looks like a valuable reference. I should dig into it.
 
-And… five months until discharge, plus two months for the paper and personal statement—so three months left to finish that entire roadmap? I’m honestly very unsure.   
+And... five months until discharge, plus two months for the paper and personal statement—so three months left to finish that entire roadmap? I’m honestly very unsure.   
 I asked GPT o1 what caliber the BRISC-V work is; it sounds like a lab project or PhD-level effort—i.e., not something you wrap in a few semesters.   
 Maybe getting this far is already something. 
 Even if the architecture was quick to sketch, a huge amount of credit goes to ChoiCube84 for making it real.   
@@ -2634,7 +2634,7 @@ In a cold-start state, we issue a store to memory, it gets written into the cach
 e.g.) Cache: 0000_0000, Mem: DEAD_BEEF. Cache: AAAA_0000, Mem: DEAD_BEEF -> Cache: 1242_AABE, Mem: AAAA_0000 (Expected AAAA_BEEF)  
 
 Huh, but in that case couldn’t we just standardize the initial values of memory and cache to 0? Do we really need a masking signal on cache flush?  
-Is there any case where we invalidate a line on the Data Cache side…? It would be nice if there were…  
+Is there any case where we invalidate a line on the Data Cache side...? It would be nice if there were...  
 
 For the RV64 implementation, we decided to implement it by modding the ALU, ALUController, and Instruction Decoder.  
 
@@ -2747,7 +2747,7 @@ I finished writing the HCWcloud documentation and returned to CPU development. I
 
 ![RV64I59F_5SP](/diagrams/design_archive/ima_make_rv64/RV64I59F_5SP/[250401]RV64I59F_5SP.drawio.png)
 
-Now I need to place the hazard unit… time to start the research.  
+Now I need to place the hazard unit... time to start the research.  
 Let me finish organizing what I started on 2025.03.14 about pipelining.  
 
 Based on computer architecture (Computer Organization and Design, David A. Patterson, 2015)
@@ -2833,7 +2833,7 @@ Added signals to the forwarding unit:
   When a hazard is detected in ID and the hazardous instruction reaches EX, the instruction in MEM (right ahead) must be identified so we know what result will be written to rd.   
   Hence I take opcode from EX/MEM.
 
-With this, the forwarding implementation is “done” for now… 19:49. I’ll rest a bit and then study control hazards.
+With this, the forwarding implementation is “done” for now... 19:49. I’ll rest a bit and then study control hazards.
 
 ![RV64I59F_5SP_Forwarding](/diagrams/design_archive/ima_make_rv64/RV64I59F_5SP/[250401]RV64I59F_5SPH_FW.drawio.png)
 
@@ -2842,7 +2842,7 @@ Now, control hazards.
 
 Control hazards arise from branch handling.
 
-Researching this, there are many branch predictor types, and there are associated security risks…  
+Researching this, there are many branch predictor types, and there are associated security risks...  
 Those are more relevant to OoOE designs; for now I’ll focus on the branch prediction itself.
 
 First, summary from the book.  
@@ -2952,7 +2952,7 @@ We’re currently not using the **offset**; if we use it, we can both preserve a
 *Duty shift. A reminder of what I did.  
 Since I was on duty, I’m writing this on 2025.04.06.*  
 
-First off… cache issues resolved.
+First off... cache issues resolved.
 
 I read everything on caches in “Computer Organization and Design.”  
 Based on that, I’m going to simplify and solve the cache design by defining a clear specification from scratch.  
@@ -3069,7 +3069,7 @@ RV32I43FC-based memory hierarchy behavior
 For a 32-bit ISA with a 2-way set-associative cache, we’ll benchmark and study AMD’s K6-III CPU as closely as possible.
 Branch prediction will also be benchmarked on AMD-based systems.
 
-By defining the cache structure this way, I’ve resolved the issues. As expected, you really do need to settle the specification first before diving into development…
+By defining the cache structure this way, I’ve resolved the issues. As expected, you really do need to settle the specification first before diving into development...
 
 Branch prediction research results are as follows.
 (Gotta grab dinner. 2025.04.06. 17:43)
@@ -3101,9 +3101,9 @@ To-do. Verify what signals are needed
 We need to flush on mispredict—choose where this flush will be handled
 Think about how to handle the writedone signal.  
 
-If Jump calculation can be done in the Branch Predictor, i.e., in IF, the flush penalty would be reduced—decide how to do this. It feels like it’ll go away once we do OoOE anyway, but for now… we need speed, so we’ll keep the existing scheme: in EX, the Jump signal and ALUresult arrive, and PCC updates NextPC to that address.
+If Jump calculation can be done in the Branch Predictor, i.e., in IF, the flush penalty would be reduced—decide how to do this. It feels like it’ll go away once we do OoOE anyway, but for now... we need speed, so we’ll keep the existing scheme: in EX, the Jump signal and ALUresult arrive, and PCC updates NextPC to that address.
 
-That’s it for today. Let’s hurry and finish pipelining, then make the RV64IMA cheat sheet while studying each extension, and study dual-core structure, TLB, virtual memory, OS…
+That’s it for today. Let’s hurry and finish pipelining, then make the RV64IMA cheat sheet while studying each extension, and study dual-core structure, TLB, virtual memory, OS...
 
 ### [2025.04.07.]
 
@@ -3168,7 +3168,7 @@ Instruction decode stage
 This creates an issue.   
 In the PCC, B_Target was selected as NextPC only when BTaken is true; in this case, even when Not Taken (i.e., BTaken is false), the PCC must be able to output B_Target as NextPC.  
 
-Hmm… right, the original BTaken signal comes from the EX-stage Branch Logic, and the PCC’s BTaken input is now changed to B.EST, i.e., the predicted value, so it’s fine.  
+Hmm... right, the original BTaken signal comes from the EX-stage Branch Logic, and the PCC’s BTaken input is now changed to B.EST, i.e., the predicted value, so it’s fine.  
 We can make it 2 bits: 00 = no prediction, 01 = Not Taken, 10 = Taken.
 
 If using a BTB, the BTB is updated.
@@ -3226,9 +3226,9 @@ We’ll have Branch Logic in EX compare directly with ALUzero and decide BP_Miss
 Branch Logic determines BTaken, passes it to the Branch Predictor, and at the same time receives EX.B.EST (the pipelined B.EST) from the Branch Predictor to compare with BTaken and judge misprediction.  
 Then Branch Logic outputs BP_Miss to the Hazard Unit.
 
-With that… the branch predictor design is finished. Implementation will come after ChoiCube84 finishes the current RV32I43FC cache implementation… I hope.  
+With that... the branch predictor design is finished. Implementation will come after ChoiCube84 finishes the current RV32I43FC cache implementation... I hope.  
 
-*My head already hurts thinking about debugging. I want to document the Forward Unit at the same level of detail as this Branch Predictor, but ugh… I skipped a meal and we have afternoon assembly—do it afterward.*
+*My head already hurts thinking about debugging. I want to document the Forward Unit at the same level of detail as this Branch Predictor, but ugh... I skipped a meal and we have afternoon assembly—do it afterward.*
 *No—let’s accelerate design and fix it later if needed. This is still a pre-implementation draft, so let’s save time and move on.*
 
 Back to cache issues.   
@@ -3241,12 +3241,12 @@ Therefore we must not change the instruction at that second step; we need a Writ
 Likewise, for memory updates (let’s call the dirty-bit clearing sequence “Cache Clean”), the data to be written to memory is handed from the write buffer, and
 since handing from write buffer to memory happens on the second clock, we need another WriteDone (Memory Ready) to keep instructions from changing before then.
 
-The problem is pipelining these signals…  
-We only know whether to stall at MEM stage—how do we keep things from advancing until then…  
+The problem is pipelining these signals...  
+We only know whether to stall at MEM stage—how do we keep things from advancing until then...  
 
 Do we need something extra in the pipeline registers?  
 In any case, since the IF-stage PCC must know that the MEM stage needs delay to stop fetching the next instruction temporarily, in the single-cycle design the Control Unit received WriteDone and decided PC_Stall toward the PCC, but the pipelined Control Unit has timing uniformity in ID. 
-Of course we could receive a MEM-stage signal and forward it to IF, but…  
+Of course we could receive a MEM-stage signal and forward it to IF, but...  
 
 Oh, right. Send Cache Ready and Memory Ready to the Control Unit, and have the CU always decide PC_Stall and send it to the PCC.  
 The CU itself is combinational logic and not restricted to a specific pipeline stage, so this seems correct without forcing timing uniformity.  
@@ -3257,11 +3257,11 @@ Pipeline registers keep their values unless updated, so that’s fine.
 We should at least “briefly” touch unconditional branches too.  
 For a Jump, to compute the target we must reach EX stage.  
 At that time we send Jump and J_Target to the PCC, and we must simultaneously flush the pre-EX IF and ID stage contents (their pipeline registers).  
-(In OoOE you could keep executing to the end and cache out-of-order results… that’s for later.)  
+(In OoOE you could keep executing to the end and cache out-of-order results... that’s for later.)  
 
 Flushing should be done by the Hazard Unit; just forward the Jump signal, pipelined up to EX, to the Hazard Unit.
 
-Done… At 14:51 I completed the RV64I59F_5SPH_FW_BP architecture.  
+Done... At 14:51 I completed the RV64I59F_5SPH_FW_BP architecture.  
 We’ll surely hit many issues in real implementation and debugging and have to revise, but for now this is the best result.
 I’ll summarize the Forward Unit logic, then skip further pipeline work and look at the next steps.
 
@@ -3381,8 +3381,8 @@ Now the remaining extensions.
 (h) Implement CMO  
 (i) FPGA implementation and validation  
 
-The actual goal is a RISC-V processor that can run an OS…  
-Benchmarking AMD K6-III, dual-core isn’t strictly required just to run an OS…  
+The actual goal is a RISC-V processor that can run an OS...  
+Benchmarking AMD K6-III, dual-core isn’t strictly required just to run an OS...  
 
 Let’s order the work by importance for the shortest-path goal.  
 
@@ -3401,12 +3401,12 @@ Even on a single core, atomic operations are needed for concurrency control such
 6. GUI implementation
 
 The rest—multi-level cache, dual-core, RVWMO, CMO—will be left as later tasks.
-GUI will be tight, too. Possible if time allows…
+GUI will be tight, too. Possible if time allows...
 
 From here, add the MA extensions and prepare for the OS.  
 We already bought the FPGA board and it arrived, but using it will be later.  
 Maybe in late April we’ll have the MA design and a rough handle on it?  
-Whether to finish on FPGA or bring up the OS and then port to FPGA…  
+Whether to finish on FPGA or bring up the OS and then port to FPGA...  
 
 Either way, let’s do this well.  
 That’s all for today.
@@ -3445,16 +3445,16 @@ A truly meaningful and beneficial lecture.
 
 ### [2025.04.12.]
 
-Returned from leave… Installed Fedora on the local system for VCS, and set up a dual-OS with Windows.  
+Returned from leave... Installed Fedora on the local system for VCS, and set up a dual-OS with Windows.  
 I wanted to do everything—including FPGA—on Fedora alone if possible, but the Xilinx Vivado toolchain is optimized for Windows, so I chose dual OS.  
 One mistake: I didn’t account for how much space the dev tools would consume and configured only 256 GB of local storage.  
 Splitting into two OSes at 128 GB each already felt tight, and I found that Xilinx tool installs hit a lot of space limits.  
-On the plus side, it forced me to check every irrelevant option and install only the dev kits I truly need…  
+On the plus side, it forced me to check every irrelevant option and install only the dev kits I truly need...  
 
 But a problem emerged: even with a local system, I might not be able to run VCS on base.  
 I asked my professor; the university provides Synopsys licenses, but they can only be used on campus.  
 I tried to sign up for SolvNet just to install VCS, but even that requires a separate ID key tied to licensing; the professor said it would be hard to sort out right now.  
-So for now… VCS usage will be on hold. I’ve heard POSTECH supports VPN for license access, so it might be possible—I'll ask **ChoiCube84**.  
+So for now... VCS usage will be on hold. I’ve heard POSTECH supports VPN for license access, so it might be possible—I'll ask **ChoiCube84**.  
 
 Let’s list what to do starting tomorrow.  
 
@@ -3464,7 +3464,7 @@ Let’s list what to do starting tomorrow.
    (Otherwise same as the 25.04.07 roadmap)
 
 I had finished installing Xilinx before heading back from leave, but the dual-boot got messed up about an hour before departure; I finally finished driver setup around 22:40.  
-The USB modem claims 150 Mbps, but in practice I’m lucky to get 5 MB/s… the internet suddenly tanked and speeds are weird.  
+The USB modem claims 150 Mbps, but in practice I’m lucky to get 5 MB/s... the internet suddenly tanked and speeds are weird.  
 I’ll just leave the Xilinx install running and come back in the morning.  
 
 That’s it for today.
@@ -3606,7 +3606,7 @@ For now, cache–memory communication should be **block**-based.
    Bluntly, if a bank can hold 8 items vs. only 1, the latter must be refreshed every time, whereas the former keeps hitting in the cache after one load.
 
 3. Then shouldn’t we increase ways?  
-   KHWL: Heh… true, but for now we benchmarked AMD K6-III and set L1$ to 2-way. We’ll increase it at L2 with the unified cache.  
+   KHWL: Heh... true, but for now we benchmarked AMD K6-III and set L1$ to 2-way. We’ll increase it at L2 with the unified cache.  
    Of course more ways and capacity are better, but beyond cost/area issues, our purpose here is academic; following a suitable reference is sufficient.
 
 Today my workday ended around 19:30, so I couldn’t study much.  
@@ -3745,7 +3745,7 @@ AMOMAXU.W : R[rd] = M[R[rs1]],
 if ((Unsigned) M[R[rs1]] > (Unsigned) R[rs2]), M[R[rs1]] = M[R[rs1]].  
 else M[R[rs1]] = R[rs2]  
 
-That’s it for today. I need to think about this more. Ah, I’m on duty tomorrow… hmm… I should study virtual paging.
+That’s it for today. I need to think about this more. Ah, I’m on duty tomorrow... hmm... I should study virtual paging.
 
 ### [2025.04.17.]
 I’ll record what I studied and organized during duty.
@@ -3826,7 +3826,7 @@ AMO operations are aligned with this focus; without a multi-core structure, ther
 
 It seems I can keep most of the existing structure, but the problem is Zalrsc rather than Zaamo.  
 I still don’t fully understand this “reservation.”  
-I understand the actions required when setting the aq and rl bits for each instruction execution, but LR.W and SC.W…  
+I understand the actions required when setting the aq and rl bits for each instruction execution, but LR.W and SC.W...  
 
 To do tomorrow: study reservations.
 
@@ -3869,7 +3869,7 @@ Now, suppose the address M[R[rs1]] misses; we must fetch from Data Memory.
 Due to SAA, M[R[rs1]] is returned first. At the same time, DM_RD must feed the DC_WD input.  
 The WB/Reg MUX selects WB on a miss, so DM_RD is chosen. Since this is an atomic operation, the WB/Reg / Atomic MUX selects Atomic.  
 
-Wait. Write-back is impossible here. In other words, on a cache miss the cache will be updated in the next cycle, so the Atomic MUX must always be set to WB/Reg when there’s a cache miss…  
+Wait. Write-back is impossible here. In other words, on a cache miss the cache will be updated in the next cycle, so the Atomic MUX must always be set to WB/Reg when there’s a cache miss...  
 Therefore, the CU must be able to determine cache hit/miss, or DC_WD must always select WB/Reg when DC_Ready is Not Ready.  
 Miss = Not Ready. For cache M2C updates we wait for the Write_Done signal, so a miss implies Not Ready.  
 
@@ -3898,7 +3898,7 @@ SAA return;
 - Data Memory outputs M[R[rs1]] → written to R[rd].   
 - M[R[rs1]] = M[R[rs1]] + R[rs2], MemWrite = 1  
 Store the cache’s dirty data block with its address into the Write Buffer.   
-At the same time… compute M[R[rs1]] op R[rs2].  
+At the same time... compute M[R[rs1]] op R[rs2].  
 Clear the cache dirty bit.  
 
 CLK 2. Since CLK1 was PC_Stall, DC_Addr is still the same address.  
@@ -3912,17 +3912,17 @@ Write the address/data saved in the Write Buffer back to memory.
 
 ![RV64I59F_Zaamo_temp](/diagrams/design_archive/ima_make_rv64/RV64I59F/RV64I59F_Zaamo_temp.drawio.png)
 
-Ah… what should I do about the A extension.  
+Ah... what should I do about the A extension.  
 During work hours I significantly improved my understanding of virtual memory/paging. I don’t fully grasp everything including the TLB yet, but I think I’ve learned the basics.  
 If the buffer between registers and memory is the cache, then the buffer between cache and memory/secondary storage seems to be virtual memory; pages.  
-A fully associative, cache-like structure… the virtual page number is used like a tag, and the physical page number is the corresponding data. Separately there is a page offset…  
+A fully associative, cache-like structure... the virtual page number is used like a tag, and the physical page number is the corresponding data. Separately there is a page offset...  
 The page offset determines the number and size of pages. Number of page-number bits × page offset = the size of that paged memory (virtual page bits → virtual paging size; physical page bits → physical memory size).  
 Therefore, to implement a TLB or virtual memory, I think we need to fix the physical memory size itself.  
 
 One TLB miss handling method is to hand control over to the OS, and supporting virtual memory implies that in addition to main memory, secondary storage must also exist.  
-So, for some reason I had thought implementing only the main memory DDR3 SDRAM would suffice, but that’s not it—we have to consider external storage as well…  
+So, for some reason I had thought implementing only the main memory DDR3 SDRAM would suffice, but that’s not it—we have to consider external storage as well...  
 
-There’s more to do than I expected… it feels like the more I dig, the more it grows…
+There’s more to do than I expected... it feels like the more I dig, the more it grows...
 
 The issue I was worrying about yesterday can probably be solved by implementing an FSM.  
 Let’s run the thought experiment again.
@@ -3958,7 +3958,7 @@ That’s the problem.
 
 Because it’s a cache miss, WB must take precedence over Atomic so that WB occurs.
 
-Ah… I need to write more… time out… this is it for evening study today.
+Ah... I need to write more... time out... this is it for evening study today.
 
 ### [2025.04.24.]
 
@@ -3985,14 +3985,14 @@ The cache’s dirty bit is cleared, but since it’s not yet updated, we must pr
 **CLK2**
 Due to PC_Stall, the same-context instruction is executing.  
 The memory’s DM_RD is overwritten into the cleaned cache block.  
-The address/data saved at CLK1 in the WriteBuffer are driven as WB_Data… the DM_Addr MUX needs to select WB, but should DC_Status still be Miss in this CLK2?  
-This doesn’t seem to be about handling only the ‘current’ Hit/Miss… moreover, in CLK2 we need M[R[rs1]] = M[R[rs1]] + R[rs2], so it needs to be a cache Hit…  
+The address/data saved at CLK1 in the WriteBuffer are driven as WB_Data... the DM_Addr MUX needs to select WB, but should DC_Status still be Miss in this CLK2?  
+This doesn’t seem to be about handling only the ‘current’ Hit/Miss... moreover, in CLK2 we need M[R[rs1]] = M[R[rs1]] + R[rs2], so it needs to be a cache Hit...  
 This likely needs adjustment. The select signal of the DM_Addr MUX should probably be handled in the CU as if recognizing the cache FSM. Here, Data Memory should have WriteEnable asserted.
 
 Anyway.
 
 Cache update complete, memory write-back complete.  
-At the same time we need to do M[R[rs1]] = M[R[rs1]] + R[rs2]… I’ll probably need to check this in simulation.  
+At the same time we need to do M[R[rs1]] = M[R[rs1]] + R[rs2]... I’ll probably need to check this in simulation.  
 
 Usually after a write, the waveform clearly shows it from the next cycle; if this can be tuned, the atomic operation ends in CLK2, but in the worst case due to the cache structure it might slip to CLK3.
 
@@ -4003,9 +4003,9 @@ By driving the RD1 value (bypassed from the ALU) to DC_Addr, the cache outputs t
 That means it passes through the ALU twice???
 
 Then to drive R[rs1] as the address to DC_Addr, instead of bypassing through the ALU, we have no choice but to make a 2-to-1; 1-bit MUX selecting ALUresult vs. RD1.
-Only then can the operation be completed in a single cycle… and the select signal for that MUX should likewise be handled by the CU.  
+Only then can the operation be completed in a single cycle... and the select signal for that MUX should likewise be handled by the CU.  
 It can be controlled by the same Atomic signal. 
-It will be inactive during Write Back anyway, so no issue, and when DC is Ready, any operation structurally should be fine…
+It will be inactive during Write Back anyway, so no issue, and when DC is Ready, any operation structurally should be fine...
 
 That’s it for today. I updated the organized logic notes and additional control details on the Telegram channel and the Discord server.
 
@@ -4030,13 +4030,13 @@ An instruction with the rl bit set must cause the hart to wait until all prior m
 
 -----
 
-This… shouldn’t require structural adjustments. 
+This... shouldn’t require structural adjustments. 
 The Control Unit needs to look at the aq, rl bits and assert PC_Stall based on conditions, so I need to add the relevant funct7 bit range as input signals.  
 Done. RV64IM90_Zaamo_aqrl  
 
 ![250425-RV64IM90_Zaamo_aqrl](/diagrams/design_archive/ima_make_rv64/RV64IMA94F/[250425]RV64IM90_Zaamo_aqrl.drawio.png)
 
-What remains is Zalrsc… Load-Reserved, Store-Conditional…
+What remains is Zalrsc... Load-Reserved, Store-Conditional...
 
 Zalrsc Extension: Z, Atomic; Load-Reserved / Store-Conditional Extension
 - LR.W : R[rd] = M[R[rs1]],  
@@ -4058,9 +4058,9 @@ These instructions allow RISC-V to support the RCsc memory consistency model.
 
 After much discussion, RISC-V adopted release consistency as the standard memory consistency model.  
 So RISC-V’s atomic support is based on that model.  
-…
+...
 
-I almost went down the path of translating the entire A Extension chapter into Korean (tempting, but time is too tight—learned my lesson from the Privileged_ISA.Korean.md precedent… lol).  
+I almost went down the path of translating the entire A Extension chapter into Korean (tempting, but time is too tight—learned my lesson from the Privileged_ISA.Korean.md precedent... lol).  
 Instead, I extracted and summarized sentences in that chapter containing the words “reservation,” “reservation set.” Doing this forced me to read the chapter word by word; the clues I got are as follows.  
 (A_extension_Korean.md created.)
 
@@ -4077,18 +4077,18 @@ However, it states:
 So the size and shape are left to platform design discretion, and the spec requires that the platform document this.
 
 If the reserved data itself needed to be explicitly marked, the spec would have said to reserve “that data” directly; instead, the wording about including the “bytes” of the data suggests a more flexible implementation.   
-It feels a bit like cache tag/index… could be implemented that way. Given locality, data used within an LR/SC sequence tends to be somewhat constrained… but at a point where uncertainty and my own limits could lead me astray, an experimental approach would slow development and add risk.  
+It feels a bit like cache tag/index... could be implemented that way. Given locality, data used within an LR/SC sequence tends to be somewhat constrained... but at a point where uncertainty and my own limits could lead me astray, an experimental approach would slow development and add risk.  
 Of course that’d be fun(!), but with only about a month left including FPGA work (deadline May 28), I should take the stable route.  
 
-Memory is fetched in blocks and the target datum is identified within the block via an offset… so perhaps it’s enough to size the reservation to the size of the datum?  
+Memory is fetched in blocks and the target datum is identified within the block via an offset... so perhaps it’s enough to size the reservation to the size of the datum?  
 To keep implementation simple, I’ll do exactly that. This way I can implement Zalrsc in the simplest way without “logically” violating the spec.  
 Add a single buffer register, the reservation register (RR), to store the address and data.  
 Then, on each subsequent memory lookup, compare against RR to judge whether the data at that address matches or differs.  
 
-When does a reservation get broken, again… what exactly am I checking this comparison for? Reservation validity?? I’ll stop here for today—evening study time just ended.  
+When does a reservation get broken, again... what exactly am I checking this comparison for? Reservation validity?? I’ll stop here for today—evening study time just ended.  
 
 I think I can implement Zalrsc by tomorrow.
-You’re doing well… doing… well.
+You’re doing well... doing... well.
 
 ### [2025.04.26.]
 
@@ -4115,7 +4115,7 @@ During LR.W, the reservation registers the data value of R[rs1] (which is the me
 Because this is implemented as a register, provide the clock as an input to align outputs with the clock.  
 We need an output signal that indicates success/failure by comparing RD2 to the address registered in RD1 as the reservation-set base; call this output **Rsv_YN** (Reservation_Yes_or_No). Feed **Rsv_YN** back into the Control Unit.  
 
-1. We must detect writes to the reserved memory address (R[rs1])… at this point it seems best to make a separate Atomic Control module.  
+1. We must detect writes to the reserved memory address (R[rs1])... at this point it seems best to make a separate Atomic Control module.  
    - Atomic Control Unit  
    On memory writes, check whether the write address falls within the reservation set.  
    **[Inputs]**  
@@ -4173,7 +4173,7 @@ the SC.W succeeds only if the reservation is still valid and the reservation set
 
 = SC.W conditionally writes the word from rs2 to rs1. SC.W succeeds if the reservation is still valid and the reservation set contains the bytes to be written to rs1.
 
-> “SC.W conditionally writes the word from rs2 to rs1…”
+> “SC.W conditionally writes the word from rs2 to rs1...”
 
 Store means writing a Register value to Memory.  
 So the word in rs2 is R[rs2], and writing to rs1 means storing to M[R[rs1]].  
@@ -4221,7 +4221,7 @@ This is natural and structurally ideal for implementing the function.
 
 It follows the existing logic as-is, but now with a clearer, self-consistent reason.
 
-With that, we can now write it simply. hehe…
+With that, we can now write it simply. hehe...
 
 LR.W : R[rd] <- M[R[rs1]]  
 Reservation Set <- ( the 32B block address set that contains R[rs1] )  
@@ -4292,10 +4292,10 @@ Since the Atomic Unit’s Reservation Set is implemented as a register similar t
 Add Rsv_Write to the input signals. However, derive this signal from the DC_Atomic_MUX control.  
 When DC_Atomic_MUX is enabled for an Atomic instruction—to drive RD1 as the address only in Atomic ops—then, likewise, we can enable writes to the Reservation Set register for that Atomic op.  
 
-But… that would also write during SC.W. Inevitably we need a separate signal from the CU.  
+But... that would also write during SC.W. Inevitably we need a separate signal from the CU.  
 Add Rsv_Write as an output from the Control Unit and an input to the Atomic Unit.
 
-For LR.W… there’s really no need to output Rsv_YN. 
+For LR.W... there’s really no need to output Rsv_YN. 
 Whatever value it is, we won’t use it while executing that instruction anyway.
 
 Move on to verifying the SC.W datapath.   
@@ -4303,11 +4303,11 @@ Uh. I separately fed RD1 via a MUX signal, but RD2 needs an ALU bypass?
 Well, bypass is fine; we never use RD2 as a memory address in this operation. 
 Let’s do bypass.
 
-Hmm… problem. We only compare on writes (i.e., when SC.W causes a memory write), but SC is a store, so MemWrite would already be asserted by default and we couldn’t conditionally enable it…  
+Hmm... problem. We only compare on writes (i.e., when SC.W causes a memory write), but SC is a store, so MemWrite would already be asserted by default and we couldn’t conditionally enable it...  
 
 Have the Control Unit, when the opcode belongs to the Zalrsc extension, drive MemWrite conditionally based on Rsv_YN.  
 
-If that doesn’t work, a separate Control Unit… no. That’s the only viable way.
+If that doesn’t work, a separate Control Unit... no. That’s the only viable way.
 
 Wait. The Atomic Unit must know it’s an Atomic operation.  
 By default, to see whether a write to an address in the reservation set is happening, the Atomic Unit takes MemWrite and ALUresult.  
@@ -4318,8 +4318,8 @@ assuming MemWrite is deasserted by default, there is no identifier that tells us
 Therefore, via a signal indicating “Atomic,” we must force comparison of Reservation Set and RD2.  
 For this, add the DC_Atomic_MUX’s Atomic signal as an input to the Atomic Unit.  
 
-Done… A-extension implementation success…
-RV64IMA94F… Now I just need to add this to the 5-stage pipeline… hahaha…
+Done... A-extension implementation success...
+RV64IMA94F... Now I just need to add this to the 5-stage pipeline... hahaha...
 That’s it for today!!!
 
 ![250428-RV64IMA94F](/diagrams/design_archive/ima_make_rv64/RV64IMA94F/[250428]RV64IMA94F.drawio.png)
@@ -4359,14 +4359,14 @@ When rl is set, the hart must wait until all prior memory-access instructions co
 When the Control Unit recognizes that aq is set, it should hold PC_Stall while waiting for an identification signal in the WB stage that the aq-set instruction has completed.  
 Similarly, when the Control Unit recognizes that rl is set, it should hold PC_Stall while waiting until all instructions prior to the rl-set instruction have completed up to the WB stage—in other words, insert a bubble.  
 
-How to implement this…  
+How to implement this...  
 Pipeline the Atomic signal and carry it to the WB stage.  
 Place a comparison module in WB; when Atomic is 1 and the instruction arrives, return an aq_done signal to the Control Unit to release PC_Stall.  
-No, wait… if that’s the plan, I can just carry the Atomic signal to WB and feed it directly back to the Control Unit.  
+No, wait... if that’s the plan, I can just carry the Atomic signal to WB and feed it directly back to the Control Unit.  
 I’ll do that.  
 
 Then how about rl?  
-How do I insert the bubble… The Hazard Unit already has flush capability per pipeline register, so I’ll implement it so that when the rl bit is set, using the flush function we issue a NOP, based on inputs of the Atomic identification bit, the rl bit at ID, and the rl bit at WB.  
+How do I insert the bubble... The Hazard Unit already has flush capability per pipeline register, so I’ll implement it so that when the rl bit is set, using the flush function we issue a NOP, based on inputs of the Atomic identification bit, the rl bit at ID, and the rl bit at WB.  
 
 Wiring the rl bit in WB now.  
 That’s it for today.  
@@ -4387,8 +4387,8 @@ I was on duty. I’ve pipelined Zalrsc, and I’m in the middle of wiring the lo
 
 What remains now is to verify the datapath to ensure Zaamo works correctly.  
 With that, the A extension will be finished, and I’ll move on to preparations for OS bring-up.   
-At the very least… for the OS, I need virtual memory and I/O (including GUI). And while implementing those two, the privileged levels should naturally get implemented too…  
-hmm…  
+At the very least... for the OS, I need virtual memory and I/O (including GUI). And while implementing those two, the privileged levels should naturally get implemented too...  
+hmm...  
 
 ### [2025.05.02.]
 
@@ -4397,9 +4397,9 @@ The goal is to finish implementing basic_rv32s during this holiday stretch—by 
 
 Let’s begin!
 
-Ah, right. Come to think of it, for Zaamo I included the D_RD signal in ALUsrcA…
+Ah, right. Come to think of it, for Zaamo I included the D_RD signal in ALUsrcA...
 In single-cycle, every unit can be used in the same cycle, so no problem.
-But in a pipeline, before MEM, the EX stage cannot use memory-fetched data as an operand. The memory fetch has to happen in EX… this would be overstepping…
+But in a pipeline, before MEM, the EX stage cannot use memory-fetched data as an operand. The memory fetch has to happen in EX... this would be overstepping...
 
 **~2025.04.13~**
 
@@ -4440,12 +4440,12 @@ Start! (10:23)
 
 ![RV32I37F.R4v2](/diagrams/core_architectures/RV32I37F.R4v2/RV32I37F.R4v2.drawio.png)
 
-20:48 Done… a 10-hour task…  
+20:48 Done... a 10-hour task...  
 
 Based on this, I just need to create documents on the modules that changed from the original when moving to 43FC, plus any added modules.  
-Probably… I can finish the docs tomorrow morning and jump to backend in the afternoon.  
+Probably... I can finish the docs tomorrow morning and jump to backend in the afternoon.  
 
-I’ve wrapped most of it up through 43F. I really might be able to finish tomorrow… right? That’s it for today. 23:59.
+I’ve wrapped most of it up through 43F. I really might be able to finish tomorrow... right? That’s it for today. 23:59.
 
 ### [2025.05.04.]
 
@@ -4477,7 +4477,7 @@ Cache miss!
 
 D_RD select MUX chooses DM_RD.
 
-Data Memory access… address in progress… complete!  
+Data Memory access... address in progress... complete!  
 DM_RD fetched and cache miss detected!  
 -> DM_RD has been fetched, and the cache miss is detected.  
 flag rises, enter write-back mode.  
@@ -4566,7 +4566,7 @@ During evening study I’ll switch to backend with the goal of designing the Exc
 
 Time to grab food.  
 
-Finished through RV64I59F…  
+Finished through RV64I59F...  
 RV64IM72F has no structural differences from RV64I59F.  
 
 ### [2025.05.06.]
@@ -4574,7 +4574,7 @@ RV64IM72F has no structural differences from RV64I59F.
 #### Trap Controller Design
 Let’s design the Trap Controller..
 
-I can’t remember exactly what ECALL and EBREAK were supposed to do… let me dig through the notes.
+I can’t remember exactly what ECALL and EBREAK were supposed to do... let me dig through the notes.
 
 ##### - [EBREAK handling process]
 
@@ -4610,8 +4610,8 @@ EBREAK = execute instructions from the debug interface.
 
 -----
 
-Ah… implementing mret…   
-On mret, we need to fetch mepc and send it to PCC so it can become NextPC…  
+Ah... implementing mret...   
+On mret, we need to fetch mepc and send it to PCC so it can become NextPC...  
 Likewise, send it via T_Target and then drop PC_Stall and Trapped—shouldn’t that do it?
 
 Wait.  
@@ -4627,9 +4627,9 @@ Add funct7 to Exception Detector in the diagram.
 
 -----
 
-Instead of internally aligning and giving T_Target on misalign exception in the trap controller…  
+Instead of internally aligning and giving T_Target on misalign exception in the trap controller...  
 it might be better to branch to an address of a handler routine that performs the alignment and returns.  
-Then… how does mtvec behave again? direct vs vectored…  
+Then... how does mtvec behave again? direct vs vectored...  
 No, using just one is fine.  
 Enter a single Trap Handler first, then in that program code use a zicsr instruction to read mcause, determine what exception it was, and handle accordingly.  
 
@@ -4672,7 +4672,7 @@ B: CCCC_CCCC  LRU: recently used
 On the first access, 3333_3333 misses. So A gets replaced.
 
 At replacement, the A block that was old and a miss becomes hit immediately.  
-Because the address is still being driven… why is this a problem again?  
+Because the address is still being driven... why is this a problem again?  
 Honestly, the MUXes up front are already controlling this, and on a miss, SAA already outputs the intended data via DM_RD, so it doesn’t seem like a big problem.
 
 Anyway, since finishing the cache will require more verification time, I’m putting it on hold and doing the 64IMA extensions first.  
@@ -4727,15 +4727,15 @@ I wrote everything out in comments, one by one.
 I rewrote the Trap_Controller testbench directly, built scenarios, and I’m verifying.  
 Originally the FSM only had three states: IDLE – WriteMEPC – WriteMCAUSE.  
 That worked because execution starts in IDLE; then write mepc; and if write mepc, proceed to write mcause, and return to idle.  
-But in back-to-back Trap Controller interventions, this tangles the FSM.  
+But in back-to-back Trap Controller interventions, this tangles the FSM. (Continuous Trap Condition)  
 And if signals keep coming in, I observed in vcd that the current situation gets re-recognized and the FSM cycles again.  
 So I added a terminal READ_MTVEC state so that on the next instruction update we return to IDLE and can run from the start again.
 
-Also, it takes 3 cycles total from trap occurrence to control, during which the PC must be frozen, and we also need additional write control for the CSR File.  
-But only the Trap Controller knows when writes to the CSR File occur, so the TC should send a write enable signal to the CSRF, and in the top we should OR the CU and TC write-control signals so that CSRF write is enabled.  
+Also, it takes 3 cycles total from trap occurrence to control, during which the **PC** must be frozen, and we also need additional write control for the **CSR File**.   
+But only the **Trap Controller** knows when writes to the **CSR File** occur, so the **TC** should send a `write enable` signal to the **CSRF**, and in the top we should _bitwise OR_ the **Control Unit** and **TC** write-control signals so that **CSRF** write is enabled.  
 
-Similarly, during Pre-Trap handling, the PC must not update; I think we should add a Trap_Done signal to the CU.  
-Ugh. Pipelining this will be a headache.
+Similarly, during **Pre-Trap Handling**, the **PC** must not update; I think we should add a `Trap_Done` signal to the **CU**.  
+Pipelining this will be a headache.
 
 23:43. Everything works correctly according to the scenario test cases.  
 I need to apply the above modifications.  
@@ -4751,43 +4751,43 @@ Let’s do it.
 
 ### [2025.05.09.]
 
-When should I drive Trap_Done to 0 for Pre-Trap Handling…  
+When should I drive Trap_Done to 0 for Pre-Trap Handling...  
 When trap status is detected?  
 When trap_Handle_state is IDLE?  
-Once PTH runs, it doesn’t go back to IDLE unless it’s MRET or NONE…  
+Once PTH runs, it doesn’t go back to IDLE unless it’s MRET or NONE...  
 After the final mtvec read or after internal logic completes, bring it back to 1.  
-Wait. If Trap_Done is driven in IDLE, then when it’s not a TRAP situation…  
+Wait. If Trap_Done is driven in IDLE, then when it’s not a TRAP situation...  
 Ah, the case statement only runs after TRAP is detected anyway, so even if it’s IDLE before detection, it’s fine.  
 
 I’ll first implement trap_done <= 1'b0 in the IDLE: begin block and trap_done <= 1'b1 in the WRITE_MCAUSE: begin block, then run the tb.  
 
 If it doesn’t behave as intended, I’ll move trap_done <= 1'b1 into a new READ_MTVEC: begin block and include it there.
 
-Now it’s 0 only in IDLE, and 1 in WRITE_MEPC, WRITE_MCAUSE, READ_MTVEC…
+Now it’s 0 only in IDLE, and 1 in WRITE_MEPC, WRITE_MCAUSE, READ_MTVEC...
 
-I moved trap_done <= 1'b1 into WRITE_MCAUSE (or READ_MTVEC for other cases), and
+I moved trap_done <= 1'b1 into WRITE_MCAUSE (READ_MTVEC for other cases), and
 I wrote trap_done <= 1'b0 directly where trap_status is set, not in the trap handle state.  
 With this, trap_done goes to 0 during Pre-Trap Handling, and rises back to 1 at TRAP_NONE next, which is as intended.
 
-But… doesn’t PTH’s last state need to rise back to 1 so PC updates can proceed?  
-If it stays 0 until the end, there won’t be a next instruction and it won’t proceed…
+But... doesn’t PTH’s last state need to rise back to 1 so PC updates can proceed?  
+If it stays 0 until the end, there won’t be a next instruction and it won’t proceed...
 Right now, the tb is driving the next scenario, so it looks like it flows, but that’s not right. I should fix it.  
 
 Or not.  
 For safety I gave 5 clocks to the first ECALL scenario even though ECALL needs 3 clocks;  
 after the fix, with Trap_handle_state stuck at 11, Trap_Done also rises to 1 as is.
-The problem is EBREAK… in the waveform, THS goes to 10 (WRITE_MCAUSE), rises to 1, then drops back to 0. Why… I need to run it again and check.
+The problem is EBREAK... in the waveform, THS goes to 10 (WRITE_MCAUSE), rises to 1, then drops back to 0. Why... I need to run it again and check.
 
 Driving trap_done to 1'b1 explicitly in WRITE_MCAUSE fixes it.  
 Even with one extra slack cycle it stays 1 correctly, and with exactly 3 cycles it returns to 1 on the next.
 
-Huh, the waveform shows csr_write_enable = 1 on MRET… why?  
-—The waveform file was old…
+Huh, the waveform shows csr_write_enable = 1 on MRET... why?  
+—The waveform file was old...
 
 Added TC’s Trap_Done and CSR_WE output signals and finished tb.  
 Added CU’s Trap_Done input signal (for PC_Stall) and finished tb.  
 
-I’m on duty tomorrow… I should figure out approaches for OS and virtual paging support.  
+I’m on duty tomorrow... I should figure out approaches for OS and virtual paging support.  
 On Sunday I’ll move into designing the RV32I47NF top module.  
 Fighting!!!
 
@@ -4805,7 +4805,7 @@ So, as described in RISC-V, the result has 2 × XLEN bits.
 > “MUL performs an XLEN-bit × XLEN-bit multiplication of rs1 by rs2 and places the lower XLEN bits in the destination register. MULH, MULHU, MULHSU perform the same multiplication but return the upper XLEN bits of the full 2 × XLEN-bit product.”
 
 So is handling of the sign bits left to design discretion?  
-The ISA ought to define this…  
+The ISA ought to define this...  
 Well, given that COD 5e references MIPS and RISC-V is fundamentally different (e.g., flag usage), that may explain it.
 
 In any case, I’ll ask ChoiCube84 about two options:  
@@ -4815,9 +4815,9 @@ In any case, I’ll ask ChoiCube84 about two options:
 
 Option 1 doesn’t make sense—the modules needing 128-bit data would have to be audited separately, with per-instruction identifiers and logic.  
 
-So option 2…
+So option 2...
 
-Oh right—RISC-V “M” extension splits the instructions so you can fetch either the lower or upper XLEN bits with different opcodes as needed…  
+Oh right—RISC-V “M” extension splits the instructions so you can fetch either the lower or upper XLEN bits with different opcodes as needed...  
 Then I can keep ALUresult as 64 bits (XLEN) with no structural change, as I originally thought.  
 
 #### -Architecture changes 2-
@@ -4920,7 +4920,7 @@ Something like that.
 
 If my understanding is correct, conceptually it’s not hard, but in terms of workload it’s not exactly easy.  
 We need to implement exception conditions for each extension accordingly,
-set each CSR’s values to fit our spec, set per-CSR logic per WLRL/WARL rules… lots to audit in the Privileged Architecture.
+set each CSR’s values to fit our spec, set per-CSR logic per WLRL/WARL rules... lots to audit in the Privileged Architecture.
 
 ## RV32I46F Design
 
@@ -4943,12 +4943,12 @@ Those were the changes. I applied all of them.
 ![RV32I46F](/diagrams/design_archive/RV32I46F/RV32I46F.drawio.png)
 
 Now I’ll switch branches to design the RV32I46F top module.  
-Uh… I renamed the branch that implemented the Trap Controller (feat/exception_detector) to “Trap Controller,” pushed, opened a PR, and merged into develop.  
-To do RV32I46F on a new branch, I should branch off develop with those changes already merged… for now I’m separately developing a file parser.  
+Uh... I renamed the branch that implemented the Trap Controller (feat/exception_detector) to “Trap Controller,” pushed, opened a PR, and merged into develop.  
+To do RV32I46F on a new branch, I should branch off develop with those changes already merged... for now I’m separately developing a file parser.  
 It should be fine; I’ll probably PR it tomorrow.  
 
-Other than updating diagrams, tweaking GitHub branches, and signing up for arXiv, I didn’t do much…  
-Oh, the research notes I left yesterday… hmm…  
+Other than updating diagrams, tweaking GitHub branches, and signing up for arXiv, I didn’t do much...  
+Oh, the research notes I left yesterday... hmm...  
 
 I want to do more tomorrow, but I’ve also got cooking-support duty, so I’ll just go as far as I can.  
 Let’s do our best.  
@@ -4956,13 +4956,13 @@ That’s it for today.
 
 ### [2025.05.12.]
 
-Come to think of it, I… didn’t actually add funct7 to the Exception Detector.  
+Come to think of it, I... didn’t actually add funct7 to the Exception Detector.  
 I updated the diagram, but I missed the actual Verilog change. I’ll do this and then merge.  
 
-After that I’ll build RV32I46F… let’s do it right.  
+After that I’ll build RV32I46F... let’s do it right.  
 
 Turns out I misread the branch and just thought I hadn’t added funct7 to ED.  
-Looking at the commit history, it was the very first thing I implemented… haha.  
+Looking at the commit history, it was the very first thing I implemented... haha.  
 
 I created the RV32I46F top module, and while declaring signals I noticed the Trap Controller’s reset signal is named rst. 
 It shouldn’t be the odd one out, so I’ll spin up a new feat/trap_controller branch to fix it and then merge again.  
@@ -4973,7 +4973,7 @@ While doing that, I hit the question of where the instruction fed into ID comes 
 So the Debug Interface needs to output a [31:0] instruction signal with a clear name to derive and wire signals; I noticed this was missing.  
 I’ll add it. I’ll probably finish the RV32I46F top-module design before evening study ends today!
 
-?Question I see Instruction Memory automatically takes the PC address with its lower 2 bits aligned to 00…  
+?Question I see Instruction Memory automatically takes the PC address with its lower 2 bits aligned to 00...  
 
 ```verilog
 always @(*) begin
@@ -4986,7 +4986,7 @@ But now in the RV32I47NF (RV32I46F) design I formally handle misaligned exceptio
 
 **!Notes**
 
-Problem…  
+Problem...  
 For this design I planned a lightweight Debug Interface that simply outputs a fixed instruction (an input device from the core’s perspective) to fetch something like 0xABADBABE into a register.  
 But to write 0xABADBABE into a register, I’d have to clear that register first (shift instruction), then add the whole value (ADDI).  
 
@@ -4999,11 +4999,11 @@ So the debug instruction execution must be recognized and fetched in sequence, c
 And this must include midstream halt on PC_Stall.  
 The module complexity is higher than I expected.  
 
-How can I force a fixed value the simple way…
+How can I force a fixed value the simple way...
 
 Ah! In the top module I can just declare a signal and set its contents to a fixed constant—encoded as a 32-bit instruction!  
 Ha. Such a simple fix.  
-This won’t let me run two instructions in sequence though… and I do want two…  
+This won’t let me run two instructions in sequence though... and I do want two...  
 
 Since SLLI and ADDI can be handled in single cycles, I’ll just output one at a time, clocked in sequence.  
 On an FPGA I’d probably drive this with a button.
@@ -5012,16 +5012,16 @@ always @ (posedge clk) begin
    instruction = data[pc[31:2]];
 end
 ```
-The current Instruction Memory code is like this… To change it stepwise per clock… I’ll add a counter.
+The current Instruction Memory code is like this... To change it stepwise per clock... I’ll add a counter.
 
 Done.
 
-I should’ve finished today…  
-Sigh… tomorrow morning I’ll finish the Debug Interface testbench, and in the afternoon I’ll finish the RV32I46F top module and its testbench.
+I should’ve finished today...  
+Sigh... tomorrow morning I’ll finish the Debug Interface testbench, and in the afternoon I’ll finish the RV32I46F top module and its testbench.
 
 ### [2025.05.13]
 
-This way the Debug Interface keeps running even when it’s not used, so I’ll just do the simpler thing… implement it as an add on the current x22 value—by adding a signal in the top module.  
+This way the Debug Interface keeps running even when it’s not used, so I’ll just do the simpler thing... implement it as an add on the current x22 value—by adding a signal in the top module.  
 And to construct ABADBABE by 12-bit imm ADDIs I’d have to keep adding; that’s cumbersome and inflates the instruction count.  
 The Debug_Interface as implemented so far will be redesigned later, so I’m pausing the module and wrapping feat/debug_interface here.  
 No need to merge into develop; in cases like this I’m not sure what’s best. Given the shape will change a lot, discarding it might be right.  
@@ -5036,7 +5036,7 @@ I’ve copied the exact Trap Controller testbench scenarios into Instruction Mem
 - Read CSR mcause: if ecall, set x1 = 0000_0000; if misaligned, add FF to x2  
 - Then mret
 
-#### Write this in RISC-V assembly…
+#### Write this in RISC-V assembly...
 ```RISC-V
 // Prep loads for conditional branches/comparisons  
 csrrs x6, mcause, x0   // load mcause into x6
@@ -5078,12 +5078,12 @@ data[1031] = {12'hFF, 5'd2, `ITYPE_ADDI, 5'd2, `OPCODE_ITYPE};
 // ESCAPE Trap Handler @ data[1032]
 data[1032] = {7'b0011000, 5'b0, 5'b0, 3'b0, 5'b0, `OPCODE_ENVIRONMENT};
 ```
-I’m told the convention for read-only CSR access is CSRRS with rs1=x0…  
+I’m told the convention for read-only CSR access is CSRRS with rs1=x0...  
 An assembler directive like csrr x5, mcause is auto-encoded as csrrs x5, mcause, x0, and csrrw modifies rd, etc.
 
 Anyway, done. I haven’t actually run the tb to confirm the instructions emit correctly—so I’ll run it, then create a new feat/rv32i46f branch and proceed with tb.
 
-Given there’s only one debug instruction, it must be at the very end of the testbench scenario… I’ll move it.
+Given there’s only one debug instruction, it must be at the very end of the testbench scenario... I’ll move it.
 
 Ah, I must need a break. It was already in that position—I forgot again.  
 I’ve been at this for hours straight. I’ll pop over to the PX, get ChoiCube84’s PR approval, and then switch to the RV32I46F top-module testbench. (15:07)
@@ -5100,8 +5100,8 @@ And instantiation syntax goes roughly like this:
 ```
 ## RV32I46F Top module Debugging
 
-Why did ECALL get recognized correctly, mepc (CSR 341) got the current PC written, but the next PC didn’t stall and instead updated to 0000_0000…  
-pc_stall… becomes asserted not at 0000_00BC (ECALL) but the next cycle…? Is that it?
+Why did ECALL get recognized correctly, mepc (CSR 341) got the current PC written, but the next PC didn’t stall and instead updated to 0000_0000...  
+pc_stall... becomes asserted not at 0000_00BC (ECALL) but the next cycle...? Is that it?
 
 Originally, on TRAP occurrence during PTH I set trap_done to 0, but since TC sets trap_status != 0, trap_done should be 0 for all instructions anyway.   
 Maybe I should set trap_done in the case statement itself rather than per-case.
@@ -5110,35 +5110,35 @@ Tried that, but Verilog disallows writing something before the case condition de
 
 Previously I only drove trap_done <= 0 at the start of each FSM state and assumed it would persist, then set trap_done <= 1 at the end of the FSM.  
 Now, except for the final FSM stage, I put trap_done <= 0 into every FSM state.  
-I need to compare the new vcd with the old to see what differs…  
+I need to compare the new vcd with the old to see what differs...  
 
-No difference in the traces… I’ll check the actual top module.  
+No difference in the traces... I’ll check the actual top module.  
 
 Still no difference.  
-To avoid unintended latches in the Trap Controller, I set trap_done <= 1 before the case(trap_status), but reset will assert anyway at start…  
+To avoid unintended latches in the Trap Controller, I set trap_done <= 1 before the case(trap_status), but reset will assert anyway at start...  
 And every case path drives trap_done explicitly, so it should be fine, right?  
 I’ll re-run the TC testbench like this.
 
 Same outcome, but I caught a different angle.
 
-PTH’s activation itself is one cycle late… Why?  
+PTH’s activation itself is one cycle late... Why?  
 How can I pull it one cycle earlier so PTH triggers in the same cycle trap_status arrives?
 
 I made the detection logic combinational (always (*)) to monitor changes and kick off PTH immediately, and kept the FSM progression sequential (always (posedge clk or posedge reset)) so it recognizes and reacts right away.  
 
-Some of the edge-registered logic might not fire…?  
-But as long as PC_Stall happens, we’re fine… I’ll run the RV32I46F top module.
+Some of the edge-registered logic might not fire...?  
+But as long as PC_Stall happens, we’re fine... I’ll run the RV32I46F top module.
 
 Wow, that works! But it didn’t branch to the mtvec address.  
-Trapped asserted, trap_target looked good, pc_stall dropped properly… I’ll check the PC_Controller signals; maybe that’s where it is.
+Trapped asserted, trap_target looked good, pc_stall dropped properly... I’ll check the PC_Controller signals; maybe that’s where it is.
 
 Right—next_pc wasn’t selected as trap_target. I’ll have to debug that.
 
-Looked at PCC logic—still fine…  
+Looked at PCC logic—still fine...  
 Maybe the PC_Aligner is lingering and causing this; I removed it to check.
 
 Reran the sim and looked closely: the instruction after AUIPC is a JAL that jumps to a misaligned address. That’s when the freeze happens.  
-So next_pc must already be available while the current PC is executing… that’s how ED detects it.  
+So next_pc must already be available while the current PC is executing... that’s how ED detects it.  
 Maybe next_pc misalignment should be detected in PCC instead? Needs thought. If I fix this it might resolve the issue. That’s it for today.
 
 ### [2025.05.14.]
@@ -5187,10 +5187,10 @@ Maybe next_pc misalignment should be detected in PCC. Needs investigation.
 
 ### [2025.05.15.]
 
-Why…  
+Why...  
 Did it really go to a misaligned PC in the first place?  
 PCC itself is combinational, so it’s not a clocking issue, and ED also takes next_pc combinationally and should flag immediately.  
-So it should flag immediately…?
+So it should flag immediately...?
 
 JAL itself is fine. The issue is that the next_pc after it is misaligned.  
 If JAL changed next_pc to jump_target successfully, and ED detected the misalignment, then PCC should receive Trapped and switch next_pc to trap_target.  
@@ -5199,7 +5199,7 @@ Oh.
 Because we’re executing JAL, Control Unit keeps asserting jump, making next_pc = jump_target; at the same time, `trapped` is asserted, making next_pc = trap_target. That’s a race condition.  
 
 On top of that, `trap_target` (the Trap Handler’s entry) is produced at the last PTH FSM stage, and while that runs, Trap Controller keeps trap_done = 0, so Control Unit outputs pc_stall. Now next_pc = pc also contends with the two above.  
-How do I resolve this… this seems like the problem.
+How do I resolve this... this seems like the problem.
 
 In short,
 
@@ -5239,7 +5239,7 @@ end
 
 I changed it so mepc return can’t go to a misaligned address.
 
-I peeked at the top module: even putting PC_Aligner back and letting it pass through, the trap scenarios for TC/ED verification still don’t select next_pc = trap_target properly. Where did this go wrong…
+I peeked at the top module: even putting PC_Aligner back and letting it pass through, the trap scenarios for TC/ED verification still don’t select next_pc = trap_target properly. Where did this go wrong...
 
 ### [2025.05.16.]
 
@@ -5267,7 +5267,7 @@ I’ll apply it tomorrow as-is. It should work.
 Nope, it doesn’t.  
 The problem is unchanged. It’d be nice if at least something had shifted, but depressingly not a single result bit moved.  
 In standalone testbenches for the Control Unit and PC Controller with pcc_op integrated, there were no issues—even with race-condition tests.  
-What’s wrong… what is it…
+What’s wrong... what is it...
 
 ![RV32I46F.R3](/diagrams/design_archive/RV32I46F/RV32I46F.R3.drawio.png)
 
@@ -5276,7 +5276,7 @@ What if this isn’t a race condition problem?
 With the old PC_Aligner in place, next_pc was auto-aligned and execution proceeded correctly.  
 Is the problem in the Program Counter register that next_pc feeds into?  
 Is next_pc getting into the Program Counter but then not taking effect?  
-It’s such a simple module… could it really be the culprit?  
+It’s such a simple module... could it really be the culprit?  
 Ah.
 
 #### Approach B to resolving RV32I46F’s 29500 ms issue.
@@ -5299,8 +5299,8 @@ Have the PC Controller detect a misaligned jump_target and self-issue pc_stall b
 Then the Exception Detector can simultaneously recognize the misaligned jump_target and proceed with PTH normally. (20:32)  
 Let’s implement it right away.
 
-It works… (20:35) I made the PCC self-stall the PC, and the simulation no longer freezes.  
-The 30th instruction shows up cleanly in the waveform…  
+It works... (20:35) I made the PCC self-stall the PC, and the simulation no longer freezes.  
+The 30th instruction shows up cleanly in the waveform...  
 Now I’ll wire the Exception Detector signals so PTH actually runs.  
 
 We need to detect misalignment for all branch targets, not just jump_target.  
@@ -5322,21 +5322,21 @@ Done. I added functionality so the Branch Logic computes the address only when t
 Now the Branch Logic takes PC and imm, computes the branch_target by addition, and outputs it.  
 Testbench finished.  
 
-Next, I’ll inspect and fix whatever’s wrong in the Trap Handler. instruction memory branch…  
+Next, I’ll inspect and fix whatever’s wrong in the Trap Handler. instruction memory branch...  
 In the Trap Handler starting at Instruction Memory data[1024], the goal was csrrs x6, mcause, x0, but I had encoded the CSR address as 12'h343, which threw off the program’s control flow.  
 I corrected it to 12'h342, the actual CSR address for mcause. Then PTH behaved correctly. Everything works.
 
 Ah, there’s still some issue with EBREAK. Earlier, pcc_op wasn’t applied correctly so we failed to branch to trap_target, but I fixed that.  
-However, after EBREAK, the instruction inside the EBREAK handler should execute… but the debug instruction doesn’t appear. Why???  
+However, after EBREAK, the instruction inside the EBREAK handler should execute... but the debug instruction doesn’t appear. Why???  
 
-That’s it for today… time’s up.
+That’s it for today... time’s up.
 
 ## RV32I46F EBREAK debugging
 
 ### [2025.05.18.]
 
-Why won’t it switch to the debug instruction… why did the waveform stop at the PTH FSM stage where debug_mode should appear…  
-The debug signal itself never goes high to begin with… why?
+Why won’t it switch to the debug instruction... why did the waveform stop at the PTH FSM stage where debug_mode should appear...  
+The debug signal itself never goes high to begin with... why?
 
 I poked through the code, tweaking bit by bit and checking.  
 I fiddled in the top module—no luck—so I tried adding a MUX in the Instruction Decoder.  
@@ -5352,12 +5352,12 @@ Something must be forcing the signal back to 0.
 I checked and found Trap Controller still had code that always defaulted debug_mode to 0.  
 
 Since once debug_mode is active the debugger returns by executing MRET—and I already designed MRET to clear debug mode back to 0—I figured that defaulting wasn’t needed, so I removed it.  
-Still not working… why…
+Still not working... why...
 
 ---
 
 On a hunch I changed the coding style.
-Now it works…
+Now it works...
 
 Previously I had:
 
@@ -5376,7 +5376,7 @@ if (debug_mode) instruction = dbg_instruction;
 else instruction = im_instruction;
 ```
 
-and it works…
+and it works...
 
 If I use debug_mode directly there, it freezes again. Replacing it with the flag makes it behave.  
 With that in place, an ECALL routes to the debug instruction, it decodes correctly, and the instruction executes.
@@ -5385,7 +5385,7 @@ I spun up a separate top module to debug everything end-to-end, so I didn’t jo
 But with this, RV32I46F is complete.  
 
 I also moved the Instruction Decoder’s MUX out into the top module and tried it—works fine.  
-Done… 2025.05.18. 12:01.
+Done... 2025.05.18. 12:01.
 
 ![RV32I46F.R4](/diagrams/design_archive/RV32I46F/RV32I46F.R4.drawio.png)
 ![RV32I46F.R5](/diagrams/design_archive/RV32I46F/RV32I46F.R5.drawio.png)
@@ -5445,7 +5445,7 @@ A bold leap toward that challenge is already a victory in itself,
 and because it is a victory, the new challenge becomes a great one.  
 — *Jonathan Livingston Seagull*, Richard Bach / translated by Kang Min-Woo
 
-23:40… Time’s not generous, but I’ll push as far as I can.
+23:40... Time’s not generous, but I’ll push as far as I can.
 
 I finished the first draft of the RV32I46F pipelined version diagram!
 
@@ -5457,7 +5457,7 @@ That’s it for today, haha. Let’s keep charging ahead!!!
 ### [2025.05.20.]
 
 I was on duty.  
-Hmm… thinking about RV32I46F, I realize I likely overlooked that the data memory had been changed while we were moving to a cache-based structure and proceeded as-is.  
+Hmm... thinking about RV32I46F, I realize I likely overlooked that the data memory had been changed while we were moving to a cache-based structure and proceeded as-is.  
 I should verify this.  
 
 ### [2025.05.21.]
@@ -5566,7 +5566,7 @@ Since the earlier issue I mistook for a race condition turned out to be a PC cha
 So I rolled PCC back to the older structure and kept the pcc_op versioned module around just in case for the future.  
 
 Ah—while declaring pipeline registers in the top module I realized: if the Reg Write signal is pipelined, the write-address must be pipelined too, but I was simply feeding rd straight from decode. I fixed this by pipelining rd.  
-I stubbed it in via top-module signal declarations; now I’ll jump back to the feat/pipeline_registers branch and add it properly…  
+I stubbed it in via top-module signal declarations; now I’ll jump back to the feat/pipeline_registers branch and add it properly...  
 All added. Done. That’s it for today.
 
 ![RV32I46F_5SP.R2](/diagrams/design_archive/RV32I46F_5SP/RV32I46F_5SP_R2.drawio.png)
@@ -5608,7 +5608,7 @@ It’s my own idea I haven’t seen written elsewhere, but I imagine others do s
 ![RV32I46F_5SP.R3](/diagrams/design_archive/RV32I46F_5SP/RV32I46F_5SP_R3.drawio.png)
 
 Evening study over.  
-If not for weekend leave, I might have finished the 2-bit Branch Predictor as well…  
+If not for weekend leave, I might have finished the 2-bit Branch Predictor as well...  
 Still, I think I can make decent progress tomorrow.  
 
 ### [2025.05.25.]
@@ -5751,7 +5751,7 @@ During this time I took the training and learned Vivado’s FPGA synthesis workf
 
 At the RTL level, running Simulation and Synthesis in Vivado surfaces far more information and errors than writing with iverilog. 
 From the reports, quite a few blocks were being synthesized into latches, and beyond that I’ll need to set timing constraints and then fix any timing violations that those constraints don’t eliminate.   
-I should learn more about handling the .xdc file…
+I should learn more about handling the .xdc file...
 
 The roadmap is now:
 
@@ -5814,7 +5814,7 @@ I noticed there was no zero-initialization path for miss in the combinational co
 On misprediction we should branch to the EX-computed branch target, but on the next clock the branch signal is deasserted, so PCC updates IF’s PC with PC+4.  
 Should we pipeline the EX branch-taken signal into MEM and have PCC, on misprediction with MEM stage branch=1, jump to the branch target?  
 
-Hmm… this also converges to the predictor/target issue above. See “#### After a branch prediction miss, we still didn’t jump to the real target:” from ## [2025.05.27.]  
+Hmm... this also converges to the predictor/target issue above. See “#### After a branch prediction miss, we still didn’t jump to the real target:” from ## [2025.05.27.]  
 
 As for where to compute that target:  
 (We could put a combinational adder in the Predictor to add the EX imm and pc to get the actual branch address, but does it have to live in Branch Logic?)  
@@ -5862,7 +5862,7 @@ Even if we add a dedicated write-address port, WB will also be writing CSR on Zi
 And the Trap Controller currently uses a single csr_trap_address for both CSR reads and writes.  
 This suggests splitting the Trap Controller’s CSR address outputs into separate read and write ports, and likewise splitting the CSR’s write-address ports between Trap Controller and WB.  
 
-Do we also need to tell CSR File whether the access is for PTH (e.g., by adding trap_done as an input)? Is that right…?  
+Do we also need to tell CSR File whether the access is for PTH (e.g., by adding trap_done as an input)? Is that right...?  
 No—WB-stage CSR ops are already in flight before trap detection, and our logic completes in-flight instructions before handling the trap. So there’s no conflict.   
 I solved it by splitting the CSR’s address inputs into separate read-address and write-address ports.
 
@@ -5907,7 +5907,7 @@ Why? I muttered that I should’ve just started RTL in Vivado instead of iverilo
 
 Vivado’s flow pane suggests a standard workflow;   
 I decided to go step by step, clearing errors/warnings before moving on. 
-So I started with Behavioral Simulation again and focused on eliminating X and Z in the waveforms. While chasing Z’s… I found the culprit.
+So I started with Behavioral Simulation again and focused on eliminating X and Z in the waveforms. While chasing Z’s... I found the culprit.
 
 ### [2025.06.03]
 
@@ -5930,7 +5930,7 @@ But that effectively makes the module synchronous and adds a cycle of latency—
 Re-reading my IDEC 2024 notes: on FPGA, only synchronous reads are guaranteed; for any async-style memory, you must put a flop on the output to align to the clock.   
 With that change, timing shifts, and back then I used a PLL trick to make single-cycle work. 
 
-With a pipeline, the timing keeps drifting; at undergrad scale this is “hard to fully solve”… Right. Challenge accepted—I’ve climbed this hill once.
+With a pipeline, the timing keeps drifting; at undergrad scale this is “hard to fully solve”... Right. Challenge accepted—I’ve climbed this hill once.
 
 ### [2025.06.04.] 
 
@@ -5999,7 +5999,7 @@ Why did the timing get worse?
 Maybe the RTL got more accurate and exposed more of the underlying cost.  
 For now, the Synthesis option that had stretched to 18 ns was changed to Flow_PerfOptimized_high and reduced to about 15 ns.  
 14 ns would require full flatten, but that makes debugging hard, so I kept rebuilt.  
-Debugging begins again from here…
+Debugging begins again from here...
 
 #### Timing Closure
 
@@ -6012,7 +6012,7 @@ Okay. I just created a new project file in Vivado and reran Behavior Simulation.
 I committed all top-module optimizations for Vivado and spun up a new project again.  
 While running Synthesis, I checked timing per Strategy and decided to go with the rebuilt-style PerfOptimized High setting.  
 
-Roughly a 15 ns violation… I replaced the pipeline stall signals from if-statements to ternary operators and secured a 0.1 ns margin.  
+Roughly a 15 ns violation... I replaced the pipeline stall signals from if-statements to ternary operators and secured a 0.1 ns margin.  
 Since what matters now is “working even if slow,” I’ll set 25 ns in the XDC instead of 10 ns and confirm whether it actually runs correctly at 40 MHz.  
 
 At 25.5 ns there’s no violation, but when I checked Critical Warnings just in case—beyond the IO-related stuff, it says Timing Loops were found. What is this?  
@@ -6022,9 +6022,9 @@ I need to investigate.
 
 I ran Post Synthesis Timing Simulation with no violations.  
 The result is dismal. Unintended and unknown signals spit out weird values, the program doesn’t flow correctly, and from a certain point on the waveforms are flooded with X and Z.  
-Ah… how should I even approach this…  
+Ah... how should I even approach this...  
 
-Sigh… before waveform debugging, I must fix every error.  
+Sigh... before waveform debugging, I must fix every error.  
 I feel like there’s nothing else to blame, and only then should I touch these waveforms.   
 Right now I can’t even guess why this is happening, so let’s resolve all Warnings, Critical Warnings, and Errors Vivado reports.  
 
@@ -6037,11 +6037,11 @@ From the Timing Analysis list, Forward Unit, IF ID Register, and Branch Predicto
 
 How should I solve this?
 These generally operate as combinational blocks; do I need to reconstruct them all as synchronous?  
-But then… everything shifts by a cycle and the waveforms… sigh… I may have to go back to the RTL code…  
-I don’t even know if that will work…  
-But what else can I do… there’s nothing else I can do right now…  
+But then... everything shifts by a cycle and the waveforms... sigh... I may have to go back to the RTL code...  
+I don’t even know if that will work...  
+But what else can I do... there’s nothing else I can do right now...  
 
-After fixing this, I’ll tackle the fanout of 227… urgh…  
+After fixing this, I’ll tackle the fanout of 227... urgh...  
 I need to insert FFs and make them synchronous.  
 There’s no guarantee the error isn’t present since 37F, so I’ll review each architecture and fix them one by one.  
 
@@ -6049,7 +6049,7 @@ Rooted in the 37F structure: ALU.
 In 43F: CSR_File.  
 In 46F: Trap Controller, Forward Unit.  
 In 46F5SP: Branch Predictor, IF ID Register, Forward Unit.  
-Sigh… Pipelining the ALU? I didn’t consider that—wasn’t it originally combinational? Maybe just registering the output is sufficient?
+Sigh... Pipelining the ALU? I didn’t consider that—wasn’t it originally combinational? Maybe just registering the output is sufficient?
 
 ### [2025.06.06.]
 
@@ -6111,14 +6111,14 @@ Because of the timing adjustments for the one-cycle shift caused by the new regi
 
 After this issue, I confirmed all other waveforms follow expected values.  
 
-Just this one now… I’ll analyze and fix it tomorrow. I hope to finish FPGA Timing Analysis within this week.  
+Just this one now... I’ll analyze and fix it tomorrow. I hope to finish FPGA Timing Analysis within this week.  
 That’s it for today!
 
 ### [2025.06.07.]
 
 #### Implementing Illegal Instruction Exception
 
-I tried various methods to support Illegal Instruction Exception…  
+I tried various methods to support Illegal Instruction Exception...  
 First, the exception appeared one cycle late.  
 After fixing that, it failed to read mtvec correctly.  
 Then, when I wrote code to fix that, iverilog simulation completely froze, while Vivado showed waveforms but with unintended behaviors.  
@@ -6130,7 +6130,7 @@ So I gave the Exception Detector the rs1 value and csr_write_enable so that when
 But this, too, froze the iverilog simulation; and in Vivado it looked okay, but I observed write enable asserted together with unintended addresses, storing the wrong address into mepc and branching incorrectly.
 
 Faced with a situation where the logic becomes hard to trace alone, I decided not to add more logic unless refactoring, Timing Closure, and Behavior errors are absent.  
-RISC-V principles emphasize strict exception handling, so lacking this behavior may be non-compliant… but what can I do.  
+RISC-V principles emphasize strict exception handling, so lacking this behavior may be non-compliant... but what can I do.  
 
 Once again, perfect is the enemy of done.
 Therefore, I commented out the Illegal Instruction–related part up to the current development point, and I’ll verify that I’ve made truly synchronous modules, then move on to fixing the next Combinational Loop.  
@@ -6143,9 +6143,9 @@ While verifying, I found mistakes in the expected-value comments in the Instruct
 Even if I return with MRET, ECALL is resolved in the ID stage and jumps to mepc+4, so the two instructions that were in EX and MEM before ECALL cannot be saved.  
 If I jump back to them, ECALL will be executed again and I’ll just fall into recursion.  
 When ECALL is detected, the pipeline should stall for two cycles. I need to revise the logic.  
-I made the FSM wait on ECALL to preserve even the WB-stage instruction, but then I found that ECALL’s own PTH didn’t execute. I should fix that first. (It took 1 hour 30 minutes to get here…)
+I made the FSM wait on ECALL to preserve even the WB-stage instruction, but then I found that ECALL’s own PTH didn’t execute. I should fix that first. (It took 1 hour 30 minutes to get here...)
 
-Let’s think… why won’t the ECALL PTH proceed…  
+Let’s think... why won’t the ECALL PTH proceed...  
 Right. When ECALL occurs, the instruction that identifies ECALL in the ID stage must stall, but it gets flushed and the ECALL context disappears.  
 Because of this the ED doesn’t even recognize a trap, so PTH doesn’t proceed. There is indeed a flush in IF_ID_Register in the waveform. Let’s remove it.  
 During debugging I had inserted a logic into Hazard Unit to flush IF_ID_Register on ECALL; I must have forgotten to remove it. Removing it lets PTH proceed. Now let’s rescue the remaining instructions.  
@@ -6162,41 +6162,41 @@ When Trap Controller reaches GOTO_MTVEC and the IF stage PC is also the Trap Han
 
 I added a pth_done_flush signal; similar role, but moving the assertion point from READ_MTVEC (previously 1 there) to GO_MTVEC fixed the issue.  
 I discovered this while catching the 29th incorrect JAL instruction that didn’t branch to the Trap Handler. ECALL still behaves a bit differently than intended, though.  
-Analyzing waveforms… why is PTH executed twice?
+Analyzing waveforms... why is PTH executed twice?
 
-Phew… after 1 hour 30 minutes trying various approaches (like separating csr_access… etc.), I rolled back. Back to square one…
+Phew... after 1 hour 30 minutes trying various approaches (like separating csr_access... etc.), I rolled back. Back to square one...
 
 Feels like I’m doing deep verification this time.  
-Did I verify too loosely on 46F5SP, 46F, 43F…?  
+Did I verify too loosely on 46F5SP, 46F, 43F...?  
 
 Data Memory’s address input was alu_result[11:2]; I guess ChoiCube84 cut the lower two bits to prevent misalignment, but that causes the Data Memory to take an address shifted by 2 bits from the intended alu_result.  
 Watching the waveforms and seeing discrepancies with the expected values in the Instruction Memory TestBench, I reverted it to [9:0] and it matches.
 
-Oops. SH Misaligned Memory also successfully branches to PTH and TH, but it doesn’t NOP the handling of that problematic instruction. I must fix this too…  
+Oops. SH Misaligned Memory also successfully branches to PTH and TH, but it doesn’t NOP the handling of that problematic instruction. I must fix this too...  
 
-This isn’t an extra feature; it’s basic behavior that should have worked… sigh… When can I fix the other Combinational Loop…  
+This isn’t an extra feature; it’s basic behavior that should have worked... sigh... When can I fix the other Combinational Loop...  
 
-If the trap is detected in MEM stage, it’s too late… even if MEM stage detection removes Write Enable, the write will likely happen first; instead of thinking which signal wins within one cycle, it’s more effective to preemptively block in the previous cycle.   
-Since EX stage already has alu_result and can parse opcode/funct3 to know which store it is…  
-I’ll remove misalign detection from BE_Logic and add handling in Exception Detector using EX-stage signals…  
+If the trap is detected in MEM stage, it’s too late... even if MEM stage detection removes Write Enable, the write will likely happen first; instead of thinking which signal wins within one cycle, it’s more effective to preemptively block in the previous cycle.   
+Since EX stage already has alu_result and can parse opcode/funct3 to know which store it is...  
+I’ll remove misalign detection from BE_Logic and add handling in Exception Detector using EX-stage signals...  
 Solved! But then the following LW’s Misaligned raises PTH-TH again after the Trap Handler branch, breaking the flow.  
 So I included IF_ID_Register flush in pth_done_flush as well.
 
 #### PTH pipeline register flush issue
-Next issue… 
+Next issue... 
 > The 28th instruction is a Misaligned JAL right after AUIPC. Because PTH-TH happens in EX based on EX_pc and then proceeds to the next instruction, during that PTH all pipeline registers except MEM_WB are flushed.
 
-As a test, I temporarily removed the misaligned instruction flush (in the original waveform pth_done_flush coincided with one earlier pulse, so I removed it to test). That fixed it…  
+As a test, I temporarily removed the misaligned instruction flush (in the original waveform pth_done_flush coincided with one earlier pulse, so I removed it to test). That fixed it...  
 
-Hmm. Previously doing that caused the JAL to survive and execute R[rd] = PC + 4, which is why I added that instruction to the Hazard Unit… it’s confusing, but I’ve got a mountain of tasks; moving on for now.
+Hmm. Previously doing that caused the JAL to survive and execute R[rd] = PC + 4, which is why I added that instruction to the Hazard Unit... it’s confusing, but I’ve got a mountain of tasks; moving on for now.
 
 Whew. Almost there. 
 For the branch predictor, the Trap Handler writes to x7 from Instruction Memory, so I adjusted the scenario accordingly and verified correct behavior.  
 Now for the CSR instructions: with synchronous CSR, I confirmed the read value appears one cycle later, but the value written to the Register doesn’t align in address and timing.
 
-I think this is it for today… leaving notes first…
+I think this is it for today... leaving notes first...
 
-All the way through Instruction Memory #38 is done. Yay. PTH has been fine so far; I just need to execute the remaining 4 consecutive CSR instructions…  
+All the way through Instruction Memory #38 is done. Yay. PTH has been fine so far; I just need to execute the remaining 4 consecutive CSR instructions...  
 
 The current issue: due to the timing gap between CSR Read and Write, CSR data output must be forwarded. I thought I had implemented this—what’s different?  
 
@@ -6206,19 +6206,19 @@ Then consecutively:
 
 Zicsr handles read and write simultaneously, but the read happens in ID and takes two clocks, while the write applies in WB—i.e., three cycles later.  
 = For multiple Zicsr accesses to the same address back-to-back, up to the next 3 instructions can receive a stale value that hasn’t yet been updated by the first CSR write.  
-Then we need forwarding… let’s review the existing logic.
+Then we need forwarding... let’s review the existing logic.
 
 Ah. Only MEM and WB CSR forwarding was implemented.   
-I should also implement EX-stage forwarding… but I’m out of time.  
-That’s it for today. Let’s definitely try tomorrow… (oh, inspection tomorrow…)
+I should also implement EX-stage forwarding... but I’m out of time.  
+That’s it for today. Let’s definitely try tomorrow... (oh, inspection tomorrow...)
 
 I did 6 minutes overtime but it still seems off.  
 I’ll check the waveform tomorrow. Ending here.  
 
 ### [2025.06.08]
 
-CSR writes are written correctly. But that also needs to reflect in the write to register 21… it doesn’t.  
-Looks like a WB forwarding issue… haha! Fixed.  
+CSR writes are written correctly. But that also needs to reflect in the write to register 21... it doesn’t.  
+Looks like a WB forwarding issue... haha! Fixed.  
 I was looking at the problem a bit wrong; I wrote things out in a notebook step by step and solved it. Took about 30 minutes.  
 
 > The problem scenario: two consecutive instructions to the same CSR with the same R[rd]; due to the preceding instruction A, the CSR is changed, but the following instruction B reaches WB and writes the stale CSR value it read to R[rd]. 
@@ -6282,20 +6282,20 @@ Hm. It’s the 40th instruction; the result is a bit odd.
 CSRRWI: x22 = FFFF_FFBC, CSR[342] = 0000_0000; // R[x22] = 0000_0000, CSR[342] = 0000_0003
 ```
 CSR[342] (mcause) correctly has 3 written, but 0000_0074 was written to R[x22], which is wrong.  
-CSR[342] was 0 originally—correct. Then R[x22] should be 0000_0000…  
-Strange. csr_hazard_mem is asserted. So register_file_write_data_select is 010, i.e., WB_ALU_result is being sent to R[rd]…  
+CSR[342] was 0 originally—correct. Then R[x22] should be 0000_0000...  
+Strange. csr_hazard_mem is asserted. So register_file_write_data_select is 010, i.e., WB_ALU_result is being sent to R[rd]...  
 
 Maybe csr_hazard_mem logic is wrong? Need to check.   
-Eh—register_file_write_data_select is owned by the Control Unit…  
-Hmm… I almost see it… inspection time. (11:14)
+Eh—register_file_write_data_select is owned by the Control Unit...  
+Hmm... I almost see it... inspection time. (11:14)
 
 Back at 12:06.  
 The current instruction is csrrsi. Since it must combine the rs1 field value and the CSR value, ALUsrc should be A,B = rs1, CSR. So 3 and 3.  
 csr_hazard_mem condition: in MEM stage CSR_WE asserted, and MEM-stage raw_imm (csr_write_address) equals EX-stage raw_imm.  
 
-Weird… when WB_raw_imm becomes 305, mtvec value 0000_1000 should have appeared as WB_csr_read_data, but it doesn’t.  
+Weird... when WB_raw_imm becomes 305, mtvec value 0000_1000 should have appeared as WB_csr_read_data, but it doesn’t.  
 Wait. On any Zicsr access—read included—csr_ready should go low then rise to 1 as the value is fetched, but csr_ready doesn’t go low. Why?  
-Up to csrrc it was fine; starting from csrrwi it’s wrong. Only Zicsr immediate instructions? PTH works fine… need to investigate.  
+Up to csrrc it was fine; starting from csrrwi it’s wrong. Only Zicsr immediate instructions? PTH works fine... need to investigate.  
 
 Nice. Big win. In CSR File’s sequential logic,
 
@@ -6318,7 +6318,7 @@ Then csr_read_out started to read correctly, and I moved on.
 x22 being written twice across two cycles is correct. But the data is shifted by one cycle, and there’s an extra value that shouldn’t be there.  
 
 Both 0000_0000 and 0000_1000 must be written to x22, but the first write cycle has 0000_0074, second is 0000_0000. The third writes 0000_1000 to the next, x23. Originally x23 should be 0000_1007.  
-0000_1007 even came out correctly from the ALU. Hmm…
+0000_1007 even came out correctly from the ALU. Hmm...
 
 Where did 0000_0074 come from? Let’s find it.  
 
@@ -6347,17 +6347,17 @@ Meaning: in standby_mode, the retiring WB-stage values are forwarded as usual.
 
 I thought up the logic and solved it in two simulation runs. I completed the wait-logic right away the first time, but had to fix the MUX select logic in the top module, so it took two runs. 
 
-For CSR immediate instructions 40, 41, 42, the values written to the CSR weren’t being written before; now they all are and it proceeds to PTH. Remaining issue: the registers…  
-Register x22 receives the unintended 0000_0074… and that wrong value shifts the intended ones by one cycle and misaligns the addresses…  
-Let’s trace it…  
+For CSR immediate instructions 40, 41, 42, the values written to the CSR weren’t being written before; now they all are and it proceeds to PTH. Remaining issue: the registers...  
+Register x22 receives the unintended 0000_0074... and that wrong value shifts the intended ones by one cycle and misaligns the addresses...  
+Let’s trace it...  
 
 For now, that value comes out of the CSR.  
 Since it’s a Zicsr instruction, RF_WD_src (Register File Write Data source) is 011; it’s correctly set to WB_csr_read_data, and I verified the same value is written on the same clock as csr_data_out.  
-Heh… I rolled back. Kept standby_mode, but the method of pulling retired values was to lower csr_ready only when there was no CSR write; in reality, CSR reads and writes happen together, so every CSR access should take two cycles. I removed that logic. I’ll restart from this state…
+Heh... I rolled back. Kept standby_mode, but the method of pulling retired values was to lower csr_ready only when there was no CSR write; in reality, CSR reads and writes happen together, so every CSR access should take two cycles. I removed that logic. I’ll restart from this state...
 
-Right. In the end, the slip is in WB by one cycle, and unless I do CSR access in ID stage, there’s no WB one-cycle delay…  
+Right. In the end, the slip is in WB by one cycle, and unless I do CSR access in ID stage, there’s no WB one-cycle delay...  
 
-How about detecting Zicsr in WB and… stalling PC and the pipeline once?
+How about detecting Zicsr in WB and... stalling PC and the pipeline once?
 
 - If Zicsr detected in WB, stall = 1,  
    - increment WB_stall counter,  
@@ -6365,11 +6365,11 @@ How about detecting Zicsr in WB and… stalling PC and the pipeline once?
 
 Hmm, sounds okay? Where to implement—Hazard Unit and CU.  
 pc_stall belongs to CU; pipeline stall belongs to Hazard Unit.  
-Identifier for Zicsr is… OPCODE_ENVIRONMENT (1110011) and funct3 != 0.  
+Identifier for Zicsr is... OPCODE_ENVIRONMENT (1110011) and funct3 != 0.  
 Both signals exist in the MEM/WB register. Let’s try. Oh, no need for opcode/funct3; csr_write_enable is enough since CSR instructions always assert it.
 
 Temporarily suspended. This is going nowhere.  
-CSR… consecutive accesses to the same CSR address are not fully supported yet…  
+CSR... consecutive accesses to the same CSR address are not fully supported yet...  
 No matter how I think, I’ve hit a cognitive limit here; no progress. I’ll pull the incomplete forwarding logic, and re-Synthesize based on synchronous CSR.  
 Timing stretched to about 13 ns. I even ran Implementation; that’s 26 ns. Hm.  
 
@@ -6397,11 +6397,11 @@ So I registered debug_mode and succeeded in removing the loop. Down to zero.
 I tried Synthesis with flatten set to none, full, rebuilt; performance was better with rebuilt or full, and none maintained hierarchy so debugging was easier.  
 As a bonus, in PSFS, rebuilt/full showed lots of x and z values; with none, those mostly disappeared and it ran more smoothly.  
 In PSFS I confirmed behavior matched intent, but in PSTS values still get flooded with X from a specific point, suggesting a timing issue.  
-I’ll now analyze and begin the full Timing Closure work. Even so, moving to actual implemented design stretches timing to 20 ns…  
+I’ll now analyze and begin the full Timing Closure work. Even so, moving to actual implemented design stretches timing to 20 ns...  
 
-Why so slow… Well, for a first build, making it function matters more than perfection.  
-Dhrystone benchmark, Doom… display and I/O implementation…  
-A mountain of tasks. Can I really do all this within this month…  
+Why so slow... Well, for a first build, making it function matters more than perfection.  
+Dhrystone benchmark, Doom... display and I/O implementation...  
+A mountain of tasks. Can I really do all this within this month...  
 No—there’s only doing it. Let’s do this well.
 
 ### [2025.06.09.]
@@ -6417,9 +6417,9 @@ Regarding the last PR yesterday, I found X values in the waveform and committed 
 And the start of Timing Closure.  
 As I checked the waveforms for Timing Closure, I saw instructions simply passing through pipeline registers getting altered.  
 Looking at the waveforms, an instruction that entered a pipeline register changed value as it moved across registers. Why does it change at the next clock?  
-Originally it should be 2bc00093, but it starts as 23c00093 then 2bc00080, and only in EX does it become 2bc00093… The next instruction should be 01809113, but in ID it’s 01809100 and only in EX does it revert…  
-Pipeline registers should not alter values absent separate logic…  
-In Post Synthesis Functional Simulation and Behavior Simulation this worked… what’s the cause?  
+Originally it should be 2bc00093, but it starts as 23c00093 then 2bc00080, and only in EX does it become 2bc00093... The next instruction should be 01809113, but in ID it’s 01809100 and only in EX does it revert...  
+Pipeline registers should not alter values absent separate logic...  
+In Post Synthesis Functional Simulation and Behavior Simulation this worked... what’s the cause?  
 
 While debugging and seeing multiple changes within a single clock-high period, I felt not only glitches but also the structural vulnerability of combinational logic.
 So I plan to convert Instruction Memory to synchronous. If PC goes in once, it guarantees stability until the next cycle,  
@@ -6497,8 +6497,8 @@ At that moment in the waveform, I saw next_pc change multiple times within a sin
 This now must be solved by looking at the waveform.
 Let’s start. (19:23)
 
-Hmm… looking closely… seems related to Trap Control.   
-The X flood begins at SH, when trap-related logic is activated in Instruction Memory…  
+Hmm... looking closely... seems related to Trap Control.   
+The X flood begins at SH, when trap-related logic is activated in Instruction Memory...  
 
 ![Trap_Controller's_Combinational_Logic_Signal_Uncertainty](/project_devlog/KHWL/Devlog_images/Unstable_Trap_Status.png)
 
@@ -6510,7 +6510,7 @@ Indeed, it’s a module that combines decoded information from execution, so eve
 
 While converting Exception Detector to synchronous, detection timing moved one cycle later, so PTH entry into MTVEC needed to span two FSM stages (trapped de-asserts one cycle later), and I had to change the mepc write timing from EX stage to MEM stage. With this the logic worked to some extent (the smoothest change so far).   
 
-For ECALL, due to timing differences, WB-stage csr_write_enable gets cut upon switching to trapped, preventing retirement of data that should retire; that’s the only remaining fix. I already confirmed abadbabe prints…
+For ECALL, due to timing differences, WB-stage csr_write_enable gets cut upon switching to trapped, preventing retirement of data that should retire; that’s the only remaining fix. I already confirmed abadbabe prints...
 Time for evening roll call.
 
 Let’s begin (21:47)  
@@ -6525,14 +6525,14 @@ I changed it to
 ```verilog
 assign csr_write_enable_source = tc_csr_write_enable ? tc_csr_write_enable : WB_csr_write_enable; 
 ```
-to fix it. (I hope this won’t create a Combinational Loop…)
+to fix it. (I hope this won’t create a Combinational Loop...)
 
 The rest proceeds as expected except the CSR RAW issue. Let’s run PSTS with the updated code.  
 Behavior Simulation looks identical to iverilog.  
 Synthesize and go straight to PSFS, PSTS.  
 Fortunately, Synthesis didn’t report loops.  
 
-Ah… it’s almost the same, but now trap_status isn’t captured at all in the waveform.  
+Ah... it’s almost the same, but now trap_status isn’t captured at all in the waveform.  
 Instead of registering the outputs, do I need to make the exception decision itself synchronous?  
 let’s modify.
 
@@ -6541,21 +6541,21 @@ It’s already mid-June. I’ll boldly abandon the 46F architecture and roll bac
 
 Since things go weird at Trap Handler branch time, I’ll disable trap-related parts, implement I/O, and add trap afterwards while solving issues—changing the roadmap.  
 
-But… even when I rewrote Instruction Memory contents to remove traps, why is the same thing happening at the same point????   
+But... even when I rewrote Instruction Memory contents to remove traps, why is the same thing happening at the same point????   
 I’m going crazy.
 
 ### [2025.06.13.]
 
 The project that used to work suddenly failed to meet timing constraints in Synthesis; then “object not found,” syntax errors in all files, and it stopped proceeding at all.  
 
-To my dismay, I created a new project, applied the changes up through making Exception Detector outputs synchronous, synthesized, and ran Timing Simulation… and lo and behold, it proceeded to abadbabe normally…  
+To my dismay, I created a new project, applied the changes up through making Exception Detector outputs synchronous, synthesized, and ran Timing Simulation... and lo and behold, it proceeded to abadbabe normally...  
 
-Straight to Implementation… Running Timing Simulation… I found that the csr write signal needs one more cycle due to timing and doesn’t reach, so mtvec gets a wrong value and it falls into an infinite loop.  
+Straight to Implementation... Running Timing Simulation... I found that the csr write signal needs one more cycle due to timing and doesn’t reach, so mtvec gets a wrong value and it falls into an infinite loop.  
 
 Benchmarks like Dhrystone won’t use system instructions anyway; I tried to fix it, but the issue persists, so it’s fine to move on to FPGA implementation. I’m putting Dhrystone into ROM now.  
 
 Tomorrow, I hope to implement this, download to FPGA, and proceed with debugging.
-I don’t expect it to work in one shot. Still… I see a chance, so I’ll proceed.
+I don’t expect it to work in one shot. Still... I see a chance, so I’ll proceed.
 Let’s do this well.
 
 ## Setup Dhrystone 2.1 Compiled with RISC-V GNU GCC Toolchain
@@ -6568,7 +6568,7 @@ Now it’s time to finish yesterday’s Dhrystone work.
 I fought all day with the toolchain and Dhrystone compilation.  
 In the end, the SiFive-distributed toolchain preset didn’t support rv32i-ilp32, so I had to download the toolchain again from RISC-V GNU GCC and build it from scratch with ./configure and make, which takes quite a while; the internet kept cutting out (military), so I made almost no progress.  
 Still, I learned quite a bit about using msys2 mingw64 and installing the toolchain, etc.  
-I need a linker and a gcc toolchain, install the base files for that, and so on…
+I need a linker and a gcc toolchain, install the base files for that, and so on...
 
 ### [2025.06.15.]
 
@@ -6576,7 +6576,7 @@ I need a linker and a gcc toolchain, install the base files for that, and so on�
 
 In between, I designed an SoC to verify the CPU so that I can switch the current instruction and execution mode via a button for the OLED and debug the flow; I designed the interface for that.  
 
-I need to build the RISC-V toolchain from scratch, but because of the internet issues I mentioned yesterday… I reached out to a friend to install the toolchain quickly on their computer instead, (and even that took 3 hours.) I finally finished compiling Dhrystone at 21:30.  
+I need to build the RISC-V toolchain from scratch, but because of the internet issues I mentioned yesterday... I reached out to a friend to install the toolchain quickly on their computer instead, (and even that took 3 hours.) I finally finished compiling Dhrystone at 21:30.  
 
 I couldn’t find a Dhrystone compiled for rv32i, and the code itself is an old version, so I tried both the SiFive distribution and the riscv-tests distribution,
 spent the whole day debugging compile errors, etc.  
@@ -6584,7 +6584,7 @@ spent the whole day debugging compile errors, etc.
 I now have those hex files, and I’m bringing the FPGA verification SoC I designed above into Vivado.  
 When I ran the top module tb, I set the time window way too big and ended up with a disaster of a 45 GB vcd; I didn’t know the reason at the time, so I moved Vivado to the D: drive and couldn’t work meanwhile.  
 
-Anyway… things for tomorrow:
+Anyway... things for tomorrow:
 The external interface will run at 100 MHz and the CPU at 50 MHz, but generated clock constraints weren’t declared in XDC, so I added them. After adding them, a Timing Violation immediately appeared. It says it takes 11.102 ns to go from cpu_core to the LED. 
 
 It’s implemented as a simple toggle clock divider; I need to switch it to a Clock Enable and try again.  
@@ -6593,7 +6593,7 @@ Then, while implementing the current Instruction Memory scenario on the FPGA, I�
 
 And with the remaining time, I’ll focus on raising DMIPS.   
 Since we’re at 50 MHz now, I’ll clean up the critical path and aim for 100 MHz+.  
-Doom… I’ll try that only if there’s time after all this…  
+Doom... I’ll try that only if there’s time after all this...  
 That’s it for today.  
 
 ### [2025.06.16.]
@@ -6606,7 +6606,7 @@ Buttons and OLED interface were at 100 MHz, CPU at 50 MHz; the initial Timing Vi
 
 I tried to run Behavior Simulation, but it felt very different, so I suspected a clock connectivity issue; anyway, the CPU code is exactly what ran correctly in the tb, and the SoC produced expected values in iverilog too, so I moved straight to Synthesis.  
 
-Possibly constraint-related… timing not met, so I added constraints in XDC, and then ran Implementation hoping it would come out better.  
+Possibly constraint-related... timing not met, so I added constraints in XDC, and then ran Implementation hoping it would come out better.  
 ```xdc
 create_generated_clock -name clk_50mhz -source [get_ports clk] -divide_by 2 [get_pins clk_50mhz_reg/Q]
 
@@ -6614,11 +6614,11 @@ create_generated_clock -name clk_50mhz -source [get_ports clk] -divide_by 2 [get
 ```
 To silence violations from unintended timing calculations due to clk50mhz, I also used set_false_path.  
 And since exposing both debug pc and instruction as outputs from the SoC TOP module exhausted IO pins—and the OLED can show them anyway—I boldly removed those outputs in code.  
-I need to check results… time’s up, stopping here.  
+I need to check results... time’s up, stopping here.  
 
 ### [2025.06.17.]
 
-Looking at the results, there was still a port issue; I found that a wildcard like set_property … [get_ports debug_*] in the xdc was unintentionally tying in numerous signals.  
+Looking at the results, there was still a port issue; I found that a wildcard like set_property ... [get_ports debug_*] in the xdc was unintentionally tying in numerous signals.  
 Removed that to fix it, and Implementation succeeded.  
 
 Timing looks fine, but now I get Critical Warnings saying “not reached by a timing clock” in places like the list below.  
@@ -6664,7 +6664,7 @@ reset_sync_reg[0]/C, reset_sync_reg[1]/C, reset_sync_reg[2]/C,
 rv32i46f_5sp_debug/clk, update_display_reg_reg/C, update_pending_reg/C  
 (the first 15 of 17 listed) 
 
-came up; looking closely, it seems it’s risky without a Clock Buffer, so I inserted a buffer… now there are no errors.  
+came up; looking closely, it seems it’s risky without a Clock Buffer, so I inserted a buffer... now there are no errors.  
 Starting Implementation.
 
 ## Implementing SoC Design for verification (46F5SP_SoC)
@@ -6778,7 +6778,7 @@ While executing instructions, loads and stores are handled by data memory; but d
 
 This is why one uses unified memory with separate instruction cache and data cache.  
 Instruction-only memory sits in IF stage, so having MEM stage fetch that value is structurally messy;  
-in that case you can raise a cache miss and just fetch the 0x0000nnnn data from the unified memory in RAM…
+in that case you can raise a cache miss and just fetch the 0x0000nnnn data from the unified memory in RAM...
 
 I suppose the memory hierarchy is not only about speed, but also includes structural optimization considerations.  
 
@@ -6790,7 +6790,7 @@ Even after that, the loop is the same. What now?
 I’m debugging by viewing waveforms in iverilog simulation vcd.  
 I was working as dirty files; that made the logic harder to guarantee, so I downloaded the source at commit 31344d (Synchronous Exception Detector implementation point) and am redoing from there.  
 
-The loop flow is like this…
+The loop flow is like this...
 
 ```
 PC 380: addi a0, sp, 64
@@ -6800,16 +6800,16 @@ s3 = 0000_0000
 PC 384: jal ra, 2232
 
 PC = c3c
-… program proceeds. a0, s3 unchanged.
+... program proceeds. a0, s3 unchanged.
 Both still:
 a0 = 1000_7fa0
 s3 = 0000_0000
 
-…
+...
 PC c54: jalr zero, 0(ra)
 
 PC = 388
-…
+...
 PC 38c: addi a0, sp, 32
 a0 = 1000_7f80
 s3 = 0000_0000
@@ -6817,19 +6817,19 @@ s3 = 0000_0000
 PC 394: jal ra, 1460
 
 PC = 948
-…
+...
 PC 968: addi s3, zero, 1
 a0 = 1000_7f80
 s1 = 0000_0001
-…
+...
 PC 970: lbu a0, 2(s1)
 a0 = 0000_0000
 s1 = 0000_0001
-…
+...
 PC 974: jal ra, −80
 
 PC = 924
-…
+...
 PC 940: addi a0, zero, 1
 a0 = 0000_0001
 s1 = 0000_0001
@@ -6837,16 +6837,16 @@ s1 = 0000_0001
 PC 944 : jalr zero, 0(ra)
 
 PC = 978 (ra was 0000_0978 then.)
-…
+...
 PC 97c: beq a0, s3, −16
 a0 = s3, Taken.
 
 PC = 96c
-…
+...
 PC 974: jal ra −80
 
 PC = 924
-…
+...
 PC 940: addi a0, zero, 1
 a0 = 0000_0001
 s1 = 0000_0001
@@ -6854,11 +6854,11 @@ s1 = 0000_0001
 PC 944 : jalr zero, 0(ra)
 
 PC = 978
-…
+...
 PC 97c: beq a0, s3, −16
 a0 = s3, Taken.
 
-PC = 96c infinite loop…
+PC = 96c infinite loop...
 
 38c: addi a0, sp, 32 made a0 = 1000_7f80,
 960: addi s1, a0, 0 made s1 = 1000_7f80 then.
@@ -6878,8 +6878,8 @@ Same for branch_prediction_miss. If it’s wrong, the IF-stage estimation is mea
 
 Branch miss and jump are equivalent (both are known in EX), and they cannot collide, so it doesn’t matter. I set jump as priority 1, and the others as 2–3 below.  
 
-And yet the loop persists…  
-Maybe it was compiled wrong from the start? A linker issue…  
+And yet the loop persists...  
+Maybe it was compiled wrong from the start? A linker issue...  
 Looking at various things, it seems the data should have been initialized and loaded, but I must have omitted that in boot.s. So I manually loaded it.  
 
 In dhrystone.mem, starting at 1424 (1425 if counting from 1) it’s the data; I split this into data_init.mem and loaded it in the data memory’s initial begin.  
@@ -6910,7 +6910,7 @@ In DebugUartController, after switching from alu_result to final_Cycles and inst
 Set Synthesis option to Performance Opti, and Implementation to Performance Explore.
 How much will it change?  
 
-After embedding Dhrystone, synthesis was taking almost 10 minutes; what about this time…  
+After embedding Dhrystone, synthesis was taking almost 10 minutes; what about this time...  
 Oh, and since I don’t have the RISC-V toolchain on the local system, I looked for a way; a friend suggested Google Colab, so I’m checking it out.  
 I’m making with rv32i ilp32 multilib; it indeed takes quite a while, but it’s fast and has ample space, so it seems worth using; I’ve left the build running.  
 
@@ -6939,8 +6939,8 @@ DMIPS = 1757 Dhrystones per second
 ```
 Wow. Haha. Hahahahaha!!!!  
 Now I’ll push these files to develop, and—nice, lol—  
-I’ll consolidate the produced data, optimize the code, and revise the final block diagram…  
-I used those diagrams as guides; now I’ll draw the final schematic as an implemented design after realization…  
+I’ll consolidate the produced data, optimize the code, and revise the final block diagram...  
+I used those diagrams as guides; now I’ll draw the final schematic as an implemented design after realization...  
 It feels different. I finished the performance calculation at 23:21, and I want to call my parents. Ah.  
 It’s 23:59 now.  
 Wrapping up here.  
@@ -6962,7 +6962,7 @@ RV32I37F, RV32I43F, RV32I46F, RV32I46F_5SP, 46F5SP_SoC
 I’ll create five distributions in total; up to RV32I46F will be RTL (simulation-only).  
 And I’ll mark that RV32I46F_5SP and 46F5SP_SoC can be synthesized to FPGA.
 
-As for the paper…
+As for the paper...
 
 It will cover not only RV32I46F_5SP but also the development of basic_rv32s itself.  
 
@@ -6972,7 +6972,7 @@ There is no single “correct” way to design, but I want to present the flow, 
 
 Core diagram and SoC diagram. Photos of actual FPGA implementation showing debugging and performance measurement via UART. A table comparing performance quantitatively with other RISC-V RV32I processors and real desktop CPUs.  
 
-How many LUTs were used, estimated power consumption… The performance relative to x86 CPUs—  
+How many LUTs were used, estimated power consumption... The performance relative to x86 CPUs—  
 
 The theoretical background of RISC-V and how it was applied here, and which modules and functions differ from Hennessy-style methods that formed the base.  
 
@@ -7004,7 +7004,7 @@ And, as a paper, record the theory and purpose of this research to inform and re
 
 We can tune the Abstract to mention the above appropriately.
 
-- Main text…
+- Main text...
    - Basic explanation of RISC-V  
 (origin, characteristics, theoretical background, what we used here)  
 
@@ -7118,7 +7118,7 @@ A verification platform for a high-performance RISC-V CPU core supporting out-of
 
 Simulation and synthesis of a RISC-V processor
 
-That’s about it. Whew… it’s paper time… lol, something I’ve long looked forward to…
+That’s about it. Whew... it’s paper time... lol, something I’ve long looked forward to...
 
 That’s it for today.  
 Tomorrow I’ll finish the block diagram and start by writing the paper’s abstract!!
