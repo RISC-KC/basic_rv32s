@@ -911,3 +911,106 @@ rv32i46f_5sp_debug/clk, update_display_reg_reg/C, update_pending_reg/C
 came up; looking closely, it seems it’s risky without a Clock Buffer, so I inserted a buffer... 
 Now there are no errors.  
 
+## Debugging Dhrystone 2.1 Benchmark
+### [2025.06.22.]
+> - **Problem**
+>   - While implementing Dhrystone, a loop occurred.
+>   - The loop : 
+```
+PC 380: addi a0, sp, 64
+a0 = 1000_7fa0
+s3 = 0000_0000
+
+PC 384: jal ra, 2232
+
+PC = c3c
+... program proceeds. a0, s3 unchanged.
+Both still:
+a0 = 1000_7fa0
+s3 = 0000_0000
+
+...
+PC c54: jalr zero, 0(ra)
+
+PC = 388
+...
+PC 38c: addi a0, sp, 32
+a0 = 1000_7f80
+s3 = 0000_0000
+
+PC 394: jal ra, 1460
+
+PC = 948
+...
+PC 968: addi s3, zero, 1
+a0 = 1000_7f80
+s1 = 0000_0001
+...
+PC 970: lbu a0, 2(s1)
+a0 = 0000_0000
+s1 = 0000_0001
+...
+PC 974: jal ra, −80
+
+PC = 924
+...
+PC 940: addi a0, zero, 1
+a0 = 0000_0001
+s1 = 0000_0001
+
+PC 944 : jalr zero, 0(ra)
+
+PC = 978 (ra was 0000_0978 then.)
+...
+PC 97c: beq a0, s3, −16
+a0 = s3, Taken.
+
+PC = 96c
+...
+PC 974: jal ra −80
+
+PC = 924
+...
+PC 940: addi a0, zero, 1
+a0 = 0000_0001
+s1 = 0000_0001
+
+PC 944 : jalr zero, 0(ra)
+
+PC = 978
+...
+PC 97c: beq a0, s3, −16
+a0 = s3, Taken.
+
+PC = 96c infinite loop...
+
+38c: addi a0, sp, 32 made a0 = 1000_7f80,
+960: addi s1, a0, 0 made s1 = 1000_7f80 then.
+970: lbu a0, 2(s1) made a0 = 0000_0000.
+
+After that, 974: jal ra, −80 sets PC = 924.
+Then 940: addi a0, zero, 1 sets a0 = 0000_0001.
+Then at 970 it becomes 0000_0000 again.
+Loop.
+```
+
+- **Attempts**
+    - A priority issue between jump and branch est, and I fixed PCC.  
+    - Branch estimation can occur in IF before the jump reaches EX and branches; 
+        - but since a preceding jump exists, the jump must take priority over branch est.  
+    - Same for branch_prediction_miss. If it’s wrong, the IF-stage estimation is meaningless; 
+        - branch Prediction miss must take priority over branch est.  
+    - Branch miss and jump are equivalent (both are known in EX), 
+        - and they cannot collide, so it doesn’t matter. 
+        - I set jump as priority 1, and the others as 2–3 below.  
+
+> - **Problem B**
+>   - yet the loop persists...  
+
+- **Resolution**
+    - Looking at various things, it seems the data should have been initialized and loaded, 
+        - but I must have omitted that in boot.s. So I manually loaded it.  
+    - In dhrystone.mem, starting at 1424 (1425 if counting from 1) it’s the data; 
+        - I split this into data_init.mem and loaded it in the data memory’s initial begin.  
+    - This solved the loop issue.
+
