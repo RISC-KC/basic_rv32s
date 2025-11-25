@@ -478,6 +478,9 @@ Such as :
 
 Please update these paths to match your project structure.  
 
+Recently updated RV32I46F5SP_Dhrystone's source codes under fpga/ directory to Relative path. 
+This will allow to just clone the repository and open up the vivado project directly.
+
 ### 🔎 Core behavior Simulations  
 
 Required : Icarus Verilog for using `./test.sh` command.
