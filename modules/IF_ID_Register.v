@@ -3,7 +3,6 @@ module IF_ID_Register #(
 )(
     // pipeline register control signals
     input wire clk,
-    input wire clk_enable,
     input wire reset,
     input wire flush,
     input wire IF_ID_stall,
@@ -28,7 +27,7 @@ always @(posedge clk or posedge reset) begin
         ID_instruction <= 32'h0000_0013;
         ID_branch_estimation <= 1'b0;
     end 
-    else if (clk_enable) begin
+    else begin
         if (flush) begin   
             ID_pc <= {XLEN{1'b0}};
             ID_pc_plus_4 <= {XLEN{1'b0}};

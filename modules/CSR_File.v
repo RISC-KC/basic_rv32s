@@ -1,9 +1,15 @@
-module CSRFile (
-    input               clk,                   // clock signal
-    input               reset,                   // reset signal
-    input               csr_write_enable,      // enabling signal for reading / writing
-    input       [11:0]  csr_address,           // take address of CSR Unit to write value
-    input       [31:0]  csr_write_data,        // data to write
+`include "modules/headers/csr.vh"
+
+module CSRFile #(
+    parameter XLEN = 32
+)(
+    input clk,                            // clock signal
+    input reset,                          // reset signal
+    input trapped,
+    input csr_write_enable,               // write enable signal
+    input [11:0] csr_read_address,        // address to read
+    input [11:0] csr_write_address,       // address to write
+    input [XLEN-1:0] csr_write_data,      // data to write
 
     output reg [XLEN-1:0] csr_read_out,   // data from CSR Unit
     output reg csr_ready                  // signal to stall the process while accessing the CSR until it outputs the desired value.
@@ -75,15 +81,15 @@ module CSRFile (
     end
 
     // Reset Operation
-    always @(posedge clk or posedge rst) begin
-      if (rst) begin
+    always @(posedge clk or posedge reset) begin
+      if (reset) begin
         mtvec   <= DEFAULT_mtvec;
         mepc    <= DEFAULT_mepc;
         mcause  <= DEFAULT_mcause;
         csr_processing <= 1'b0;
         csr_read_out <= {XLEN{1'b0}};
         csr_write_enable_buffer <= 1'b0;
-      end else if (clk_enable) begin
+      end else begin
         if (csr_access && !csr_processing) begin
           csr_processing <= 1'b1;
           csr_read_out <= csr_read_data;

@@ -4,6 +4,7 @@
 `include "modules/headers/rtype.vh"
 `include "modules/headers/store.vh"
 `include "modules/headers/opcode.vh"
+`include "modules/headers/csr.vh"
 
 module InstructionMemory (
     input [31:0] pc,
@@ -13,8 +14,6 @@ module InstructionMemory (
 	reg [31:0] data [0:2047];
 	
 	initial begin
-		$readmemb("modules/initial_data.mem", data);
-
 		// ──────────────────────────────────────────────
 		// I-타입 ALU 명령어 (9개)
 		// {imm[11:0], rs1, funct3, rd, OPCODE_ITYPE}
@@ -78,36 +77,74 @@ module InstructionMemory (
 		// ──────────────────────────────────────────────
 		// B-타입 명령어 (분기) (6개)
 		// {imm[12], imm[10:5], rs2, rs1, funct3, imm[4:1], imm[11], OPCODE_BRANCH}
-		data[30] = {1'b0, 6'd0, 5'd2, 5'd1, `BRANCH_BEQ, 4'b0100, 1'b0, `OPCODE_BRANCH}; 	// BEQ: if(x1 == x2) branch offset = 8
-		data[31] = {1'b0, 6'd0, 5'd17, 5'd7, `BRANCH_BNE, 4'b0100, 1'b0, `OPCODE_BRANCH}; 	// BNE: if(x7 != x17) branch offset = 8
-		data[32] = {1'b0, 6'd0, 5'd2, 5'd1, `BRANCH_BLT, 4'b0100, 1'b0, `OPCODE_BRANCH}; 	// BLT: if(x1 < x2) branch offset = 8
-		data[33] = {1'b0, 6'd0, 5'd1, 5'd2, `BRANCH_BGE, 4'b0100, 1'b0, `OPCODE_BRANCH}; 	// BGE: if(x2 >= x1) branch offset = 8
-		data[34] = {1'b0, 6'd0, 5'd1, 5'd2, `BRANCH_BLTU, 4'b0100, 1'b0, `OPCODE_BRANCH}; 	// BLTU: if(x2 < x1 unsigned) branch offset = 8
-		data[35] = {1'b0, 6'd0, 5'd1, 5'd2, `BRANCH_BGEU, 4'b0100, 1'b0, `OPCODE_BRANCH}; 	// BGEU: if(x2 >= x1 unsigned) branch offset = 8
+		data[30] = {1'b0, 6'd0, 5'd2, 5'd1, `BRANCH_BEQ, 4'b0100, 1'b0, `OPCODE_BRANCH}; 	// BEQ: if(x1 == x2) branch offset = 8		Not Taken	
+		data[31] = {1'b0, 6'd0, 5'd13, 5'd0, `BRANCH_BNE, 4'b0100, 1'b0, `OPCODE_BRANCH}; 	// BNE: if(x0 != x13) branch offset = 8		Not Taken
+		data[32] = {1'b0, 6'd0, 5'd2, 5'd1, `BRANCH_BLT, 4'b0100, 1'b0, `OPCODE_BRANCH}; 	// BLT: if(x1 < x2) branch offset = 8		Not Taken (x2 = signed negative)
+		data[33] = {1'b0, 6'd0, 5'd1, 5'd2, `BRANCH_BGE, 4'b0100, 1'b0, `OPCODE_BRANCH}; 	// BGE: if(x2 >= x1) branch offset = 8		Not Taken (x2 = signed negative)
+		data[34] = {1'b0, 6'd0, 5'd1, 5'd2, `BRANCH_BLTU, 4'b0100, 1'b0, `OPCODE_BRANCH}; 	// BLTU: if(x2 < x1 unsigned) branch offset = 8		Not Taken 
+		data[35] = {1'b0, 6'd0, 5'd1, 5'd2, `BRANCH_BGEU, 4'b0100, 1'b0, `OPCODE_BRANCH}; 	// BGEU: if(x2 >= x1 unsigned) branch offset = 8	Taken	
 
 		// ──────────────────────────────────────────────
-		// I-타입 Zicsr 확장 명령어 (6개)
-		// {imm[11:0], rs1(uimm), funct3, rd, OPCODE_ENVIRONMENT}
-		data[37] = {12'hF11, 5'd28, `CSR_CSRRW, 5'd20, `OPCODE_ENVIRONMENT}; 		// CSRRW : x28 = 0000_0094; x20 = 5256_4B43, CSR[F11] = 5256_4B43
-		data[38] = {12'h341, 5'd1, `CSR_CSRRS, 5'd21, `OPCODE_ENVIRONMENT}; 		// CSRRS: x1 = 0000_02BC; x21 = 0000_0000, CSR[341] = 0000_00BC
-		data[39] = {12'h341, 5'd20, `CSR_CSRRC, 5'd21, `OPCODE_ENVIRONMENT}; 		// CSRRC: x21 = 0000_02BC, CSR[341] = 0000_00BC
-		data[40] = {12'h343, 5'd3, `CSR_CSRRWI, 5'd22, `OPCODE_ENVIRONMENT}; 		// CSRRWI: x22 = FFFF_FFBC, CSR[343] = 0000_0000; R[x22] = 0000_0000, CSR[343] = 0000_0003
-		data[41] = {12'h305, 5'd7, `CSR_CSRRSI, 5'd22, `OPCODE_ENVIRONMENT}; 		// CSRRSI: x22 = 0000_0000, CSR[305] = 0000_1000; R[x22] = 0000_1000, CSR[305] = 0000_1007
-		data[42] = {12'h305, 5'b11111, `CSR_CSRRCI, 5'd23, `OPCODE_ENVIRONMENT}; 	// CSRRCI: uimm = 11111, CSR[305] = 0000_1007; R[x23] = 0000_1007, CSR[305] = 0000_0000
+		// I-타입 Zicsr 확장 명령어 (6개)	[F11] == mvendorid, [341] = mepc, [342] = mcause, [305] = mtvec
+		// {imm[11:0], rs1(uimm), funct3, rd, OPCODE_ENVIRONMENT}					   ┌-> Illegal instruction, F11 is not writable but only READ now.
+		data[37] = {12'hF11, 5'd28, `CSR_CSRRW, 5'd20, `OPCODE_ENVIRONMENT}; 		// CSRRW : x28 = 0000_0000; x20 = 5256_4B43 <= CSR[F11] = 5256_4B43 // R[x20] = 5256_4B43.
+		data[38] = {12'h341, 5'd1, `CSR_CSRRS, 5'd21, `OPCODE_ENVIRONMENT}; 		// CSRRS: x1 = 0000_02BC; CSR[341] = 0000_0074. 					// R[x21] = 0000_0074, CSR[341] = 0000_02fc
+		data[39] = {12'h341, 5'd20, `CSR_CSRRC, 5'd21, `OPCODE_ENVIRONMENT}; 		// CSRRC: x21 = 0000_0074, x20 = 5256_4B43, CSR[341] = 0000_02fc. 	// R[x21] = 0000_02fc, CSR[341] = 0000_00BC 
+		data[40] = {12'h342, 5'd3, `CSR_CSRRWI, 5'd22, `OPCODE_ENVIRONMENT}; 		// CSRRWI: x22 = FFFF_FFBC, CSR[342] = 0000_0000; 					// R[x22] = 0000_0000, CSR[342] = 0000_0003
+		data[41] = {12'h305, 5'd7, `CSR_CSRRSI, 5'd22, `OPCODE_ENVIRONMENT}; 		// CSRRSI: x22 = 0000_0000, CSR[305] = 0000_1000; 					// R[x22] = 0000_1000, CSR[305] = 0000_1007
+		data[42] = {12'h305, 5'b11111, `CSR_CSRRCI, 5'd23, `OPCODE_ENVIRONMENT}; 	// CSRRCI: uimm = 11111, CSR[305] = 0000_1007; 						// R[x23] = 0000_1007, CSR[305] = 0000_1000 // CSR Verified but not REG
 		// ──────────────────────────────────────────────
 		// I-타입 HINT 명령어 (CSR 동작 확인)
 		// {imm[11:0], rs1, funct3, rd, OPCODE_ITYPE}
 		data[43] = {12'h2BC, 5'd0, `ITYPE_ADDI, 5'd0, `OPCODE_ITYPE};				// ADDI:  x0 = x0 + 2BC = 0000_0000
+		// ──────────────────────────────────────────────
+		// ECALL 명령어, Misaligned Instruction address exception 발생 JALR 명령어, Misaligned Memory Address access exception 발생 SH 명령어
+		data[44] = {12'd0, 5'd0, 3'd0, 5'd0, `OPCODE_ENVIRONMENT}; 					// ECALL: PC = CSR[mtvec] = 0000_1000 = data[1024]
+		data[45] = {12'd1, 5'd27, 3'b000, 5'd28, `OPCODE_JALR}; 					// JALR: x28 = PC + 4 = 000000B8; PC = x27 + 00000001 = 00000079 -> misaligned
+		data[46] = {7'b0, 5'd5, 5'd1, `STORE_SH, 5'd1, `OPCODE_STORE};				// SH: mem[x1+1 = 2BD, misaligned] = (x5[15:0] = 04EF) misaligned exception..
+		
+		// ──────────────────────────────────────────────
+		// Debug Interface 명령어 수행을 위한 전초 작업. 기존 x22 값 FFFF_FFBC 값을 더하는 ADD 명령어를 DI에서 수행할 예정
+		data[47] = {20'd0, 5'd22, `OPCODE_LUI};										// LUI: x22 = 0000_0000
+		data[48] = {12'hFBC, 5'd22, `ITYPE_ADDI, 5'd22, `OPCODE_ITYPE};				// ADDI x22 = x22 -FBC = FFFF_FFBC
+		data[49] = {20'hABADC, 5'd23, `OPCODE_LUI};									// LUI: x23 = ABAD_C000
+		data[50] = {12'hB02, 5'd23, `ITYPE_ADDI, 5'd23, `OPCODE_ITYPE};				// ADDI:  x23 = x23 + -4FE = ABAD_BB02
+		data[51] = {12'd1, 5'd0, 3'd0, 5'd0, `OPCODE_ENVIRONMENT};					// EBREAK: 
+																					// └ADD: x22 = x22 + x23. FFFF_FFBC(x22) + ABAD_BB02(x23) = ABAD_BABE(x22)
 
+																					//HINT; NOP for 'x' signal after EBREAK in pipeline
+		data[52] = {12'h2BC, 5'd0, `ITYPE_ADDI, 5'd0, `OPCODE_ITYPE};				// ADDI:  x0 = x0 + 2BC = 0000_0000
+		// ──────────────────────────────────────────────
+		// Trap Handler 시작 주소. mtvec = 0000_1000 = 4096 ÷ 4 Byte = 1024
+		// Trap Handler 진입 시 기존 GPR의 레지스터 내용들을 별도의 메모리 Heap 구역에 store하고 수행해야하지만, 현재 단계에서는 생략함.
+		// CSR mcause 확인해서 ecall이면 x1 = 0000_0000으로 만들기, misaligned면 x2에 FF더하기
+		// 조건 분기; 비교문 작성을 위한 적재 작업
+		data[1024] = {12'h342, 5'd0, 3'b010, 5'd6, `OPCODE_ENVIRONMENT}; 					// csrrs x6, mcause, x0:	레지스터 x6에 mcause값 적재
+		data[1025] = {12'd11, 5'd0, `ITYPE_ADDI, 5'd7, `OPCODE_ITYPE};						// addi x7, x0, 11: 		레지스터 x7에 ECALL 코드 값 11 적재 (mcause가 11인지 비교하기 위해서는 해당 11이라는 값을 레지스터 넣고 레지스터끼리 비교해야하므로)	
+		data[1026] = {12'd2, 5'd0, `ITYPE_ADDI, 5'd8, `OPCODE_ITYPE};						// addi x8, x0, 2: 			레지스터 x8에 ILLEGAL INSTRUCTION 코드 값 2 적재 (mcause가 2인지 비교하기 위해서는 해당 2이라는 값을 레지스터 넣고 레지스터끼리 비교해야하므로)	
+
+		// mcause 분석해서 해당하는 Trap Handler 주소로 분기
+		data[1027] = {1'b0, 6'd0, 5'd7, 5'd6, `BRANCH_BEQ, 4'b1000, 1'b0, `OPCODE_BRANCH};	// beq x6, x7, +16: 		ECALL; x6과 x7이 같다면 12바이트 이후 주솟값으로 분기 = data[1031]
+		data[1028] = {1'b0, 6'd0, 5'd0, 5'd6, `BRANCH_BEQ, 4'b1010, 1'b0, `OPCODE_BRANCH};	// beq x6, x0, +20: 		MISALIGNED; x6값이 0과 같다면 16바이트 이후 주솟값으로 분기 = data[1033]
+		data[1029] = {1'b0, 6'd0, 5'd0, 5'd6, `BRANCH_BEQ, 4'b1000, 1'b0, `OPCODE_BRANCH};	// beq x6, x8, +16: 		ILLEGAL; x6값이 x8과 같다면 16바이트 이후 주솟값으로 분기 = data[1033]
+		data[1030] = {1'b0, 10'b000_0001_000, 1'b0, 8'b0, 5'd0, `OPCODE_JAL};				// jal x0, +16: 			TH 끝내기 (mret 명령어 주소로 가기)
+		
+		// ECALL Trap Handler @ data[1029]
+		data[1031] = {12'd0, 5'd0, `ITYPE_ADDI, 5'd1, `OPCODE_ITYPE};						//addi x1, x0, 0: 			레지스터 x1 값 0으로 비우기
+		data[1032] = {1'b0, 10'b000_0000_100, 1'b0, 8'b0, 5'd0, `OPCODE_JAL};				//jal x0, +8:				TH 끝내기 (mret 명령어 주소로 가기)
+
+		// ILLEGAL / MISALIGNED Trap Handler @ data[1031]
+		data[1033] = {12'hFF, 5'd2, `ITYPE_ADDI, 5'd30, `OPCODE_ITYPE};						//addi x30, x2, 255: 		x30 레지스터에 x2(BC00_0000) + 0xFF = bc00_00ff
+
+		// ESCAPE Trap Handler @ data[1032]
+		data[1034] = {12'b001100000010, 5'b0, 3'b0, 5'b0, `OPCODE_ENVIRONMENT};				//MRET:						PC = CSR[mepc]
+
+		// HINT; NOP for 'x' signal after MRET in pipeline
+		data[1035] = {12'h2BC, 5'd0, `ITYPE_ADDI, 5'd0, `OPCODE_ITYPE};						// ADDI:  x0 = x0 + 2BC = 0000_0000
 	end
 	
 	always @(*) begin
-		if (pc[31:2] < 39) begin
-			instruction = data[pc[31:2]];
-		end
-		else begin
-			instruction = 32'b0;
-		end
+		instruction = data[pc[31:2]];
 	end
 
 endmodule

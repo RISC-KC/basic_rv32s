@@ -4,7 +4,6 @@ module BranchPredictor #(
     parameter XLEN = 32
 ) (
     input wire clk,
-    input wire clk_enable,
     input wire reset,
     input wire [6:0] IF_opcode,
     input wire [XLEN-1:0] IF_pc,
@@ -34,7 +33,7 @@ module BranchPredictor #(
         if (reset) begin
             branch_prediction <= 1'b0;
             prediction_counter <= 2'b00;
-        end else if (clk_enable) begin
+        end else begin
             if (IF_opcode == `OPCODE_BRANCH) begin
                 branch_prediction <= branch_estimation;
             end

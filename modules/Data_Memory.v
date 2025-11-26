@@ -1,6 +1,5 @@
 module DataMemory (
     input clk,                      // clock signal
-    input clk_enable,
     input write_enable,             // enabling signal for writing Data Memory
     input [9:0] address,            // Take address of memory to read/write value
     input [31:0] write_data,        // data to write to Data Memory
@@ -26,7 +25,7 @@ module DataMemory (
     end
 
     always @(posedge clk) begin
-        if (clk_enable && write_enable) begin
+        if (write_enable) begin
             memory[address] <= ((memory[address] & ~extended_mask) | (write_data & extended_mask));
         end
     end
