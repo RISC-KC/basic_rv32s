@@ -6629,14 +6629,17 @@ printf 의 구현은 putchar에서 구현해 UART_tx 의 data 주소 영역에 s
 [입력신호]
 CLK
 CLK_enable
-UART_busy                       (from UART_TX)
+
 data_memory_write_data          (from Byte Enable Logic)
-write_enable                    (from EX_MEM_Register)
+data_memory_write_enable        (from EX_MEM_Register)
 data_memory_address(ALUresult)  (from EX_MEM_Register)
+uart_busy                       (from UART_TX)
 
 [출력신호]
 UART_tx_data    (to UART_TX)
 UART_tx_start   (to UART_TX)
++ UART_tx_busy  (to MEM_WB_Register)
++ UART_status_hit (to DM-UART_MUX)
 
 [Logics]
 - MMIO-UART 인터페이스에서 Data Memory의 쓰기 주소를 항상 모니터링한다.
@@ -6644,3 +6647,14 @@ UART_tx_start   (to UART_TX)
 - UART_busy가 1이라면 구현한 printf에서 항상 tx_busy를 모니터링하며 tx_busy = 0일 때만 putchar을 실행하므로 소프트웨어가 polling하는 방식을 사용한다.
 - MEM 단계의 신호를 입력받아 조합논리로 판단하고 해당 clock edge에서 uart_tx_data 레지스터에 저장한다. 다음 사이클부터 UART_TX가 직렬 전송을 시작.
 - Data Memory는 그대로 동작한다. 변경사항 없다.
+
+(17:36)
+매번 UART를 사용할 때마다 Data Memory에 UART status 주소에 실제 1을 계속 쓰고 하는것은 동기식으로 작동하는 특성상 좀 복잡해질 것이라 생각했다. 
+그래서 차라리 MMIO_Interface에서 주소감지 기능이 있는 겸 0x10010004에 읽기요청이 들어온다면 레지스터값에 따라 1또는 0을 반환해서 WB 레지스터에 출력하기로 했다. 이걸 위해서는 MUX가 하나 필요하다.
+DataMemory-UART MUX
+32비트 DM_RD값 vs UART status 1|0 값.
+그 선택 신호는 MMIO Interface에서 생성하는 uart_status_hit 신호로 잡는다.
+MEM 단계에서 combinatorial로 인식하고, uart_hit이면 MUX 의 선택을 TOP 모듈에서 uart_status_hit 값을 MEM/WB 레지스터의 DM_RD로 넘기도록 한다. 
+그럼 메모리가 읽기인지를 알아야겠는데, 굳이 MemRead 신호는 필요 없나? 어차피 memory 명령어가 아닌 이상 이 값이 나온다 해도 WB이 안될테니까 상관 없을거고, Data Memory.v 가 write_enable만 있는 것 처럼 그대로 하면 되나? 그러면 그냥 언제나 hit이기만 하면 status 내보내는거고 다만 write_enable에 주솟값이 data면 그대로 data 내보내지는거고. 
+그럼 일단 출력 신호에 UART_tx_busy를 추가해서 MEM/WB 레지스터에 DM_RD로 주는 것으로 한다.
+그리고 출력 신호에 그 MUX를 제어할 UART_status_hit 신호를 추가했다. 
