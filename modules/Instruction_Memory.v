@@ -4,6 +4,7 @@
 `include "modules/headers/rtype.vh"
 `include "modules/headers/store.vh"
 `include "modules/headers/opcode.vh"
+`include "modules/headers/csr.vh"
 
 module InstructionMemory (
     input [31:0] pc,
