@@ -6629,7 +6629,7 @@ printf 의 구현은 putchar에서 구현해 UART_tx 의 data 주소 영역에 s
 [입력신호]
 CLK
 CLK_enable
-
+Reset
 data_memory_write_data          (from Byte Enable Logic)
 data_memory_write_enable        (from EX_MEM_Register)
 data_memory_address(ALUresult)  (from EX_MEM_Register)
