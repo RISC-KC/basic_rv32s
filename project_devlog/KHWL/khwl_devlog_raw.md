@@ -6578,3 +6578,31 @@ Dhrystone, Coremark 벤치마킹 해보기..
 아이러니하게도 KAIST 반도체시스템인재전형 I의 합격자 발표가 10월 17일, ISOCC에서 내 발표 일자와 겹친다.
 드가자~
 오늘은 여기까지.
+
+## [2025.11.25.]
+
+KAIST 두 전형 모두 1차에서 서류 탈락했다. 아쉽다.
+지금은 Dhrystone의 정식 구동을 위해 MMIO를 구현하려고 한다. 
+더티파일로 효율을 끌어올리는걸 fpga 폴더에서 진행할 것이다. 
+새로운 FPGA 프로젝트 폴더를 RV32I46F5SP_Dhrystone 폴더의 소스코드들을 import하여 RV32I46F5SP_Dhrystone_Complete 폴더를 만들었다.
+오늘 변경사항으로는, 먼저 fpga 폴더의 소스코드들의 절대경로를 상대경로로 변경하는데 성공하였다는 것이다. 
+Vivado는 `include 문을 이용해 파일을 포함시킬 때, 해당 include문을 선언하는 파일의 위치를 기준으로 상대경로를 지정한다.
+여태 .xpr 프로젝트 파일 기준인줄 알았다. 그렇게 해서 RV32I46F5SP_Dhrystone 폴더는 모두 수정했다.
+MMIO를 위해서 별도로 만든 Complete 폴더에서 헤더파일들과 .mem 파일들을 기존엔 simulation source로 지정하여 등록했었는데, 이번엔 그냥 add source file로 넣었다. 
+그랬더니 타이밍이 0.397까지 WNS 타이밍 여유가 생겼고, 심지어 벤치마크에서 한 사이클이 줄어들었다(FEA94 -> FEA93). 왜지?
+원래 변경이 있으면 안될거라 생각했는데.. 일단 준비를 마쳤기에 정식 Dhrystone을 위해 MMIO를 구현해볼 것이다.
+버그였나보다 CPU Reset 누르고 하니까 그대로 FEA94 잘 뜬다.
+
+### MMIO Controller 설계
+
+MMIO는 특정 메모리 영역을 입출력 데이터를 위한 영역으로 지정하여 운용하는 것을 일컫는다. 
+Memory mapped Input Output.
+이를 토대로 설계를 구상해보자. 
+영역 A에 쓰여진 데이터가 UART로 보내져서 상태에 따라 적절히 출력되어야한다.
+
+- 메모리 영역 지정이 필요하다 UART TX 영역을 지정한다.
+- UART TX의 간이구현을 확장해 UART Status 영역도 지정한다.
+- MMIO Controller는 메모리에 접근하는 주소값을 입력받아 MMIO(UART TX 영역)영역에 해당하는지, UART status를 읽는건지 판단한다.
+- 주소접근이 MMIO 영역일 경우 UART에 해당 내용을 적재한다
+  - 쓰기인 경우, if (write_enable && uart_tx_hit && !tx_busy) 인 조건문에 한하여 메모리에 쓰기를 진행함과 동시에 UART에도 적재한다.
+  - 읽기인 경우, 그대로 Data Memory에서 인출된 값을 UART로 적재한다.
