@@ -6580,8 +6580,9 @@ Dhrystone, Coremark 벤치마킹 해보기..
 오늘은 여기까지.
 
 ## [2025.11.25.]
-
+ISOCC 2025는 성공적으로 잘 참여했다.
 KAIST 두 전형 모두 1차에서 서류 탈락했다. 아쉽다.
+
 지금은 Dhrystone의 정식 구동을 위해 MMIO를 구현하려고 한다. 
 더티파일로 효율을 끌어올리는걸 fpga 폴더에서 진행할 것이다. 
 새로운 FPGA 프로젝트 폴더를 RV32I46F5SP_Dhrystone 폴더의 소스코드들을 import하여 RV32I46F5SP_Dhrystone_Complete 폴더를 만들었다.
@@ -6606,3 +6607,40 @@ Memory mapped Input Output.
 - 주소접근이 MMIO 영역일 경우 UART에 해당 내용을 적재한다
   - 쓰기인 경우, if (write_enable && uart_tx_hit && !tx_busy) 인 조건문에 한하여 메모리에 쓰기를 진행함과 동시에 UART에도 적재한다.
   - 읽기인 경우, 그대로 Data Memory에서 인출된 값을 UART로 적재한다.
+
+## [2025.11.26.]
+
+근데 이게 그럼 클럭 사이클이 어떻게되는거지?
+MMIO Controller는 MEM 단계에서 작동하는데, 그럼 동기식으로 작성해서 WB 단계에서 UART에 적재되고 그게 출력되도록 해야하나? 
+애초에 한 사이클 안에 그 정보가 모두 이동하나? UART 적재 자체는 combinatorial로 갈 것 같은데.
+그럼 MMIO Controller에는 tx_data 로 UART_TX 모듈이 출력할 데이터를 적재하기 위해 전달하는 tx_mmio_data 출력이 있어야한다.
+그리고 busy 신호에 대한 입력을 받고 있어야한다. MMIO Controller가 더 이상 코어 내부에서만 동작하지 않고, 코어 외부 SoC와 통신하므로 Interface라고 정정해야겠다.
+MMIO Interface. 
+UART는 한 번에 한 바이트씩 출력한다. SB 로 해당 주소에 쓰기가 발생하면 출력하는 것으로 한다. 
+SB를 putchar 구현을 통해 printf 기능을 SB로 해당 영역에 쓰기하는 것으로 해야겠다. 
+그리고 이건 한 사이클 안에 조합식으로 진행이 가능할 것이다. 
+그럼 그 동안 또 tx_busy라 처리 못하는 상황이 필히 발생할 텐데, 이 경우 CPU가 운영되는동안 소프트웨어가 polling되어 알아서 백그라운드에서 돌아갈 것이다.
+정리하면 다음과 같다.
+
+
+[MMIO-UART Interface Logic]
+printf 의 구현은 putchar에서 구현해 UART_tx 의 data 주소 영역에 sb명령어로 접근될 경우 해당 쓰여지는 데이터를 출력하는 것으로 한다. (이러면 printf ("the result is"); 일 때 한 글자씩 putchar가 반복문)
+
+[입력신호]
+CLK
+CLK_enable
+UART_busy                       (from UART_TX)
+data_memory_write_data          (from Byte Enable Logic)
+write_enable                    (from EX_MEM_Register)
+data_memory_address(ALUresult)  (from EX_MEM_Register)
+
+[출력신호]
+UART_tx_data    (to UART_TX)
+UART_tx_start   (to UART_TX)
+
+[Logics]
+- MMIO-UART 인터페이스에서 Data Memory의 쓰기 주소를 항상 모니터링한다.
+- 만약 UART_busy가 0이라면, MemWrite = 1, DM_Addr도 UART tx data 주소일 경우 DM_WD를 MMIO-tx로 보내면서 MMIO_tx_start=1로 해 UART 를 가동한다.
+- UART_busy가 1이라면 구현한 printf에서 항상 tx_busy를 모니터링하며 tx_busy = 0일 때만 putchar을 실행하므로 소프트웨어가 polling하는 방식을 사용한다.
+- MEM 단계의 신호를 입력받아 조합논리로 판단하고 해당 clock edge에서 uart_tx_data 레지스터에 저장한다. 다음 사이클부터 UART_TX가 직렬 전송을 시작.
+- Data Memory는 그대로 동작한다. 변경사항 없다.
