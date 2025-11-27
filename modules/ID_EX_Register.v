@@ -3,7 +3,6 @@ module ID_EX_Register #(
 )(
     // pipeline register control signals
     input wire clk,
-    input clk_enable,
     input wire reset,
     input wire flush,
     input wire ID_EX_stall,
@@ -94,7 +93,7 @@ always @(posedge clk or posedge reset) begin
         EX_rs2 <= 5'b0;
         EX_imm <= {XLEN{1'b0}};
         EX_csr_read_data <= {XLEN{1'b0}};
-    end else if (clk_enable) begin
+    end else begin
         if (flush) begin
             EX_pc <= {XLEN{1'b0}};
             EX_pc_plus_4 <= {XLEN{1'b0}};

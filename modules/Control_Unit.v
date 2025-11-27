@@ -15,7 +15,7 @@ module ControlUnit (
 	output reg branch,
 	output reg [1:0] alu_src_A_select,
 	output reg [2:0] alu_src_B_select,
-	output reg [2:0] csr_op,
+	output reg csr_write_enable,
 	output reg register_file_write,
 	output reg [2:0] register_file_write_data_select,
 	output reg memory_read,

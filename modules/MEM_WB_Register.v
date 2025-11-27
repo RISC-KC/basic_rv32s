@@ -3,7 +3,6 @@ module MEM_WB_Register #(
 )(
     // pipeline register control signals
     input wire clk,
-    input wire clk_enable,
     input wire reset,
     input wire MEM_WB_stall,
     input wire flush,
@@ -64,7 +63,7 @@ always @(posedge clk or posedge reset) begin
         WB_opcode <= 7'b0;
         
         WB_byte_enable_logic_register_file_write_data <= {XLEN{1'b0}};
-    end else if (clk_enable) begin
+    end else begin
         if (flush) begin
             WB_pc <= {XLEN{1'b0}};
             WB_pc_plus_4 <= {XLEN{1'b0}};

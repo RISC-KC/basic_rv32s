@@ -5,7 +5,7 @@
 `include "modules/Instruction_Decoder.v"
 `include "modules/Immediate_Generator.v"
 `include "modules/Control_Unit.v"
-`include "modules/RegisterFileDebug.v"
+`include "modules/Register_File_Debug.v"
 `include "modules/Data_Memory.v"
 `include "modules/ALU_Controller.v"
 `include "modules/ALU.v"

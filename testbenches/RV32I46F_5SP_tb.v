@@ -13,7 +13,7 @@ module RV32I46F5SP_tb;
     always #5 clk = ~clk;
 
     initial begin
-        $dumpfile("testbenches/results/waveforms/RV32I46F5SP_tb_sync_exception_detector.vcd");
+        $dumpfile("testbenches/results/waveforms/RV32I46F5SP_tb_hotfix.vcd");
         $dumpvars(0, rv32i46f_5sp);
 
         $display("==================== RV32I46F_5SP Test START ====================");
