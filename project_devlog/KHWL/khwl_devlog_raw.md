@@ -6578,3 +6578,83 @@ Dhrystone, Coremark 벤치마킹 해보기..
 아이러니하게도 KAIST 반도체시스템인재전형 I의 합격자 발표가 10월 17일, ISOCC에서 내 발표 일자와 겹친다.
 드가자~
 오늘은 여기까지.
+
+## [2025.11.25.]
+ISOCC 2025는 성공적으로 잘 참여했다.
+KAIST 두 전형 모두 1차에서 서류 탈락했다. 아쉽다.
+
+지금은 Dhrystone의 정식 구동을 위해 MMIO를 구현하려고 한다. 
+더티파일로 효율을 끌어올리는걸 fpga 폴더에서 진행할 것이다. 
+새로운 FPGA 프로젝트 폴더를 RV32I46F5SP_Dhrystone 폴더의 소스코드들을 import하여 RV32I46F5SP_Dhrystone_Complete 폴더를 만들었다.
+오늘 변경사항으로는, 먼저 fpga 폴더의 소스코드들의 절대경로를 상대경로로 변경하는데 성공하였다는 것이다. 
+Vivado는 `include 문을 이용해 파일을 포함시킬 때, 해당 include문을 선언하는 파일의 위치를 기준으로 상대경로를 지정한다.
+여태 .xpr 프로젝트 파일 기준인줄 알았다. 그렇게 해서 RV32I46F5SP_Dhrystone 폴더는 모두 수정했다.
+MMIO를 위해서 별도로 만든 Complete 폴더에서 헤더파일들과 .mem 파일들을 기존엔 simulation source로 지정하여 등록했었는데, 이번엔 그냥 add source file로 넣었다. 
+그랬더니 타이밍이 0.397까지 WNS 타이밍 여유가 생겼고, 심지어 벤치마크에서 한 사이클이 줄어들었다(FEA94 -> FEA93). 왜지?
+원래 변경이 있으면 안될거라 생각했는데.. 일단 준비를 마쳤기에 정식 Dhrystone을 위해 MMIO를 구현해볼 것이다.
+버그였나보다 CPU Reset 누르고 하니까 그대로 FEA94 잘 뜬다.
+
+### MMIO Controller 설계
+
+MMIO는 특정 메모리 영역을 입출력 데이터를 위한 영역으로 지정하여 운용하는 것을 일컫는다. 
+Memory mapped Input Output.
+이를 토대로 설계를 구상해보자. 
+영역 A에 쓰여진 데이터가 UART로 보내져서 상태에 따라 적절히 출력되어야한다.
+
+- 메모리 영역 지정이 필요하다 UART TX 영역을 지정한다.
+- UART TX의 간이구현을 확장해 UART Status 영역도 지정한다.
+- MMIO Controller는 메모리에 접근하는 주소값을 입력받아 MMIO(UART TX 영역)영역에 해당하는지, UART status를 읽는건지 판단한다.
+- 주소접근이 MMIO 영역일 경우 UART에 해당 내용을 적재한다
+  - 쓰기인 경우, if (write_enable && uart_tx_hit && !tx_busy) 인 조건문에 한하여 메모리에 쓰기를 진행함과 동시에 UART에도 적재한다.
+  - 읽기인 경우, 그대로 Data Memory에서 인출된 값을 UART로 적재한다.
+
+## [2025.11.26.]
+
+근데 이게 그럼 클럭 사이클이 어떻게되는거지?
+MMIO Controller는 MEM 단계에서 작동하는데, 그럼 동기식으로 작성해서 WB 단계에서 UART에 적재되고 그게 출력되도록 해야하나? 
+애초에 한 사이클 안에 그 정보가 모두 이동하나? UART 적재 자체는 combinatorial로 갈 것 같은데.
+그럼 MMIO Controller에는 tx_data 로 UART_TX 모듈이 출력할 데이터를 적재하기 위해 전달하는 tx_mmio_data 출력이 있어야한다.
+그리고 busy 신호에 대한 입력을 받고 있어야한다. MMIO Controller가 더 이상 코어 내부에서만 동작하지 않고, 코어 외부 SoC와 통신하므로 Interface라고 정정해야겠다.
+MMIO Interface. 
+UART는 한 번에 한 바이트씩 출력한다. SB 로 해당 주소에 쓰기가 발생하면 출력하는 것으로 한다. 
+SB를 putchar 구현을 통해 printf 기능을 SB로 해당 영역에 쓰기하는 것으로 해야겠다. 
+그리고 이건 한 사이클 안에 조합식으로 진행이 가능할 것이다. 
+그럼 그 동안 또 tx_busy라 처리 못하는 상황이 필히 발생할 텐데, 이 경우 CPU가 운영되는동안 소프트웨어가 polling되어 알아서 백그라운드에서 돌아갈 것이다.
+정리하면 다음과 같다.
+
+
+[MMIO-UART Interface Logic]
+printf 의 구현은 putchar에서 구현해 UART_tx 의 data 주소 영역에 sb명령어로 접근될 경우 해당 쓰여지는 데이터를 출력하는 것으로 한다. (이러면 printf ("the result is"); 일 때 한 글자씩 putchar가 반복문)
+
+[입력신호]
+CLK
+CLK_enable
+Reset
+data_memory_write_data          (from Byte Enable Logic)
+data_memory_write_enable        (from EX_MEM_Register)
+data_memory_address(ALUresult)  (from EX_MEM_Register)
+uart_busy                       (from UART_TX)
+
+[출력신호]
+UART_tx_data    (to UART_TX)
+UART_tx_start   (to UART_TX)
++ UART_tx_busy  (to MEM_WB_Register)
++ UART_status_hit (to DM-UART_MUX)
+
+[Logics]
+- MMIO-UART 인터페이스에서 Data Memory의 쓰기 주소를 항상 모니터링한다.
+- 만약 UART_busy가 0이라면, MemWrite = 1, DM_Addr도 UART tx data 주소일 경우 DM_WD를 MMIO-tx로 보내면서 MMIO_tx_start=1로 해 UART 를 가동한다.
+- UART_busy가 1이라면 구현한 printf에서 항상 tx_busy를 모니터링하며 tx_busy = 0일 때만 putchar을 실행하므로 소프트웨어가 polling하는 방식을 사용한다.
+- MEM 단계의 신호를 입력받아 조합논리로 판단하고 해당 clock edge에서 uart_tx_data 레지스터에 저장한다. 다음 사이클부터 UART_TX가 직렬 전송을 시작.
+- Data Memory는 그대로 동작한다. 변경사항 없다.
+
+(17:36)
+매번 UART를 사용할 때마다 Data Memory에 UART status 주소에 실제 1을 계속 쓰고 하는것은 동기식으로 작동하는 특성상 좀 복잡해질 것이라 생각했다. 
+그래서 차라리 MMIO_Interface에서 주소감지 기능이 있는 겸 0x10010004에 읽기요청이 들어온다면 레지스터값에 따라 1또는 0을 반환해서 WB 레지스터에 출력하기로 했다. 이걸 위해서는 MUX가 하나 필요하다.
+DataMemory-UART MUX
+32비트 DM_RD값 vs UART status 1|0 값.
+그 선택 신호는 MMIO Interface에서 생성하는 uart_status_hit 신호로 잡는다.
+MEM 단계에서 combinatorial로 인식하고, uart_hit이면 MUX 의 선택을 TOP 모듈에서 uart_status_hit 값을 MEM/WB 레지스터의 DM_RD로 넘기도록 한다. 
+그럼 메모리가 읽기인지를 알아야겠는데, 굳이 MemRead 신호는 필요 없나? 어차피 memory 명령어가 아닌 이상 이 값이 나온다 해도 WB이 안될테니까 상관 없을거고, Data Memory.v 가 write_enable만 있는 것 처럼 그대로 하면 되나? 그러면 그냥 언제나 hit이기만 하면 status 내보내는거고 다만 write_enable에 주솟값이 data면 그대로 data 내보내지는거고. 
+그럼 일단 출력 신호에 UART_tx_busy를 추가해서 MEM/WB 레지스터에 DM_RD로 주는 것으로 한다.
+그리고 출력 신호에 그 MUX를 제어할 UART_status_hit 신호를 추가했다. 
