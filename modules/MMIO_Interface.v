@@ -1,7 +1,7 @@
 module mmio_interface (
     input clk,
     input reset,
-    input clk_enable,
+    //input clk_enable,
     input [31:0] data_memory_write_data,
     input [31:0] data_memory_address,
     input data_memory_write_enable,
