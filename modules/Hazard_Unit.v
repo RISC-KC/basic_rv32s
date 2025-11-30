@@ -38,12 +38,16 @@ module HazardUnit (
     input wire EX_jump,
     input wire branch_prediction_miss,
 
-    // to Forward Unit
+    // to Forward Unit - ALU forwarding
     output reg [1:0] hazard_mem,
     output reg [1:0] hazard_wb,
     output wire csr_hazard_mem,
     output wire csr_hazard_wb,
     //output reg csr_reg_hazard,
+
+    /// to Forward Unit - Store data forwarding
+    output wire store_hazard_mem,
+    output wire store_hazard_wb,
 
     output reg IF_ID_flush,
     output reg ID_EX_flush,
@@ -57,13 +61,22 @@ module HazardUnit (
 );
     wire load_hazard = (EX_opcode == `OPCODE_LOAD && (EX_rd != 5'd0) && ((EX_rd == ID_rs1) || (EX_rd == ID_rs2)));
 
+    // Store instruction detection
+    wire is_store = (EX_opcode == `OPCODE_STORE);
+
+    // Store instruction rs2 hazard detections
+    assign store_hazard_mem = is_store && mem_hazard_rs2;
+    assign store_hazard_wb = is_store && wb_hazard_rs2 && !mem_hazard_rs2;
+
     // wire reg_csr_hazard = (EX_opcode == `OPCODE_ENVIRONMENT && (WB_rd == retire_rd) && (WB_csr_write_address == retire_csr_write_address));
 
+    // Register ALU hazard detections
     wire mem_hazard_rs1 = MEM_register_write_enable && (MEM_rd != 5'd0) && (MEM_rd == EX_rs1);
     wire mem_hazard_rs2 = MEM_register_write_enable && (MEM_rd != 5'd0) && (MEM_rd == EX_rs2);
     wire wb_hazard_rs1 = WB_register_write_enable && (WB_rd != 5'd0) && (WB_rd == EX_rs1);
     wire wb_hazard_rs2 = WB_register_write_enable && (WB_rd != 5'd0) && (WB_rd == EX_rs2);
     
+    // CSR hazard detection
     assign csr_hazard_mem = MEM_csr_write_enable && (MEM_csr_write_address == EX_imm);
     assign csr_hazard_wb = WB_csr_write_enable && (WB_csr_write_address == EX_imm);
 
@@ -95,10 +108,13 @@ module HazardUnit (
         EX_MEM_stall = 1'b0;
         MEM_WB_stall = 1'b0;
 
+        // ALU forwarding hazards
+        // For Store instructions, rs2 hazard shouldn't trigger ALUsrcB forwarding.
+        // In this case, rs2 is store data, not ALU operand.
         hazard_mem[0] = mem_hazard_rs1;
-        hazard_mem[1] = mem_hazard_rs2;
+        hazard_mem[1] = is_store ? 1'b0 : mem_hazard_rs2; // Disables ALUsrcB forwarding for store
         hazard_wb[0] = wb_hazard_rs1 && !mem_hazard_rs1;
-        hazard_wb[1] = wb_hazard_rs2 && !mem_hazard_rs2;
+        hazard_wb[1] = is_store ? 1'b0 : (wb_hazard_rs2 && !mem_hazard_rs2); // Disables ALUsrcB forwarding for store
 
         if (load_hazard) begin
             IF_ID_stall = 1'b1;
@@ -111,8 +127,6 @@ module HazardUnit (
         /*if (reg_csr_hazard) begin
             csr_reg_hazard = 1'b1;
         end*/
-
-
 
         if (trap_done && (branch_prediction_miss || EX_jump)) begin
             IF_ID_flush = 1'b1;
