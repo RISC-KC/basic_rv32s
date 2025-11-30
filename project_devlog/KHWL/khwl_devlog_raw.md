@@ -6658,3 +6658,97 @@ MEM 단계에서 combinatorial로 인식하고, uart_hit이면 MUX 의 선택을
 그럼 메모리가 읽기인지를 알아야겠는데, 굳이 MemRead 신호는 필요 없나? 어차피 memory 명령어가 아닌 이상 이 값이 나온다 해도 WB이 안될테니까 상관 없을거고, Data Memory.v 가 write_enable만 있는 것 처럼 그대로 하면 되나? 그러면 그냥 언제나 hit이기만 하면 status 내보내는거고 다만 write_enable에 주솟값이 data면 그대로 data 내보내지는거고. 
 그럼 일단 출력 신호에 UART_tx_busy를 추가해서 MEM/WB 레지스터에 DM_RD로 주는 것으로 한다.
 그리고 출력 신호에 그 MUX를 제어할 UART_status_hit 신호를 추가했다. 
+
+# [2025.11.27.]
+디버깅은 지옥이다.
+MMIO Interface를 TOP module에 적용하고 디버깅을 진행중이다.
+Instruction Memory에 0x10010000 주소에 저장하는 명령어로 분기하고 0xABADBEBE 라는 값을 최종 UART data 값으로 출력하는 시나리오를 짰는데
+명령어 인코딩하는데만 한 세월 걸린 것 같다. 
+진짜는 지금부터인데, 왜인지 모르게 쓰여져야하는 값들이 모두 제대로 전달은 되는데 주솟값이 이상하다.
+MEM 단계에서 MMIO_Interface가 주소를 보고 판단하는건데, 주소값이 0x10010000으로 x29 레지스터에 잘 되어있는 값이어야 한다.
+근데 거기에 '데이터'로 쓰여져야할 41(A)가 EX단계에서 ALU를 통해 덧셈이 되어 0x10010041이 최종 주솟값이 되어 전달되었다.
+이게 뭐지.
+SB를 했는데, 타깃 주솟값에 데이터값이 쓰여져버린 상황. 어딘가 뭔가 잘못됐다. ALU에서 덧셈이 이루어진것을 파형을 보고 확인했다.
+아마 ALU쪽이나 그쪽 MUX 컨트롤링에서 문제가 있을 듯.
+UART_busy 상황에 따른 별도의 테스팅 시나리오도 만들어봐야한다. 할게 꽤 많네. 이러다가 정작 printf로 putchar 방식으로 만들었을때 안되면 어떡하지
+크아아악 그래도 해보는 수 밖에. 화이팅
+
+# [2025.11.28.]
+문제를 파악했다. 
+현재 문제가 되는 명령어 시나리오는 다음과 같다. 
+data[51] = {1'b0, 10'b0000000110, 1'b0, 8'b0, 5'd0, `OPCODE_JAL};		// JAL x0, +12: data[54]로 분기
+// ──────────────────────────────────────────────
+		// UART MMIO 테스트: 0x10010000에 "ABADBEBE" 출력
+		data[54] = {20'h10010, 5'd29, `OPCODE_LUI};								// LUI: x29 = 0x10010000 (UART TX Data 주소)
+		data[55] = {12'h041, 5'd0, `ITYPE_ADDI, 5'd31, `OPCODE_ITYPE};			// ADDI: x31 = 'A' (0x41)
+		data[56] = {7'd0, 5'd31, 5'd29, `STORE_SB, 5'd0, `OPCODE_STORE};		// SB: mem[x29+0] = 'A'
+
+먼저, LUI로 x29에 0x100100을 로드해서 0x10010000이란 값을 x29 레지스터에 적재한다.
+ADDI로 x31에 ASCII 코드로 'A'를 뜻하는 0x41값을 적재하고
+다음으로 SB 명령어로 x29 즉 0x10010000 주소에 앞서 x31에 적재했던 0x41이란 값을 저장하는 명령어 흐름이다.
+이 경우 EX단계에 있는 SB 명령어에서는 주솟값을 계산하기 위해 x31값과 x29값이 필요한데, 이는 아직 WB이 되지 않은 값을 SB가 갖고온 것이므로 데이터 포워딩이 필요하게 된다.
+R[rs1] 값으로 WB단계에 있는 R[x29] 즉 0x10010000을 포워딩하여 ALU의 srcA로 입력시켜야하고 (이는 로직에서 제대로 동작했다.)
+저장할 데이터인 R[rs2] 값을 MEM단계에서 R[x31] 즉 0x41을 EX_MEM_Register의 EX_read_data2로 입력시켜야한다. (이러한 파이프라인 레지스터로의 포워딩은 로직구현이 되어있지 않다. 탑모듈과 Forwarding Unit 참조.)
+
+여기서 발생한 문제를 나열하겠다.
+원래대로라면, EX 단계에서 의도대로라면 주솟값 연산식인 M[R[rs1] + imm] 을 ALU에서 처리해야한다.
+SB명령어의 인코딩이 imm값은 0이기에 0x10010000 + 0 이되어 ALU에서는 R[rs1] 값과 imm 값 x29값과 0값을 더해서 최종 0x10010000값을 ALUresult로 출력해 다음 사이클에 MEM 단계에서 주소로 사용되어야한다.
+하지만 문제가 발생했다. EX단계의 ALU에서 0x10010000 + 0x41을 해버려 메모리의 주솟값이 0x10010041로 ALUresult가 출력되어버린 것이다.
+
+포워딩이 WB과 MEM 모두에서 되어야한다는 것을 적절히 인지했고, WB단계는 적합하게 포워딩을 srcA 값으로 ALU에게 잘 전달했지만 MEM 단계의 값을 파이프라인 레지스터로 포워딩하는 로직 없이
+오로지 MEM 단계 포워딩시 ALU로 하는 로직만 구현해놓았기 때문에 0x41값을 ALU srcB로 포워딩해버려 잘못된 연산을 진행해 생긴 문제로 판단된다. 
+
+수정해야할 것은 Forwarding Unit의 MEM stage의 MEM_alu_result를 EX_MEM_Register의 EX_read_data2신호로 입력하는 로직을 추가해야하는 것과, Store에 있어서 Forward Unit의 ALU로만 구성된 로직을 변경하는 것이다.
+
+# [2025.11.29.]
+문제 해결됨. Hazard Unit과 Forwarding Unit에서 Store 동작 전용으로 포워딩에 대한 로직을 추가했다. 
+Hazard Unit에서 Hazard를 감지하며 새로이 store_hazard_mem store_hazard_wb이 두 신호를 출력하게 되었다. 
+EX단계의 OPCODE가 STORE; S-Type일 때 MEM나 WB단계에서 RS2 hazard가 발생했는지 확인하고 발생했다면 각각 store_hazard 신호를 출력하는 방식이다.
+Forward Unit은 이것을 받고 store_forward_enable과 store_forward_data를 출력한다. 
+enable 신호는 store_hazard가 발생하면 1로 출력되고, data 신호는 mem의 store hazard일 때 MEM_forward_data_value를 출력, WB일 땐 WB를 출력한다. 아니면 0을 출력. 
+여기서 store_forward_enable 신호는 MUX를 컨트롤하는 신호로 사용되는데, 참일 경우 store_forward_data를 EX_read_data2로 출력하고,
+거짓일 경우 EX_read_data2를 기존과 동일하게 EX_MEM_Register로 전달한다. 해당 MUX는 EX_read_data2_MUX라는 신호로 선언되어있다. 
+이렇게 하여, 위에서 언급되었던 Store의 경우 ALU에서 포워딩로직으로 RS2값을 포워딩시켰던 이슈를 해결하여 본래 명령어 ISA 정의대로 srcB의 포워딩이 이뤄지지 않고 그대로 해당 명령어에 인코딩된 확장된 imm값이 srcB로 기입되어 정상동작하게 된다. 
+
+# [2025.11.30.]
+MMIO-UART-Interface를 테스트할 코드를 Instruction Memory에 구현했다. 
+우선 Polling 방식으로 구현한다. Dhrystone에서는 벤치 중간에 printf가 쓰이지 않는다. 따라서 성능측정과는 무관하기에 이런 방식을 따랐다.
+기존에 단순히 MMIO Interface의 TOP모듈 동작을 확인하기 위해서 UART_busy를 항상 0으로 했을 때 제대로 잘 쓰이고 UART_TX_DATA로 출력하는 것을 확인하였다. 
+하지만 완료가 아니다. 문제가 생겼다.
+Polling 방식으로인해 printf 함수가 소프트웨어단에서 체크를 한다고 한들 그 또한 RISC-V 명령어로서 파이프라인안에서 동작한다.
+지금 TOP 모듈 테스트벤치에서도 실제와 비슷하도록 0x1001 주소에 쓰기가 발생하면 즉시 busy를 1로 올리도록 했더니 문제가 발생한다.
+CPU가 기존이라면 LW x30, 0(x28) / BNE x30, x0, -8로서 앞서 0x1001_0004에 UART_busy신호를 LW를 통해 x30에 적재하고,
+BNE를 통해서 busy가 1이라면 다시 ADDI x31 = 0x41 (A) 로 전전 명령어로 돌아가 출력값을 다시 준비해서 다시 UART로 보낼 준비를 해야한다.
+하지만 현재, 그러질 못하고 그냥 UART_busy면 해당 타이밍에 쓰여져야할 내용들이 씹힌다. 
+데이터메모리로의 저장은 잘 되는데, UART로 출력이 MMIO_Interface에서 해주질 못하는 것. 
+왜일까.
+브랜치 판단을 위한 포워딩이 필요한건가?
+정답. 
+어쩔 수 없이 최선의 방도라 생각을 하고 5개의 명령어로 이루어진 UART 테스팅 시나리오의 명령어들을 수기로 적고 dependency 를 검토해봤다.
+현재 코드는 다음과 같다.
+LUI x29, 0x10010  // x29 = 0x1001_0000
+ADDI x28, x29, 4  // x28 = 0x1001_0004 (UART status address)
+ADDI x31, 65      // x31 = 0x41 (A)
+LW x30, 0(x28)    // x30 = 0x1001_0004 (Load UART status to x30)
+BNE x30, x0, -8   // if (x30 ≠ 0), nextPC = PC - 8 (Returns to ADDI x31 code; which implements polling logic of UART)
+SB x31, 0(x29)    // M[R[x29] + 0] = 0x41 (A) Stores "A" to UART MMIO to output.
+
+발견된 dependency는 총 5건.
+
+|SB(x31)|BNE|LW|ADDI(x31)|ADDI(x28)|LUI(x29)|
+|:---:|:---:|:---:|:---:|:---:|:---:|
+|ID|EX|MEM|WB|RT|RT(ReTire)|
+||ID|EX|MEM|WB|RT|
+|||ID|EX|MEM|WB|
+||||ID|EX|MEM|
+
+|선행명령어 - 후행명령어|해저드 종류|처리|
+|:---|:---:|:---:|
+|1. LUI x29 - ADDI x28, x29, 4|EX-MEM ALU Hazard rs1|Forwarded (ALU)|
+|2. LUI x29 - SB x31, 0(x29)|ID-RT Store Hazard rs1|Retired.|
+|3. ADDI x28 - LW x30, 0(x28)|ID-MEM ALU Hazard rs1|Forwarded (ALU)|
+|4. ADDI x31 - SB x31|ID-WB Store Hazard rs1|Forwarded(Data Memory)|
+|5. LW x30 - BNE x30|EX-MEM ALU Hazard rs1|error|
+
+실제로 Forward Unit에도 case(MEM_opcode)에 `OPCODE_BRANCH가 없는 것을 확인했고, Hazard Unit에서도 관련 로직이 없는 것을 확인했다. 
+이걸 더하면 해결될 것 같다. 
