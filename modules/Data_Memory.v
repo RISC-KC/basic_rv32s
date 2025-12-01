@@ -1,7 +1,7 @@
 module DataMemory (
     input clk,                      // clock signal
     input write_enable,             // enabling signal for writing Data Memory
-    input [9:0] address,            // Take address of memory to read/write value
+    input [31:0] address,            // Take address of memory to read/write value
     input [31:0] write_data,        // data to write to Data Memory
     input [3:0] write_mask,         // bitmask for writing data (Should receive 4'b1111 in RV32I47F and 50F top module)
 
