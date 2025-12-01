@@ -59,7 +59,6 @@ module HazardUnit (
     output reg EX_MEM_stall,
     output reg MEM_WB_stall
 );
-    wire load_hazard = (EX_opcode == `OPCODE_LOAD && (EX_rd != 5'd0) && ((EX_rd == ID_rs1) || (EX_rd == ID_rs2)));
 
     // Store instruction detection
     wire is_store = (EX_opcode == `OPCODE_STORE);
@@ -115,14 +114,6 @@ module HazardUnit (
         hazard_mem[1] = is_store ? 1'b0 : mem_hazard_rs2; // Disables ALUsrcB forwarding for store
         hazard_wb[0] = wb_hazard_rs1 && !mem_hazard_rs1;
         hazard_wb[1] = is_store ? 1'b0 : (wb_hazard_rs2 && !mem_hazard_rs2); // Disables ALUsrcB forwarding for store
-
-        if (load_hazard) begin
-            IF_ID_stall = 1'b1;
-            ID_EX_stall = 1'b1;
-            EX_MEM_stall = 1'b1;
-            MEM_WB_stall = 1'b1;
-            ID_EX_flush = 1'b1;
-        end
 
         /*if (reg_csr_hazard) begin
             csr_reg_hazard = 1'b1;
