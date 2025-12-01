@@ -1,9 +1,8 @@
 `timescale 1ns/1ps
 
-module mmio_interface_tb;
+module MMIO_Interface_tb;
     reg clk;
     reg reset;
-    reg clk_enable;
     reg [31:0] data_memory_write_data;
     reg [31:0] data_memory_address;
     reg data_memory_write_enable;
@@ -14,10 +13,9 @@ module mmio_interface_tb;
     wire mmio_uart_tx_start;
     wire mmio_uart_status_hit;
 
-    mmio_interface MMIO_Interface (
+    MMIO_Interface mmio_interface (
         .clk(clk),
         .reset(reset),
-        .clk_enable(clk_enable),
         .data_memory_write_data(data_memory_write_data),
         .data_memory_address(data_memory_address),
         .data_memory_write_enable(data_memory_write_enable),
@@ -36,11 +34,10 @@ module mmio_interface_tb;
 
     initial begin
         $dumpfile("testbenches/results/waveforms/mmio_interface_tb_result.vcd");
-        $dumpvars(0, MMIO_Interface);
+        $dumpvars(0, mmio_interface);
 
         // Initialize signals
         reset = 1;
-        clk_enable = 1;
         data_memory_write_data = 32'h0;
         data_memory_address = 32'h0;
         data_memory_write_enable = 0;
@@ -174,7 +171,7 @@ module mmio_interface_tb;
 
         data_memory_write_enable = 0;
 
-        // Test 7: clk_enable = 0 (should freeze)
+        /* Test 7: clk_enable = 0 (should freeze)
         $display("\n[Test 7] clk_enable=0 (should freeze):");
         
         @(posedge clk);
@@ -199,7 +196,7 @@ module mmio_interface_tb;
 
         clk_enable = 1;
         data_memory_write_enable = 0;
-
+        */
         // Test 8: Write 'C' to UART TX after enable
         $display("\n[Test 8] Write 'C' (0x43) to UART TX (normal operation):");
         

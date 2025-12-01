@@ -1,5 +1,5 @@
 $date
-	Sun Nov 30 02:13:07 2025
+	Mon Dec 01 15:48:40 2025
 $end
 $version
 	Icarus Verilog
@@ -7,49 +7,47 @@ $end
 $timescale
 	1ps
 $end
-$scope module mmio_interface_tb $end
-$scope module MMIO_Interface $end
+$scope module MMIO_Interface_tb $end
+$scope module mmio_interface $end
 $var wire 1 ! UART_busy $end
 $var wire 1 " clk $end
-$var wire 1 # clk_enable $end
-$var wire 32 $ data_memory_address [31:0] $end
-$var wire 32 % data_memory_write_data [31:0] $end
-$var wire 1 & data_memory_write_enable $end
-$var wire 1 ' mmio_uart_status_hit $end
-$var wire 1 ( reset $end
-$var wire 1 ) uart_tx_hit $end
-$var wire 1 * uart_stat_hit $end
-$var wire 32 + mmio_uart_status [31:0] $end
-$var parameter 32 , UART_STATUS_ADDR $end
-$var parameter 32 - UART_TX_ADDR $end
-$var reg 8 . mmio_uart_tx_data [7:0] $end
-$var reg 1 / mmio_uart_tx_start $end
+$var wire 32 # data_memory_address [31:0] $end
+$var wire 32 $ data_memory_write_data [31:0] $end
+$var wire 1 % data_memory_write_enable $end
+$var wire 1 & mmio_uart_status_hit $end
+$var wire 1 ' reset $end
+$var wire 1 ( uart_tx_hit $end
+$var wire 1 ) uart_stat_hit $end
+$var wire 32 * mmio_uart_status [31:0] $end
+$var parameter 32 + UART_STATUS_ADDR $end
+$var parameter 32 , UART_TX_ADDR $end
+$var reg 8 - mmio_uart_tx_data [7:0] $end
+$var reg 1 . mmio_uart_tx_start $end
 $upscope $end
 $upscope $end
 $enddefinitions $end
 $comment Show the parameter values. $end
 $dumpall
-b10000000000010000000000000000 -
-b10000000000010000000000000100 ,
+b10000000000010000000000000000 ,
+b10000000000010000000000000100 +
 $end
 #0
 $dumpvars
-0/
-b0 .
-b0 +
-0*
+0.
+b0 -
+b0 *
 0)
-1(
-0'
+0(
+1'
 0&
-b0 %
+0%
 b0 $
-1#
+b0 #
 0"
 0!
 $end
 #10000
-0(
+0'
 1"
 #20000
 0"
@@ -58,160 +56,155 @@ $end
 #40000
 0"
 #50000
-1/
-b1000001 .
-1'
+1.
+b1000001 -
 1&
-b1000001 %
-1)
-b10000000000010000000000000000 $
+1%
+b1000001 $
+1(
+b10000000000010000000000000000 #
 1"
 #60000
 0"
 #70000
-1/
+1.
 1"
 #71000
-0&
+0%
 #80000
 0"
 #90000
-0/
+0.
 1"
 #100000
 0"
 #110000
 1!
-1&
-b1000010 %
+1%
+b1000010 $
 1"
 #120000
 0"
 #130000
 1"
 #131000
-0&
+0%
 #140000
 0"
 #150000
 0!
-0)
-1*
-b10000000000010000000000000100 $
+0(
+1)
+b10000000000010000000000000100 #
 1"
 #160000
 0"
 #170000
-b1 +
+b1 *
 1!
 1"
 #180000
 0"
 #190000
-b0 +
-0'
+b0 *
+0&
 0!
-1&
-b11111111 %
-0*
-b10000000000000000000000000000 $
+1%
+b11111111 $
+0)
+b10000000000000000000000000000 #
 1"
 #200000
 0"
 #210000
 1"
 #211000
-0&
+0%
 #220000
 0"
 #230000
-1'
+1.
+b1000011 -
 1&
-b1000011 %
-1)
-b10000000000010000000000000000 $
-0#
+1%
+b1000011 $
+1(
+b10000000000010000000000000000 #
 1"
 #240000
 0"
 #250000
+1.
 1"
 #251000
-0&
-1#
+0%
 #260000
 0"
 #270000
-1/
-b1000011 .
-1&
+b1000100 -
+1.
+1%
+b1000100 $
 1"
 #280000
 0"
 #290000
-1/
+1.
 1"
 #291000
-0&
+0%
 #300000
 0"
 #310000
-b1000100 .
-1/
-1&
-b1000100 %
+0.
 1"
 #320000
 0"
 #330000
-1/
+1.
+b1000101 -
+1%
+b1000101 $
 1"
-#331000
-0&
 #340000
 0"
 #350000
-0/
+1.
 1"
+#351000
+0%
 #360000
 0"
 #370000
-1/
-b1000101 .
-1&
-b1000101 %
+0.
 1"
 #380000
 0"
 #390000
-1/
+1.
+b1000110 -
+1%
+b1000110 $
 1"
-#391000
-0&
 #400000
 0"
 #410000
-0/
+1.
 1"
+#411000
+0%
 #420000
 0"
 #430000
-1/
-b1000110 .
-1&
-b1000110 %
+0.
 1"
 #440000
 0"
 #450000
-1/
 1"
-#451000
-0&
 #460000
 0"
 #470000
-0/
 1"
 #480000
 0"
@@ -224,12 +217,4 @@ b1000110 %
 #520000
 0"
 #530000
-1"
-#540000
-0"
-#550000
-1"
-#560000
-0"
-#570000
 1"
