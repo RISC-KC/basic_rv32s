@@ -1,7 +1,6 @@
-module mmio_interface (
+module MMIO_Interface (
     input clk,
     input reset,
-    //input clk_enable,
     input [31:0] data_memory_write_data,
     input [31:0] data_memory_address,
     input data_memory_write_enable,
@@ -24,8 +23,6 @@ module mmio_interface (
     always @ (posedge clk or posedge reset) begin
         if (reset) begin
             mmio_uart_tx_data <= 8'h0;
-            mmio_uart_tx_start <= 1'b0;
-        end else if (!clk_enable) begin
             mmio_uart_tx_start <= 1'b0;
         end else begin
             mmio_uart_tx_start <= 1'b0;
