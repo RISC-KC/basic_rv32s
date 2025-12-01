@@ -3,7 +3,15 @@
 module ForwardUnit #(
     parameter XLEN = 32
 )(
+    // Hazard signals from Hazard Unit - ALU forwarding
     input wire [1:0] hazard_mem,
+    input wire [1:0] hazard_wb,
+
+    // Hazard signals from Hazard Unit - Store data forwarding
+    input wire store_hazard_mem,
+    input wire store_hazard_wb,
+
+    // MEM stage signals 
     input wire [XLEN-1:0] MEM_imm,              // from EX/MEM Register for LUI
     input wire [XLEN-1:0] MEM_alu_result,       
     input wire [XLEN-1:0] MEM_csr_read_data,
@@ -11,7 +19,7 @@ module ForwardUnit #(
     input wire [XLEN-1:0] MEM_pc_plus_4,        // from EX/MEM Register
     input wire [6:0] MEM_opcode,            // from EX/MEM Register
 
-    input wire [1:0] hazard_wb,
+    // WB stage signals 
     input wire [XLEN-1:0] WB_imm,              // from EX/MEM Register for LUI
     input wire [XLEN-1:0] WB_alu_result,       
     input wire [XLEN-1:0] WB_csr_read_data,
@@ -19,23 +27,31 @@ module ForwardUnit #(
     input wire [XLEN-1:0] WB_pc_plus_4,        // from EX/MEM Register
     input wire [6:0] WB_opcode,            // from EX/MEM Register
 
+    // CSR hazard signals
     input wire csr_hazard_mem,
     input wire csr_hazard_wb,
     input wire [31:0] MEM_csr_write_data,
     input wire [31:0] WB_csr_write_data,
     input wire [31:0] csr_read_data,
 
+    // ALU forwarding signals 
     output wire [XLEN-1:0] alu_forward_source_data_a,    // Forwarded source A data signal
     output wire [XLEN-1:0] alu_forward_source_data_b,    // Forwarded source B data signal
     output wire [1:0] alu_forward_source_select_a, // ALU source A selection between normal source and forwarded source
     output wire [1:0] alu_forward_source_select_b, // ALU source B selection between normal source and forwarded source
 
+    // Store data forwarding outputs
+    output wire [XLEN-1:0] store_forward_data,
+    output wire store_forward_enable,
+
+    // CSR forward output
     output wire [31:0] csr_forward_data
 );
     reg [31:0] MEM_forward_data_value;
     reg [31:0] WB_forward_data_value;
     reg [31:0] csr_forward_data_value;
 
+    // ALU source A forwarding
     assign alu_forward_source_select_a = 
             hazard_mem[0] ? 2'b10 : 
             hazard_wb[0] ? 2'b11 : 2'b00;
@@ -49,6 +65,11 @@ module ForwardUnit #(
     assign alu_forward_source_data_b = 
             hazard_mem[1] ? MEM_forward_data_value : 
             hazard_wb[1] ? WB_forward_data_value : {XLEN{1'b0}};
+
+    // Store data forwarding
+    assign store_forward_enable = store_hazard_mem || store_hazard_wb;
+    assign store_forward_data = store_hazard_mem ? MEM_forward_data_value : 
+                                store_hazard_wb ? WB_forward_data_value : {XLEN{1'b0}};
 
     assign csr_forward_data = csr_forward_data_value;
 
@@ -71,6 +92,7 @@ module ForwardUnit #(
             default: WB_forward_data_value = WB_alu_result;
         endcase
 
+    // CSR Forwarding
         if (csr_hazard_mem) begin
             csr_forward_data_value = MEM_csr_write_data;
         end else if (csr_hazard_wb) begin
