@@ -102,18 +102,86 @@ module InstructionMemory (
 		data[44] = {12'd0, 5'd0, 3'd0, 5'd0, `OPCODE_ENVIRONMENT}; 					// ECALL: PC = CSR[mtvec] = 0000_1000 = data[1024]
 		data[45] = {12'd1, 5'd27, 3'b000, 5'd28, `OPCODE_JALR}; 					// JALR: x28 = PC + 4 = 000000B8; PC = x27 + 00000001 = 00000079 -> misaligned
 		data[46] = {7'b0, 5'd5, 5'd1, `STORE_SH, 5'd1, `OPCODE_STORE};				// SH: mem[x1+1 = 2BD, misaligned] = (x5[15:0] = 04EF) misaligned exception..
-		
+
+		// ──────────────────────────────────────────────
+		// printf 수행을 위한 MMIO Interface 테스트벤치 명령어. SB to 0x10010000, store "ABADBEBE" = UART로 출력
+		data[51] = {1'b0, 10'b0000000110, 1'b0, 8'b0, 5'd0, `OPCODE_JAL};		// JAL x0, +12: data[54]로 분기
+
 		// ──────────────────────────────────────────────
 		// Debug Interface 명령어 수행을 위한 전초 작업. 기존 x22 값 FFFF_FFBC 값을 더하는 ADD 명령어를 DI에서 수행할 예정
 		data[47] = {20'd0, 5'd22, `OPCODE_LUI};										// LUI: x22 = 0000_0000
 		data[48] = {12'hFBC, 5'd22, `ITYPE_ADDI, 5'd22, `OPCODE_ITYPE};				// ADDI x22 = x22 -FBC = FFFF_FFBC
 		data[49] = {20'hABADC, 5'd23, `OPCODE_LUI};									// LUI: x23 = ABAD_C000
 		data[50] = {12'hB02, 5'd23, `ITYPE_ADDI, 5'd23, `OPCODE_ITYPE};				// ADDI:  x23 = x23 + -4FE = ABAD_BB02
-		data[51] = {12'd1, 5'd0, 3'd0, 5'd0, `OPCODE_ENVIRONMENT};					// EBREAK: 
+		data[52] = {12'd1, 5'd0, 3'd0, 5'd0, `OPCODE_ENVIRONMENT};					// EBREAK: 
 																					// └ADD: x22 = x22 + x23. FFFF_FFBC(x22) + ABAD_BB02(x23) = ABAD_BABE(x22)
 
 																					//HINT; NOP for 'x' signal after EBREAK in pipeline
-		data[52] = {12'h2BC, 5'd0, `ITYPE_ADDI, 5'd0, `OPCODE_ITYPE};				// ADDI:  x0 = x0 + 2BC = 0000_0000
+		data[53] = {12'h2BC, 5'd0, `ITYPE_ADDI, 5'd0, `OPCODE_ITYPE};				// ADDI:  x0 = x0 + 2BC = 0000_0000
+		
+		// ──────────────────────────────────────────────
+		// UART MMIO 테스트: 0x10010000에 "ABADBEBE" 출력 (Polling 추가)
+		data[54] = {20'h10010, 5'd29, `OPCODE_LUI};                             // LUI: x29 = 0x10010000 (UART TX Data 주소)
+		data[55] = {12'h004, 5'd29, `ITYPE_ADDI, 5'd28, `OPCODE_ITYPE};        // ADDI: x28 = x29 + 4 = 0x10010004 (UART Status 주소)
+
+		// 'A' 전송
+		data[56] = {12'h041, 5'd0, `ITYPE_ADDI, 5'd31, `OPCODE_ITYPE};         // ADDI: x31 = 'A' (0x41)
+		data[57] = {12'd0, 5'd28, `LOAD_LW, 5'd30, `OPCODE_LOAD};              // LW x30, 0(x28): Status 레지스터 읽기
+		data[58] = {12'd1, 5'd30, `ITYPE_ANDI, 5'd30, `OPCODE_ITYPE};          // ANDI x30, x30, 1: busy bit 마스킹
+		data[59] = {1'b1, 6'b111111, 5'd0, 5'd30, `BRANCH_BNE, 4'b1100, 1'b1, `OPCODE_BRANCH}; // BNE x30, x0, -8: busy이면 data[57]로 재시도
+		data[60] = {7'd0, 5'd31, 5'd29, `STORE_SB, 5'd0, `OPCODE_STORE};       // SB: mem[x29+0] = 'A'
+
+		// 'B' 전송
+		data[61] = {12'h042, 5'd0, `ITYPE_ADDI, 5'd31, `OPCODE_ITYPE};         // ADDI: x31 = 'B' (0x42)
+		data[62] = {12'd0, 5'd28, `LOAD_LW, 5'd30, `OPCODE_LOAD};              // LW x30, 0(x28): Status 레지스터 읽기
+		data[63] = {12'd1, 5'd30, `ITYPE_ANDI, 5'd30, `OPCODE_ITYPE};          // ANDI x30, x30, 1: busy bit 마스킹
+		data[64] = {1'b1, 6'b111111, 5'd0, 5'd30, `BRANCH_BNE, 4'b1100, 1'b1, `OPCODE_BRANCH}; // BNE x30, x0, -8: busy이면 data[62]로 재시도
+		data[65] = {7'd0, 5'd31, 5'd29, `STORE_SB, 5'd0, `OPCODE_STORE};       // SB: mem[x29+0] = 'B'
+
+		// 'A' 전송
+		data[66] = {12'h041, 5'd0, `ITYPE_ADDI, 5'd31, `OPCODE_ITYPE};         // ADDI: x31 = 'A' (0x41)
+		data[67] = {12'd0, 5'd28, `LOAD_LW, 5'd30, `OPCODE_LOAD};              // LW x30, 0(x28): Status 레지스터 읽기
+		data[68] = {12'd1, 5'd30, `ITYPE_ANDI, 5'd30, `OPCODE_ITYPE};          // ANDI x30, x30, 1: busy bit 마스킹
+		data[69] = {1'b1, 6'b111111, 5'd0, 5'd30, `BRANCH_BNE, 4'b1100, 1'b1, `OPCODE_BRANCH}; // BNE x30, x0, -8: busy이면 data[67]로 재시도
+		data[70] = {7'd0, 5'd31, 5'd29, `STORE_SB, 5'd0, `OPCODE_STORE};       // SB: mem[x29+0] = 'A'
+
+		// 'D' 전송
+		data[71] = {12'h044, 5'd0, `ITYPE_ADDI, 5'd31, `OPCODE_ITYPE};         // ADDI: x31 = 'D' (0x44)
+		data[72] = {12'd0, 5'd28, `LOAD_LW, 5'd30, `OPCODE_LOAD};              // LW x30, 0(x28): Status 레지스터 읽기
+		data[73] = {12'd1, 5'd30, `ITYPE_ANDI, 5'd30, `OPCODE_ITYPE};          // ANDI x30, x30, 1: busy bit 마스킹
+		data[74] = {1'b1, 6'b111111, 5'd0, 5'd30, `BRANCH_BNE, 4'b1100, 1'b1, `OPCODE_BRANCH}; // BNE x30, x0, -8: busy이면 data[72]로 재시도
+		data[75] = {7'd0, 5'd31, 5'd29, `STORE_SB, 5'd0, `OPCODE_STORE};       // SB: mem[x29+0] = 'D'
+
+		// 'B' 전송
+		data[76] = {12'h042, 5'd0, `ITYPE_ADDI, 5'd31, `OPCODE_ITYPE};         // ADDI: x31 = 'B' (0x42)
+		data[77] = {12'd0, 5'd28, `LOAD_LW, 5'd30, `OPCODE_LOAD};              // LW x30, 0(x28): Status 레지스터 읽기
+		data[78] = {12'd1, 5'd30, `ITYPE_ANDI, 5'd30, `OPCODE_ITYPE};          // ANDI x30, x30, 1: busy bit 마스킹
+		data[79] = {1'b1, 6'b111111, 5'd0, 5'd30, `BRANCH_BNE, 4'b1100, 1'b1, `OPCODE_BRANCH}; // BNE x30, x0, -8: busy이면 data[77]로 재시도
+		data[80] = {7'd0, 5'd31, 5'd29, `STORE_SB, 5'd0, `OPCODE_STORE};       // SB: mem[x29+0] = 'B'
+
+		// 'E' 전송
+		data[81] = {12'h045, 5'd0, `ITYPE_ADDI, 5'd31, `OPCODE_ITYPE};         // ADDI: x31 = 'E' (0x45)
+		data[82] = {12'd0, 5'd28, `LOAD_LW, 5'd30, `OPCODE_LOAD};              // LW x30, 0(x28): Status 레지스터 읽기
+		data[83] = {12'd1, 5'd30, `ITYPE_ANDI, 5'd30, `OPCODE_ITYPE};          // ANDI x30, x30, 1: busy bit 마스킹
+		data[84] = {1'b1, 6'b111111, 5'd0, 5'd30, `BRANCH_BNE, 4'b1100, 1'b1, `OPCODE_BRANCH}; // BNE x30, x0, -8: busy이면 data[82]로 재시도
+		data[85] = {7'd0, 5'd31, 5'd29, `STORE_SB, 5'd0, `OPCODE_STORE};       // SB: mem[x29+0] = 'E'
+
+		// 'B' 전송
+		data[86] = {12'h042, 5'd0, `ITYPE_ADDI, 5'd31, `OPCODE_ITYPE};         // ADDI: x31 = 'B' (0x42)
+		data[87] = {12'd0, 5'd28, `LOAD_LW, 5'd30, `OPCODE_LOAD};              // LW x30, 0(x28): Status 레지스터 읽기
+		data[88] = {12'd1, 5'd30, `ITYPE_ANDI, 5'd30, `OPCODE_ITYPE};          // ANDI x30, x30, 1: busy bit 마스킹
+		data[89] = {1'b1, 6'b111111, 5'd0, 5'd30, `BRANCH_BNE, 4'b1100, 1'b1, `OPCODE_BRANCH}; // BNE x30, x0, -8: busy이면 data[87]로 재시도
+		data[90] = {7'd0, 5'd31, 5'd29, `STORE_SB, 5'd0, `OPCODE_STORE};       // SB: mem[x29+0] = 'B'
+
+		// 'E' 전송
+		data[91] = {12'h045, 5'd0, `ITYPE_ADDI, 5'd31, `OPCODE_ITYPE};         // ADDI: x31 = 'E' (0x45)
+		data[92] = {12'd0, 5'd28, `LOAD_LW, 5'd30, `OPCODE_LOAD};              // LW x30, 0(x28): Status 레지스터 읽기
+		data[93] = {12'd1, 5'd30, `ITYPE_ANDI, 5'd30, `OPCODE_ITYPE};          // ANDI x30, x30, 1: busy bit 마스킹
+		data[94] = {1'b1, 6'b111111, 5'd0, 5'd30, `BRANCH_BNE, 4'b1100, 1'b1, `OPCODE_BRANCH}; // BNE x30, x0, -8: busy이면 data[92]로 재시도
+		data[95] = {7'd0, 5'd31, 5'd29, `STORE_SB, 5'd0, `OPCODE_STORE};       // SB: mem[x29+0] = 'E'
+
+		data[96] = {1'b1, 10'b1110101000, 1'b1, 8'b11111111, 5'd0, `OPCODE_JAL}; // JAL x0, -344: data[52]로 분기 (EBREAK로 돌아가기)
+
 		// ──────────────────────────────────────────────
 		// Trap Handler 시작 주소. mtvec = 0000_1000 = 4096 ÷ 4 Byte = 1024
 		// Trap Handler 진입 시 기존 GPR의 레지스터 내용들을 별도의 메모리 Heap 구역에 store하고 수행해야하지만, 현재 단계에서는 생략함.
