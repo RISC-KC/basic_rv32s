@@ -26,6 +26,9 @@ module CSRFile #(
     reg [XLEN-1:0] mepc;
     reg [XLEN-1:0] mcause;
 
+    reg [63:0] mcycle;
+    reg [63:0] minstret;
+
     reg csr_processing;
     reg [XLEN-1:0] csr_read_data;
 
@@ -44,17 +47,27 @@ module CSRFile #(
                                (csr_read_address == 12'h301) || // misa
                                (csr_read_address == 12'h305) || // mtvec
                                (csr_read_address == 12'h341) || // mepc
-                               (csr_read_address == 12'h342);   // mcause
+                               (csr_read_address == 12'h342) || // mcause
+                               (csr_read_address == 12'hB00) || // mcycle
+                               (csr_read_address == 12'hB02) || // minstret
+                               (csr_read_address == 12'hB80) || // mcycleh
+                               (csr_read_address == 12'hB82);   // minstreth
 
 
 
     localparam [XLEN-1:0] DEFAULT_mtvec  = 32'h00001000;
     localparam [XLEN-1:0] DEFAULT_mepc   = {XLEN{1'b0}};
     localparam [XLEN-1:0] DEFAULT_mcause = {XLEN{1'b0}};
+    localparam [63:0] DEFAULT_mcycle = 64'b0;
+    localparam [63:0] DEFAULT_minstret = 64'b0;
 
     // Read Operation.
     always @(*) begin
       case (csr_read_address)
+        12'hB00: csr_read_data = mcycle[XLEN-1:0];
+        12'hB02: csr_read_data = minstret[XLEN-1:0];
+        12'hB80: csr_read_data = mcycle[63:32];
+        12'hB82: csr_read_data = minstret[63:32];
         12'hF11: csr_read_data = mvendorid;
         12'hF12: csr_read_data = marchid;
         12'hF13: csr_read_data = mimpid;
@@ -86,6 +99,9 @@ module CSRFile #(
         mtvec   <= DEFAULT_mtvec;
         mepc    <= DEFAULT_mepc;
         mcause  <= DEFAULT_mcause;
+        mcycle  <= DEFAULT_mcycle;
+        minstret <= DEFAULT_minstret;
+
         csr_processing <= 1'b0;
         csr_read_out <= {XLEN{1'b0}};
         csr_write_enable_buffer <= 1'b0;
@@ -108,6 +124,10 @@ module CSRFile #(
           12'h305: mtvec  <= csr_write_data;
           12'h341: mepc   <= csr_write_data;
           12'h342: mcause <= csr_write_data;
+          12'hB00: mcycle[31:0] <= csr_write_data;
+          12'hB80: mcycle[63:32] <= csr_write_data;
+          12'hB02: minstret[31:0] <= csr_write_data;
+          12'hB82: minstret[63:32] <= csr_write_data;
           default: ;
         endcase
         end
