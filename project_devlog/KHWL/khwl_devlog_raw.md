@@ -6752,3 +6752,36 @@ SB x31, 0(x29)    // M[R[x29] + 0] = 0x41 (A) Stores "A" to UART MMIO to output.
 
 실제로 Forward Unit에도 case(MEM_opcode)에 `OPCODE_BRANCH가 없는 것을 확인했고, Hazard Unit에서도 관련 로직이 없는 것을 확인했다. 
 이걸 더하면 해결될 것 같다. 
+
+흠... 파형을 관찰하면서 Branch가 현재 어떻게 처리되는지를 보고 있는데... 애초에 Branch 명령어가 EX단계로 가지도 못하는 것을 확인했다. 
+그 직전에 lw, addi, bne인데
+lw와 addi가 load_hazard를 일으켜서 ID_EX_Register가 flush한번 된다. 이 때 BNE 명령어가 소실되는데...
+이 때 PC_Stall을 한 사이클 걸어주는 것이 해결방안이 될 것 같다. 한번 해보자. 
+
+# [2025.12.01.]
+pc_stall에 조건문으로 load_hazard를 추가했다가 제대로 동작하지 않아서 어차피 IF_ID_Stall이 일어나면 PC도 IF stage라 stall되는 것이 맞으니
+Hazard Unit의 IF_ID_Stall 신호를 Control Unit에 연결해서 pc_stall 신호의 조건에 편입시켰다. 
+정상동작했고, 이제 EX단계로 branch BNE 명령어가 제대로 들어가서 분기 비교를 수행한다. 
+그런데도 문제가 발생했다. 
+1. 무한루프
+첫번째로는 무한 루프였는데, 외부의 UART_busy 신호에 종속적으로 0x1001_0004 값이 적재되어야하는 반면에 
+계속 busy로 인식되어 BNE가 taken으로 loop을 만들었다.
+이는 Instruction Memory에서 ANDI x30, x30, 1로 busy_bit을 마스킹하기 위한 코드가 발현시킨 문제라 판단하여 이 코드를 지우고 다시 실행시켰다.
+어차피 x30에 UART_busy가 1인지 0인지 제대로 적재가 되어있을 것이기 때문에 상관 없다고 생각했다.
+
+2. polling이 어긋남
+UART_busy 상황에서 원래 bne를 통해 직전 lw로 busy인것을 확인해서 다시 또 폴링하는 명령어로 되돌아가야하는데, 그러지 않는다. 
+data_memory_write_data로는 정상적으로 쓰여지지만 mmio_uart_tx_data로는 출력되지 않는 상황.
+애초에 명령어 진행이 잘못되고 있는 것이다. 
+load_hazard 로 인한 pc와 파이프라인들의 stall들. 
+문제점은 load hazard가 발생한 load 명령어가 검출 로직은 EX에서 작동하는데 ID_EX_Flush때문에 해당 명령어의 context를 없애버리는 로직을 취하고 있었다. 
+즉 load 명령어가 갑자기 사라져버려서 bne를 위한 연산값이 업데이트가 안돼 그냥 무시하고 지나가버리게 된 것
+이러면 그냥 표면적으로 load 명령어가 dependency 문제 생기면 stall밖에 더 안하는 게 되는데, 애초에 그럼 이 로직이 필요한가 싶어 없앴다.
+와. 정상 동작한다. 
+하지만 그래도 load명령어의 rd값이 rs값으로 쓰이는 data Hazard에 대해서 대비를 안할 수는 없는 법이다.
+근데 이건 애초에 MEM과 WB의 포워딩으로 해결이 되는 부분 아닌가?
+EX단계에 있는 lw 명령어, ID 단계에 있는 ADDI 명령어가 있다고 하자.
+ADDI 명령어는 결국 EX단계가 되어서야 포워딩이 필요하다. 그 때 lw는 이미 MEM 단계이고, 이에 대한 포워딩 로직은 이미 구현이 되어있다. 
+Forward Unit에서도 `OPCODE_LOAD를 별개로 case (MEM_opcode)를 통해 운용하고 있다. 
+아무래도 Hazard Unit을 처음 설계하면서 개념을 이해하는 과정에 잘못 구상한 레거시코드 같다. 삭제했다.
+이제 FPGA에 구현해서 확인해봐야겠다. 
