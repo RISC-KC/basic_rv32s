@@ -8,6 +8,7 @@ module ControlUnit (
 	input write_done,	// signal indicating if write is done
 	input trap_done,	// signal indicating if Pre-Trap Handling is done
 	input csr_ready,
+	input IF_ID_stall,
 	input [6:0] opcode, // opcode from Instruction Decoder
 	input [2:0] funct3, // funct3 from Instruction Decoder
     
@@ -24,7 +25,7 @@ module ControlUnit (
 );
 
     always @(*) begin
-		pc_stall = !write_done || !trap_done || !csr_ready;
+		pc_stall = (!write_done || !trap_done || !csr_ready || IF_ID_stall);
         jump = 1'b0;
         branch = 1'b0;
         alu_src_A_select = `ALU_SRC_A_NONE;
