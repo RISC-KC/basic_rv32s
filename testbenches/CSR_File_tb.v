@@ -8,6 +8,7 @@ module CSRFile_tb;
     reg  [11:0] csr_read_address;
     reg  [11:0] csr_write_address;
     reg  [31:0] csr_write_data;
+    reg instruction_retired;
 
     wire [31:0] csr_read_out;
     wire        csr_ready;
@@ -20,6 +21,7 @@ module CSRFile_tb;
         .csr_read_address(csr_read_address),
         .csr_write_address(csr_write_address),
         .csr_write_data(csr_write_data),
+        .instruction_retired(instruction_retired),
 
         .csr_read_out(csr_read_out),
         .csr_ready(csr_ready)
@@ -39,6 +41,7 @@ module CSRFile_tb;
         csr_read_address = 12'h000;
         csr_write_address = 12'h000;
         csr_write_data = 32'h0;
+        instruction_retired = 0;
         #10;
         reset = 0;
         #10;
@@ -48,6 +51,8 @@ module CSRFile_tb;
         $display("mvendorid = %h (expected 52564B43)", csr_read_out);
         
         csr_read_address = 12'hF12; #10; 
+        instruction_retired = 1'b1; #10;
+        instruction_retired = 1'b0;
         $display("marchid = %h (expected 34365335)", csr_read_out);
         
         csr_read_address = 12'hF13; #10;
@@ -134,22 +139,22 @@ module CSRFile_tb;
 
         $display("Write ignored : mvendorid = %h (expected 52564B43)", csr_read_out);
         
-        // Test 7: mcycle/minstret reset value check
+        // Test 7: mcycle/minstret auto-increment check (read-only counters)
         csr_read_address = 12'hB00; #10;
-        $display("mcycle (lower 32-bit, reset) = %h (expected 00000000)", csr_read_out);
+        $display("mcycle (lower 32-bit) = %h (auto-incremented, not 0)", csr_read_out);
         
         csr_read_address = 12'hB80; #10;
-        $display("mcycleh (upper 32-bit, reset) = %h (expected 00000000)", csr_read_out);
+        $display("mcycleh (upper 32-bit) = %h (should be 0, no overflow yet)", csr_read_out);
         
         csr_read_address = 12'hB02; #10;
-        $display("minstret (lower 32-bit, reset) = %h (expected 00000000)", csr_read_out);
+        $display("minstret (lower 32-bit) = %h (should be 1, one instruction retired in Test 1)", csr_read_out);
         
         csr_read_address = 12'hB82; #10;
-        $display("minstreth (upper 32-bit, reset) = %h (expected 00000000)", csr_read_out);
+        $display("minstreth (upper 32-bit) = %h (should be 0, no overflow yet)", csr_read_out);
 
-        // Test 8: csrrw; mcycle lower 32-bit
+        // Test 8: Read-only test for mcycle - write should be ignored
         csr_read_address = 12'hB00; #10;
-        $display("mcycle (before write) = %h (expected 00000000)", csr_read_out);
+        $display("mcycle (before write attempt) = %h", csr_read_out);
 
         csr_write_address = 12'hB00;
         csr_write_data = 32'h12345678;
@@ -160,11 +165,11 @@ module CSRFile_tb;
         #10;
 
         csr_read_address = 12'hB00; #10;
-        $display("mcycle (after write) = %h (expected 12345678)", csr_read_out);
+        $display("mcycle (after write attempt) = %h (write should be ignored, auto-incremented)", csr_read_out);
         
-        // Test 9: csrrw; mcycleh upper 32-bit
+        // Test 9: Read-only test for mcycleh - write should be ignored
         csr_read_address = 12'hB80; #10;
-        $display("mcycleh (before write) = %h (expected 00000000)", csr_read_out);
+        $display("mcycleh (before write attempt) = %h", csr_read_out);
 
         csr_write_address = 12'hB80;
         csr_write_data = 32'hABCDEF00;
@@ -175,17 +180,11 @@ module CSRFile_tb;
         #10;
 
         csr_read_address = 12'hB80; #10;
-        $display("mcycleh (after write) = %h (expected ABCDEF00)", csr_read_out);
+        $display("mcycleh (after write attempt) = %h (write should be ignored, should remain 0)", csr_read_out);
         
-        csr_read_address = 12'hB00; #10;
-        $display("mcycle (should remain) = %h (expected 12345678)", csr_read_out);
-        
-        $display("Full 64-bit mcycle = %h_%h (expected ABCDEF00_12345678)", 
-                 csr_file.mcycle[63:32], csr_file.mcycle[31:0]);
-
-        // Test 10: csrrw; minstret lower 32-bit
+        // Test 10: Read-only test for minstret - write should be ignored
         csr_read_address = 12'hB02; #10;
-        $display("minstret (before write) = %h (expected 00000000)", csr_read_out);
+        $display("minstret (before write attempt) = %h", csr_read_out);
 
         csr_write_address = 12'hB02;
         csr_write_data = 32'hDEADBEEF;
@@ -196,11 +195,11 @@ module CSRFile_tb;
         #10;
 
         csr_read_address = 12'hB02; #10;
-        $display("minstret (after write) = %h (expected DEADBEEF)", csr_read_out);
+        $display("minstret (after write attempt) = %h (write should be ignored, should remain 1)", csr_read_out);
         
-        // Test 11: csrrw; minstreth upper 32-bit
+        // Test 11: Read-only test for minstreth - write should be ignored
         csr_read_address = 12'hB82; #10;
-        $display("minstreth (before write) = %h (expected 00000000)", csr_read_out);
+        $display("minstreth (before write attempt) = %h", csr_read_out);
 
         csr_write_address = 12'hB82;
         csr_write_data = 32'hCAFEBABE;
@@ -211,15 +210,42 @@ module CSRFile_tb;
         #10;
 
         csr_read_address = 12'hB82; #10;
-        $display("minstreth (after write) = %h (expected CAFEBABE)", csr_read_out);
+        $display("minstreth (after write attempt) = %h (write should be ignored, should remain 0)", csr_read_out);
         
-        csr_read_address = 12'hB02; #10;
-        $display("minstret (should remain) = %h (expected DEADBEEF)", csr_read_out);
+        // Test 12: mcycle auto-increment verification
+        $display("\n=== Auto-increment verification ===");
+        csr_read_address = 12'hB00; 
+        #10;
+        $display("mcycle at T0 = %h", csr_read_out);
+        #20; // Wait 2 cycles
+        csr_read_address = 12'hB00; 
+        #10;
+        $display("mcycle at T0+2 = %h (should be +2 from previous)", csr_read_out);
         
-        $display("Full 64-bit minstret = %h_%h (expected CAFEBABE_DEADBEEF)", 
-                 csr_file.minstret[63:32], csr_file.minstret[31:0]);
+        // Test 13: minstret increment with instruction_retired
+        $display("\n=== instruction_retired test ===");
+        csr_read_address = 12'hB02;
+        #10;
+        $display("minstret before retired = %h", csr_read_out);
+        
+        instruction_retired = 1;
+        #10;
+        instruction_retired = 0;
+        csr_read_address = 12'hB02;
+        #10;
+        $display("minstret after 1 retired = %h (should be +1)", csr_read_out);
+        
+        instruction_retired = 1;
+        #10;
+        instruction_retired = 1;
+        #10;
+        instruction_retired = 0;
+        csr_read_address = 12'hB02;
+        #10;
+        $display("minstret after 2 more retired = %h (should be +2)", csr_read_out);
 
-        // Test 12: Full 64-bit value integrity check
+        // Final values
+        $display("\n=== Final Counter Values ===");
         csr_read_address = 12'hB00; #10;
         $display("Final mcycle[31:0] = %h", csr_read_out);
         
@@ -234,7 +260,7 @@ module CSRFile_tb;
         $display("Final minstret[63:32] = %h", csr_read_out);
         $display("Final Full minstret = 0x%h_%h", csr_file.minstret[63:32], csr_file.minstret[31:0]);
         
-        $display("\n====================  Register File Test END  ====================");
+        $display("\n====================  CSR File Test END  ====================");
         $stop;
     end
     

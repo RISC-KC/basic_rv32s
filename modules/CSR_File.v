@@ -10,6 +10,7 @@ module CSRFile #(
     input [11:0] csr_read_address,        // address to read
     input [11:0] csr_write_address,       // address to write
     input [XLEN-1:0] csr_write_data,      // data to write
+    input instruction_retired,
 
     output reg [XLEN-1:0] csr_read_out,   // data from CSR Unit
     output reg csr_ready                  // signal to stall the process while accessing the CSR until it outputs the desired value.
@@ -106,6 +107,12 @@ module CSRFile #(
         csr_read_out <= {XLEN{1'b0}};
         csr_write_enable_buffer <= 1'b0;
       end else begin
+        mcycle <= mcycle + 1;
+        
+        if (instruction_retired) begin
+          minstret <= minstret + 1;
+        end
+
         if (csr_access && !csr_processing) begin
           csr_processing <= 1'b1;
           csr_read_out <= csr_read_data;
@@ -124,10 +131,6 @@ module CSRFile #(
           12'h305: mtvec  <= csr_write_data;
           12'h341: mepc   <= csr_write_data;
           12'h342: mcause <= csr_write_data;
-          12'hB00: mcycle[31:0] <= csr_write_data;
-          12'hB80: mcycle[63:32] <= csr_write_data;
-          12'hB02: minstret[31:0] <= csr_write_data;
-          12'hB82: minstret[63:32] <= csr_write_data;
           default: ;
         endcase
         end
