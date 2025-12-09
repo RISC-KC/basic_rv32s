@@ -6785,3 +6785,30 @@ ADDI 명령어는 결국 EX단계가 되어서야 포워딩이 필요하다. 그
 Forward Unit에서도 `OPCODE_LOAD를 별개로 case (MEM_opcode)를 통해 운용하고 있다. 
 아무래도 Hazard Unit을 처음 설계하면서 개념을 이해하는 과정에 잘못 구상한 레거시코드 같다. 삭제했다.
 이제 FPGA에 구현해서 확인해봐야겠다. 
+
+# [2025.12.09.]
+그간 있던 내용들을 모두 GitHub에 PR올려 merge했고, Vivado에 코어모듈만 따로 올려서 시뮬레이션이 정상적으로 수행됨을 확인하였다. 
+이제 FPGA에 올리기 위한 SoC를 설계하기 위해 46F5SP_MMIO_SoC를 새롭게 만들고 있는데, 약간의 문제가 생겼다.
+명분상, MMIO_Interface는 CPU안에 있을 것이 아니라 SoC에 있어야 타당하다. 여기서에서 비롯된 현재 SoC의 구상도를 설명해보겠다. 
+
+46F5SP_MMIO_SoC
+[구성]
+- RV32I46F_5SP_MMIO.v
+  - CPU 코어 모듈
+
+- MMIO_Interface.v
+  - MMIO 인터페이스, CPU와 입출력하며 상호작용한다.
+    - CPU에서 입력: MEM_alu_result, MEM_memory_write, data_memory_write_data
+    - CPU로 출력: UART_busy, mmio_uart_status_hit, mmio_uart_status
+
+- UART_TX.v
+  - FPGA 보드의 UART포트로 출력하는 모듈. UART_Controller와 상호작용하여 값을 '출력'한다.
+
+- UART_Controller.v
+  - 기존에 있던 Debug_UART_Controller의 확장버전.
+  Button_Debouncer와 MMIO_Interface, 그리고 UART_Controller내부에 있는 UART 출력 로직에서 입력을 받는다. 
+  이후 조건에 따라 UART로 출력할 데이터를 UART_TX로 보낸다.
+  내부에는 16진수 HEX 데이터를 ASCII코드로 바꾸는 기능을 포함하고 있으며, 데이터는 입력받은 신호를 사용한다.
+  
+- Button_Debouncer.v
+  - 입력받은 버튼 입력의 디바운싱을 거쳐 트리거를 형성해 출력한다.
