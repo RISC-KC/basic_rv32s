@@ -11,8 +11,11 @@ module InstructionDecoder (
 	output reg [4:0] rd,
 	output reg [19:0] raw_imm
 );
+
+	wire [6:0] opcode_wire = instruction[6:0];
+
     always @(*) begin
-		opcode = instruction[6:0];
+		opcode = opcode_wire[6:0];
         case (opcode)
 			`OPCODE_LUI, `OPCODE_AUIPC: begin // U-type
                 rd = instruction[11:7];
