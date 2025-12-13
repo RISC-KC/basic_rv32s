@@ -251,66 +251,61 @@ module RV32I46F5SPMMIO #(
     wire [XLEN-1:0] data_memory_read_data_muxed;
     assign data_memory_read_data_muxed = mmio_uart_status_hit ? mmio_uart_status : data_memory_read_data;
 
-    MMIO_Interface mmio_interface (
-        .clk(clk),
-        .reset(reset),
-        .data_memory_write_data(data_memory_write_data),
-        .data_memory_address(MEM_alu_result),
-        .data_memory_write_enable(MEM_memory_write),
-        .UART_busy(UART_busy),
+    ALU alu (
+        .src_A(src_A),
+        .src_B(src_B),
+        .alu_op(alu_op),
 
-        .mmio_uart_tx_data(mmio_uart_tx_data),
-        .mmio_uart_status(mmio_uart_status),
-        .mmio_uart_tx_start(mmio_uart_tx_start),
-        .mmio_uart_status_hit(mmio_uart_status_hit)
+        .alu_result(alu_result),
+        .alu_zero(alu_zero)
     );
 
-    ProgramCounter program_counter (
-        .clk(clk),
-        .reset(reset),
-        .next_pc(next_pc),
-        .pc(pc)
+    ALUController alu_controller (
+        .opcode(EX_opcode),
+	    .funct3(EX_funct3),
+        .funct7_5(EX_funct7[5]),
+        .imm_10(EX_imm[10]),
+	
+        .alu_op(alu_op)
     );
 
-    PCController pc_controller (
-        .jump(EX_jump),
-        .branch_estimation(branch_estimation),
+    BranchLogic branch_logic (
+        .branch(EX_branch),
+        .branch_estimation(EX_branch_estimation),
+        .funct3(EX_funct3),
+        .alu_zero(alu_zero),
+        .pc(EX_pc),
+        .imm(EX_imm),
+    
+        .branch_taken(branch_taken),
         .branch_prediction_miss(branch_prediction_miss),
-        .trapped(trapped),
-	    .pc(pc),
-        .jump_target(alu_result),
-        .branch_target(branch_target),
-        .branch_target_actual(branch_target_actual),
-	    .trap_target(trap_target),
-        .pc_stall(pc_stall),
-	    .next_pc(next_pc)
+        .branch_target_actual(branch_target_actual)
     );
 
-    PCPlus4 pc_plus_4 (
-        .pc(pc),
-        .pc_plus_4(pc_plus_4_signal)
+    BranchPredictor #(.XLEN(XLEN)) branch_predictor(
+        .clk(clk),
+        .reset(reset),
+        .IF_opcode(IF_opcode),
+        .IF_pc (pc),
+        .IF_imm (IF_imm),
+        .EX_branch(EX_branch),
+        .EX_branch_taken (branch_taken),
+
+        .branch_estimation (branch_estimation),
+        .branch_target (branch_target)
     );
 
-    InstructionMemory instruction_memory (
-        .pc(pc),
-        .instruction(im_instruction)
-    );
-
-    InstructionDecoder instruction_decoder (
-        .instruction(ID_instruction),
-        .opcode(opcode),
-	    .funct3(funct3),
-	    .funct7(funct7),
-	    .rs1(rs1),
-	    .rs2(rs2),
-	    .rd(rd),
-	    .raw_imm(raw_imm)
-    );
-
-    ImmediateGenerator immediate_generator (
-        .raw_imm(raw_imm),
-        .opcode(opcode),
-        .imm(imm)
+    ByteEnableLogic byte_enable_logic (
+        .memory_read(MEM_memory_read),
+        .memory_write(MEM_memory_write),
+        .funct3(MEM_funct3),
+	    .register_file_read_data(MEM_read_data2),
+	    .data_memory_read_data(data_memory_read_data_muxed),
+	    .address(MEM_alu_result[1:0]),
+	
+	    .register_file_write_data(byte_enable_logic_register_file_write_data),
+	    .data_memory_write_data(data_memory_write_data),
+        .write_mask(write_mask)
     );
 
     ControlUnit control_unit (
@@ -333,72 +328,6 @@ module RV32I46F5SPMMIO #(
         .csr_write_enable(cu_csr_write_enable)
     );
 
-    RegisterFile register_file (
-        .clk(clk),
-        .read_reg1(rs1),
-        .read_reg2(rs2),
-        .write_reg(WB_rd),
-        .write_data(register_file_write_data),
-        .write_enable(WB_register_write_enable),
-	
-        .read_data1(read_data1),
-        .read_data2(read_data2)
-    );
-
-    DataMemory data_memory (
-        .clk(clk),
-        .write_enable(MEM_memory_write && !mmio_uart_status_hit),   // UART status 조회시 ROM이므로 쓰기 방지.
-        .address(MEM_alu_result),
-        .write_data(data_memory_write_data),
-        .write_mask(write_mask),
-
-        .read_data(data_memory_read_data)
-    );
-
-    ALUController alu_controller (
-        .opcode(EX_opcode),
-	    .funct3(EX_funct3),
-        .funct7_5(EX_funct7[5]),
-        .imm_10(EX_imm[10]),
-	
-        .alu_op(alu_op)
-    );
-
-    ALU alu (
-        .src_A(src_A),
-        .src_B(src_B),
-        .alu_op(alu_op),
-
-        .alu_result(alu_result),
-        .alu_zero(alu_zero)
-    );
-
-    BranchLogic branch_logic (
-        .branch(EX_branch),
-        .branch_estimation(EX_branch_estimation),
-        .funct3(EX_funct3),
-        .alu_zero(alu_zero),
-        .pc(EX_pc),
-        .imm(EX_imm),
-    
-        .branch_taken(branch_taken),
-        .branch_prediction_miss(branch_prediction_miss),
-        .branch_target_actual(branch_target_actual)
-    );
-
-    ByteEnableLogic byte_enable_logic (
-        .memory_read(MEM_memory_read),
-        .memory_write(MEM_memory_write),
-        .funct3(MEM_funct3),
-	    .register_file_read_data(MEM_read_data2),
-	    .data_memory_read_data(data_memory_read_data_muxed),
-	    .address(MEM_alu_result[1:0]),
-	
-	    .register_file_write_data(byte_enable_logic_register_file_write_data),
-	    .data_memory_write_data(data_memory_write_data),
-        .write_mask(write_mask)
-    );
-
     CSRFile #(.XLEN(XLEN)) csr_file (
         .clk(clk),
         .reset(reset),
@@ -411,6 +340,16 @@ module RV32I46F5SPMMIO #(
 
         .csr_read_out(csr_read_out),
         .csr_ready(csr_ready) 
+    );
+
+    DataMemory data_memory (
+        .clk(clk),
+        .write_enable(MEM_memory_write && !mmio_uart_status_hit),   // UART status 조회시 ROM이므로 쓰기 방지.
+        .address(MEM_alu_result),
+        .write_data(data_memory_write_data),
+        .write_mask(write_mask),
+
+        .read_data(data_memory_read_data)
     );
 
     ExceptionDetector exception_detector (
@@ -432,6 +371,162 @@ module RV32I46F5SPMMIO #(
 
         .trapped(trapped),
         .trap_status(trap_status)
+    );
+
+    ForwardUnit forward_unit (
+        .hazard_mem(hazard_mem),
+        .hazard_wb(hazard_wb),
+        .MEM_imm(MEM_imm),
+        .MEM_alu_result(MEM_alu_result),
+        .MEM_csr_read_data(MEM_csr_read_data),
+        .byte_enable_logic_register_file_write_data(byte_enable_logic_register_file_write_data),
+        .MEM_pc_plus_4(MEM_pc_plus_4),
+        .MEM_opcode(MEM_opcode),
+        .WB_opcode(WB_opcode),
+        .WB_imm(WB_imm),
+        .WB_alu_result(WB_alu_result),
+        .WB_csr_read_data(WB_csr_read_data),
+        .WB_byte_enable_logic_register_file_write_data(WB_byte_enable_logic_register_file_write_data),
+        .WB_pc_plus_4(WB_pc_plus_4),
+        .alu_forward_source_data_a(alu_forward_source_data_a),
+        .alu_forward_source_data_b(alu_forward_source_data_b),
+        .alu_forward_source_select_a(alu_forward_source_select_a),
+        .alu_forward_source_select_b(alu_forward_source_select_b),
+
+        .store_forward_data(store_forward_data),
+        .store_forward_enable(store_forward_enable),
+
+        .csr_hazard_mem(csr_hazard_mem),
+        .csr_hazard_wb(csr_hazard_wb),
+        .MEM_csr_write_data(MEM_alu_result),
+        .WB_csr_write_data(WB_alu_result),
+        .store_hazard_mem(store_hazard_mem),
+        .store_hazard_wb(store_hazard_wb),
+        .csr_read_data(csr_read_out),
+
+        .csr_forward_data(csr_forward_data)
+    );
+
+    HazardUnit hazard_unit (
+        .clk(clk),
+        .reset(reset),
+        .trap_done(trap_done),
+        .standby_mode(standby_mode),
+        .trap_status(trap_status),
+        .misaligned_instruction_flush(misaligned_instruction_flush),
+        .misaligned_memory_flush(misaligned_memory_flush),
+        .pth_done_flush(pth_done_flush),
+        .csr_ready(csr_ready),
+        .ID_rs1(rs1),
+        .ID_rs2(rs2),
+        .ID_raw_imm(raw_imm[11:0]),
+        .EX_csr_write_enable(EX_csr_write_enable),
+        .MEM_rd(MEM_rd),
+        .MEM_register_write_enable(MEM_register_write_enable),
+        .MEM_csr_write_enable(MEM_csr_write_enable),
+        .MEM_csr_write_address(MEM_raw_imm[11:0]),
+        .WB_rd(WB_rd),
+        .WB_register_write_enable(WB_register_write_enable),
+        .WB_csr_write_enable(WB_csr_write_enable),
+        .WB_csr_write_address(WB_raw_imm[11:0]),
+        .EX_rs1(EX_rs1),
+        .EX_rs2(EX_rs2),
+        .EX_rd(EX_rd),
+        .EX_opcode(EX_opcode),
+        .EX_imm(EX_raw_imm[11:0]),
+        .branch_prediction_miss(branch_prediction_miss),
+        .EX_jump(EX_jump),
+
+        .hazard_mem(hazard_mem),
+        .hazard_wb(hazard_wb),
+        .csr_hazard_mem(csr_hazard_mem),
+        .csr_hazard_wb(csr_hazard_wb),
+        //.csr_reg_hazard(csr_reg_hazard),
+        .store_hazard_mem(store_hazard_mem),
+        .store_hazard_wb(store_hazard_wb),
+
+        .IF_ID_flush(IF_ID_flush),
+        .ID_EX_flush(ID_EX_flush),
+        .EX_MEM_flush(EX_MEM_flush),
+        .MEM_WB_flush(MEM_WB_flush),
+        .IF_ID_stall(IF_ID_stall),
+        .ID_EX_stall(ID_EX_stall),
+        .EX_MEM_stall(EX_MEM_stall),
+        .MEM_WB_stall(MEM_WB_stall)
+    );
+
+    ImmediateGenerator immediate_generator (
+        .raw_imm(raw_imm),
+        .opcode(opcode),
+        .imm(imm)
+    );
+
+    InstructionDecoder instruction_decoder (
+        .instruction(ID_instruction),
+        .opcode(opcode),
+	    .funct3(funct3),
+	    .funct7(funct7),
+	    .rs1(rs1),
+	    .rs2(rs2),
+	    .rd(rd),
+	    .raw_imm(raw_imm)
+    );
+
+    InstructionMemory instruction_memory (
+        .pc(pc),
+        .instruction(im_instruction)
+    );
+
+    MMIO_Interface mmio_interface (
+        .clk(clk),
+        .reset(reset),
+        .data_memory_write_data(data_memory_write_data),
+        .data_memory_address(MEM_alu_result),
+        .data_memory_write_enable(MEM_memory_write),
+        .UART_busy(UART_busy),
+
+        .mmio_uart_tx_data(mmio_uart_tx_data),
+        .mmio_uart_status(mmio_uart_status),
+        .mmio_uart_tx_start(mmio_uart_tx_start),
+        .mmio_uart_status_hit(mmio_uart_status_hit)
+    );
+
+    ProgramCounter program_counter (
+        .clk(clk),
+        .reset(reset),
+        .next_pc(next_pc),
+        .pc(pc)
+    );
+
+    PCPlus4 pc_plus_4 (
+        .pc(pc),
+        .pc_plus_4(pc_plus_4_signal)
+    );
+
+    PCController pc_controller (
+        .jump(EX_jump),
+        .branch_estimation(branch_estimation),
+        .branch_prediction_miss(branch_prediction_miss),
+        .trapped(trapped),
+	    .pc(pc),
+        .jump_target(alu_result),
+        .branch_target(branch_target),
+        .branch_target_actual(branch_target_actual),
+	    .trap_target(trap_target),
+        .pc_stall(pc_stall),
+	    .next_pc(next_pc)
+    );
+
+    RegisterFile register_file (
+        .clk(clk),
+        .read_reg1(rs1),
+        .read_reg2(rs2),
+        .write_reg(WB_rd),
+        .write_data(register_file_write_data),
+        .write_enable(WB_register_write_enable),
+	
+        .read_data1(read_data1),
+        .read_data2(read_data2)
     );
 
     TrapController #(.XLEN(XLEN))trap_controller (
@@ -625,101 +720,6 @@ module RV32I46F5SPMMIO #(
         .WB_raw_imm(WB_raw_imm),
         .WB_opcode(WB_opcode),
         .WB_byte_enable_logic_register_file_write_data(WB_byte_enable_logic_register_file_write_data)
-    );
-
-    HazardUnit hazard_unit (
-        .clk(clk),
-        .reset(reset),
-        .trap_done(trap_done),
-        .standby_mode(standby_mode),
-        .trap_status(trap_status),
-        .misaligned_instruction_flush(misaligned_instruction_flush),
-        .misaligned_memory_flush(misaligned_memory_flush),
-        .pth_done_flush(pth_done_flush),
-        .csr_ready(csr_ready),
-        .ID_rs1(rs1),
-        .ID_rs2(rs2),
-        .ID_raw_imm(raw_imm[11:0]),
-        .EX_csr_write_enable(EX_csr_write_enable),
-        .MEM_rd(MEM_rd),
-        .MEM_register_write_enable(MEM_register_write_enable),
-        .MEM_csr_write_enable(MEM_csr_write_enable),
-        .MEM_csr_write_address(MEM_raw_imm[11:0]),
-        .WB_rd(WB_rd),
-        .WB_register_write_enable(WB_register_write_enable),
-        .WB_csr_write_enable(WB_csr_write_enable),
-        .WB_csr_write_address(WB_raw_imm[11:0]),
-        .EX_rs1(EX_rs1),
-        .EX_rs2(EX_rs2),
-        .EX_rd(EX_rd),
-        .EX_opcode(EX_opcode),
-        .EX_imm(EX_raw_imm[11:0]),
-        .branch_prediction_miss(branch_prediction_miss),
-        .EX_jump(EX_jump),
-
-        .hazard_mem(hazard_mem),
-        .hazard_wb(hazard_wb),
-        .csr_hazard_mem(csr_hazard_mem),
-        .csr_hazard_wb(csr_hazard_wb),
-        //.csr_reg_hazard(csr_reg_hazard),
-        .store_hazard_mem(store_hazard_mem),
-        .store_hazard_wb(store_hazard_wb),
-
-        .IF_ID_flush(IF_ID_flush),
-        .ID_EX_flush(ID_EX_flush),
-        .EX_MEM_flush(EX_MEM_flush),
-        .MEM_WB_flush(MEM_WB_flush),
-        .IF_ID_stall(IF_ID_stall),
-        .ID_EX_stall(ID_EX_stall),
-        .EX_MEM_stall(EX_MEM_stall),
-        .MEM_WB_stall(MEM_WB_stall)
-    );
-
-    ForwardUnit forward_unit (
-        .hazard_mem(hazard_mem),
-        .hazard_wb(hazard_wb),
-        .MEM_imm(MEM_imm),
-        .MEM_alu_result(MEM_alu_result),
-        .MEM_csr_read_data(MEM_csr_read_data),
-        .byte_enable_logic_register_file_write_data(byte_enable_logic_register_file_write_data),
-        .MEM_pc_plus_4(MEM_pc_plus_4),
-        .MEM_opcode(MEM_opcode),
-        .WB_opcode(WB_opcode),
-        .WB_imm(WB_imm),
-        .WB_alu_result(WB_alu_result),
-        .WB_csr_read_data(WB_csr_read_data),
-        .WB_byte_enable_logic_register_file_write_data(WB_byte_enable_logic_register_file_write_data),
-        .WB_pc_plus_4(WB_pc_plus_4),
-        .alu_forward_source_data_a(alu_forward_source_data_a),
-        .alu_forward_source_data_b(alu_forward_source_data_b),
-        .alu_forward_source_select_a(alu_forward_source_select_a),
-        .alu_forward_source_select_b(alu_forward_source_select_b),
-
-        .store_forward_data(store_forward_data),
-        .store_forward_enable(store_forward_enable),
-
-        .csr_hazard_mem(csr_hazard_mem),
-        .csr_hazard_wb(csr_hazard_wb),
-        .MEM_csr_write_data(MEM_alu_result),
-        .WB_csr_write_data(WB_alu_result),
-        .store_hazard_mem(store_hazard_mem),
-        .store_hazard_wb(store_hazard_wb),
-        .csr_read_data(csr_read_out),
-
-        .csr_forward_data(csr_forward_data)
-    );
-
-    BranchPredictor #(.XLEN(XLEN)) branch_predictor(
-        .clk(clk),
-        .reset(reset),
-        .IF_opcode(IF_opcode),
-        .IF_pc (pc),
-        .IF_imm (IF_imm),
-        .EX_branch(EX_branch),
-        .EX_branch_taken (branch_taken),
-
-        .branch_estimation (branch_estimation),
-        .branch_target (branch_target)
     );
 
     always @(posedge clk or posedge reset) begin
