@@ -8,12 +8,16 @@
 
 module InstructionMemory (
     input [31:0] pc,
-    output reg [31:0] instruction
+    output reg [31:0] instruction,
+
+	input [31:0] rom_address,
+	output reg [31:0] rom_read_data
 );
 
-	reg [31:0] data [0:2047];
+	reg [31:0] data [0:2047];	// in FPGA, 16384.
 	
 	initial begin
+		// $readmemh("./dhrystone.mem", data);
 		// ──────────────────────────────────────────────
 		// I-타입 ALU 명령어 (9개)
 		// {imm[11:0], rs1, funct3, rd, OPCODE_ITYPE}
@@ -215,4 +219,12 @@ module InstructionMemory (
 		instruction = data[pc[31:2]];
 	end
 
+	wire rom_access = (rom_address[31:16] == 16'h0000);
+	always @(*) begin
+		if (rom_access) begin
+			rom_read_data = data[rom_address[15:2]];
+		end else begin
+			rom_read_data = 32'b0;
+		end
+	end
 endmodule
