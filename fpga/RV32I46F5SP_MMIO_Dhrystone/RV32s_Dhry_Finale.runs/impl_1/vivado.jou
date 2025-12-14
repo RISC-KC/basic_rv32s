@@ -1,0 +1,24 @@
+#-----------------------------------------------------------
+# Vivado v2025.2 (64-bit)
+# SW Build 6299465 on Fri Nov 14 19:35:11 GMT 2025
+# IP Build 6300035 on Fri Nov 14 10:48:45 MST 2025
+# SharedData Build 6298862 on Thu Nov 13 04:50:51 MST 2025
+# Start of session at: Sun Dec 14 20:23:44 2025
+# Process ID         : 36184
+# Current directory  : C:/Users/HyunWoo/Desktop/KHWL2025/RV32s_Dhry_Finale/RV32s_Dhry_Finale.runs/impl_1
+# Command line       : vivado.exe -log RV32I46F5SPMMIOSoCTOP.vdi -applog -product Vivado -messageDb vivado.pb -mode batch -source RV32I46F5SPMMIOSoCTOP.tcl -notrace
+# Log file           : C:/Users/HyunWoo/Desktop/KHWL2025/RV32s_Dhry_Finale/RV32s_Dhry_Finale.runs/impl_1/RV32I46F5SPMMIOSoCTOP.vdi
+# Journal file       : C:/Users/HyunWoo/Desktop/KHWL2025/RV32s_Dhry_Finale/RV32s_Dhry_Finale.runs/impl_1\vivado.jou
+# Running On         : DESKTOP-CLDIC98
+# Platform           : Windows Server 2016 or Windows 10
+# Operating System   : 19045
+# Processor Detail   : AMD Ryzen 7 5800X 8-Core Processor             
+# CPU Frequency      : 3800 MHz
+# CPU Physical cores : 8
+# CPU Logical cores  : 8
+# Host memory        : 17067 MB
+# Swap memory        : 51539 MB
+# Total Virtual      : 68607 MB
+# Available Virtual  : 32241 MB
+#-----------------------------------------------------------
+source RV32I46F5SPMMIOSoCTOP.tcl -notrace
