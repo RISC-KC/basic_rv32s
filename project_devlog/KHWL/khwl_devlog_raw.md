@@ -6926,3 +6926,63 @@ riscv32-unknown-elf-gcc -v
 끝.
 이제 어떤 파일이든 RV32I에 맞게 컴파일할 수 있다. 
 
+# [2025.12.14.]
+## Dhrystone 2.1 CPU에 맞게 빌드하기
+
+먼저 프로그램이 컴파일되기 위해 필요한 몇 가지 요소를 돌아볼 필요가 있다. 
+바로 BSP; Board Support Package 파일들이다.
+1. 링커 스크립트 (Linker Script)
+2. 스타트업 코드 (Startup Code)
+3. 시스템 콜 스텁 (System Call Stub)
+이 세 가지 필수 파일 외에 이번에 필요한 것은 하나 더 있다.
+4. UART 드라이버
+0. Makefile
+
+각각은 다음과 같은 파일들로 만들었다.
+
+linker.ld
+crt0.s
+syscall.c
+
+UART드라이버는 syscall에 포함했다.
+
+1. linker.ld
+링커에는 프로그램의 주소영역을 지정(링크)하는 코드가 부여되어있다.
+메모리 영역 ROM RAM을 정의하고
+섹션 .text, .rodata, .data, .bss 을 배치하고
+스택/힙의 심볼을 정의한다. (__stack_top, __heap_start 등)
+이를 위해 프로세서의 주소영역(시작주소, 크기)을 알아야한다.
+
+- IMEM(ROM) : 0x0000_0000, 64KB (0:16383)
+- DMEM(RAM) : 0x1000_0000, 32KB (0:8191)
+
+- UART_TX : 0x1001_0000
+- UART_STATUS_ADDRESS : 0x1001_0004
+
+2. crt0.s 
+프로그램을 시작하기 위한 초기화 코드들로 구성되어있다.
+_start 엔트리포인트, sp(stack pointer) 초기화, .bss섹션 0초기화, .data 섹션 ROM->RAM 복사, main()함수 호출 등.
+
+3. syscalls.c
+newlib이 요구하는 시스템콜을 제공해야한다.
+
+_write()   // printf → UART 출력
+_sbrk()    // malloc 힙 관리
+_exit()    // 프로그램 종료
+_close(), _fstat(), _isatty(), _lseek()
+
+등등.
+
+성능 측정을 위한 CSR로 mcycle이 구현되어있으며, 50Mhz의 동작속도를 가진다. 
+여기서부터 Dhrystone 구동을 위한 자세한 내용은 https://github.com/T410N/dhrystone-rv32i-baremetal 을 참조하라.
+결과적으로 300,000 iteration에서 97087 Dhrystones per Second를 얻었다.
+원래 2000 iteration이 아니었나? 놀랍게도 이번에 시도한 내용은, "원본 Dhrystone을 수정 없이" 정식 구현하는 것이었는데, 
+참조한 SiFive의 Dhrystone 원본이 2초 미만의 벤치마킹은 유의미한 결과가 아니라 판단하여 결과를 출력하지 않는다.
+때문에 300,000 iteration으로 먼저 측정을 했고, 에러가 뜨는 조건인 (2*HZ)구문을 0으로 해서 2000 iteration도 측정했다.
+2,000 iteration에서는 97273 Dhrystones per Secnod가 나왔다. 
+300,000 반복이 더 정확하니 이를 기준으로 성능을 계산하면, 1DMIPS = 1,757 DPS 기준, 
+DMIPS = 55.26 DMIPS, 50MHz에서는
+1.105 DMIPS/MHz가 나온다.
+기존에 간이로 측정한것 1.09 DMIPS /MHz와 얼추 비슷하게 나오는 걸로 보아서는 유효한 결과로 여겨진다.
+minstret으로 정확한 명령어 수행 갯수도 기회가 되면 모니터링해볼 예정.
+오늘은 여기까지.
