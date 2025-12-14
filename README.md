@@ -481,6 +481,10 @@ For each module's logic description, go to `documents/modules_and_signals/` for 
 
 </details>
 
+### Dhrystone 2.1 Bare-Metal Implementation
+Checkout the following repository to see how we implemented Dhrystone 2.1 on our bare-metal RV32I RISC-V Processor.  
+[Dhrystone 2.1 for RISC-V RV32I bare-metal](https://github.com/T410N/dhrystone-rv32i-baremetal)
+
 <img width="611" height="1030" alt="Dhrystone_300k_RV32I" src="https://github.com/user-attachments/assets/54c75634-5411-4f15-8b9b-e56513732230" />  
 
 <sup> 46F5SP_MMIO_SoC with RV32I46F_5SP core implemented on Digilent Nexys Video FPGA board executed 300,000 iteration of Dhrystone 2.1 </sup>  
