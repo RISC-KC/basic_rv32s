@@ -6658,3 +6658,331 @@ MEM 단계에서 combinatorial로 인식하고, uart_hit이면 MUX 의 선택을
 그럼 메모리가 읽기인지를 알아야겠는데, 굳이 MemRead 신호는 필요 없나? 어차피 memory 명령어가 아닌 이상 이 값이 나온다 해도 WB이 안될테니까 상관 없을거고, Data Memory.v 가 write_enable만 있는 것 처럼 그대로 하면 되나? 그러면 그냥 언제나 hit이기만 하면 status 내보내는거고 다만 write_enable에 주솟값이 data면 그대로 data 내보내지는거고. 
 그럼 일단 출력 신호에 UART_tx_busy를 추가해서 MEM/WB 레지스터에 DM_RD로 주는 것으로 한다.
 그리고 출력 신호에 그 MUX를 제어할 UART_status_hit 신호를 추가했다. 
+
+# [2025.11.27.]
+디버깅은 지옥이다.
+MMIO Interface를 TOP module에 적용하고 디버깅을 진행중이다.
+Instruction Memory에 0x10010000 주소에 저장하는 명령어로 분기하고 0xABADBEBE 라는 값을 최종 UART data 값으로 출력하는 시나리오를 짰는데
+명령어 인코딩하는데만 한 세월 걸린 것 같다. 
+진짜는 지금부터인데, 왜인지 모르게 쓰여져야하는 값들이 모두 제대로 전달은 되는데 주솟값이 이상하다.
+MEM 단계에서 MMIO_Interface가 주소를 보고 판단하는건데, 주소값이 0x10010000으로 x29 레지스터에 잘 되어있는 값이어야 한다.
+근데 거기에 '데이터'로 쓰여져야할 41(A)가 EX단계에서 ALU를 통해 덧셈이 되어 0x10010041이 최종 주솟값이 되어 전달되었다.
+이게 뭐지.
+SB를 했는데, 타깃 주솟값에 데이터값이 쓰여져버린 상황. 어딘가 뭔가 잘못됐다. ALU에서 덧셈이 이루어진것을 파형을 보고 확인했다.
+아마 ALU쪽이나 그쪽 MUX 컨트롤링에서 문제가 있을 듯.
+UART_busy 상황에 따른 별도의 테스팅 시나리오도 만들어봐야한다. 할게 꽤 많네. 이러다가 정작 printf로 putchar 방식으로 만들었을때 안되면 어떡하지
+크아아악 그래도 해보는 수 밖에. 화이팅
+
+# [2025.11.28.]
+문제를 파악했다. 
+현재 문제가 되는 명령어 시나리오는 다음과 같다. 
+data[51] = {1'b0, 10'b0000000110, 1'b0, 8'b0, 5'd0, `OPCODE_JAL};		// JAL x0, +12: data[54]로 분기
+// ──────────────────────────────────────────────
+		// UART MMIO 테스트: 0x10010000에 "ABADBEBE" 출력
+		data[54] = {20'h10010, 5'd29, `OPCODE_LUI};								// LUI: x29 = 0x10010000 (UART TX Data 주소)
+		data[55] = {12'h041, 5'd0, `ITYPE_ADDI, 5'd31, `OPCODE_ITYPE};			// ADDI: x31 = 'A' (0x41)
+		data[56] = {7'd0, 5'd31, 5'd29, `STORE_SB, 5'd0, `OPCODE_STORE};		// SB: mem[x29+0] = 'A'
+
+먼저, LUI로 x29에 0x100100을 로드해서 0x10010000이란 값을 x29 레지스터에 적재한다.
+ADDI로 x31에 ASCII 코드로 'A'를 뜻하는 0x41값을 적재하고
+다음으로 SB 명령어로 x29 즉 0x10010000 주소에 앞서 x31에 적재했던 0x41이란 값을 저장하는 명령어 흐름이다.
+이 경우 EX단계에 있는 SB 명령어에서는 주솟값을 계산하기 위해 x31값과 x29값이 필요한데, 이는 아직 WB이 되지 않은 값을 SB가 갖고온 것이므로 데이터 포워딩이 필요하게 된다.
+R[rs1] 값으로 WB단계에 있는 R[x29] 즉 0x10010000을 포워딩하여 ALU의 srcA로 입력시켜야하고 (이는 로직에서 제대로 동작했다.)
+저장할 데이터인 R[rs2] 값을 MEM단계에서 R[x31] 즉 0x41을 EX_MEM_Register의 EX_read_data2로 입력시켜야한다. (이러한 파이프라인 레지스터로의 포워딩은 로직구현이 되어있지 않다. 탑모듈과 Forwarding Unit 참조.)
+
+여기서 발생한 문제를 나열하겠다.
+원래대로라면, EX 단계에서 의도대로라면 주솟값 연산식인 M[R[rs1] + imm] 을 ALU에서 처리해야한다.
+SB명령어의 인코딩이 imm값은 0이기에 0x10010000 + 0 이되어 ALU에서는 R[rs1] 값과 imm 값 x29값과 0값을 더해서 최종 0x10010000값을 ALUresult로 출력해 다음 사이클에 MEM 단계에서 주소로 사용되어야한다.
+하지만 문제가 발생했다. EX단계의 ALU에서 0x10010000 + 0x41을 해버려 메모리의 주솟값이 0x10010041로 ALUresult가 출력되어버린 것이다.
+
+포워딩이 WB과 MEM 모두에서 되어야한다는 것을 적절히 인지했고, WB단계는 적합하게 포워딩을 srcA 값으로 ALU에게 잘 전달했지만 MEM 단계의 값을 파이프라인 레지스터로 포워딩하는 로직 없이
+오로지 MEM 단계 포워딩시 ALU로 하는 로직만 구현해놓았기 때문에 0x41값을 ALU srcB로 포워딩해버려 잘못된 연산을 진행해 생긴 문제로 판단된다. 
+
+수정해야할 것은 Forwarding Unit의 MEM stage의 MEM_alu_result를 EX_MEM_Register의 EX_read_data2신호로 입력하는 로직을 추가해야하는 것과, Store에 있어서 Forward Unit의 ALU로만 구성된 로직을 변경하는 것이다.
+
+# [2025.11.29.]
+문제 해결됨. Hazard Unit과 Forwarding Unit에서 Store 동작 전용으로 포워딩에 대한 로직을 추가했다. 
+Hazard Unit에서 Hazard를 감지하며 새로이 store_hazard_mem store_hazard_wb이 두 신호를 출력하게 되었다. 
+EX단계의 OPCODE가 STORE; S-Type일 때 MEM나 WB단계에서 RS2 hazard가 발생했는지 확인하고 발생했다면 각각 store_hazard 신호를 출력하는 방식이다.
+Forward Unit은 이것을 받고 store_forward_enable과 store_forward_data를 출력한다. 
+enable 신호는 store_hazard가 발생하면 1로 출력되고, data 신호는 mem의 store hazard일 때 MEM_forward_data_value를 출력, WB일 땐 WB를 출력한다. 아니면 0을 출력. 
+여기서 store_forward_enable 신호는 MUX를 컨트롤하는 신호로 사용되는데, 참일 경우 store_forward_data를 EX_read_data2로 출력하고,
+거짓일 경우 EX_read_data2를 기존과 동일하게 EX_MEM_Register로 전달한다. 해당 MUX는 EX_read_data2_MUX라는 신호로 선언되어있다. 
+이렇게 하여, 위에서 언급되었던 Store의 경우 ALU에서 포워딩로직으로 RS2값을 포워딩시켰던 이슈를 해결하여 본래 명령어 ISA 정의대로 srcB의 포워딩이 이뤄지지 않고 그대로 해당 명령어에 인코딩된 확장된 imm값이 srcB로 기입되어 정상동작하게 된다. 
+
+# [2025.11.30.]
+MMIO-UART-Interface를 테스트할 코드를 Instruction Memory에 구현했다. 
+우선 Polling 방식으로 구현한다. Dhrystone에서는 벤치 중간에 printf가 쓰이지 않는다. 따라서 성능측정과는 무관하기에 이런 방식을 따랐다.
+기존에 단순히 MMIO Interface의 TOP모듈 동작을 확인하기 위해서 UART_busy를 항상 0으로 했을 때 제대로 잘 쓰이고 UART_TX_DATA로 출력하는 것을 확인하였다. 
+하지만 완료가 아니다. 문제가 생겼다.
+Polling 방식으로인해 printf 함수가 소프트웨어단에서 체크를 한다고 한들 그 또한 RISC-V 명령어로서 파이프라인안에서 동작한다.
+지금 TOP 모듈 테스트벤치에서도 실제와 비슷하도록 0x1001 주소에 쓰기가 발생하면 즉시 busy를 1로 올리도록 했더니 문제가 발생한다.
+CPU가 기존이라면 LW x30, 0(x28) / BNE x30, x0, -8로서 앞서 0x1001_0004에 UART_busy신호를 LW를 통해 x30에 적재하고,
+BNE를 통해서 busy가 1이라면 다시 ADDI x31 = 0x41 (A) 로 전전 명령어로 돌아가 출력값을 다시 준비해서 다시 UART로 보낼 준비를 해야한다.
+하지만 현재, 그러질 못하고 그냥 UART_busy면 해당 타이밍에 쓰여져야할 내용들이 씹힌다. 
+데이터메모리로의 저장은 잘 되는데, UART로 출력이 MMIO_Interface에서 해주질 못하는 것. 
+왜일까.
+브랜치 판단을 위한 포워딩이 필요한건가?
+정답. 
+어쩔 수 없이 최선의 방도라 생각을 하고 5개의 명령어로 이루어진 UART 테스팅 시나리오의 명령어들을 수기로 적고 dependency 를 검토해봤다.
+현재 코드는 다음과 같다.
+LUI x29, 0x10010  // x29 = 0x1001_0000
+ADDI x28, x29, 4  // x28 = 0x1001_0004 (UART status address)
+ADDI x31, 65      // x31 = 0x41 (A)
+LW x30, 0(x28)    // x30 = 0x1001_0004 (Load UART status to x30)
+BNE x30, x0, -8   // if (x30 ≠ 0), nextPC = PC - 8 (Returns to ADDI x31 code; which implements polling logic of UART)
+SB x31, 0(x29)    // M[R[x29] + 0] = 0x41 (A) Stores "A" to UART MMIO to output.
+
+발견된 dependency는 총 5건.
+
+|SB(x31)|BNE|LW|ADDI(x31)|ADDI(x28)|LUI(x29)|
+|:---:|:---:|:---:|:---:|:---:|:---:|
+|ID|EX|MEM|WB|RT|RT(ReTire)|
+||ID|EX|MEM|WB|RT|
+|||ID|EX|MEM|WB|
+||||ID|EX|MEM|
+
+|선행명령어 - 후행명령어|해저드 종류|처리|
+|:---|:---:|:---:|
+|1. LUI x29 - ADDI x28, x29, 4|EX-MEM ALU Hazard rs1|Forwarded (ALU)|
+|2. LUI x29 - SB x31, 0(x29)|ID-RT Store Hazard rs1|Retired.|
+|3. ADDI x28 - LW x30, 0(x28)|ID-MEM ALU Hazard rs1|Forwarded (ALU)|
+|4. ADDI x31 - SB x31|ID-WB Store Hazard rs1|Forwarded(Data Memory)|
+|5. LW x30 - BNE x30|EX-MEM ALU Hazard rs1|error|
+
+실제로 Forward Unit에도 case(MEM_opcode)에 `OPCODE_BRANCH가 없는 것을 확인했고, Hazard Unit에서도 관련 로직이 없는 것을 확인했다. 
+이걸 더하면 해결될 것 같다. 
+
+흠... 파형을 관찰하면서 Branch가 현재 어떻게 처리되는지를 보고 있는데... 애초에 Branch 명령어가 EX단계로 가지도 못하는 것을 확인했다. 
+그 직전에 lw, addi, bne인데
+lw와 addi가 load_hazard를 일으켜서 ID_EX_Register가 flush한번 된다. 이 때 BNE 명령어가 소실되는데...
+이 때 PC_Stall을 한 사이클 걸어주는 것이 해결방안이 될 것 같다. 한번 해보자. 
+
+# [2025.12.01.]
+pc_stall에 조건문으로 load_hazard를 추가했다가 제대로 동작하지 않아서 어차피 IF_ID_Stall이 일어나면 PC도 IF stage라 stall되는 것이 맞으니
+Hazard Unit의 IF_ID_Stall 신호를 Control Unit에 연결해서 pc_stall 신호의 조건에 편입시켰다. 
+정상동작했고, 이제 EX단계로 branch BNE 명령어가 제대로 들어가서 분기 비교를 수행한다. 
+그런데도 문제가 발생했다. 
+1. 무한루프
+첫번째로는 무한 루프였는데, 외부의 UART_busy 신호에 종속적으로 0x1001_0004 값이 적재되어야하는 반면에 
+계속 busy로 인식되어 BNE가 taken으로 loop을 만들었다.
+이는 Instruction Memory에서 ANDI x30, x30, 1로 busy_bit을 마스킹하기 위한 코드가 발현시킨 문제라 판단하여 이 코드를 지우고 다시 실행시켰다.
+어차피 x30에 UART_busy가 1인지 0인지 제대로 적재가 되어있을 것이기 때문에 상관 없다고 생각했다.
+
+2. polling이 어긋남
+UART_busy 상황에서 원래 bne를 통해 직전 lw로 busy인것을 확인해서 다시 또 폴링하는 명령어로 되돌아가야하는데, 그러지 않는다. 
+data_memory_write_data로는 정상적으로 쓰여지지만 mmio_uart_tx_data로는 출력되지 않는 상황.
+애초에 명령어 진행이 잘못되고 있는 것이다. 
+load_hazard 로 인한 pc와 파이프라인들의 stall들. 
+문제점은 load hazard가 발생한 load 명령어가 검출 로직은 EX에서 작동하는데 ID_EX_Flush때문에 해당 명령어의 context를 없애버리는 로직을 취하고 있었다. 
+즉 load 명령어가 갑자기 사라져버려서 bne를 위한 연산값이 업데이트가 안돼 그냥 무시하고 지나가버리게 된 것
+이러면 그냥 표면적으로 load 명령어가 dependency 문제 생기면 stall밖에 더 안하는 게 되는데, 애초에 그럼 이 로직이 필요한가 싶어 없앴다.
+와. 정상 동작한다. 
+하지만 그래도 load명령어의 rd값이 rs값으로 쓰이는 data Hazard에 대해서 대비를 안할 수는 없는 법이다.
+근데 이건 애초에 MEM과 WB의 포워딩으로 해결이 되는 부분 아닌가?
+EX단계에 있는 lw 명령어, ID 단계에 있는 ADDI 명령어가 있다고 하자.
+ADDI 명령어는 결국 EX단계가 되어서야 포워딩이 필요하다. 그 때 lw는 이미 MEM 단계이고, 이에 대한 포워딩 로직은 이미 구현이 되어있다. 
+Forward Unit에서도 `OPCODE_LOAD를 별개로 case (MEM_opcode)를 통해 운용하고 있다. 
+아무래도 Hazard Unit을 처음 설계하면서 개념을 이해하는 과정에 잘못 구상한 레거시코드 같다. 삭제했다.
+이제 FPGA에 구현해서 확인해봐야겠다. 
+
+# [2025.12.09.]
+그간 있던 내용들을 모두 GitHub에 PR올려 merge했고, Vivado에 코어모듈만 따로 올려서 시뮬레이션이 정상적으로 수행됨을 확인하였다. 
+이제 FPGA에 올리기 위한 SoC를 설계하기 위해 46F5SP_MMIO_SoC를 새롭게 만들고 있는데, 약간의 문제가 생겼다.
+명분상, MMIO_Interface는 CPU안에 있을 것이 아니라 SoC에 있어야 타당하다. 여기서에서 비롯된 현재 SoC의 구상도를 설명해보겠다. 
+
+46F5SP_MMIO_SoC
+[구성]
+- RV32I46F_5SP_MMIO.v
+  - CPU 코어 모듈
+
+- MMIO_Interface.v
+  - MMIO 인터페이스, CPU와 입출력하며 상호작용한다.
+    - CPU에서 입력: MEM_alu_result, MEM_memory_write, data_memory_write_data
+    - CPU로 출력: UART_busy, mmio_uart_status_hit, mmio_uart_status
+
+- UART_TX.v
+  - FPGA 보드의 UART포트로 출력하는 모듈. UART_Controller와 상호작용하여 값을 '출력'한다.
+
+- UART_Controller.v
+  - 기존에 있던 Debug_UART_Controller의 확장버전.
+  Button_Debouncer와 MMIO_Interface, 그리고 UART_Controller내부에 있는 UART 출력 로직에서 입력을 받는다. 
+  이후 조건에 따라 UART로 출력할 데이터를 UART_TX로 보낸다.
+  내부에는 16진수 HEX 데이터를 ASCII코드로 바꾸는 기능을 포함하고 있으며, 데이터는 입력받은 신호를 사용한다.
+  
+- Button_Debouncer.v
+  - 입력받은 버튼 입력의 디바운싱을 거쳐 트리거를 형성해 출력한다.
+
+해당 모듈들을 개발해보려고 했는데, 내가 원한 시나리오는 이랬다. 
+
+1. FPGA 보드에 별도로 있는 Reset 버튼을 눌러 초기화한다. (CPU는 reset되고 대기모드)
+2. 중앙 버튼을 눌러 CPU에게 버튼이 눌러졌음을 알리고 CPU가 Dhrystone을 수행한다.
+3. 이후 벤치마크가 끝나며 결과를 UART로 출력한다. (우리가 수정한 printf)
+4. 이후 down 버튼을 눌러 마지막으로 수행된 명령어의 값을 출력할 수 있다.
+
+근데 이러한 로직을 구현하기 위해서는 clk_enable 신호 (기존에 사용하던 fpga용 로직)을 활용하는 것이 현재로서는 가장 단순하다.
+그리고 Dhrystone의 정식 구동을 같은 조건에서 하여 성능의 신뢰성을 확인한다는 취지에도 이러한 변수는 그대로 따라주는 편이 좋기도 하다.
+헌데 그렇다고 현재 module들에 clk_enable을 모두 주어야하는가? 는 잘 모르겠다. 
+물론 할 수도 있다. 하지만 실제로 clk_enable과 button input들로 갖고 노는 것은 `fpga/` 에서 하는 것이 바람직 하고,
+`module/`에 있는 모듈들로는 시뮬레이션으로서 코드를 이해하고 검증하는데 초점이 맞춰져있으니 clk_enable은 `module/`에서 조절이 가능한 요소가 아니므로 fpga/ 즉 입출력이 가능한 곳에 두는 것이 맞다.
+
+1. CPU가 아님. 다른 모듈들 FPGA에서 굴리기 위해 합치는 TOP 모듈임. CPU를 만들고 해당 '모듈'들을 두는 본래 취지에 살짝 어긋남
+2. 1번을 떠올린 이유 : FPGA에 구현했던거랑 지금 module/ 안에 있는 SoC 구조/CPU랑 너무 다름. FPGA에서 돌리기 위해서 코어의 외부 신호들을 만드는 로직이라던가 바리에이션이라 부를 정도로 '기본형' 과는 많이 어긋남. 이걸 module에서 다 따라잡으려면 코어 바리에이션만 지금 이미 RV32I46F_5SP가 있는데 FPGA용으로 하나 더 생기게 됨. 
+3. 2번에서 마지막이 의아할텐데, 지금 module의 모든 모듈, 코어들은 전부 FPGA를 위한 설계가 아니라 시뮬용 소프트코어에 가까움. 그게 실제로 동작하는 FPGA 소프트코어는 fpga/ 에서 다뤄야함. 근데 어떤 이유에선지 내가 46F5SP_SoC랑 다른 SoC 모듈들을 module에 처넣는 실수를 범함. 
+
+4. 그러니까 module에서 SoC용 모듈들 지우고 어차피 탑모듈 수정은 여기까지가 끝이니까 (MMIO 내부 구현 및 MMIO 구현) fpga/에서 마저 계속하겠다는 뜻.
+
+3줄 요약
+
+1. FPGA랑 module 달라도 너무 다름. 지금부턴 fpga/에서 놀겠음.
+2. 일단 module에서 할 건 다 했음 (MMIO, MMIOCPU 구현)
+3. 일관성을 위해 module/ 에 있는 46F5SP_SoC, Button_Controller, Debug_UART_Controller 같은 애들을 모두 삭제하겠음. (fpga/에 있기도 하고 스펙은 docs에 있음.)
+
+# [2025.l2.13.]
+밀린 devlog를 쓰도록 하겠다.
+
+전체적으로 Dhrystone의 printf 출력을 위해서 dhrystone 파일들을 우리 CPU에 맞게 포팅하는 내용들이었는데, 
+이는 파일로 확인이 가능하니까 제외.
+Dhrystone을 올리고 돌리면서 두가지 이슈가 발생했고, 모듈들을 점검하며 알아내었다.
+
+1. Byte Enable Logic
+무슨 연유에선지, Load 동작에 치명적인 오류가 있었다. 
+Store의 경우 offset이 따로 지정이 되어있어 
+01, 11 뭐 이런 경우의 수에서 xxxx_xx11, 0000_1111 이런식으로 동작했는데, Load에서는 해당 로직을 빼둔 것이다.
+이게, 처음 만들 당시 Manual과 컴퓨터 구조 및 설계 RISC-V 판, IDEC 강의만을 참조했었는데 아마 강의에서 얼핏 들었던 내용 같다. 하지만 매뉴얼에는 명시되어있지 않은 내용이다. Load Byte LB 명령어를 기준으로 보자.
+LB: R[rd] = {24'bM[](15), M[R[rs1]+imm] (7:0)}
+여기서 메모리의 주소가 되는 R[rs1]+imm을 effective address라고 정의하는데, (매뉴얼기준. 32페이지 다이어그램 바로 아래에 "The effective address is obtained by adding register rs1 to the sign-extended 12-bit offset")
+이걸 EA라고 하면, EA[1:0]이 Load 동작의 offset인 것이다. 
+이 사실을 전제로 로직을 구성하지 않는다면 프로그램이 정상적으로 동작하지 않는다. 
+Load또한 이런 multi-byte operation이 되어야할텐데 관련한 내용이 없어서 설마 싶어 조사를 반복하다 결국 구조를 바꿨다.
+
+2. Branch Logic
+분기예측을 도입할 당시, 실수를 했던 것이 이번 Benchmark를 포팅하며 드러났다.
+분기에 대해서는 4가지의 경우의 수가 존재한다.
+예측 / 실제
+NT / T
+NT / NT
+T / T
+T / NT
+즉, 예측실패시에도 Taken이 있을 수 있는 것인데, 예측 실패시 다음 명령어인 pc+4로만 구현을 해뒀다.
+이를 branch_taken 신호를 기준으로 pc+4를 할지 pc+imm을 할지로 수정했고, 그 결과 성공적으로 포팅한 Dhrystone을 구동할 수 있었다. 
+
+## Dhrystone 결과
+
+2000 iterations, -O2 최적화, 982044 cycle로 50MHz에서 1.16 DMIPS/MHz가 나왔다. 
+헌데 아직도 디버깅중.
+아무래도 Dhrystone을 포팅하고 컴파일하며 생긴 문제 같긴 한데, 문자열이 정상적으로 출력이 안된다.
+printf를 통한 글씨 출력으로 숫자로 표현되는 부분까지, 성능까지 모두 제대로 동작함은 확인이 되었는데,
+Str_Comp: 라던지, Str_1_Loc_local:이라던지... 처음엔 (null)에 빈글씨도 떴다가 지금은 수정을 거듭해서
+제대로 나오긴 하는데 두번째 Str_Comp만 자꾸 2'ND STRING이 아니라 1'ST STRING이 나오는 상태이다.
+삽질을 너무 거듭한 탓에, 처음 순정 파일만을 기준으로 두고 다시 첨부터 포팅을 시작해볼 예정.
+RISC-V RV32I 툴체인 빌드에도 꽤나 많은 시간이 소요됐다. 
+여기에 그 매뉴얼을 적어보겠다. 
+
+## RISC-V RV32I Toolchain install
+
+1. 먼저 클론을 따준다.
+```bash
+cd ~
+git clone https://github.com/riscv-collab/riscv-gnu-toolchain.git
+cd riscv-gnu-toolchain
+```
+
+2. 의존성 패키지들을 설치해준다.
+```bash
+sudo apt-get update
+sudo apt-get install -y \
+  autoconf automake autotools-dev curl python3 python3-pip python3-tomli \
+  libmpc-dev libmpfr-dev libgmp-dev gawk build-essential bison flex \
+  texinfo gperf libtool patchutils bc zlib1g-dev libexpat-dev \
+  ninja-build git cmake libglib2.0-dev libslirp-dev
+```
+3. 여기서부터가 중요하다. 현재 있는 툴체인 폴더에서, configure를 진행해준다.
+```bash
+cd ~/riscv-gnu-toolchain
+./configure --preifx=$HOME/riscv32i-elf --target=riscv32-unknown-elf --with-arch=rv32i --with-abi=ilp32
+```
+여기서 riscv32i-elf는 툴체인이 빌드 될 디렉토리다. 원하는 폴더명이나 경로로 바꿔도 좋다.
+매뉴얼에서는(공식 깃헙 페이지) /opt/riscv로 한다.
+
+4. make
+```bash
+make -j$(nproc)
+```
+5. 확인 및 PATH 등록
+```bash
+ls $HOME/riscv32i-elf/bin | grep riscv32-unknown-elf-gcc
+```
+
+```bash
+echo 'export PATH=$HOME/riscv32i-elf/bin:$PATH' >> ~/.bashrc
+source ~/.bashrc
+```
+
+```bash
+riscv32-unknown-elf-gcc -v
+```
+
+끝.
+이제 어떤 파일이든 RV32I에 맞게 컴파일할 수 있다. 
+
+# [2025.12.14.]
+## Dhrystone 2.1 CPU에 맞게 빌드하기
+
+먼저 프로그램이 컴파일되기 위해 필요한 몇 가지 요소를 돌아볼 필요가 있다. 
+바로 BSP; Board Support Package 파일들이다.
+1. 링커 스크립트 (Linker Script)
+2. 스타트업 코드 (Startup Code)
+3. 시스템 콜 스텁 (System Call Stub)
+이 세 가지 필수 파일 외에 이번에 필요한 것은 하나 더 있다.
+4. UART 드라이버
+0. Makefile
+
+각각은 다음과 같은 파일들로 만들었다.
+
+linker.ld
+crt0.s
+syscall.c
+
+UART드라이버는 syscall에 포함했다.
+
+1. linker.ld
+링커에는 프로그램의 주소영역을 지정(링크)하는 코드가 부여되어있다.
+메모리 영역 ROM RAM을 정의하고
+섹션 .text, .rodata, .data, .bss 을 배치하고
+스택/힙의 심볼을 정의한다. (__stack_top, __heap_start 등)
+이를 위해 프로세서의 주소영역(시작주소, 크기)을 알아야한다.
+
+- IMEM(ROM) : 0x0000_0000, 64KB (0:16383)
+- DMEM(RAM) : 0x1000_0000, 32KB (0:8191)
+
+- UART_TX : 0x1001_0000
+- UART_STATUS_ADDRESS : 0x1001_0004
+
+2. crt0.s 
+프로그램을 시작하기 위한 초기화 코드들로 구성되어있다.
+_start 엔트리포인트, sp(stack pointer) 초기화, .bss섹션 0초기화, .data 섹션 ROM->RAM 복사, main()함수 호출 등.
+
+3. syscalls.c
+newlib이 요구하는 시스템콜을 제공해야한다.
+
+_write()   // printf → UART 출력
+_sbrk()    // malloc 힙 관리
+_exit()    // 프로그램 종료
+_close(), _fstat(), _isatty(), _lseek()
+
+등등.
+
+성능 측정을 위한 CSR로 mcycle이 구현되어있으며, 50Mhz의 동작속도를 가진다. 
+여기서부터 Dhrystone 구동을 위한 자세한 내용은 https://github.com/T410N/dhrystone-rv32i-baremetal 을 참조하라.
+결과적으로 300,000 iteration에서 97087 Dhrystones per Second를 얻었다.
+원래 2000 iteration이 아니었나? 놀랍게도 이번에 시도한 내용은, "원본 Dhrystone을 수정 없이" 정식 구현하는 것이었는데, 
+참조한 SiFive의 Dhrystone 원본이 2초 미만의 벤치마킹은 유의미한 결과가 아니라 판단하여 결과를 출력하지 않는다.
+때문에 300,000 iteration으로 먼저 측정을 했고, 에러가 뜨는 조건인 (2*HZ)구문을 0으로 해서 2000 iteration도 측정했다.
+2,000 iteration에서는 97273 Dhrystones per Secnod가 나왔다. 
+300,000 반복이 더 정확하니 이를 기준으로 성능을 계산하면, 1DMIPS = 1,757 DPS 기준, 
+DMIPS = 55.26 DMIPS, 50MHz에서는
+1.105 DMIPS/MHz가 나온다.
+기존에 간이로 측정한것 1.09 DMIPS /MHz와 얼추 비슷하게 나오는 걸로 보아서는 유효한 결과로 여겨진다.
+minstret으로 정확한 명령어 수행 갯수도 기회가 되면 모니터링해볼 예정.
+오늘은 여기까지.
