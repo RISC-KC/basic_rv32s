@@ -14,27 +14,47 @@ module ByteEnableLogic (
     output reg [3:0] write_mask				// bitmask for writing data
 );
 
+    reg  [7:0]  byte_sel;
+    reg [15:0] half_sel;
+
     always @(*) begin
         if (memory_read) begin
 			data_memory_write_data = 32'b0;
 			write_mask = 4'b0;
 			
 			case (funct3)
-				`LOAD_LB: begin
-					register_file_write_data = {{24{data_memory_read_data[7]}}, data_memory_read_data[7:0]};
+				`LOAD_LB , `LOAD_LBU : begin
+					case (address[1:0])
+						2'b00: byte_sel = data_memory_read_data[ 7: 0];
+						2'b01: byte_sel = data_memory_read_data[15: 8];
+						2'b10: byte_sel = data_memory_read_data[23:16];
+						2'b11: byte_sel = data_memory_read_data[31:24];
+					endcase
+
+					if (funct3 == `LOAD_LBU) begin
+						register_file_write_data = {24'b0, byte_sel};               // zero-extend
+					end else begin
+						register_file_write_data = {{24{byte_sel[7]}}, byte_sel};   // sign-extend
+					end
 				end
-				`LOAD_LH: begin
-					register_file_write_data = {{16{data_memory_read_data[15]}}, data_memory_read_data[15:0]};
+
+				`LOAD_LH , `LOAD_LHU : begin
+					case (address[1])
+						1'b0 : half_sel = data_memory_read_data[15:0];
+						1'b1 : half_sel = data_memory_read_data[31:16];
+					endcase
+
+					if (funct3 == `LOAD_LHU) begin
+						register_file_write_data = {16'b0, half_sel};                // zero-extend
+					end else begin
+						register_file_write_data = {{16{half_sel[15]}}, half_sel};   // sign-extend
+					end
 				end
-				`LOAD_LW: begin
+
+				`LOAD_LW : begin
 					register_file_write_data = data_memory_read_data;
 				end
-				`LOAD_LBU: begin
-					register_file_write_data = {24'b0, data_memory_read_data[7:0]};
-				end
-				`LOAD_LHU: begin
-					register_file_write_data = {16'b0, data_memory_read_data[15:0]};
-				end
+
 				default: begin
 					register_file_write_data = 32'b0;
 				end
