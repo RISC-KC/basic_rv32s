@@ -378,7 +378,25 @@ For each module's logic description, go to `documents/modules_and_signals/` for 
 - 46F_5SP architecture was designed to be implemented on FPGA. So some modules have turned to Syncrhonous modules.  
 This made some hazards. Please be aware of these which is written in issues. 
 - Since the Exception Detector logic and CSR File have been changed to Synchronous, **PTH now consumes about 10 Clock cycles.**
-- CSR configurations are same as 43F architecture.
+- ~~CSR configurations are same as 43F architecture.~~
+- Supported CSRs:
+
+|CSR|address<sub>16</sub>|Read-Only|WLRL, WARL|
+|:---|:---|:---:|:---:|
+|mcycle|B00|O|-|
+|minstret|B02|O|-|
+|mcycleh|B80|O|-|
+|minstreth|B82|O|-|
+|mvendorid|F11|O|-|
+|marchid|F12|O|-|
+|mimpid|F13|O|-|
+|mhartid|F14|O|-|
+|mstatus|300|-|-|
+|misa|301|-|WARL|
+|mtvec|305|-|WARL|
+|mepc|341|-|WARL|
+|mcause|342|-|WLRL|  
+
 - To run C program, the bypass logic between Instruction Memory and Data Memory is required (since the toolchain linker divides the ROM and RAM address map.). Please check the core design in `fpga/` for running C program on our SoC.
 
 For each module's logic description, go to `documents/modules_and_signals/` for more information.
@@ -388,20 +406,105 @@ For each module's logic description, go to `documents/modules_and_signals/` for 
 
 ## FPGA Implementation Results
 
-<img width="3785" height="2701" alt="fpga_verifications_bscrv32s_compressed" src="https://github.com/user-attachments/assets/47b0c98e-5fc2-4176-8e4c-a2eef39fa5b4" />
-<sup> 46F5SP_SoC with RV32I46F_5SP core implemented on Digilent Nexys Video FPGA board </sup>  
+<details>
+    <summary>Click for legacy results</summary>
+    <img width="3785" height="2701" alt="fpga_verifications_bscrv32s_compressed" src="https://github.com/user-attachments/assets/47b0c98e-5fc2-4176-8e4c-a2eef39fa5b4" />
+    <sup> 46F5SP_SoC with RV32I46F_5SP core implemented on Digilent Nexys Video FPGA board </sup>  
+    
+    **RV32I46F_5SP** core implemented **46F5SP_SoC** was implemented on **Digilent Nexys Video** board (**AMD Xilinx Artix-7 XC7A200T FPGA**).  
+    FPGA Synthesis and Implementations were done in **Vivado 2024.2**.  
+    - 20ns (50 MHz) timing constraints
+    - Synthesis Strategy : Flow_PerfOptimized_high
+    - Implementation Strategy : Performance_Explore
+    
+    Single-Cycle processors' FPGA implementation is not done yet. It will be added soon after the military duty ends. (Around Sep. 2025)  
+    Table below is FPGA implementation results.  
+    
+    |Processor|LUTs|FFs|BRAMs|DSPs|Fmax|DMIPS/MHz|
+    |-----|:---:|:---:|:---:|:---:|:---:|:---:|
+    |46F5SP_SoC|11,660<sup>*</sup>|2,383|0<sup>**</sup>|0|50 MHz|1.09|
+    |RV32I46F_5SP|3,010|2,383|0<sup>**</sup>|0|``|``|
+    |RV32I46F|-|-|-|-|-|-|
+    |RV32I43F|-|-|-|-|-|-|
+    |RV32I37F|-|-|-|-|-|-|
+    
+    <sup>* **Dhrystone** benchmark and **Trap Handler** hard coded using readmemh. Resource varies depends on the program in memories. This will soon be standardized.</sup>  
+    <sup>** All memories are inferred as **LUT-based distributed RAM**.</sup>  
+    
+    ### 📈 Performance Evaluation
+    
+    Dhrystone performance can be calculated by **DMIPS** (Dhrystone Million Instructions Per Second).  
+    
+    Since we've got the total cycles and instructions that needed to benchmark the Dhrystone, we can calculate our core's performance through this information.
+    
+    The proposed performance of RV32I46F_5SP core's dhrystone benchmark is evaluated with the following conditions:
+    - 2000 iterations settings
+    - 50MHz of timing constraints (20ns, clock cycle speed)
+    
+    In our settings on Digilent Nexys Video FPGA, we obtained:
+    - final cycles : 00000000FEA94 = 1,043,092 Cycles
+    - final instructions : 000000000009DDF0 = 646,640 Instructions
+    
+    ```math
+    CPI = \frac{Clock\;Cycles}{Instructions} = \frac{1,043,092}{646,640} = 1.61\;cycles/instr.
+    ```
+    
+    - MIPS (Million Instructions Per Second)
+    ```math
+    MIPS = \frac{instructions}{t} / 10^6 = \frac{646,640}{0.0208618} / 10^6 \approx\, 31.0\,MIPS
+    ```
+    
+    - Execution Time
+    ```math
+    t = \frac{Clock\;Cycles}{Clock\;Frequency} = \frac{1,043,092}{50\,\times\,10^6}\; \approx\, 0.0208618\,seconds
+    ```
+    
+    - Dhrystones per Second
+    ```math
+    Dhrystones/sec = \frac{iterations}{t} = \frac{2,000}{0.0208618} \approx\, 95,875\, DPS
+    ```
+    
+    - DMIPS (Dhrystone Million Instructions Per Second)  
+    <sup> 1 DMIPS equals to 1757 Dhrystones Per Second. </sup>
+    ```math
+    DMIPS = \frac{Dhrystones/sec}{1757} = \frac{95,875}{1757} \approx\, 54.6\, DMIPS
+    ```
+    
+    - DMIPS/MHz
+    ```math
+    \frac{54.6\, DMIPS}{50\, MHz} \approx\; 1.09\, DMIPS/MHz
+    ```
+    
+    Various performance benchmark (such as coremark) will be added soon.  
+    We assume that the processor can reach higher clock speed and performance, but at the moment we couldn't continue development in touch due to personal schedule (military duty, school admission).  
+    This will be worked soon also.
 
+</details>
+
+### Dhrystone 2.1 Bare-Metal Implementation
+Checkout the following repository to see how we implemented Dhrystone 2.1 on our bare-metal RV32I RISC-V Processor.  
+[Dhrystone 2.1 for RISC-V RV32I bare-metal](https://github.com/T410N/dhrystone-rv32i-baremetal)
+
+<img width="611" height="1030" alt="Dhrystone_300k_RV32I" src="https://github.com/user-attachments/assets/54c75634-5411-4f15-8b9b-e56513732230" />  
+
+<sup> 46F5SP_MMIO_SoC with RV32I46F_5SP core implemented on Digilent Nexys Video FPGA board executed 300,000 iteration of Dhrystone 2.1 </sup>  
+
+<img width="611" height="1030" alt="Dhrystone_2k_RV32I" src="https://github.com/user-attachments/assets/e70bc83b-b000-43c6-90dc-dd895f59085e" />    
+
+<sup> Executed 2,000 iteration of Dhrystone 2.1 </sup>  
+    
 **RV32I46F_5SP** core implemented **46F5SP_SoC** was implemented on **Digilent Nexys Video** board (**AMD Xilinx Artix-7 XC7A200T FPGA**).  
 FPGA Synthesis and Implementations were done in **Vivado 2024.2**.  
 - 20ns (50 MHz) timing constraints
 - Synthesis Strategy : Flow_PerfOptimized_high
 - Implementation Strategy : Performance_Explore
-
-Single-Cycle processors' FPGA implementation is not done yet. It will be added soon after the military duty ends. (Around Sep. 2025)  
+    
+Single-Cycle processors' FPGA implementation is not done yet. It will be added soon after the military duty ends.
 Table below is FPGA implementation results.  
 
-|Processor|LUTs|FFs|BRAMs|DSPs|Fmax|DMIPS/MHz|
+|Processor|LUTs|FFs|BRAMs|DSPs|Frequency|DMIPS/MHz|
 |-----|:---:|:---:|:---:|:---:|:---:|:---:|
+|46F5SP_MMIO_SoC|11,280<sup>*</sup>|1,636|0<sup>**</sup>|0|50 MHz|1.11|
 |46F5SP_SoC|11,660<sup>*</sup>|2,383|0<sup>**</sup>|0|50 MHz|1.09|
 |RV32I46F_5SP|3,010|2,383|0<sup>**</sup>|0|``|``|
 |RV32I46F|-|-|-|-|-|-|
@@ -414,50 +517,31 @@ Table below is FPGA implementation results.
 ### 📈 Performance Evaluation
 
 Dhrystone performance can be calculated by **DMIPS** (Dhrystone Million Instructions Per Second).  
+ 
+Since we've got the Dhrystones per Second, we can calculate our core's generalized performance through this information.  
 
-Since we've got the total cycles and instructions that needed to benchmark the Dhrystone, we can calculate our core's performance through this information.
+The proposed performance of RV32I46F_5SP core's dhrystone benchmark is evaluated with the following conditions:  
+- 2000 iterations settings (with 300,000 iteration)  
+  <sup>for standard Dhrystone 2.1 execution, the minimum execution time is 2 seconds, thus we've put 300,000 iterations as default without touching the source, 2,000 iterations with modification on Dhrystone source.</sup>
+- 50MHz of timing constraints (20ns, clock cycle speed)  
 
-The proposed performance of RV32I46F_5SP core's dhrystone benchmark is evaluated with the following conditions:
-- 2000 iterations settings
-- 50MHz of timing constraints (20ns, clock cycle speed)
-
-In our settings on Digilent Nexys Video FPGA, we obtained:
-- final cycles : 00000000FEA94 = 1,043,092 Cycles
-- final instructions : 000000000009DDF0 = 646,640 Instructions
-
-```math
-CPI = \frac{Clock\;Cycles}{Instructions} = \frac{1,043,092}{646,640} = 1.61\;cycles/instr.
-```
-
-- MIPS (Million Instructions Per Second)
-```math
-MIPS = \frac{instructions}{t} / 10^6 = \frac{646,640}{0.0208618} / 10^6 \approx\, 31.0\,MIPS
-```
-
-- Execution Time
-```math
-t = \frac{Clock\;Cycles}{Clock\;Frequency} = \frac{1,043,092}{50\,\times\,10^6}\; \approx\, 0.0208618\,seconds
-```
-
-- Dhrystones per Second
-```math
-Dhrystones/sec = \frac{iterations}{t} = \frac{2,000}{0.0208618} \approx\, 95,875\, DPS
-```
-
+In our settings on Digilent Nexys Video FPGA, we obtained:  
+- 2,000 iterations : 97,273 Dhrystones per Second
+- 300,000 iterations : 97,087 Dhrystones per Second
+       
 - DMIPS (Dhrystone Million Instructions Per Second)  
 <sup> 1 DMIPS equals to 1757 Dhrystones Per Second. </sup>
 ```math
-DMIPS = \frac{Dhrystones/sec}{1757} = \frac{95,875}{1757} \approx\, 54.6\, DMIPS
+DMIPS_{2,000} = \frac{Dhrystones/sec}{1757} = \frac{97,273}{1757} \approx\, 55.36\, DMIPS
 ```
-
+```math
+DMIPS_{300,000} = \frac{Dhrystones/sec}{1757} = \frac{97,087}{1757} \approx\, 55.25\, DMIPS
+```
+    
 - DMIPS/MHz
 ```math
-\frac{54.6\, DMIPS}{50\, MHz} \approx\; 1.09\, DMIPS/MHz
+\frac{55.25\, DMIPS}{50\, MHz} \approx\; 1.11\, DMIPS/MHz  
 ```
-
-Various performance benchmark (such as coremark) will be added soon.  
-We assume that the processor can reach higher clock speed and performance, but at the moment we couldn't continue development in touch due to personal schedule (military duty, school admission).  
-This will be worked soon also.
 
 ---
 
