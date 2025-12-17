@@ -155,11 +155,15 @@ RV32I46F_5SP = **RV32I** that supports **46** instructions. **Final**(latest) ve
 |RV32I43F|RV32I<sup>a</sup>  +Zicsr|CSR File|supports Zicsr 6 instructions|
 |RV32I46F|RV32I<sup>b</sup>  +Zicsr|Exception Detector, Trap Controller, MUXs|supports ECALL, EBREAK|
 |RV32I46F_5SP|RV32I<sup>b</sup>  +Zicsr|2-bit FSM Dynamic Branch Predictor, Hazard Unit, Forward Unit|5-Stage Pipelined|
-|46F5SP_SoC<sup>*</sup>|-|Button Controller, Debug UART Controller, UART TX, Benchmark Controller|GPIO, UART implemented SoC for Dhrystone|  
+|RV32I46F_5SP_MMIO|RV32I<sup>b</sup>  +Zicsr|MMIO Interface|Core-inside MMIO Controller for UART TX|  
+|46F5SP_MMIO_SoC<sup>**</sup>|-|Unified UART Controller, UART TX|GPIO, UART implemented SoC for Dhrystone|  
+|46F5SP_SoC<sup>*</sup>|-|Button Controller, Debug UART Controller, UART TX, Benchmark Controller|GPIO, UART implemented SoC for manual Dhrystone|  
+
 
 <sup>a</sup> Partial RV32I which excluded ECALL, EBREAK, FENCE, FENCE.TSO, PAUSE instructions.  
 <sup>b</sup> Partial RV32I which excluded FENCE, FENCE.TSO, PAUSE instructions.  
-<sup>*</sup> 46F5SP_SoC is made for debugging and running **Dhrystone** benchmark the core design.  
+<sup>*</sup> 46F5SP_SoC is made for debugging and running manual **Dhrystone** benchmark the core design.  
+<sup>**</sup> 46F5SP_MMIO_SoC is made for running **Dhrystone 2.1** with MMIO UART interface without modifying the source code; benchmarking the core design.  
 It utilizes **FPGA** on-board GPIOs such as LEDs, buttons and UART.  
   
   <img width="7016" height="4956" alt="250723_basic_rv32s_simplified" src="https://github.com/user-attachments/assets/bd08682a-5a99-41d9-8d54-94d5360e9e80" />
@@ -485,6 +489,14 @@ This will be worked soon also.
 ![20251215_141357](https://github.com/user-attachments/assets/1b47a596-4ed2-41cf-8d9f-ea176ad41219)  
 <sup> 46F5SP_MMIO_SoC with RV32I46F_5SP_MMIO core implemented on Digilent Nexys Video FPGA board and ran Dhrystone 2.1. </sup>    
 
+**RV32I46F_5SP_MMIO** core implemented **46F5SP_MMIO_SoC** was implemented on **Digilent Nexys Video** board (**AMD Xilinx Artix-7 XC7A200T FPGA**).    
+UART baudrate is 115200, word wrap LF.  
+FPGA Synthesis and Implementations were done in **Vivado 2025.2**.    
+<sup>If you are using older version, you can copy the sources in project file(`RV32sDhry_Finale.srcs`/) and start a new project or upgrade the Vivado</sup>  
+- 20ns (50 MHz) timing constraints
+- Synthesis Strategy : Flow_PerfOptimized_high
+- Implementation Strategy : Performance_Explore
+
 ### Dhrystone 2.1 Bare-Metal Implementation
 Checkout the following repository to see how we implemented Dhrystone 2.1 on our bare-metal RV32I RISC-V Processor.  
 [Dhrystone 2.1 for RISC-V RV32I bare-metal](https://github.com/T410N/dhrystone-rv32i-baremetal)  
@@ -508,15 +520,6 @@ The memory map is same as following.
 <img width="611" height="1030" alt="Dhrystone_2k_RV32I" src="https://github.com/user-attachments/assets/e70bc83b-b000-43c6-90dc-dd895f59085e" />    
 
 <sup> Executed 2,000 iteration of Dhrystone 2.1 </sup>  
-    
-**RV32I46F_5SP** core implemented **46F5SP_SoC** was implemented on **Digilent Nexys Video** board (**AMD Xilinx Artix-7 XC7A200T FPGA**).  
-FPGA Synthesis and Implementations were done in **Vivado 2024.2**.  
-- 20ns (50 MHz) timing constraints
-- Synthesis Strategy : Flow_PerfOptimized_high
-- Implementation Strategy : Performance_Explore
-    
-Single-Cycle processors' FPGA implementation is not done yet. It will be added soon after the military duty ends.
-Table below is FPGA implementation results.  
 
 |Processor|LUTs|FFs|BRAMs|DSPs|Frequency|DMIPS/MHz|
 |-----|:---:|:---:|:---:|:---:|:---:|:---:|
@@ -598,18 +601,21 @@ Waveform can be viewed using **GTKwave** or [Surfer-project](https://surfer-proj
 
 ### 🎛 FPGA implementation  
 
-- Vivado environment (tested on 2024.2)  
-  - In `fpga/` directory, select architecture source directory which you want to implement on your FPGA. (37F, 43F, 46F, 46F_5SP)  
+- Vivado environment (tested on 2025.2)  
+  - In `fpga/` directory, select architecture source directory which you want to implement on your FPGA. (46F_5SP, 46F_5SP_MMIO)  
     Launch Vivado and import project file which you have selected.
 
   - Current FPGA implementation's SoC can be applied to 43F, 46F, 46F5SP architecture. (release v1.0.0)   
     37F Architecture needs additional logics to replace the existing `mcycle` and `minstret` CSR to implement on **46F5SP_SoC** since it doesn't have CSR module.  
   
-  - The RTL source code of **RV32I46F_5SP** in `fpga/` directory has `clk_enable` signal for sequential execution debugging.  
-    If you need only the core IP itself, use the source in `modules/` directory.  
+  - The RTL source code of **RV32I46F_5SP** in `fpga/` directory has `clk_enable` signal for sequential execution debugging.    
+    If you need only the core IP itself, use the source in `modules/` directory.   
+
+  - We recommend using most recent version which is **RV32I46F_5SP_MMIO**. It supports MMIO UART interface and solved some hazard problems.
+  - Or, please consider using released `.zip` version 2.0.0. of the repository.
 
 - Other IDE  
-  You can manually import the sources located in `modules/` directory.  
+  You can manually import the sources located in `fpga/` directory.   
 
 ### 📥 Setup RV32I RISC-V GNU toolchain with GCC.
 Follow this guideline provided by official RISC-V github.
@@ -622,6 +628,9 @@ or
 ./configure --prefix=/opt/riscv --with-arch=rv32i --with-abi=ilp32
 make linux
 ```
+
+for the detailed manual for running Dhrystone 2.1 and setting up RV32I toolchain, checkout this repository below.
+[dhrystone-rv32i-baremetal](https://github.com/T410N/dhrystone-rv32i-baremetal)
 
 ### ⚠️ Notice
 
@@ -638,11 +647,14 @@ MEMORY
 }
 ...
 ```
+for MMIO,
+```
+UART TX : 0x1001_0000
+UART STATUS : 0x1001_0004
+```
 
 If you are not a beginner like I was, you can just modify this memory settings.  
 Since the actual FPGA implementation is only done in **RV32I46F_5SP**, we suggest to use 46F_5SP architecture for C compiled program simulation.  
-
-We're going to work on easy C program import on SoC soon.  
 
 ---
 
@@ -651,14 +663,11 @@ We're going to work on easy C program import on SoC soon.
 ✅ Complete basic_RV32s repository structure  
 ✅ Contribute riscv/learn as tutorial resource  
 ✅ Writing Paper about this repository  ✨ISOCC 2025 Accepted (Oral)
-🔄 Translate Korean resources to English  
+✅ Translate Korean resources to English  
 
-📋 Run Coremark and RISC-V ISA test on 46F5SP_SoC  
-📋 Synthesize single-cycle processors in FPGA and Evaluate  
 📋 Resolve issues of 46F5SP architecture  
-📋 Performance Enhancement by Optimize critical paths, advanced core architecture  
+📋 Performance Enhancement by Optimize critical paths, advanced core architecture  -> [ima_make_rv64](https://github.com/RISC-KC/ima_make_rv64)
 📋 Optimize FPGA resource utilization
-📋 Easy method for running C program on SoC (makefile... etc.)
 
 ---
 
