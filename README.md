@@ -515,15 +515,6 @@ The memory map is same as following.
 <img width="611" height="1030" alt="Dhrystone_2k_RV32I" src="https://github.com/user-attachments/assets/e70bc83b-b000-43c6-90dc-dd895f59085e" />    
 
 <sup> Executed 2,000 iteration of Dhrystone 2.1 </sup>  
-    
-**RV32I46F_5SP** core implemented **46F5SP_SoC** was implemented on **Digilent Nexys Video** board (**AMD Xilinx Artix-7 XC7A200T FPGA**).  
-FPGA Synthesis and Implementations were done in **Vivado 2024.2**.  
-- 20ns (50 MHz) timing constraints
-- Synthesis Strategy : Flow_PerfOptimized_high
-- Implementation Strategy : Performance_Explore
-    
-Single-Cycle processors' FPGA implementation is not done yet. It will be added soon after the military duty ends.
-Table below is FPGA implementation results.  
 
 |Processor|LUTs|FFs|BRAMs|DSPs|Frequency|DMIPS/MHz|
 |-----|:---:|:---:|:---:|:---:|:---:|:---:|
@@ -605,18 +596,21 @@ Waveform can be viewed using **GTKwave** or [Surfer-project](https://surfer-proj
 
 ### 🎛 FPGA implementation  
 
-- Vivado environment (tested on 2024.2)  
-  - In `fpga/` directory, select architecture source directory which you want to implement on your FPGA. (37F, 43F, 46F, 46F_5SP)  
+- Vivado environment (tested on 2025.2)  
+  - In `fpga/` directory, select architecture source directory which you want to implement on your FPGA. (46F_5SP, 46F_5SP_MMIO)  
     Launch Vivado and import project file which you have selected.
 
   - Current FPGA implementation's SoC can be applied to 43F, 46F, 46F5SP architecture. (release v1.0.0)   
     37F Architecture needs additional logics to replace the existing `mcycle` and `minstret` CSR to implement on **46F5SP_SoC** since it doesn't have CSR module.  
   
-  - The RTL source code of **RV32I46F_5SP** in `fpga/` directory has `clk_enable` signal for sequential execution debugging.  
-    If you need only the core IP itself, use the source in `modules/` directory.  
+  - The RTL source code of **RV32I46F_5SP** in `fpga/` directory has `clk_enable` signal for sequential execution debugging.    
+    If you need only the core IP itself, use the source in `modules/` directory.   
+
+  - We recommend using most recent version which is **RV32I46F_5SP_MMIO**. It supports MMIO UART interface and solved some hazard problems.
+  - Or, please consider using released `.zip` version 2.0.0. of the repository.
 
 - Other IDE  
-  You can manually import the sources located in `modules/` directory.  
+  You can manually import the sources located in `fpga/` directory.   
 
 ### 📥 Setup RV32I RISC-V GNU toolchain with GCC.
 Follow this guideline provided by official RISC-V github.
@@ -629,6 +623,9 @@ or
 ./configure --prefix=/opt/riscv --with-arch=rv32i --with-abi=ilp32
 make linux
 ```
+
+for the detailed manual for running Dhrystone 2.1 and setting up RV32I toolchain, checkout this repository below.
+[dhrystone-rv32i-baremetal](https://github.com/T410N/dhrystone-rv32i-baremetal)
 
 ### ⚠️ Notice
 
@@ -645,11 +642,13 @@ MEMORY
 }
 ...
 ```
+for MMIO,
+```
+UART TX : 0x1001_0000
+UART STATUS : 0x1001_0004
 
 If you are not a beginner like I was, you can just modify this memory settings.  
 Since the actual FPGA implementation is only done in **RV32I46F_5SP**, we suggest to use 46F_5SP architecture for C compiled program simulation.  
-
-We're going to work on easy C program import on SoC soon.  
 
 ---
 
@@ -658,14 +657,11 @@ We're going to work on easy C program import on SoC soon.
 ✅ Complete basic_RV32s repository structure  
 ✅ Contribute riscv/learn as tutorial resource  
 ✅ Writing Paper about this repository  ✨ISOCC 2025 Accepted (Oral)
-🔄 Translate Korean resources to English  
+✅ Translate Korean resources to English  
 
-📋 Run Coremark and RISC-V ISA test on 46F5SP_SoC  
-📋 Synthesize single-cycle processors in FPGA and Evaluate  
 📋 Resolve issues of 46F5SP architecture  
-📋 Performance Enhancement by Optimize critical paths, advanced core architecture  
+📋 Performance Enhancement by Optimize critical paths, advanced core architecture  -> [ima_make_rv64](https://github.com/RISC-KC/ima_make_rv64)
 📋 Optimize FPGA resource utilization
-📋 Easy method for running C program on SoC (makefile... etc.)
 
 ---
 
