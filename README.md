@@ -486,6 +486,7 @@ This will be worked soon also.
 <sup> 46F5SP_MMIO_SoC with RV32I46F_5SP_MMIO core implemented on Digilent Nexys Video FPGA board and ran Dhrystone 2.1. </sup>    
 
 **RV32I46F_5SP_MMIO** core implemented **46F5SP_MMIO_SoC** was implemented on **Digilent Nexys Video** board (**AMD Xilinx Artix-7 XC7A200T FPGA**).    
+UART baudrate is 115200, word wrap LF.  
 FPGA Synthesis and Implementations were done in **Vivado 2025.2**.    
 <sup>If you are using older version, you can copy the sources in project file(`RV32sDhry_Finale.srcs`/) and start a new project or upgrade the Vivado</sup>  
 - 20ns (50 MHz) timing constraints
@@ -646,6 +647,7 @@ for MMIO,
 ```
 UART TX : 0x1001_0000
 UART STATUS : 0x1001_0004
+```
 
 If you are not a beginner like I was, you can just modify this memory settings.  
 Since the actual FPGA implementation is only done in **RV32I46F_5SP**, we suggest to use 46F_5SP architecture for C compiled program simulation.  
