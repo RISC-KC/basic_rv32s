@@ -485,6 +485,13 @@ This will be worked soon also.
 ![20251215_141357](https://github.com/user-attachments/assets/1b47a596-4ed2-41cf-8d9f-ea176ad41219)  
 <sup> 46F5SP_MMIO_SoC with RV32I46F_5SP_MMIO core implemented on Digilent Nexys Video FPGA board and ran Dhrystone 2.1. </sup>    
 
+**RV32I46F_5SP_MMIO** core implemented **46F5SP_MMIO_SoC** was implemented on **Digilent Nexys Video** board (**AMD Xilinx Artix-7 XC7A200T FPGA**).    
+FPGA Synthesis and Implementations were done in **Vivado 2025.2**.    
+<sup>If you are using older version, you can copy the sources in project file(`RV32sDhry_Finale.srcs`/) and start a new project or upgrade the Vivado</sup>  
+- 20ns (50 MHz) timing constraints
+- Synthesis Strategy : Flow_PerfOptimized_high
+- Implementation Strategy : Performance_Explore
+
 ### Dhrystone 2.1 Bare-Metal Implementation
 Checkout the following repository to see how we implemented Dhrystone 2.1 on our bare-metal RV32I RISC-V Processor.  
 [Dhrystone 2.1 for RISC-V RV32I bare-metal](https://github.com/T410N/dhrystone-rv32i-baremetal)  
