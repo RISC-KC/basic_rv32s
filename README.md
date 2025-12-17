@@ -155,11 +155,15 @@ RV32I46F_5SP = **RV32I** that supports **46** instructions. **Final**(latest) ve
 |RV32I43F|RV32I<sup>a</sup>  +Zicsr|CSR File|supports Zicsr 6 instructions|
 |RV32I46F|RV32I<sup>b</sup>  +Zicsr|Exception Detector, Trap Controller, MUXs|supports ECALL, EBREAK|
 |RV32I46F_5SP|RV32I<sup>b</sup>  +Zicsr|2-bit FSM Dynamic Branch Predictor, Hazard Unit, Forward Unit|5-Stage Pipelined|
-|46F5SP_SoC<sup>*</sup>|-|Button Controller, Debug UART Controller, UART TX, Benchmark Controller|GPIO, UART implemented SoC for Dhrystone|  
+|RV32I46F_5SP_MMIO|RV32I<sup>b</sup>  +Zicsr|MMIO Interface|Core-inside MMIO Controller for UART TX|  
+|46F5SP_MMIO_SoC<sup>**</sup>|-|Unified UART Controller, UART TX|GPIO, UART implemented SoC for Dhrystone|  
+|46F5SP_SoC<sup>*</sup>|-|Button Controller, Debug UART Controller, UART TX, Benchmark Controller|GPIO, UART implemented SoC for manual Dhrystone|  
+
 
 <sup>a</sup> Partial RV32I which excluded ECALL, EBREAK, FENCE, FENCE.TSO, PAUSE instructions.  
 <sup>b</sup> Partial RV32I which excluded FENCE, FENCE.TSO, PAUSE instructions.  
-<sup>*</sup> 46F5SP_SoC is made for debugging and running **Dhrystone** benchmark the core design.  
+<sup>*</sup> 46F5SP_SoC is made for debugging and running manual **Dhrystone** benchmark the core design.  
+<sup>**</sup> 46F5SP_MMIO_SoC is made for running **Dhrystone 2.1** with MMIO UART interface without modifying the source code; benchmarking the core design.  
 It utilizes **FPGA** on-board GPIOs such as LEDs, buttons and UART.  
   
   <img width="7016" height="4956" alt="250723_basic_rv32s_simplified" src="https://github.com/user-attachments/assets/bd08682a-5a99-41d9-8d54-94d5360e9e80" />
