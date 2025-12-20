@@ -33,14 +33,15 @@ module CSRFile #(
     reg csr_processing;
     reg [XLEN-1:0] csr_read_data;
 
-    reg csr_write_enable_buffer;
-
     wire csr_access;
     wire valid_csr_address;
-    wire csr_write_enable_edge = csr_write_enable && !csr_write_enable_buffer;
 
     assign csr_access = valid_csr_address;
-    assign valid_csr_address = (csr_read_address == 12'hF11) || // mvendorid
+    assign valid_csr_address = (csr_read_address == 12'hB00) || // mcycle
+                               (csr_read_address == 12'hB02) || // minstret
+                               (csr_read_address == 12'hB80) || // mcycleh
+                               (csr_read_address == 12'hB82) || // minstreth
+                               (csr_read_address == 12'hF11) || // mvendorid
                                (csr_read_address == 12'hF12) || // marchid  
                                (csr_read_address == 12'hF13) || // mimpid
                                (csr_read_address == 12'hF14) || // mhartid
@@ -48,11 +49,7 @@ module CSRFile #(
                                (csr_read_address == 12'h301) || // misa
                                (csr_read_address == 12'h305) || // mtvec
                                (csr_read_address == 12'h341) || // mepc
-                               (csr_read_address == 12'h342) || // mcause
-                               (csr_read_address == 12'hB00) || // mcycle
-                               (csr_read_address == 12'hB02) || // minstret
-                               (csr_read_address == 12'hB80) || // mcycleh
-                               (csr_read_address == 12'hB82);   // minstreth
+                               (csr_read_address == 12'h342);   // mcause
 
 
 
@@ -105,7 +102,6 @@ module CSRFile #(
 
         csr_processing <= 1'b0;
         csr_read_out <= {XLEN{1'b0}};
-        csr_write_enable_buffer <= 1'b0;
       end else begin
         mcycle <= mcycle + 1;
         
@@ -123,10 +119,8 @@ module CSRFile #(
           csr_read_out <= csr_read_data;
         end
 
-        csr_write_enable_buffer <= csr_write_enable;
-
         // Write Operation
-        if ((trapped && csr_write_enable_edge) || (csr_write_enable_edge)) begin
+        if ((trapped && csr_write_enable) || (csr_write_enable)) begin
         case (csr_write_address)
           12'h305: mtvec  <= csr_write_data;
           12'h341: mepc   <= csr_write_data;
