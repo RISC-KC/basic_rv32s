@@ -1,8 +1,0 @@
-# compile verilog/system verilog design source files
-verilog xil_defaultlib  --include "../../../../../Clean_RV32I46F5SP.srcs/sim_1/new" --include "../../../../../Clean_RV32I46F5SP.srcs/sources_1/new" \
-"RV32I46F5SP_tb_func_impl.v" \
-"../../../../../Clean_RV32I46F5SP.srcs/sources_1/new/46F5SP_SoC_TOP.v" \
-"../../../../../Clean_RV32I46F5SP.srcs/sim_1/new/RV32I46F_5SP_tb.v" \
-
-# Do not sort compile order
-nosort
