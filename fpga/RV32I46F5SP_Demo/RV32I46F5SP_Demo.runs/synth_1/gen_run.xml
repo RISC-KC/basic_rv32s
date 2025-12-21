@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GenRun Id="synth_1" LaunchPart="xc7a200tsbg484-3" LaunchTime="1766293104">
+  <File Type="PA-TCL" Name="RV32I46F5SPSoCTOP.tcl"/>
+  <File Type="REPORTS-TCL" Name="RV32I46F5SPSoCTOP_reports.tcl"/>
+  <File Type="RDS-RDS" Name="RV32I46F5SPSoCTOP.vds"/>
+  <File Type="RDS-PROPCONSTRS" Name="RV32I46F5SPSoCTOP_drc_synth.rpt"/>
+  <File Type="RDS-UTIL" Name="RV32I46F5SPSoCTOP_utilization_synth.rpt"/>
+  <File Type="RDS-UTIL-PB" Name="RV32I46F5SPSoCTOP_utilization_synth.pb"/>
+  <File Type="RDS-DCP" Name="RV32I46F5SPSoCTOP.dcp"/>
+  <File Type="VDS-TIMINGSUMMARY" Name="RV32I46F5SPSoCTOP_timing_summary_synth.rpt"/>
+  <File Type="VDS-TIMING-PB" Name="RV32I46F5SPSoCTOP_timing_summary_synth.pb"/>
+  <FileSet Name="sources" Type="DesignSrcs" RelSrcDir="$PSRCDIR/sources_1" RelGenDir="$PGENDIR/sources_1">
+    <Filter Type="Srcs"/>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/Button_Controller.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/Button_Controller.v"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/Debug_UART_Controller.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/Debug_UART_Controller.v"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/Byte_Enable_Logic.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/Byte_Enable_Logic.v"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/itype.vh">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/itype.vh"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+        <Attr Name="IsVisible" Val="1"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/Program_Counter.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/Program_Counter.v"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/Trap_Controller.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/Trap_Controller.v"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/PC_Controller.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/PC_Controller.v"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/ID_EX_Register.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/ID_EX_Register.v"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/PC_Plus_4.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/PC_Plus_4.v"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/Instruction_Memory.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/Instruction_Memory.v"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/branch.vh">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/branch.vh"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+        <Attr Name="IsVisible" Val="1"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/alu_op.vh">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/alu_op.vh"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+        <Attr Name="IsVisible" Val="1"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/load.vh">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/load.vh"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+        <Attr Name="IsVisible" Val="1"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/rtype.vh">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/rtype.vh"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+        <Attr Name="IsVisible" Val="1"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/store.vh">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/store.vh"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+        <Attr Name="IsVisible" Val="1"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/opcode.vh">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/opcode.vh"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+        <Attr Name="IsVisible" Val="1"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/Control_Unit.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/Control_Unit.v"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/csr.vh">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/csr.vh"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+        <Attr Name="IsVisible" Val="1"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/IF_ID_Register.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/IF_ID_Register.v"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/Instruction_Decoder.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/Instruction_Decoder.v"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/Immediate_Generator.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/Immediate_Generator.v"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/alu_src_select.vh">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/alu_src_select.vh"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+        <Attr Name="IsVisible" Val="1"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/rf_wd_select.vh">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/rf_wd_select.vh"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+        <Attr Name="IsVisible" Val="1"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/Register_File_Debug.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/Register_File_Debug.v"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/ALU.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/ALU.v"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/Data_Memory.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/Data_Memory.v"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/ALU_Controller.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/ALU_Controller.v"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/Branch_Logic.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/Branch_Logic.v"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/MEM_WB_Register.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/MEM_WB_Register.v"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/CSR_File.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/CSR_File.v"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/Exception_Detector.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/Exception_Detector.v"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/trap.vh">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/trap.vh"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+        <Attr Name="IsVisible" Val="1"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/EX_MEM_Register.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/EX_MEM_Register.v"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/Hazard_Unit.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/Hazard_Unit.v"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/Forward_Unit.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/Forward_Unit.v"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/Branch_Predictor.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/Branch_Predictor.v"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/RV32I46F_5SP_Debug.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/RV32I46F_5SP_Debug.v"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/UART_TX.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/UART_TX.v"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/Demo_sources/46F5SP_SoC_TOP.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/46F5SP_SoC_TOP.v"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <Config>
+      <Option Name="DesignMode" Val="RTL"/>
+      <Option Name="TopModule" Val="RV32I46F5SPSoCTOP"/>
+      <Option Name="TopAutoSet" Val="TRUE"/>
+    </Config>
+  </FileSet>
+  <FileSet Name="constrs_in" Type="Constrs" RelSrcDir="$PSRCDIR/constrs_1" RelGenDir="$PGENDIR/constrs_1">
+    <Filter Type="Constrs"/>
+    <File Path="$PSRCDIR/constrs_1/imports/Demo_sources/RV32I46F_5SP_Debug_XDC.xdc">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../Desktop/Demo_sources/RV32I46F_5SP_Debug_XDC.xdc"/>
+        <Attr Name="ImportTime" Val="1766238662"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+      </FileInfo>
+    </File>
+    <Config>
+      <Option Name="ConstrsType" Val="XDC"/>
+    </Config>
+  </FileSet>
+  <FileSet Name="utils" Type="Utils" RelSrcDir="$PSRCDIR/utils_1" RelGenDir="$PGENDIR/utils_1">
+    <Filter Type="Utils"/>
+    <Config>
+      <Option Name="TopAutoSet" Val="TRUE"/>
+    </Config>
+  </FileSet>
+  <Strategy Version="1" Minor="2">
+    <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2024">
+      <Desc>Vivado Synthesis Defaults</Desc>
+    </StratHandle>
+    <Step Id="synth_design"/>
+  </Strategy>
+</GenRun>
