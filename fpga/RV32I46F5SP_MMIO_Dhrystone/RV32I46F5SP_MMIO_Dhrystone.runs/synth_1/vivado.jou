@@ -1,0 +1,24 @@
+#-----------------------------------------------------------
+# Vivado v2024.2 (64-bit)
+# SW Build 5239630 on Fri Nov 08 22:35:27 MST 2024
+# IP Build 5239520 on Sun Nov 10 16:12:51 MST 2024
+# SharedData Build 5239561 on Fri Nov 08 14:39:27 MST 2024
+# Start of session at: Sun Dec 21 00:14:50 2025
+# Process ID         : 13688
+# Current directory  : C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.runs/synth_1
+# Command line       : vivado.exe -log RV32I46F5SPMMIOSoCTOP.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source RV32I46F5SPMMIOSoCTOP.tcl
+# Log file           : C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.runs/synth_1/RV32I46F5SPMMIOSoCTOP.vds
+# Journal file       : C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.runs/synth_1\vivado.jou
+# Running On         : DESKTOP-OVHT03F
+# Platform           : Windows Server 2016 or Windows 10
+# Operating System   : 19045
+# Processor Detail   : AMD Ryzen 5 3400G with Radeon Vega Graphics    
+# CPU Frequency      : 3700 MHz
+# CPU Physical cores : 4
+# CPU Logical cores  : 8
+# Host memory        : 14943 MB
+# Swap memory        : 6174 MB
+# Total Virtual      : 21117 MB
+# Available Virtual  : 7294 MB
+#-----------------------------------------------------------
+source RV32I46F5SPMMIOSoCTOP.tcl -notrace

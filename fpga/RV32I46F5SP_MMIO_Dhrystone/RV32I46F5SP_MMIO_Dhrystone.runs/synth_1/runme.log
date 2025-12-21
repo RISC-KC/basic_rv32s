@@ -1,0 +1,519 @@
+
+*** Running vivado
+    with args -log RV32I46F5SPMMIOSoCTOP.vds -m64 -product Vivado -mode batch -messageDb vivado.pb -notrace -source RV32I46F5SPMMIOSoCTOP.tcl
+
+
+
+****** Vivado v2024.2 (64-bit)
+  **** SW Build 5239630 on Fri Nov 08 22:35:27 MST 2024
+  **** IP Build 5239520 on Sun Nov 10 16:12:51 MST 2024
+  **** SharedData Build 5239561 on Fri Nov 08 14:39:27 MST 2024
+  **** Start of session at: Sun Dec 21 00:14:50 2025
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+    ** Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
+
+source RV32I46F5SPMMIOSoCTOP.tcl -notrace
+Command: read_checkpoint -auto_incremental -incremental C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/utils_1/imports/synth_1/RV32I46F5SPMMIOSoCTOP.dcp
+INFO: [Vivado 12-5825] Read reference checkpoint from C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/utils_1/imports/synth_1/RV32I46F5SPMMIOSoCTOP.dcp for incremental synthesis
+INFO: [Vivado 12-7989] Please ensure there are no constraint changes
+Command: synth_design -top RV32I46F5SPMMIOSoCTOP -part xc7a200tsbg484-3 -directive PerformanceOptimized -fsm_extraction one_hot -keep_equivalent_registers -resource_sharing off -no_lc -shreg_min_size 5
+Starting synth_design
+Attempting to get a license for feature 'Synthesis' and/or device 'xc7a200t'
+INFO: [Common 17-349] Got license for feature 'Synthesis' and/or device 'xc7a200t'
+INFO: [Device 21-403] Loading part xc7a200tsbg484-3
+INFO: [Designutils 20-5440] No compile time benefit to using incremental synthesis; A full resynthesis will be run
+INFO: [Designutils 20-4379] Flow is switching to default flow due to incremental criteria not met. If you would like to alter this behaviour and have the flow terminate instead, please set the following parameter config_implementation {autoIncr.Synth.RejectBehavior Terminate}
+INFO: [Synth 8-7079] Multithreading enabled for synth_design using a maximum of 2 processes.
+INFO: [Synth 8-7078] Launching helper process for spawning children vivado processes
+INFO: [Synth 8-7075] Helper process launched with PID 18256
+---------------------------------------------------------------------------------
+Starting RTL Elaboration : Time (s): cpu = 00:00:08 ; elapsed = 00:00:08 . Memory (MB): peak = 1038.551 ; gain = 468.934
+---------------------------------------------------------------------------------
+INFO: [Synth 8-6157] synthesizing module 'RV32I46F5SPMMIOSoCTOP' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/46F5SP_MMIO_SoC_TOP.v:1]
+INFO: [Synth 8-6157] synthesizing module 'BUFG' [D:/Xilinx/Vivado/2024.2/scripts/rt/data/unisim_comp.v:2676]
+INFO: [Synth 8-6155] done synthesizing module 'BUFG' (0#1) [D:/Xilinx/Vivado/2024.2/scripts/rt/data/unisim_comp.v:2676]
+INFO: [Synth 8-6157] synthesizing module 'UnifiedUARTController' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Unified_UART_Controller.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'UnifiedUARTController' (0#1) [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Unified_UART_Controller.v:1]
+INFO: [Synth 8-6157] synthesizing module 'UARTTX' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/UART_TX.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'UARTTX' (0#1) [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/UART_TX.v:1]
+INFO: [Synth 8-6157] synthesizing module 'RV32I46F5SPMMIO' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/RV32I46F_5SP_MMIO.v:4]
+	Parameter XLEN bound to: 32 - type: integer 
+INFO: [Synth 8-6157] synthesizing module 'ALU' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/ALU.v:3]
+INFO: [Synth 8-6155] done synthesizing module 'ALU' (0#1) [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/ALU.v:3]
+INFO: [Synth 8-6157] synthesizing module 'ALUController' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/ALU_Controller.v:8]
+INFO: [Synth 8-226] default block is never used [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/ALU_Controller.v:60]
+INFO: [Synth 8-226] default block is never used [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/ALU_Controller.v:96]
+INFO: [Synth 8-6155] done synthesizing module 'ALUController' (0#1) [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/ALU_Controller.v:8]
+INFO: [Synth 8-6157] synthesizing module 'BranchLogic' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Branch_Logic.v:3]
+INFO: [Synth 8-6155] done synthesizing module 'BranchLogic' (0#1) [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Branch_Logic.v:3]
+INFO: [Synth 8-6157] synthesizing module 'BranchPredictor' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Branch_Predictor.v:3]
+	Parameter XLEN bound to: 32 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'BranchPredictor' (0#1) [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Branch_Predictor.v:3]
+INFO: [Synth 8-6157] synthesizing module 'ByteEnableLogic' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Byte_Enable_Logic.v:4]
+INFO: [Synth 8-6155] done synthesizing module 'ByteEnableLogic' (0#1) [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Byte_Enable_Logic.v:4]
+INFO: [Synth 8-6157] synthesizing module 'ControlUnit' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Control_Unit.v:7]
+INFO: [Synth 8-6155] done synthesizing module 'ControlUnit' (0#1) [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Control_Unit.v:7]
+INFO: [Synth 8-6157] synthesizing module 'CSRFile' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/CSR_File.v:3]
+	Parameter XLEN bound to: 32 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'CSRFile' (0#1) [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/CSR_File.v:3]
+INFO: [Synth 8-6157] synthesizing module 'DataMemory' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Data_Memory.v:1]
+INFO: [Synth 8-3876] $readmem data file './data_init.mem' is read successfully [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Data_Memory.v:29]
+INFO: [Synth 8-6155] done synthesizing module 'DataMemory' (0#1) [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Data_Memory.v:1]
+INFO: [Synth 8-6157] synthesizing module 'ExceptionDetector' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Exception_Detector.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'ExceptionDetector' (0#1) [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Exception_Detector.v:6]
+INFO: [Synth 8-6157] synthesizing module 'ForwardUnit' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Forward_Unit.v:3]
+INFO: [Synth 8-6155] done synthesizing module 'ForwardUnit' (0#1) [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Forward_Unit.v:3]
+INFO: [Synth 8-6157] synthesizing module 'HazardUnit' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Hazard_Unit.v:4]
+INFO: [Synth 8-6155] done synthesizing module 'HazardUnit' (0#1) [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Hazard_Unit.v:4]
+INFO: [Synth 8-6157] synthesizing module 'ImmediateGenerator' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Immediate_Generator.v:3]
+INFO: [Synth 8-6155] done synthesizing module 'ImmediateGenerator' (0#1) [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Immediate_Generator.v:3]
+INFO: [Synth 8-6157] synthesizing module 'InstructionDecoder' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Instruction_Decoder.v:3]
+INFO: [Synth 8-6155] done synthesizing module 'InstructionDecoder' (0#1) [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Instruction_Decoder.v:3]
+INFO: [Synth 8-6157] synthesizing module 'InstructionMemory' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Instruction_Memory.v:9]
+INFO: [Synth 8-3876] $readmem data file './dhrystone.mem' is read successfully [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Instruction_Memory.v:20]
+INFO: [Synth 8-6155] done synthesizing module 'InstructionMemory' (0#1) [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Instruction_Memory.v:9]
+INFO: [Synth 8-6157] synthesizing module 'MMIO_Interface' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/MMIO_Interface.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'MMIO_Interface' (0#1) [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/MMIO_Interface.v:1]
+INFO: [Synth 8-6157] synthesizing module 'ProgramCounter' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Program_Counter.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'ProgramCounter' (0#1) [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Program_Counter.v:1]
+INFO: [Synth 8-6157] synthesizing module 'PCPlus4' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/PC_Plus_4.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'PCPlus4' (0#1) [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/PC_Plus_4.v:1]
+INFO: [Synth 8-6157] synthesizing module 'PCController' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/PC_Controller.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'PCController' (0#1) [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/PC_Controller.v:1]
+INFO: [Synth 8-6157] synthesizing module 'RegisterFile' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Register_File.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'RegisterFile' (0#1) [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Register_File.v:1]
+INFO: [Synth 8-6157] synthesizing module 'TrapController' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Trap_Controller.v:3]
+	Parameter XLEN bound to: 32 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'TrapController' (0#1) [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Trap_Controller.v:3]
+WARNING: [Synth 8-7071] port 'ic_clean' of module 'TrapController' is unconnected for instance 'trap_controller' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/RV32I46F_5SP_MMIO.v:521]
+WARNING: [Synth 8-7023] instance 'trap_controller' of module 'TrapController' has 20 connections declared, but only 19 given [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/RV32I46F_5SP_MMIO.v:521]
+INFO: [Synth 8-6157] synthesizing module 'IF_ID_Register' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/IF_ID_Register.v:1]
+	Parameter XLEN bound to: 32 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'IF_ID_Register' (0#1) [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/IF_ID_Register.v:1]
+INFO: [Synth 8-6157] synthesizing module 'ID_EX_Register' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/ID_EX_Register.v:1]
+	Parameter XLEN bound to: 32 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'ID_EX_Register' (0#1) [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/ID_EX_Register.v:1]
+INFO: [Synth 8-6157] synthesizing module 'EX_MEM_Register' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/EX_MEM_Register.v:1]
+	Parameter XLEN bound to: 32 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'EX_MEM_Register' (0#1) [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/EX_MEM_Register.v:1]
+INFO: [Synth 8-6157] synthesizing module 'MEM_WB_Register' [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/MEM_WB_Register.v:1]
+	Parameter XLEN bound to: 32 - type: integer 
+INFO: [Synth 8-6155] done synthesizing module 'MEM_WB_Register' (0#1) [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/MEM_WB_Register.v:1]
+INFO: [Synth 8-6155] done synthesizing module 'RV32I46F5SPMMIO' (0#1) [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/RV32I46F_5SP_MMIO.v:4]
+INFO: [Synth 8-6155] done synthesizing module 'RV32I46F5SPMMIOSoCTOP' (0#1) [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/46F5SP_MMIO_SoC_TOP.v:1]
+WARNING: [Synth 8-6014] Unused sequential element branch_prediction_reg was removed.  [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Branch_Predictor.v:35]
+WARNING: [Synth 8-6014] Unused sequential element new_word_reg was removed.  [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/Data_Memory.v:44]
+WARNING: [Synth 8-6014] Unused sequential element retired_alu_result_reg was removed.  [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/RV32I46F_5SP_MMIO.v:707]
+WARNING: [Synth 8-6014] Unused sequential element retired_csr_read_data_reg was removed.  [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/sources_1/imports/sources/RV32I46F_5SP_MMIO.v:708]
+WARNING: [Synth 8-7129] Port ID_pc[31] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[30] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[29] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[28] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[27] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[26] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[25] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[24] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[23] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[22] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[21] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[20] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[19] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[18] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[17] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[16] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[15] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[14] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[13] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[12] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[11] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[10] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[9] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[8] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[7] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[6] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[5] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[4] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[3] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[2] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[1] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port ID_pc[0] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[31] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[30] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[29] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[28] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[27] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[26] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[25] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[24] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[23] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[22] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[21] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[20] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[19] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[18] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[17] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[16] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[15] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[14] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[13] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[12] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[11] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[10] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[9] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[8] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[7] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[6] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[5] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[4] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[3] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[2] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[1] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port WB_pc[0] in module TrapController is either unconnected or has no load
+WARNING: [Synth 8-7129] Port data_memory_write_data[31] in module MMIO_Interface is either unconnected or has no load
+WARNING: [Synth 8-7129] Port data_memory_write_data[30] in module MMIO_Interface is either unconnected or has no load
+WARNING: [Synth 8-7129] Port data_memory_write_data[29] in module MMIO_Interface is either unconnected or has no load
+WARNING: [Synth 8-7129] Port data_memory_write_data[28] in module MMIO_Interface is either unconnected or has no load
+WARNING: [Synth 8-7129] Port data_memory_write_data[27] in module MMIO_Interface is either unconnected or has no load
+WARNING: [Synth 8-7129] Port data_memory_write_data[26] in module MMIO_Interface is either unconnected or has no load
+WARNING: [Synth 8-7129] Port data_memory_write_data[25] in module MMIO_Interface is either unconnected or has no load
+WARNING: [Synth 8-7129] Port data_memory_write_data[24] in module MMIO_Interface is either unconnected or has no load
+WARNING: [Synth 8-7129] Port data_memory_write_data[23] in module MMIO_Interface is either unconnected or has no load
+WARNING: [Synth 8-7129] Port data_memory_write_data[22] in module MMIO_Interface is either unconnected or has no load
+WARNING: [Synth 8-7129] Port data_memory_write_data[21] in module MMIO_Interface is either unconnected or has no load
+WARNING: [Synth 8-7129] Port data_memory_write_data[20] in module MMIO_Interface is either unconnected or has no load
+WARNING: [Synth 8-7129] Port data_memory_write_data[19] in module MMIO_Interface is either unconnected or has no load
+WARNING: [Synth 8-7129] Port data_memory_write_data[18] in module MMIO_Interface is either unconnected or has no load
+WARNING: [Synth 8-7129] Port data_memory_write_data[17] in module MMIO_Interface is either unconnected or has no load
+WARNING: [Synth 8-7129] Port data_memory_write_data[16] in module MMIO_Interface is either unconnected or has no load
+WARNING: [Synth 8-7129] Port data_memory_write_data[15] in module MMIO_Interface is either unconnected or has no load
+WARNING: [Synth 8-7129] Port data_memory_write_data[14] in module MMIO_Interface is either unconnected or has no load
+WARNING: [Synth 8-7129] Port data_memory_write_data[13] in module MMIO_Interface is either unconnected or has no load
+WARNING: [Synth 8-7129] Port data_memory_write_data[12] in module MMIO_Interface is either unconnected or has no load
+WARNING: [Synth 8-7129] Port data_memory_write_data[11] in module MMIO_Interface is either unconnected or has no load
+WARNING: [Synth 8-7129] Port data_memory_write_data[10] in module MMIO_Interface is either unconnected or has no load
+WARNING: [Synth 8-7129] Port data_memory_write_data[9] in module MMIO_Interface is either unconnected or has no load
+WARNING: [Synth 8-7129] Port data_memory_write_data[8] in module MMIO_Interface is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pc[1] in module InstructionMemory is either unconnected or has no load
+WARNING: [Synth 8-7129] Port pc[0] in module InstructionMemory is either unconnected or has no load
+WARNING: [Synth 8-7129] Port rom_address[1] in module InstructionMemory is either unconnected or has no load
+WARNING: [Synth 8-7129] Port rom_address[0] in module InstructionMemory is either unconnected or has no load
+WARNING: [Synth 8-7129] Port clk in module HazardUnit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port clk_enable in module HazardUnit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port reset in module HazardUnit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port trap_status[2] in module HazardUnit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port trap_status[1] in module HazardUnit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port trap_status[0] in module HazardUnit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port misaligned_instruction_flush in module HazardUnit is either unconnected or has no load
+WARNING: [Synth 8-7129] Port misaligned_memory_flush in module HazardUnit is either unconnected or has no load
+INFO: [Common 17-14] Message 'Synth 8-7129' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
+---------------------------------------------------------------------------------
+Finished RTL Elaboration : Time (s): cpu = 00:00:11 ; elapsed = 00:00:12 . Memory (MB): peak = 1169.105 ; gain = 599.488
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:12 ; elapsed = 00:00:12 . Memory (MB): peak = 1169.105 ; gain = 599.488
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:12 ; elapsed = 00:00:12 . Memory (MB): peak = 1169.105 ; gain = 599.488
+---------------------------------------------------------------------------------
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.114 . Memory (MB): peak = 1169.105 ; gain = 0.000
+INFO: [Project 1-570] Preparing netlist for logic optimization
+
+Processing XDC Constraints
+Initializing timing engine
+Parsing XDC File [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/constrs_1/imports/sources/RV32I46F_5SP_Debug_XDC.xdc]
+Finished Parsing XDC File [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/constrs_1/imports/sources/RV32I46F_5SP_Debug_XDC.xdc]
+INFO: [Project 1-236] Implementation specific constraints were found while reading constraint file [C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.srcs/constrs_1/imports/sources/RV32I46F_5SP_Debug_XDC.xdc]. These constraints will be ignored for synthesis but will be used in implementation. Impacted constraints are listed in the file [.Xil/RV32I46F5SPMMIOSoCTOP_propImpl.xdc].
+Resolution: To avoid this warning, move constraints listed in [.Xil/RV32I46F5SPMMIOSoCTOP_propImpl.xdc] to another XDC file and exclude this new file from synthesis with the used_in_synthesis property (File Properties dialog in GUI) and re-run elaboration/synthesis.
+Completed Processing XDC Constraints
+
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.001 . Memory (MB): peak = 1259.238 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+No Unisim elements were transformed.
+
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.013 . Memory (MB): peak = 1259.238 ; gain = 0.000
+INFO: [Designutils 20-5440] No compile time benefit to using incremental synthesis; A full resynthesis will be run
+INFO: [Designutils 20-4379] Flow is switching to default flow due to incremental criteria not met. If you would like to alter this behaviour and have the flow terminate instead, please set the following parameter config_implementation {autoIncr.Synth.RejectBehavior Terminate}
+---------------------------------------------------------------------------------
+Finished Constraint Validation : Time (s): cpu = 00:00:24 ; elapsed = 00:00:25 . Memory (MB): peak = 1259.238 ; gain = 689.621
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Loading Part and Timing Information
+---------------------------------------------------------------------------------
+Loading part: xc7a200tsbg484-3
+---------------------------------------------------------------------------------
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:24 ; elapsed = 00:00:25 . Memory (MB): peak = 1259.238 ; gain = 689.621
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Applying 'set_property' XDC Constraints
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:24 ; elapsed = 00:00:25 . Memory (MB): peak = 1259.238 ; gain = 689.621
+---------------------------------------------------------------------------------
+INFO: [Synth 8-802] inferred FSM for state register 'trap_handle_state_reg' in module 'TrapController'
+---------------------------------------------------------------------------------------------------
+                   State |                     New Encoding |                Previous Encoding 
+---------------------------------------------------------------------------------------------------
+                    IDLE |                      00000000001 |                             0000
+               READ_MEPC |                      00000000010 |                             0100
+             RETURN_MRET |                      00000000100 |                             0110
+             MEM_STANDBY |                      00000001000 |                             0111
+              WB_STANDBY |                      00000010000 |                             1000
+            RTRE_STANDBY |                      00000100000 |                             1001
+        ECALL_MEPC_WRITE |                      00001000000 |                             1010
+              WRITE_MEPC |                      00010000000 |                             0001
+            WRITE_MCAUSE |                      00100000000 |                             0010
+              READ_MTVEC |                      01000000000 |                             0011
+              GOTO_MTVEC |                      10000000000 |                             0101
+---------------------------------------------------------------------------------------------------
+INFO: [Synth 8-3354] encoded FSM with state register 'trap_handle_state_reg' using encoding 'one-hot' in module 'TrapController'
+---------------------------------------------------------------------------------
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:26 ; elapsed = 00:00:27 . Memory (MB): peak = 1259.238 ; gain = 689.621
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start RTL Component Statistics 
+---------------------------------------------------------------------------------
+Detailed RTL Component Info : 
++---Adders : 
+	   2 Input   64 Bit       Adders := 2     
+	   2 Input   32 Bit       Adders := 6     
+	   3 Input   32 Bit       Adders := 1     
+	   2 Input   19 Bit       Adders := 1     
+	   2 Input    9 Bit       Adders := 1     
+	   2 Input    4 Bit       Adders := 1     
++---XORs : 
+	   2 Input     32 Bit         XORs := 1     
++---Registers : 
+	               64 Bit    Registers := 2     
+	               32 Bit    Registers := 29    
+	               20 Bit    Registers := 4     
+	               16 Bit    Registers := 1     
+	               10 Bit    Registers := 1     
+	                8 Bit    Registers := 1     
+	                7 Bit    Registers := 4     
+	                5 Bit    Registers := 7     
+	                4 Bit    Registers := 1     
+	                3 Bit    Registers := 9     
+	                2 Bit    Registers := 2     
+	                1 Bit    Registers := 26    
++---RAMs : 
+	             256K Bit	(8192 X 32 bit)          RAMs := 1     
+	             1024 Bit	(32 X 32 bit)          RAMs := 1     
++---Muxes : 
+	   2 Input   32 Bit        Muxes := 58    
+	   4 Input   32 Bit        Muxes := 2     
+	   3 Input   32 Bit        Muxes := 1     
+	  11 Input   32 Bit        Muxes := 2     
+	   2 Input   20 Bit        Muxes := 3     
+	   2 Input   19 Bit        Muxes := 2     
+	   2 Input   16 Bit        Muxes := 1     
+	   2 Input   12 Bit        Muxes := 2     
+	  16 Input   11 Bit        Muxes := 1     
+	   2 Input   10 Bit        Muxes := 3     
+	   3 Input   10 Bit        Muxes := 1     
+	  11 Input   10 Bit        Muxes := 1     
+	   2 Input    9 Bit        Muxes := 2     
+	   4 Input    8 Bit        Muxes := 1     
+	   2 Input    7 Bit        Muxes := 4     
+	   2 Input    5 Bit        Muxes := 7     
+	   2 Input    4 Bit        Muxes := 5     
+	   7 Input    4 Bit        Muxes := 2     
+	   4 Input    4 Bit        Muxes := 1     
+	   3 Input    4 Bit        Muxes := 1     
+	   2 Input    3 Bit        Muxes := 17    
+	   5 Input    3 Bit        Muxes := 2     
+	   3 Input    3 Bit        Muxes := 2     
+	   8 Input    2 Bit        Muxes := 1     
+	   2 Input    2 Bit        Muxes := 8     
+	   3 Input    2 Bit        Muxes := 2     
+	   2 Input    1 Bit        Muxes := 42    
+	   7 Input    1 Bit        Muxes := 1     
+	   3 Input    1 Bit        Muxes := 8     
+	  11 Input    1 Bit        Muxes := 6     
+---------------------------------------------------------------------------------
+Finished RTL Component Statistics 
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Part Resource Summary
+---------------------------------------------------------------------------------
+Part Resources:
+DSPs: 740 (col length:100)
+BRAMs: 730 (col length: RAMB18 100 RAMB36 50)
+---------------------------------------------------------------------------------
+Finished Part Resource Summary
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Cross Boundary and Area Optimization
+---------------------------------------------------------------------------------
+WARNING: [Synth 8-7080] Parallel synthesis criteria is not met
+---------------------------------------------------------------------------------
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:05:49 ; elapsed = 00:05:50 . Memory (MB): peak = 1646.777 ; gain = 1077.160
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+
+ROM: Preliminary Mapping Report
++------------------+------------+---------------+----------------+
+|Module Name       | RTL Object | Depth x Width | Implemented As | 
++------------------+------------+---------------+----------------+
+|InstructionMemory | data       | 8192x32       | LUT            | 
+|InstructionMemory | data       | 8192x32       | LUT            | 
++------------------+------------+---------------+----------------+
+
+
+Distributed RAM: Preliminary Mapping Report (see note below)
++--------------------------------+---------------+-----------+----------------------+-------------------+
+|Module Name                     | RTL Object    | Inference | Size (Depth x Width) | Primitives        | 
++--------------------------------+---------------+-----------+----------------------+-------------------+
+|rv32i46f_5sp_mmio/data_memory   | memory_reg    | Implied   | 8 K x 32             | RAM256X1S x 1024  | 
+|rv32i46f_5sp_mmio/register_file | registers_reg | Implied   | 32 x 32              | RAM32M x 12       | 
++--------------------------------+---------------+-----------+----------------------+-------------------+
+
+Note: The table above is a preliminary report that shows the Distributed RAMs at the current stage of the synthesis flow. Some Distributed RAMs may be reimplemented as non Distributed RAM primitives later in the synthesis flow. Multiple instantiated RAMs are reported only once.
+---------------------------------------------------------------------------------
+Finished ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Applying XDC Timing Constraints
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:05:58 ; elapsed = 00:06:00 . Memory (MB): peak = 1646.777 ; gain = 1077.160
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Timing Optimization
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Timing Optimization : Time (s): cpu = 00:07:25 ; elapsed = 00:07:27 . Memory (MB): peak = 1705.086 ; gain = 1135.469
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+
+Distributed RAM: Final Mapping Report
++--------------------------------+---------------+-----------+----------------------+-------------------+
+|Module Name                     | RTL Object    | Inference | Size (Depth x Width) | Primitives        | 
++--------------------------------+---------------+-----------+----------------------+-------------------+
+|rv32i46f_5sp_mmio/data_memory   | memory_reg    | Implied   | 8 K x 32             | RAM256X1S x 1024  | 
+|rv32i46f_5sp_mmio/register_file | registers_reg | Implied   | 32 x 32              | RAM32M x 12       | 
++--------------------------------+---------------+-----------+----------------------+-------------------+
+
+---------------------------------------------------------------------------------
+Finished ROM, RAM, DSP, Shift Register and Retiming Reporting
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Technology Mapping
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Technology Mapping : Time (s): cpu = 00:07:45 ; elapsed = 00:07:47 . Memory (MB): peak = 1790.117 ; gain = 1220.500
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Flattening Before IO Insertion
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Final Netlist Cleanup
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished IO Insertion : Time (s): cpu = 00:07:52 ; elapsed = 00:07:54 . Memory (MB): peak = 1806.750 ; gain = 1237.133
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Instances
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Instances : Time (s): cpu = 00:07:53 ; elapsed = 00:07:54 . Memory (MB): peak = 1806.750 ; gain = 1237.133
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Rebuilding User Hierarchy
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:07:53 ; elapsed = 00:07:55 . Memory (MB): peak = 1806.750 ; gain = 1237.133
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Ports
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Ports : Time (s): cpu = 00:07:53 ; elapsed = 00:07:55 . Memory (MB): peak = 1806.750 ; gain = 1237.133
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Handling Custom Attributes
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Handling Custom Attributes : Time (s): cpu = 00:07:53 ; elapsed = 00:07:55 . Memory (MB): peak = 1806.750 ; gain = 1237.133
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Renaming Generated Nets
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Finished Renaming Generated Nets : Time (s): cpu = 00:07:53 ; elapsed = 00:07:55 . Memory (MB): peak = 1806.750 ; gain = 1237.133
+---------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
+Start Writing Synthesis Report
+---------------------------------------------------------------------------------
+
+Report BlackBoxes: 
++-+--------------+----------+
+| |BlackBox name |Instances |
++-+--------------+----------+
++-+--------------+----------+
+
+Report Cell Usage: 
++------+----------+------+
+|      |Cell      |Count |
++------+----------+------+
+|1     |BUFG      |     2|
+|2     |CARRY4    |   103|
+|3     |LUT1      |     9|
+|4     |LUT2      |  1204|
+|5     |LUT3      |   309|
+|6     |LUT4      |   417|
+|7     |LUT5      |   934|
+|8     |LUT6      |  5080|
+|9     |MUXF7     |  1281|
+|10    |MUXF8     |   276|
+|11    |RAM256X1S |  1024|
+|12    |RAM32M    |    10|
+|13    |RAM32X1D  |     4|
+|14    |FDCE      |  1625|
+|15    |FDPE      |    33|
+|16    |IBUF      |     3|
+|17    |OBUF      |     9|
++------+----------+------+
+---------------------------------------------------------------------------------
+Finished Writing Synthesis Report : Time (s): cpu = 00:07:53 ; elapsed = 00:07:55 . Memory (MB): peak = 1806.750 ; gain = 1237.133
+---------------------------------------------------------------------------------
+Synthesis finished with 0 errors, 0 critical warnings and 148 warnings.
+Synthesis Optimization Runtime : Time (s): cpu = 00:07:38 ; elapsed = 00:07:51 . Memory (MB): peak = 1806.750 ; gain = 1147.000
+Synthesis Optimization Complete : Time (s): cpu = 00:07:54 ; elapsed = 00:07:56 . Memory (MB): peak = 1806.750 ; gain = 1237.133
+INFO: [Project 1-571] Translating synthesized netlist
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.237 . Memory (MB): peak = 1812.055 ; gain = 0.000
+INFO: [Netlist 29-17] Analyzing 2698 Unisim elements for replacement
+INFO: [Netlist 29-28] Unisim Transformation completed in 1 CPU seconds
+INFO: [Project 1-570] Preparing netlist for logic optimization
+INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
+Netlist sorting complete. Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.010 . Memory (MB): peak = 1823.348 ; gain = 0.000
+INFO: [Project 1-111] Unisim Transformation Summary:
+  A total of 1038 instances were transformed.
+  RAM256X1S => RAM256X1S (MUXF7(x2), MUXF8, RAMS64E(x4)): 1024 instances
+  RAM32M => RAM32M (RAMD32(x6), RAMS32(x2)): 10 instances
+  RAM32X1D => RAM32X1D (RAMD32(x2)): 4 instances
+
+Synth Design complete | Checksum: f90b2cc4
+INFO: [Common 17-83] Releasing license: Synthesis
+86 Infos, 107 Warnings, 0 Critical Warnings and 0 Errors encountered.
+synth_design completed successfully
+synth_design: Time (s): cpu = 00:08:05 ; elapsed = 00:08:10 . Memory (MB): peak = 1823.348 ; gain = 1493.719
+Write ShapeDB Complete: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.069 . Memory (MB): peak = 1823.348 ; gain = 0.000
+INFO: [Common 17-1381] The checkpoint 'C:/Users/KHWL2025/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone/RV32I46F5SP_MMIO_Dhrystone.runs/synth_1/RV32I46F5SPMMIOSoCTOP.dcp' has been generated.
+INFO: [Vivado 12-24828] Executing command : report_utilization -file RV32I46F5SPMMIOSoCTOP_utilization_synth.rpt -pb RV32I46F5SPMMIOSoCTOP_utilization_synth.pb
+INFO: [Common 17-206] Exiting Vivado at Sun Dec 21 00:23:05 2025...
