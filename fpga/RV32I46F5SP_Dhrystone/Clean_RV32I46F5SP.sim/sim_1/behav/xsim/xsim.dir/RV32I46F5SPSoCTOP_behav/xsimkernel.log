@@ -1,7 +1,0 @@
-Running: xsim.dir/RV32I46F5SPSoCTOP_behav/xsimk.exe -simmode gui -wdb RV32I46F5SPSoCTOP_behav.wdb -simrunnum 0 -socket 62046
-Design successfully loaded
-Design Loading Memory Usage: 27640 KB (Peak: 27640 KB)
-Design Loading CPU Usage: 1265 ms
-Simulation completed
-Simulation Memory Usage: 28632 KB (Peak: 28632 KB)
-Simulation CPU Usage: 1374 ms
