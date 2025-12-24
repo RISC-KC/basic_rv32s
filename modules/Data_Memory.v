@@ -26,7 +26,6 @@ module DataMemory (
         for (i=0; i<1024; i=i+1) begin
             memory[i] = 32'b0;
         end // $readmemh("./data_init.mem", memory, 13'h1424);
-        new_word = 32'b0;
     end
 
     always @(*) begin
