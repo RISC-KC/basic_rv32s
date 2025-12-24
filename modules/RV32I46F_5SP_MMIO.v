@@ -58,6 +58,10 @@ module RV32I46F5SPMMIO #(
     wire [XLEN-1:0] IF_imm;
     wire [6:0] IF_opcode;
 
+    // ROM bypass signals (MEM stage instruction memory access)
+    wire [31:0] rom_address;
+    wire [31:0] rom_read_data;
+
     assign IF_imm = {{20{instruction[31]}}, instruction[7], instruction[30:25], instruction[11:8], 1'b0};
     assign IF_opcode = (instruction[6:0]);
 
@@ -348,6 +352,8 @@ module RV32I46F5SPMMIO #(
         .address(MEM_alu_result),
         .write_data(data_memory_write_data),
         .write_mask(write_mask),
+        .rom_read_data(rom_read_data),
+        .rom_address(rom_address),
 
         .read_data(data_memory_read_data)
     );
@@ -474,7 +480,9 @@ module RV32I46F5SPMMIO #(
 
     InstructionMemory instruction_memory (
         .pc(pc),
-        .instruction(im_instruction)
+        .instruction(im_instruction),
+        .rom_address(rom_address),
+        .rom_read_data(rom_read_data)
     );
 
     MMIO_Interface mmio_interface (
