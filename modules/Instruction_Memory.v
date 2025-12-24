@@ -15,9 +15,12 @@ module InstructionMemory (
 );
 
 	reg [31:0] data [0:2047];	// in FPGA, 16384.
-	
+	integer i;
 	initial begin
 		// $readmemh("./dhrystone.mem", data);
+		for (i=0; i<2048; i=i+1) begin
+			data[i] = {12'h2BC, 5'd0, `ITYPE_ADDI, 5'd0, `OPCODE_ITYPE};
+		end
 		// ──────────────────────────────────────────────
 		// I-타입 ALU 명령어 (9개)
 		// {imm[11:0], rs1, funct3, rd, OPCODE_ITYPE}
