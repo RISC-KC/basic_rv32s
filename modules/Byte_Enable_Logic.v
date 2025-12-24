@@ -117,6 +117,8 @@ module ByteEnableLogic (
 			register_file_write_data = 32'b0;
 			data_memory_write_data = 32'b0;
 			write_mask = 4'b0;
+			byte_sel = 8'b0;
+			half_sel = 16'b0;
 		end
     end
 
