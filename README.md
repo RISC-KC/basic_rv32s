@@ -20,6 +20,8 @@ KHWL
 > It's _"a guideline for processor designing from scratch for begginer that has made by an actual beginner."_  
 <img width="6984" height="4952" alt="250723 RV32I46F_5SP_Final_R10" src="https://github.com/user-attachments/assets/d9556432-da64-4af3-8c5e-97f013c5cc0d" />
 <sup> Signal-Level Block Diagram of RV32I46F_5SP Core </sup>
+<img width="3504" height="2479" alt="RISC-V_Cheatsheet_RV32I_1" src="https://github.com/user-attachments/assets/ce017cfc-02ba-4f5b-9310-782f565fc446" />
+<sup> RISC-V RV32I Cheatsheet with Zicsr, Zifencei, mret</sup>
 <br>
 <br>
 While designing the Architecture of processor, I've felt the gap between the theories and actual implementations at certain point and it took a long way to discover the problem and resolve it.  
