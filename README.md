@@ -9,7 +9,9 @@ It provides step-by-step guideline for designing processor **from single-cycle p
 ❇️ Contributed, and Listed on **RISC-V Learn GitHub Repository** !!❇️   
 - 📙 **Learning Resources**, as [Intermediate-Level Resource](https://github.com/riscv/learn?tab=readme-ov-file#-intermediate-level-resources).
 
-🌟Check [riscv/learn](https://github.com/riscv/learn) for **extensive RISC-V Learning Resources**!🌟
+🌟Check [riscv/learn](https://github.com/riscv/learn) for **extensive RISC-V Learning Resources**!🌟  
+📈 Dhrystone 2.1: **1.11 DMIPS/MHz** @50MHz  📈  
+📈 Coremark: **1.1 Coremark/MHz** @50MHz     📈  
 
 
 ## Introduction
@@ -535,7 +537,7 @@ The memory map is same as following.
 <sup>* **Dhrystone** benchmark and **Trap Handler** hard coded using readmemh. Resource varies depends on the program in memories. This will soon be standardized.</sup>  
 <sup>** All memories are inferred as **LUT-based distributed RAM**.</sup>  
 
-### 📈 Performance Evaluation
+### 📈 Performance Evaluation through Dhrystone
 
 Dhrystone performance can be calculated by **DMIPS** (Dhrystone Million Instructions Per Second).  
 For standard Dhrystone 2.1 execution, the minimum execution time is 2 seconds.  
@@ -563,6 +565,42 @@ DMIPS_{300,000} = \frac{Dhrystones/sec}{1757} = \frac{97,087}{1757} \approx\, 55
 - DMIPS/MHz
 ```math
 \frac{55.25\, DMIPS}{50\, MHz} \approx\; 1.11\, DMIPS/MHz  
+```
+
+### 📈 Performance Evaluation through Coremark
+
+<img width="667" height="326" alt="Coremark_basic_RV32s" src="https://github.com/user-attachments/assets/1d58b1b5-53f7-4f6d-87c6-241feb5aacc9" />
+
+CoreMark performance is typically reported as a **CoreMark score (Iterations/Sec)**, and can be normalized by frequency as **CoreMark/MHz**.
+
+The proposed core’s CoreMark benchmark is evaluated with the following conditions:
+
+* **CoreMark workload**: *2K performance run* (CoreMark Size = **666**)
+* **Timing constraint**: **50 MHz** (20 ns clock period)
+* **Total run time**: **20 sec**
+* **Total iterations**: **1100**
+* **Memory location**: **STACK**
+* **Compiler**: GCC **15.1.0**
+* **Compiler flags**: `-O2 -march=rv32i_zicsr -mabi=ilp32 -fno-common -funroll-loops`
+
+In our settings on Digilent Nexys Video FPGA, we obtained:
+
+* **CoreMark score (Iterations/Sec)**: **55**
+
+* **Total ticks**: **1,018,929,308**
+
+* **Validation**: Correct operation validated (CRC matched)
+
+* **CoreMark score**
+
+```math
+CoreMark = Iterations/Sec = 55
+```
+
+* **CoreMark/MHz**
+
+```math
+CoreMark/MHz = \frac{CoreMark}{Clock(MHz)} = \frac{55}{50} = 1.10\; CoreMark/MHz
 ```
 
 ---
@@ -666,8 +704,9 @@ Since the actual FPGA implementation is only done in **RV32I46F_5SP**, we sugges
 ✅ Contribute riscv/learn as tutorial resource  
 ✅ Writing Paper about this repository  ✨ISOCC 2025 Accepted (Oral)
 ✅ Translate Korean resources to English  
+✅ Resolve issues of 46F5SP architecture  
+✅ Benchmark with Coremark
 
-📋 Resolve issues of 46F5SP architecture  
 📋 Performance Enhancement by Optimize critical paths, advanced core architecture  -> [ima_make_rv64](https://github.com/RISC-KC/ima_make_rv64)
 📋 Optimize FPGA resource utilization
 
