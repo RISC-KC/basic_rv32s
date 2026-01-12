@@ -456,33 +456,33 @@ In our settings on Digilent Nexys Video FPGA, we obtained:
 - final instructions : 000000000009DDF0 = 646,640 Instructions
     
 ```math
-CPI = \frac{Clock\;Cycles}{Instructions} = \frac{1,043,092}{646,640} = 1.61\;cycles/instr.
+\text{CPI} = \frac{\text{Clock}\;\text{Cycles}}{\text{Instructions}} = \frac{1,043,092}{646,640} = 1.61\;\text{cycles}/\text{instr}.
 ```
     
 - MIPS (Million Instructions Per Second)
 ```math
-MIPS = \frac{instructions}{t} / 10^6 = \frac{646,640}{0.0208618} / 10^6 \approx\, 31.0\,MIPS
+\text{MIPS} = \frac{\text{instructions}}{t} / 10^6 = \frac{646,640}{0.0208618} / 10^6 \approx\, 31.0\,\text{MIPS}
 ```
     
 - Execution Time
 ```math
-t = \frac{Clock\;Cycles}{Clock\;Frequency} = \frac{1,043,092}{50\,\times\,10^6}\; \approx\, 0.0208618\,seconds
+t = \frac{\text{Clock}\;\text{Cycles}}{\text{Clock}\;\text{Frequency}} = \frac{1,043,092}{50\,\times\,10^6}\; \approx\, 0.0208618\,\text{seconds}
 ```
     
 - Dhrystones per Second
 ```math
-Dhrystones/sec = \frac{iterations}{t} = \frac{2,000}{0.0208618} \approx\, 95,875\, DPS
+\text{Dhrystones}/\text{sec} = \frac{\text{iterations}}{t} = \frac{2,000}{0.0208618} \approx\, 95,875\, \text{DPS}
 ```
     
 - DMIPS (Dhrystone Million Instructions Per Second)  
 <sup> 1 DMIPS equals to 1757 Dhrystones Per Second. </sup>
 ```math
-DMIPS = \frac{Dhrystones/sec}{1757} = \frac{95,875}{1757} \approx\, 54.6\, DMIPS
+\text{DMIPS} = \frac{\text{Dhrystones}/sec}{1757} = \frac{95,875}{1757} \approx\, 54.6\, \text{DMIPS}
 ```
     
 - DMIPS/MHz
 ```math
-\frac{54.6\, DMIPS}{50\, MHz} \approx\; 1.09\, DMIPS/MHz
+\frac{54.6\, \text{DMIPS}}{50\, \text{MHz}} \approx\; 1.09\, \text{DMIPS}/\text{MHz}
 ```
     
 Various performance benchmark (such as coremark) will be added soon.  
@@ -556,15 +556,15 @@ In our settings on Digilent Nexys Video FPGA, we obtained:
 - DMIPS (Dhrystone Million Instructions Per Second)  
 <sup> 1 DMIPS equals to 1757 Dhrystones Per Second. </sup>
 ```math
-DMIPS_{2,000} = \frac{Dhrystones/sec}{1757} = \frac{97,273}{1757} \approx\, 55.36\, DMIPS
+\text{DMIPS}_{2,000} = \frac{\text{Dhrystones}/\text{sec}}{1757} = \frac{97,273}{1757} \approx\, 55.36\, \text{DMIPS}
 ```
 ```math
-DMIPS_{300,000} = \frac{Dhrystones/sec}{1757} = \frac{97,087}{1757} \approx\, 55.25\, DMIPS
+\text{DMIPS}_{300,000} = \frac{\text{Dhrystones}/\text{sec}}{1757} = \frac{97,087}{1757} \approx\, 55.25\, \text{DMIPS}
 ```
     
 - DMIPS/MHz
 ```math
-\frac{55.25\, DMIPS}{50\, MHz} \approx\; 1.11\, DMIPS/MHz  
+\frac{55.25\, \text{DMIPS}}{50\, \text{MHz}} \approx\; 1.11\, \text{DMIPS}/\text{MHz}  
 ```
 
 ### 📈 Performance Evaluation through Coremark
@@ -594,13 +594,13 @@ In our settings on Digilent Nexys Video FPGA, we obtained:
 * **CoreMark score**
 
 ```math
-CoreMark = Iterations/Sec = 55
+\text{CoreMark} = \text{Iterations}/\text{Sec} = 55
 ```
 
 * **CoreMark/MHz**
 
 ```math
-CoreMark/MHz = \frac{CoreMark}{Clock(MHz)} = \frac{55}{50} = 1.10\; CoreMark/MHz
+\text{CoreMark}/\text{MHz} = \frac{\text{CoreMark}}{\text{Clock(MHz)}} = \frac{55}{50} = 1.10\; \text{CoreMark}/\text{MHz}
 ```
 
 ---
