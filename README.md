@@ -1,6 +1,6 @@
 # basic_RV32s
 
-<img width="900" height="342" alt="basic_rv32s_logo" src="https://github.com/user-attachments/assets/e339df67-0331-42f9-a235-73147ff81225" />
+<img width="900" height="512" alt="Untitled" src="https://github.com/user-attachments/assets/85f18302-52a3-43e7-88e1-5e83eeb5992b" />
 
 basic_RV32s is a **framework for learning Processor design with RISC-V RV32I** ISA (Instruction Set Architecture).  
 It provides step-by-step guideline for designing processor **from single-cycle processor to 5 Stage Pipelined with Exception Handling**.  
